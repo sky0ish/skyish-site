@@ -9,3 +9,7 @@ desktop.ini
 *.log
 .vscode/
 .idea/
+
+# 로컬 전용 도구 — 실제 사이트(배포)에는 포함하지 않음
+preview.cmd
+.claude/
