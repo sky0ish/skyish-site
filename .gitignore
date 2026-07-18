@@ -1,0 +1,11 @@
+# 배포용 압축본 — 저장소에는 불필요 (Netlify는 소스에서 직접 배포)
+skyish-site.zip
+
+# OS / 편집기 / 드라이브 부산물
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.log
+.vscode/
+.idea/

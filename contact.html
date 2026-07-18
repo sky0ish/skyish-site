@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Jee-Hyun NAM</title>
+  <meta name="description" content="Contact Jee-Hyun NAM — Ph.D. Research Fellow, Gyeonggi Research Institute, Suwon. Email, phone and a message form.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section page-intro">
+      <div class="container">
+        <span class="eyebrow reveal">Contact</span>
+        <h1 class="section-title reveal" data-delay="1">Contact me</h1>
+        <p class="lead reveal" data-delay="2">Drop me a line — questions, ideas or just a hello. I like chatting and sharing.</p>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="contact-grid">
+
+          <!-- info -->
+          <div class="contact-info reveal">
+            <h2 style="font-family:var(--font-display);font-weight:400;text-transform:uppercase;font-size:1.8rem;letter-spacing:.03em;margin-bottom:.4rem">Jee-Hyun NAM</h2>
+            <p style="color:var(--mauve);margin-bottom:1.4rem">Ph.D. · Research Fellow</p>
+
+            <div class="row"><span class="k">Office</span><span class="v">Gyeonggi Research Institute</span></div>
+            <div class="row"><span class="k">Address</span><span class="v">1150 Gyeongsu-daero, Pajang-dong,<br>Suwon-si, Gyeonggi-do, Korea</span></div>
+            <div class="row"><span class="k">Email</span><span class="v"><a href="mailto:whlove@gmail.com">whlove@gmail.com</a></span></div>
+            <div class="row"><span class="k">Tel</span><span class="v"><a href="tel:+821066506691">***REMOVED***</a></span></div>
+
+            <div class="contact-socials">
+              <a href="mailto:whlove@gmail.com" aria-label="Email">✉ Email</a>
+              <a href="tel:+821066506691" aria-label="Phone">☎ Call</a>
+            </div>
+            <!-- 소셜 링크가 있다면 위 형식으로 추가하세요:
+                 <a href="https://instagram.com/아이디">Instagram</a> -->
+          </div>
+
+          <!-- form -->
+          <form class="form reveal" id="contact-form" data-delay="1" novalidate>
+            <div class="field">
+              <label for="cf-name">Name</label>
+              <input id="cf-name" name="name" type="text" placeholder="성함" required>
+            </div>
+            <div class="field">
+              <label for="cf-email">Email</label>
+              <input id="cf-email" name="email" type="email" placeholder="you@example.com" required>
+            </div>
+            <div class="field">
+              <label for="cf-subject">Subject</label>
+              <input id="cf-subject" name="subject" type="text" placeholder="제목">
+            </div>
+            <div class="field">
+              <label for="cf-message">Message</label>
+              <textarea id="cf-message" name="message" placeholder="내용을 입력하세요" required></textarea>
+            </div>
+            <button class="btn btn--teal" type="submit">Send <span class="arrow">→</span></button>
+            <p class="form__note" lang="ko">Send 버튼을 누르면 메일 앱이 열리고 내용이 자동으로 채워집니다. (서버 없이 동작)</p>
+          </form>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>

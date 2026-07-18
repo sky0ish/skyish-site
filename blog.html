@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — Jee-Hyun NAM</title>
+  <meta name="description" content="Jee-Hyun NAM의 블로그 — 건축, 도시, 일상에 대한 짧은 글.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section page-intro">
+      <div class="container">
+        <span class="eyebrow reveal">Blog</span>
+        <h1 class="section-title reveal" data-delay="1">전체 게시물</h1>
+        <p class="lead reveal" data-delay="2">생각하고 느낀 것들 — 건축과 도시, 그리고 소소한 일상 기록.</p>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0">
+      <div class="container container--narrow">
+
+        <div class="cat-filter reveal" aria-label="게시물 카테고리 필터">
+          <button class="chip active" data-cat="all" aria-pressed="true">전체 게시물</button>
+          <button class="chip" data-cat="arch" aria-pressed="false">Portfolio · Architecture</button>
+          <button class="chip" data-cat="urban" aria-pressed="false">Portfolio · Urban</button>
+          <button class="chip" data-cat="future" aria-pressed="false">Future HOME</button>
+          <button class="chip" data-cat="dream" aria-pressed="false">My dream</button>
+          <button class="chip" data-cat="daily" aria-pressed="false">Daily Life</button>
+        </div>
+
+        <div class="posts">
+
+          <!-- Post 1 -->
+          <article class="post reveal" data-cats="arch,dream,future">
+            <div class="post__meta">
+              <span class="tag">My dream</span>
+              <span class="dot"></span><span>Jeehyun NAM</span>
+              <span class="dot"></span><span>2020. 8. 23.</span>
+              <span class="dot"></span><span>1분 분량</span>
+            </div>
+            <h2>건축사란……</h2>
+            <p class="post__excerpt" lang="en">The future dream is being an Architect. Maybe it is too late to dream of it..</p>
+            <div class="post__full">
+              <p lang="en">The future dream is being an Architect. Maybe it is too late to dream of it.. but I am dreaming of building my own house in the future….</p>
+              <p>언젠가 내 손으로 설계한 집에서 살아보고 싶다. 늦었다고 생각하지 않기로 했다.</p>
+            </div>
+            <button class="post__toggle" aria-expanded="false"><span class="label">더 읽기</span> <span class="arrow">→</span></button>
+          </article>
+
+          <!-- Post 2 -->
+          <article class="post reveal" data-cats="daily" data-delay="1">
+            <div class="post__meta">
+              <span class="tag">Daily Life</span>
+              <span class="dot"></span><span>Jeehyun NAM</span>
+              <span class="dot"></span><span>2020. 8. 21.</span>
+              <span class="dot"></span><span>1분 분량</span>
+            </div>
+            <h2>컴퓨터 사용시간 확인방법</h2>
+            <p class="post__excerpt">내 컴퓨터의 사용 시간을 확인하는 세 가지 방법 — 작업관리자, 리소스 모니터, 이벤트 뷰어.</p>
+            <div class="post__full">
+              <ol>
+                <li><strong>방법 1</strong> — 작업관리자 → 성능 탭에서 확인</li>
+                <li><strong>방법 2</strong> — 리소스 모니터 열기</li>
+                <li><strong>방법 3</strong> — 이벤트 뷰어 열기
+                  <ol style="list-style:decimal;margin-top:.4rem">
+                    <li>윈도우키 + R 오픈</li>
+                    <li><code>eventvwr</code> 입력</li>
+                    <li>Windows 로그 → 시스템</li>
+                  </ol>
+                </li>
+              </ol>
+            </div>
+            <button class="post__toggle" aria-expanded="false"><span class="label">더 읽기</span> <span class="arrow">→</span></button>
+          </article>
+
+        </div>
+
+        <p class="placeholder-note reveal" style="margin-top:2.6rem">
+          ✎ 새 글을 추가하려면 <code>blog.html</code>에서 <code>&lt;article class="post"&gt;</code> 블록을 복사해
+          제목·날짜·본문을 바꾸고, <code>data-cats</code>에 카테고리 키(arch, urban, future, dream, daily)를 지정하세요.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Netlify 배포 설정 — 빌드 과정이 없는 순수 정적 사이트
+# 저장소 루트(index.html 위치)를 그대로 게시합니다.
+[build]
+  publish = "."

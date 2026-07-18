@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery — Jee-Hyun NAM</title>
+  <meta name="description" content="A visual gallery — street life and pictures collected by Jee-Hyun NAM.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-hero>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <!-- banner -->
+    <header class="page-banner">
+      <div class="page-banner__media">
+        <img src="assets/img/hero.jpg" alt="Crowd crossing a wide plaza, seen from above in black and white">
+      </div>
+      <div class="container page-banner__inner">
+        <span class="eyebrow" style="color:#d9cfcf">Gallery</span>
+        <h1>Pictures</h1>
+        <p>A small showcase of street life — cities, people and the space in between. Click any photo to view it larger.</p>
+      </div>
+    </header>
+
+    <!-- gallery -->
+    <section class="section">
+      <div class="container">
+        <div class="masonry reveal">
+          <figure>
+            <img src="assets/img/pictures-banner.jpg" alt="Black and white street scene">
+            <figcaption>The city · in motion</figcaption>
+          </figure>
+
+          <!-- Placeholder tiles: replace with your own <figure><img ...></figure> -->
+          <figure style="cursor:default;aspect-ratio:3/4;display:grid;place-items:center">
+            <span style="color:#9a938f;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase">Your photo here</span>
+          </figure>
+          <figure style="cursor:default;aspect-ratio:1/1;display:grid;place-items:center">
+            <span style="color:#9a938f;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase">Your photo here</span>
+          </figure>
+          <figure style="cursor:default;aspect-ratio:4/5;display:grid;place-items:center">
+            <span style="color:#9a938f;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase">Your photo here</span>
+          </figure>
+        </div>
+
+        <p class="placeholder-note reveal" lang="ko" style="margin-top:2.6rem">
+          ✎ 사진을 추가하려면 <code>assets/img/</code> 폴더에 이미지를 넣고, <code>pictures.html</code>에
+          <code>&lt;figure&gt;&lt;img src="assets/img/파일명" alt="설명"&gt;&lt;figcaption&gt;캡션&lt;/figcaption&gt;&lt;/figure&gt;</code>
+          형태로 넣으면 자동으로 라이트박스가 적용됩니다.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>
