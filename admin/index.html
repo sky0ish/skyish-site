@@ -6,9 +6,41 @@
   <meta name="robots" content="noindex, nofollow">
   <title>글 관리 — Jee-Hyun NAM</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <style>
+    .cms-note {
+      position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+      z-index: 9999; max-width: 92vw;
+      font: 13px/1.6 "Noto Sans KR", system-ui, sans-serif; color: #4a4442;
+      background: #fff; border: 1px solid rgba(28,26,25,.14); border-radius: 10px;
+      padding: .6rem 1rem; box-shadow: 0 6px 22px rgba(0,0,0,.1);
+    }
+    .cms-note b { color: #2f6a62; }
+  </style>
 </head>
 <body>
   <!-- Decap CMS — 브라우저에서 글을 쓰면 GitHub 에 커밋되고 Netlify 가 자동 재배포합니다. -->
+  <script>window.CMS_MANUAL_INIT = true;</script>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    (function () {
+      // 로그인 인증은 이 페이지가 열린 바로 그 도메인의 /oauth 함수를 씁니다.
+      // 덕분에 netlify.app 주소와 skyish.kr 어느 쪽에서 열어도 그대로 동작합니다.
+      // (GitHub OAuth 앱의 callback URL 은 실제로 쓰는 도메인 하나로 맞춰 주세요.)
+      if (!window.CMS || typeof window.CMS.init !== "function") {
+        document.body.innerHTML =
+          '<p style="font:15px/1.7 system-ui;padding:2rem">CMS 를 불러오지 못했습니다. ' +
+          '인터넷 연결을 확인하고 새로고침해 주세요.</p>';
+        return;
+      }
+      window.CMS.init({ config: { backend: { base_url: window.location.origin } } });
+
+      var note = document.createElement("div");
+      note.className = "cms-note";
+      note.innerHTML =
+        '글을 <b>Publish</b> 하면 GitHub 에 저장되고, 1~2분 뒤 사이트에 반영됩니다.';
+      document.body.appendChild(note);
+      setTimeout(function () { note.remove(); }, 12000);
+    })();
+  </script>
 </body>
 </html>
