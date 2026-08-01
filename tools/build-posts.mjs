@@ -16,10 +16,12 @@ const DEST = path.join(ROOT, "assets", "data", "posts.js");
 
 const CAT_LABEL = {
   daily: "Daily Life",
-  arch: "Portfolio · Architecture",
-  urban: "Portfolio · Urban",
-  future: "Future HOME",
-  dream: "My dream"
+  arch: "Architecture",
+  urban: "Urban",
+  ideal: "Ideal Home",
+  en: "English",
+  jp: "Japanese",
+  etc: "ETC"
 };
 
 /* ── YAML front matter (스칼라 키만) ───────────────────────── */

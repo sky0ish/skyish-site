@@ -42,9 +42,13 @@ collections:
     summary: '{{date}} · {{title}}'
     sortable_fields: ['date', 'title']
     view_filters:
-      - { label: '일상', field: category, pattern: 'daily' }
-      - { label: '건축', field: category, pattern: 'arch' }
-      - { label: '도시', field: category, pattern: 'urban' }
+      - { label: 'Daily Life', field: category, pattern: 'daily' }
+      - { label: 'Architecture', field: category, pattern: 'arch' }
+      - { label: 'Urban', field: category, pattern: 'urban' }
+      - { label: 'Ideal Home', field: category, pattern: 'ideal' }
+      - { label: 'English', field: category, pattern: 'en' }
+      - { label: 'Japanese', field: category, pattern: 'jp' }
+      - { label: 'ETC', field: category, pattern: 'etc' }
     fields:
       - { label: '제목', name: title, widget: string }
       - {
@@ -63,11 +67,13 @@ collections:
           default: 'daily',
           options:
             [
-              { label: '일상 (Daily Life)', value: 'daily' },
-              { label: '건축 (Portfolio · Architecture)', value: 'arch' },
-              { label: '도시 (Portfolio · Urban)', value: 'urban' },
-              { label: 'Future HOME', value: 'future' },
-              { label: 'My dream', value: 'dream' }
+              { label: 'Daily Life (일상)', value: 'daily' },
+              { label: 'Architecture (건축)', value: 'arch' },
+              { label: 'Urban (도시)', value: 'urban' },
+              { label: 'Ideal Home (집)', value: 'ideal' },
+              { label: 'English', value: 'en' },
+              { label: 'Japanese', value: 'jp' },
+              { label: 'ETC (기타)', value: 'etc' }
             ]
         }
       - {
