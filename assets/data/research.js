@@ -15,9 +15,6 @@
    ============================================================= */
 window.RESEARCH = {
   papers: [
-    { date: "2015", sort: 201512, title: "도쿄도 역세권의 지역적 공공공간 형성과 관리에 관한 연구", venue: "서울대학교 대학원 · 박사학위논문", tier: "박사학위논문" },
-    { date: "2012", sort: 201203, title: "개항도시의 산업유산과 재활을 통한 도시보존 수법과 연계적 역사경관 형성에 관한 연구 — 인천 구 제물포(중구·동구)의 갈등을 중심으로", venue: "도쿄대학교 대학원 · 박사학위논문", tier: "박사학위논문" },
-    { date: "2004", sort: 200402, title: "CIAM 이후 아방가르드 도시주거이론에서 나타나는 '네트워크를 통한 성장 개념' — Team X, GEAM, Archigram의 '자율성'과 '가변성'의 비교연구를 중심으로", venue: "서울대학교 대학원 건축학과 · 석사학위논문", tier: "석사학위논문" },
     { date: "2024.12", sort: 202412, title: "공동체주택 공유공간 계획 특성 및 사회적 역할 연구", venue: "KCI 등재지", role: "교신저자", tier: "KCI" },
     { date: "2023.06", sort: 202306, title: "Conditions on the Sustainable Housing of Foreign Workers: A Case Study of Gyeonggi Province, South Korea", venue: "Sustainability", role: "1저자", tier: "SCIE" },
     { date: "2023.03", sort: 202303, title: "경기도 외국인 근로자 주거시설의 현황 고찰", venue: "KCI 등재지", role: "1저자", tier: "KCI" },
@@ -43,6 +40,13 @@ window.RESEARCH = {
     { date: "2011.05", sort: 201105, title: "Thresholds in the Pluralistic Architecture of Tadao Ando", venue: "JAABE", role: "교신저자", tier: "SCIE" },
     { date: "2009.09", sort: 200909, title: "산업유산군의 공생의 의미와 지역 연계적 가치", venue: "대한건축학회 논문집", role: "1저자", tier: "KCI" },
     { date: "2009.05", sort: 200905, title: "Comparison of In-between Concepts by Aldo van Eyck and Kisho Kurokawa", venue: "JAABE", role: "2저자", tier: "SCIE" }
+  ],
+
+  /* 학위논문 — 박사/석사 (별도 탭) */
+  theses: [
+    { date: "2015", sort: 201512, title: "도쿄도 역세권의 지역적 공공공간 형성과 관리에 관한 연구", venue: "서울대학교 대학원 · 박사학위논문", tier: "박사학위논문" },
+    { date: "2012", sort: 201203, title: "개항도시의 산업유산과 재활을 통한 도시보존 수법과 연계적 역사경관 형성에 관한 연구 — 인천 구 제물포(중구·동구)의 갈등을 중심으로", venue: "도쿄대학교 대학원 · 박사학위논문", tier: "박사학위논문" },
+    { date: "2004", sort: 200402, title: "CIAM 이후 아방가르드 도시주거이론에서 나타나는 '네트워크를 통한 성장 개념' — Team X, GEAM, Archigram의 '자율성'과 '가변성'의 비교연구를 중심으로", venue: "서울대학교 대학원 건축학과 · 석사학위논문", tier: "석사학위논문" },
   ],
 
   reports: [

@@ -1065,7 +1065,8 @@
         groupField: "role", order: ["책임", "공동", "위탁"],
         groupLabels: { "책임": "연구책임", "공동": "공동연구", "위탁": "위탁연구" } },
       { key: "issues",  label: "이슈 대응", kind: "issue", grouped: false,
-        emptyMsg: "기고·이슈 대응 글을 이곳에 모을 예정입니다. (준비 중)" }
+        emptyMsg: "기고·이슈 대응 글을 이곳에 모을 예정입니다. (준비 중)" },
+      { key: "theses",  label: "학위논문", kind: "paper", grouped: true }
     ];
     var tierOrder = ["박사학위논문", "석사학위논문", "SCIE", "SCOPUS", "KCI", "기고", "기타"];
     function byDateDesc(a, b) { return (b.sort || 0) - (a.sort || 0); }
