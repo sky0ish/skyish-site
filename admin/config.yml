@@ -8,7 +8,7 @@ backend:
   branch: main
   # 로그인 인증을 처리하는 주소. admin/index.html 이 실제 접속 도메인으로 덮어쓰므로
   # netlify.app 주소로 열든 skyish.kr 로 열든 그대로 동작합니다.
-  base_url: https://spectacular-capybara-6d4360.netlify.app
+  base_url: https://skyish.kr
   auth_endpoint: oauth
   commit_messages:
     create: '블로그: {{slug}} 새 글'
