@@ -19,6 +19,7 @@
   --teal:       #4f9d92;   /* refined accent (from gallery icon)  */
   --teal-dark:  #3d867c;
   --teal-text:  #2f6a62;   /* AA-contrast teal for small text on light */
+  --navy:       #223a7a;   /* deep navy — section tabs / emphasis      */
   --purple:     #9a6dae;   /* soft secondary (from home icon)     */
   --white:      #ffffff;
   --line:       rgba(28, 26, 25, .12);
@@ -125,6 +126,16 @@ ul { list-style: none; padding: 0; }
 .page-intro .section-title { margin-top: .3em; }
 .page-intro .lead { margin-top: 1.3rem; }
 
+/* Research page — faint monochrome vintage architect-desk backdrop */
+.research-intro { position: relative; overflow: hidden; }
+.research-intro::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: url("../img/research-bg.svg") center / 100% 100% no-repeat;
+  filter: grayscale(100%);
+  opacity: .22;
+}
+.research-intro > .container { position: relative; z-index: 1; }
+
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-flex; align-items: center; gap: .6em;
@@ -173,7 +184,7 @@ ul { list-style: none; padding: 0; }
 .brand small { display: block; font-family: var(--font-body); font-weight: 500;
   font-size: .58rem; letter-spacing: .32em; opacity: .8; margin-top: 2px; }
 
-.nav { display: flex; align-items: center; gap: clamp(1rem, 2.4vw, 2.3rem); }
+.nav { display: flex; align-items: center; gap: clamp(.7rem, 1.7vw, 1.5rem); }
 .nav a {
   position: relative;
   font-weight: 500;
@@ -387,6 +398,54 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
   background: var(--paper-2); border-radius: 0 var(--radius) var(--radius) 0; font-size: .92rem; color: #5a5350;
 }
 
+/* ---------- Publications (RESEARCH) ---------- */
+.pub-tabs { display: flex; flex-wrap: wrap; gap: .4rem .6rem; margin-bottom: 2.6rem; border-bottom: 2px solid var(--line); }
+.pub-tab {
+  padding: .5em .9em; font-weight: 700; font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  color: #8489a0; letter-spacing: .005em;
+  border-bottom: 3px solid transparent; margin-bottom: -2px; border-radius: 10px 10px 0 0;
+  transition: color .2s var(--ease), background .2s var(--ease), border-color .2s var(--ease);
+}
+.pub-tab:hover { color: var(--navy); background: rgba(34, 58, 122, .05); }
+.pub-tab.active { color: var(--navy); background: rgba(34, 58, 122, .09); border-bottom-color: var(--navy); }
+.pub-tab__n { font-size: .62em; color: var(--navy); font-weight: 700; vertical-align: super; margin-left: .15em; }
+.pub-panel { animation: wordSwap .4s var(--ease); }
+.pub-panel[hidden] { display: none; }
+
+.pub-subgroup { margin-bottom: clamp(1.8rem, 4vw, 2.8rem); }
+.pub-subgroup:last-child { margin-bottom: 0; }
+.pub-subgroup__title {
+  font-weight: 700; font-size: .76rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--teal-text); display: flex; align-items: center; gap: .7rem; margin-bottom: .3rem;
+}
+.pub-subgroup__title span { color: var(--mauve); font-weight: 600; }
+.pub-subgroup__title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.pub-list { display: flex; flex-direction: column; }
+.pub {
+  display: flex; align-items: baseline; gap: clamp(.8rem, 2.5vw, 1.6rem);
+  padding: 1.4rem 0; border-bottom: 1px solid var(--line);
+}
+.pub__date { flex: 0 0 auto; width: 58px; font-weight: 700; font-size: .82rem; color: var(--mauve); font-variant-numeric: tabular-nums; }
+.pub__body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: .3rem; }
+.pub__title { font-weight: 600; font-size: 1.02rem; line-height: 1.5; color: var(--ink); transition: color .2s var(--ease); }
+.pub__title:hover { color: var(--teal-text); }
+.pub__ext { font-size: .78em; color: var(--mauve); margin-left: .3em; }
+.pub__title:hover .pub__ext { color: var(--teal-text); }
+.pub__meta { color: var(--mauve); font-size: .85rem; }
+.pub__role {
+  flex: 0 0 auto; align-self: center; font-size: .72rem; font-weight: 600;
+  color: var(--mauve); border: 1px solid var(--line); border-radius: 999px;
+  padding: .2em .7em; white-space: nowrap;
+}
+.pub__role.is-lead { color: var(--teal-text); border-color: var(--teal); }
+@media (max-width: 600px) {
+  .pub { flex-wrap: wrap; gap: .25rem .9rem; }
+  .pub__date { order: 1; width: auto; }
+  .pub__role { order: 2; margin-left: auto; align-self: baseline; }
+  .pub__body { order: 3; flex-basis: 100%; }
+}
+
 /* =============================================================
    Pictures / gallery
    ============================================================= */
@@ -467,6 +526,624 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 .post__toggle { margin-top: 1.2rem; color: var(--teal-text); font-weight: 600; font-size: .9rem; display: inline-flex; gap: .4em; align-items: center; }
 .post__toggle .arrow { transition: transform .25s var(--ease); }
 .post__toggle[aria-expanded="true"] .arrow { transform: rotate(90deg); }
+.post__cover { margin: 0 0 1.2rem; border-radius: var(--radius-md); overflow: hidden; }
+.post__cover img { width: 100%; display: block; }
+.post__full img { max-width: 100%; height: auto; border-radius: var(--radius-md); margin: 1rem 0; }
+.post__full blockquote {
+  margin: 1rem 0; padding: .2rem 0 .2rem 1.1rem;
+  border-left: 3px solid var(--teal); color: #55504e; font-style: italic;
+}
+
+/* ---- Blog banner — 회색 거리 사진 위에 흩어진 글자 블록 (이중 레이어) ---- */
+.page-banner--blog { min-height: 64vh; }
+/* 항공뷰 아스팔트가 밝아서 살짝 눌러 주되, 걸어가는 사람들은 보이도록 */
+.page-banner--blog .page-banner__media img { filter: grayscale(100%) contrast(1.08) brightness(.74); }
+.page-banner--blog .page-banner__media::after {
+  background:
+    linear-gradient(180deg, rgba(20,18,17,.22), rgba(20,18,17,.55)),
+    linear-gradient(100deg, rgba(20,18,17,.5) 0%, rgba(20,18,17,.06) 55%, rgba(20,18,17,.26) 100%);
+}
+/* 글자 조각이 모여 만든 BLOG 가 곧 제목이므로, 텍스트 h1 은 화면에서만 숨김 */
+.page-banner--blog h1 {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.page-banner--blog .page-banner__inner { padding-block: 130px 54px; }
+.page-banner--blog .eyebrow { margin-bottom: .6rem; }
+.page-banner__letters {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  /* 제목이 놓이는 왼쪽 아래 모서리만 비워 준다 */
+  -webkit-mask-image: radial-gradient(115% 105% at 4% 96%, transparent 0%, transparent 27%, rgba(0,0,0,.55) 44%, #000 66%);
+          mask-image: radial-gradient(115% 105% at 4% 96%, transparent 0%, transparent 27%, rgba(0,0,0,.55) 44%, #000 66%);
+}
+.page-banner__letters svg { display: block; width: 100%; height: 100%; }
+
+/* ---- Blog board — 종이 패널 위에 목록을 올려 게시판처럼 ---- */
+.blog-board { position: relative; padding-top: clamp(2.2rem, 5vw, 3.6rem); }
+.blog-board::before {
+  content: ""; position: absolute; z-index: 0; pointer-events: none;
+  left: 50%; transform: translateX(-50%);
+  top: 0; width: min(1180px, 94vw); height: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(250,248,246,.55) 40%, transparent);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 -1px 0 rgba(0,0,0,.04) inset;
+}
+.blog-board > .container { position: relative; z-index: 1; }
+.blog-board .post { border-color: var(--line); }
+.blog-board .post:hover { border-color: rgba(79,157,146,.45); }
+
+/* =============================================================
+   Travel world map
+   ============================================================= */
+.tmap { margin-bottom: 2.4rem; }
+.tmap__wrap {
+  position: relative; background: var(--charcoal); border-radius: var(--radius-lg);
+  overflow: hidden; box-shadow: var(--shadow-md);
+  aspect-ratio: 2 / 1; max-height: 460px;
+}
+.tmap__svg { width: 100%; height: 100%; display: block; }
+
+/* ---- map used as a page-banner background (layered, text floats above) ---- */
+.page-banner--map { background: var(--charcoal); min-height: 62vh; }
+.page-banner--map .page-banner__media { z-index: 0; }
+.page-banner--map .tmap__wrap {
+  position: absolute; inset: 0; border-radius: 0; box-shadow: none;
+  aspect-ratio: auto; max-height: none; background: transparent;
+}
+/* the landmass layer stays faint; pins stay bright on top */
+.page-banner--map #land,
+.page-banner--map #graticule { opacity: .28; }
+.page-banner--map .page-banner__media::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    linear-gradient(100deg, rgba(20,18,17,.88) 0%, rgba(20,18,17,.62) 42%, rgba(20,18,17,.28) 72%, rgba(20,18,17,.42) 100%);
+}
+/* content above the map, but let clicks fall through to the pins */
+.page-banner--map .page-banner__inner { position: relative; z-index: 2; pointer-events: none; }
+.page-banner--map .page-banner__inner a,
+.page-banner--map .page-banner__inner button { pointer-events: auto; }
+.page-banner--map .page-banner__inner p { max-width: 44ch; }
+
+/* zoom / pan controls */
+.tmap__svg { cursor: grab; touch-action: none; }
+.tmap__svg.is-grabbing { cursor: grabbing; }
+.tmap__zoom {
+  position: absolute; right: 18px; bottom: 18px; z-index: 3;
+  display: flex; gap: .35rem; pointer-events: auto;
+}
+.tmap__zoom button {
+  min-width: 38px; height: 38px; padding: 0 .7em;
+  display: grid; place-items: center;
+  font-size: 1rem; font-weight: 700; line-height: 1;
+  color: #e7e0dd; background: rgba(20,18,17,.55); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.28); border-radius: 10px;
+  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+}
+.tmap__zoom button:hover { background: #fff; color: var(--ink); border-color: #fff; }
+.tmap__zoom button[data-z="fit"] { font-size: .8rem; letter-spacing: .04em; }
+
+.page-banner--map .tmap__legend { margin-top: 1.6rem; }
+.page-banner--map .tmap__legend button {
+  pointer-events: auto; color: #e7e0dd; border-color: rgba(255,255,255,.28);
+  background: rgba(20,18,17,.35); backdrop-filter: blur(4px);
+}
+.page-banner--map .tmap__legend button:hover { border-color: #fff; color: #fff; }
+.page-banner--map .tmap__legend button.is-active { background: #fff; color: var(--ink); border-color: #fff; }
+.tmap__pin { cursor: pointer; }
+.tmap__halo { opacity: .22; transform-origin: center; animation: pinPulse 2.6s var(--ease) infinite; }
+@keyframes pinPulse { 0%,100% { r: 20; opacity: .22; } 50% { r: 34; opacity: .06; } }
+.tmap__dot { transition: r .25s var(--ease); }
+.tmap__pin:hover .tmap__dot, .tmap__pin:focus .tmap__dot { r: 15; }
+.tmap__pin:focus { outline: none; }
+.tmap__pin:focus .tmap__dot { stroke-width: 5; }
+.tmap__pin.is-active .tmap__dot { r: 16; stroke-width: 5; }
+
+.tmap__legend { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.tmap__legend button {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .42em 1em; border: 1px solid var(--line); border-radius: 999px;
+  font-size: .86rem; font-weight: 500; color: #55504e;
+  transition: border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+}
+.tmap__legend button:hover { border-color: var(--teal); color: var(--teal-text); }
+.tmap__legend button.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.tmap__swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.tmap__n { font-size: .72rem; opacity: .7; }
+
+/* real slippy map (Leaflet) */
+.tmap__real {
+  height: clamp(360px, 56vh, 560px);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; background: var(--paper-2); z-index: 0;
+}
+.tmap__real .leaflet-container { font-family: var(--font-body); background: var(--paper-2); }
+.tmap__real .leaflet-control-attribution { font-size: .68rem; background: rgba(255,255,255,.82); }
+.tmap__real .leaflet-popup-content { font-size: .9rem; line-height: 1.55; margin: .7rem .9rem; }
+.tmap__real .leaflet-popup-content strong { color: var(--ink); }
+/* 항상 보이는 지도 라벨 — HTML 이라 확대해도 글자 크기는 일정하게 유지됩니다 */
+.tmap__ttl {
+  background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 6px;
+  box-shadow: none; font-size: .82rem; font-weight: 700; color: var(--ink); padding: .14em .55em;
+}
+.tmap__ttl::before { display: none; }
+
+.tmap__lbl {
+  background: rgba(255,255,255,.86); border: 0; border-radius: 4px;
+  box-shadow: none; padding: .05em .34em;
+  font-size: .72rem; font-weight: 600; color: #33302e; white-space: nowrap;
+}
+.tmap__lbl::before { display: none; }
+.tmap__lbl--food  { color: #a86d16; background: rgba(255,248,235,.9); }
+.tmap__lbl--hotel { color: #b02b22; background: rgba(255,242,241,.9); }
+.tmap__lbl--shop  { color: #2a54a8; background: rgba(240,245,255,.9); }
+
+/* 멀리서 볼 때 라벨이 겹치지 않도록 단계 조절 */
+.leaflet-tooltip-pane.lbl-tiny .tmap__lbl { font-size: .66rem; padding: .03em .28em; }
+.leaflet-tooltip-pane.lbl-hide-bldg .tmap__lbl { display: none; }
+.tmap__kinds { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; margin: .7rem 0 0; }
+.tmap__kinds li { display: inline-flex; align-items: center; gap: .4rem; font-size: .84rem; color: var(--mauve); }
+.tmap__kind { font-size: .78rem; font-weight: 700; }
+.tmap__goto {
+  margin-top: .5rem; font: inherit; font-size: .8rem; font-weight: 600; color: var(--teal-text);
+  border: 1px solid var(--teal); border-radius: 999px; padding: .25em .8em; background: #fff;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.tmap__goto:hover { background: var(--teal-text); color: #fff; }
+.tmap__cityjump {
+  display: inline-flex; align-items: center; gap: .4rem; font: inherit; font-size: .88rem;
+  color: var(--mauve); padding: .2em .1em; transition: color .2s var(--ease);
+}
+.tmap__cityjump:hover { color: var(--teal-text); }
+.tmap__cityjump strong { color: var(--ink); }
+
+/* per-post detail map */
+.tmap__detail { margin-bottom: 1.8rem; }
+.tmap__detail-wrap {
+  position: relative;
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1rem; height: 520px; overflow: hidden; display: grid; place-items: center;
+}
+.tmap__detail-svg { width: 100%; height: 100%; display: block; --k: 1; }
+
+/* --k = 1/zoom, set by JS — keeps labels & dots a CONSTANT on-screen size while the map zooms */
+.tmap__citylabel {
+  font-family: var(--font-body); font-weight: 700; fill: var(--ink);
+  font-size: calc(26px * var(--k));
+  paint-order: stroke; stroke: rgba(255,255,255,.9);
+  stroke-width: calc(4px * var(--k)); stroke-linejoin: round;
+}
+.tmap__citypin circle { r: calc(13px * var(--k)); stroke-width: calc(4px * var(--k)); }
+/* label offsets stay constant on screen too */
+.tmap__citylabel { transform: translate(calc(20px * var(--k)), calc(8px * var(--k))); }
+.tmap__bldglabel { transform: translate(calc(10px * var(--k)), calc(4px * var(--k))); }
+
+/* building-level pins — reveal progressively as you zoom in (JS toggles z-mid / z-near) */
+.tmap__bldgpin { cursor: help; }
+.tmap__bldgpin circle {
+  r: calc(6px * var(--k)); stroke-width: calc(2px * var(--k));
+  opacity: 0; transition: opacity .25s var(--ease);
+}
+.tmap__bldgpin text {
+  font-family: var(--font-body); font-weight: 600; fill: #33302e;
+  font-size: calc(13px * var(--k));
+  paint-order: stroke; stroke: rgba(255,255,255,.92);
+  stroke-width: calc(3px * var(--k)); stroke-linejoin: round;
+  opacity: 0; transition: opacity .25s var(--ease); pointer-events: none;
+}
+.tmap__detail-svg.z-mid  .tmap__bldgpin circle { opacity: 1; }
+.tmap__detail-svg.z-near .tmap__bldgpin text { opacity: 1; }
+/* city labels step back once buildings take over */
+.tmap__detail-svg.z-near .tmap__citylabel { opacity: .4; }
+.tmap__hint { font-size: .82rem; color: var(--mauve); margin-top: .7rem; }
+.tmap__cities { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; margin-top: .9rem; font-size: .88rem; color: var(--mauve); }
+.tmap__cities li { display: inline-flex; align-items: center; gap: .4rem; }
+.tmap__cities strong { color: var(--ink); }
+
+.tb__row.is-hit { background: rgba(79, 157, 146, .12); box-shadow: inset 3px 0 0 var(--teal); }
+
+@media (max-width: 700px) {
+  .tmap__wrap { aspect-ratio: 3 / 2; }
+  .tmap__citylabel { font-size: 34px; }
+}
+
+/* =============================================================
+   Travel — single post page
+   ============================================================= */
+/* 지도: 제목 위, 화면 폭 가득 */
+.tpost__mapwrap {
+  position: relative; width: 100%;
+  padding-top: 76px;                 /* 고정 헤더 아래에서 시작 */
+  background: var(--paper);
+}
+.tpost__mapwrap .tmap__detail { margin: 0; }
+.tpost__mapwrap .tmap__real {
+  height: clamp(400px, 66vh, 720px);
+  border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+.tpost__mapwrap .tmap__hint,
+.tpost__mapwrap .tmap__kinds,
+.tpost__mapwrap .tmap__cities {
+  width: 100%; max-width: var(--container); margin-inline: auto;
+  padding-inline: var(--gutter); box-sizing: border-box;
+}
+.tpost__mapwrap .tmap__kinds { padding-top: .9rem; }
+.tpost__mapwrap .tmap__hint { margin-top: .5rem; }
+.tpost__mapwrap .tmap__cities { padding-bottom: 1.4rem; }
+.tpost__back--over {
+  position: absolute; left: var(--gutter); top: calc(76px + 14px); z-index: 500;
+  margin: 0; padding: .45em 1em; border-radius: 999px;
+  background: rgba(255,255,255,.92); color: var(--ink); backdrop-filter: blur(6px);
+  border: 1px solid var(--line); box-shadow: var(--shadow-sm); font-weight: 600;
+}
+.tpost__back--over:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+/* 본문은 가운데 좁은 폭 유지 */
+.tpost {
+  width: 100%; max-width: 860px; margin-inline: auto;
+  padding-inline: var(--gutter); padding-bottom: clamp(2rem, 5vw, 4rem);
+  box-sizing: border-box;
+}
+.tpost__mapwrap + .tpost .tpost__head { padding-top: clamp(1.8rem, 4vw, 3rem); }
+/* 지도가 없는 글은 고정 헤더만큼 위 여백 */
+#travel-post > .tpost:first-child { padding-top: calc(76px + clamp(28px, 6vw, 64px)); }
+
+.tpost__head { padding-top: 1rem; margin-bottom: 1.8rem; }
+.tpost__back {
+  display: inline-block; font-size: .88rem; font-weight: 600; color: var(--mauve);
+  margin-bottom: 1.2rem; transition: color .2s var(--ease);
+}
+.tpost__back:hover { color: var(--teal-text); }
+.tpost__meta { display: flex; align-items: center; gap: .7rem; margin-bottom: .6rem; }
+.tpost__date { font-weight: 700; color: var(--teal-text); font-size: .9rem; letter-spacing: .03em; }
+.tpost__place {
+  font-size: .72rem; font-weight: 700; letter-spacing: .06em; color: var(--navy);
+  border: 1px solid var(--navy); border-radius: 999px; padding: .18em .7em;
+}
+.tpost h1 {
+  font-family: var(--font-display); font-weight: 400; line-height: 1.15;
+  font-size: clamp(1.7rem, 4.2vw, 2.6rem); letter-spacing: .01em; color: var(--ink);
+}
+.tpost__summary {
+  margin-top: .9rem; color: #4a4442; font-size: 1.02rem; line-height: 1.75;
+  padding-left: 1rem; border-left: 3px solid var(--line);
+}
+.tpost__body { margin-top: 1.6rem; }
+
+.tpost__nav {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  margin-top: 3rem; padding-top: 1.6rem; border-top: 1px solid var(--line);
+}
+.tpost__navitem {
+  display: flex; flex-direction: column; gap: .25rem;
+  padding: .9rem 1.1rem; border: 1px solid var(--line); border-radius: var(--radius);
+  transition: border-color .2s var(--ease), background .2s var(--ease);
+}
+.tpost__navitem.is-next { text-align: right; }
+a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,.05); }
+.tpost__navitem.is-off { opacity: .4; }
+.tpost__navlabel { font-size: .74rem; font-weight: 700; letter-spacing: .1em; color: var(--mauve); text-transform: uppercase; }
+.tpost__navtitle { font-size: .92rem; font-weight: 600; color: var(--ink); line-height: 1.5; }
+.tpost__foot { margin-top: 2rem; padding-bottom: 1rem; }
+
+@media (max-width: 620px) {
+  .tpost__nav { grid-template-columns: 1fr; }
+  .tpost__navitem.is-next { text-align: left; }
+}
+
+/* =============================================================
+   Packing checklist (여행준비물)
+   ============================================================= */
+.tcheck__bar {
+  position: sticky; top: 84px; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  padding: .8rem 1.1rem; margin-bottom: 1.4rem;
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: background .3s var(--ease), border-color .3s var(--ease);
+}
+.tcheck__bar.is-complete { background: rgba(79,157,146,.1); border-color: var(--teal); }
+.tcheck__count { font-size: .92rem; color: var(--mauve); }
+.tcheck__count strong { color: var(--teal-text); font-size: 1.15rem; }
+.tcheck__actions { display: flex; gap: .5rem; }
+.tcheck__actions button {
+  font-size: .82rem; font-weight: 600; padding: .42em 1em;
+  border: 1px solid var(--line); border-radius: 999px; color: #55504e;
+  transition: border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+}
+.tcheck__actions button:hover { border-color: var(--teal); color: var(--teal-text); background: rgba(79,157,146,.06); }
+.tcheck__reset:hover { border-color: var(--mauve); color: var(--mauve); background: rgba(117,100,100,.06); }
+
+.tcheck ul { padding-left: 0; }
+.tcheck__item { list-style: none !important; padding: 0 !important; margin-bottom: .18rem; }
+.tcheck__item::before { display: none !important; }
+.tcheck__item label {
+  display: flex; align-items: flex-start; gap: .65rem;
+  padding: .5em .7em; border-radius: 8px; cursor: pointer;
+  transition: background .18s var(--ease);
+}
+.tcheck__item label:hover { background: rgba(34,58,122,.04); }
+.tcheck__item input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  flex: 0 0 auto; width: 19px; height: 19px; margin-top: .12em;
+  border: 2px solid var(--line); border-radius: 5px; background: #fff;
+  cursor: pointer; position: relative;
+  transition: background .18s var(--ease), border-color .18s var(--ease);
+}
+.tcheck__item input[type="checkbox"]:hover { border-color: var(--teal); }
+.tcheck__item input[type="checkbox"]:checked { background: var(--teal-text); border-color: var(--teal-text); }
+.tcheck__item input[type="checkbox"]:checked::after {
+  content: ""; position: absolute; left: 5px; top: 1px;
+  width: 5px; height: 10px; border: solid #fff; border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+.tcheck__item input[type="checkbox"]:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.tcheck__item span { line-height: 1.6; transition: color .18s var(--ease), text-decoration-color .18s var(--ease); }
+.tcheck__item.is-done span { color: var(--mauve); text-decoration: line-through; text-decoration-color: var(--teal); }
+
+@media (max-width: 560px) {
+  .tcheck__bar { position: static; }
+}
+
+/* =============================================================
+   Travel board (게시판)
+   ============================================================= */
+.tb__bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.tb__count { color: var(--mauve); font-size: .9rem; }
+.tb__count strong { color: var(--ink); }
+.tb__write { padding: .6em 1.2em; font-size: .9rem; }
+
+.tb { border-top: 2px solid var(--ink); }
+.tb__head, .tb__row {
+  display: grid; grid-template-columns: 72px 1fr 110px 96px;
+  gap: 1rem; align-items: center; padding: 1rem .6rem;
+  border-bottom: 1px solid var(--line);
+}
+.tb__head {
+  font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--mauve); padding-block: .8rem; background: var(--paper-2);
+}
+.tb__row { transition: background .2s var(--ease); }
+.tb__row:hover { background: rgba(34, 58, 122, .04); }
+.tb__row.is-pinned { background: rgba(79, 157, 146, .07); }
+.tb__num { text-align: center; color: var(--mauve); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.tb__pin {
+  display: inline-block; font-size: .7rem; font-weight: 700; color: #fff;
+  background: var(--teal-text); padding: .18em .6em; border-radius: 999px;
+}
+.tb__main { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.tb__title { font-weight: 600; font-size: 1.02rem; }
+.tb__title a { transition: color .2s var(--ease); }
+.tb__title a:hover { color: var(--teal-text); text-decoration: underline; }
+.tb__file {
+  font-size: .62rem; font-weight: 700; letter-spacing: .06em; color: var(--teal-text);
+  border: 1px solid var(--teal); border-radius: 4px; padding: .1em .4em; vertical-align: middle;
+}
+.tb__file.is-pdf { color: var(--navy); border-color: var(--navy); }
+.tb__file.is-photo { color: var(--mauve); border-color: var(--line); }
+.tb__link { font-weight: 600; color: var(--ink); transition: color .2s var(--ease); }
+.tb__link:hover { color: var(--teal-text); text-decoration: underline; }
+
+/* inline article */
+.tb__article {
+  grid-column: 1 / -1; margin-top: 1.1rem; padding: clamp(1.2rem, 3vw, 2rem);
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  animation: wordSwap .35s var(--ease);
+}
+.tb__article .lead { font-size: 1.02rem; color: #4a4442; margin-bottom: 1.4rem; }
+/* date band — shaded so each day is clearly separated */
+.tb__article h3 {
+  font-family: var(--font-display); font-weight: 400; text-transform: none;
+  font-size: 1.3rem; letter-spacing: .01em; color: var(--navy);
+  margin: 2.6rem 0 1.1rem;
+  padding: .62em .95em;
+  background: linear-gradient(90deg, rgba(34,58,122,.13), rgba(34,58,122,.045) 62%, transparent);
+  border-left: 5px solid var(--navy);
+  border-radius: 4px;
+}
+.tb__article h3:first-child, .tb__article .lead + h3 { margin-top: .4rem; }
+.tpost__sub {
+  font-family: var(--font-body); font-size: .74rem; font-weight: 600;
+  color: var(--mauve); letter-spacing: 0; margin-left: .5em;
+}
+
+/* 개조식 numbered place list */
+.tb__article .tplaces { padding-left: 0; margin: 0 0 1.2rem; list-style: none; counter-reset: tp; }
+.tb__article .tplaces > li {
+  position: relative; counter-increment: tp;
+  padding: .55rem 0 .55rem 2.4rem;
+  border-bottom: 1px dashed var(--line-soft);
+  list-style: none;
+}
+.tb__article .tplaces > li:last-child { border-bottom: 0; }
+.tb__article .tplaces > li::before {
+  content: counter(tp);
+  position: absolute; left: 0; top: .55rem;
+  width: 1.65rem; height: 1.65rem; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-body); font-size: .76rem; font-weight: 700;
+  color: #fff; background: var(--teal-text);
+}
+/* 장소 종류별 색 — 지도 마커와 동일 */
+.tb__article .tplaces > li[data-kind="food"]::before  { background: #e8a33a; }
+.tb__article .tplaces > li[data-kind="hotel"]::before { background: #e0463c; }
+.tb__article .tplaces > li[data-kind="shop"]::before  { background: #3f74d6; }
+.tb__article .tplaces > li[data-kind]:not([data-kind="sight"]) > strong::after {
+  content: attr(data-kindlabel);
+  margin-left: .5em; font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+  padding: .12em .55em; border-radius: 999px; vertical-align: middle;
+}
+.tb__article .tplaces > li[data-kind="food"]  > strong::after { content: "식당"; color: #a86d16; background: rgba(232,163,58,.16); }
+.tb__article .tplaces > li[data-kind="hotel"] > strong::after { content: "숙소"; color: #b02b22; background: rgba(224,70,60,.14); }
+.tb__article .tplaces > li[data-kind="shop"]  > strong::after { content: "상점"; color: #2a54a8; background: rgba(63,116,214,.14); }
+
+/* 지도에서 눌렀을 때 본문 항목 강조 */
+.tb__article .tplaces > li.is-focus {
+  background: rgba(79,157,146,.13);
+  box-shadow: inset 3px 0 0 var(--teal), 0 0 0 6px rgba(79,157,146,.08);
+  border-radius: 6px;
+  animation: focusPulse 2.6s var(--ease);
+}
+@keyframes focusPulse { 0% { background: rgba(79,157,146,.3); } 100% { background: rgba(79,157,146,.13); } }
+
+.tb__article .tplaces > li > strong { font-size: 1.02rem; color: var(--ink); }
+.tb__article .tplaces > li > ul { margin: .35rem 0 0; padding-left: .95rem; }
+.tb__article .tplaces > li > ul > li {
+  list-style: none; position: relative; padding-left: .8rem;
+  color: #4a4442; font-size: .93rem; line-height: 1.7; margin-bottom: .18rem;
+}
+.tb__article .tplaces > li > ul > li::before {
+  content: ""; position: absolute; left: 0; top: .62em;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--mauve);
+}
+.tb__article h4 {
+  font-size: 1.02rem; font-weight: 700; color: var(--teal-text); margin: 1.3rem 0 .45rem;
+}
+.tb__article p { margin-bottom: .9rem; color: #3f3a38; line-height: 1.85; }
+.tb__article ul { padding-left: 1.2rem; margin: .5rem 0 1rem; }
+.tb__article li { list-style: disc; margin-bottom: .35rem; color: #3f3a38; line-height: 1.8; }
+.tb__article strong { color: var(--ink); }
+/* photos inside a post */
+.tphotos {
+  display: grid; gap: .6rem; margin: 1.2rem 0 1.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.tphotos figure { margin: 0; }
+.tphotos img {
+  width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/3;
+  border-radius: 10px; background: var(--paper-2); cursor: zoom-in;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+.tphotos img:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
+.tphotos figcaption { margin-top: .4rem; font-size: .8rem; color: var(--mauve); line-height: 1.5; }
+.tphotos:has(figure:only-child) { grid-template-columns: minmax(0, 560px); }
+
+.tb__close-art {
+  margin-top: 1.4rem; font-size: .85rem; font-weight: 600; color: var(--mauve);
+  border: 1px solid var(--line); border-radius: 999px; padding: .45em 1.1em;
+  transition: color .2s var(--ease), border-color .2s var(--ease);
+}
+.tb__close-art:hover { color: var(--teal-text); border-color: var(--teal); }
+.tb__summary { color: var(--mauve); font-size: .88rem; }
+.tb__place { color: var(--mauve); font-size: .85rem; text-align: center; }
+.tb__date { color: var(--mauve); font-size: .85rem; text-align: right; font-variant-numeric: tabular-nums; }
+
+.tb__form {
+  margin-top: 2rem; padding: clamp(1.4rem, 3vw, 2.2rem);
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.tb__form h3 { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; font-size: 1.4rem; margin-bottom: 1.2rem; }
+.tb__form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.tb__form-actions { display: flex; gap: .7rem; flex-wrap: wrap; }
+.tb__out { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.tb__hint { font-size: .85rem; color: var(--mauve); margin-bottom: .7rem; }
+.tb__out pre {
+  background: var(--charcoal); color: #e8e4e1; padding: 1rem 1.1rem; border-radius: 10px;
+  overflow-x: auto; font-size: .82rem; line-height: 1.6; margin-bottom: .9rem;
+}
+.tb__out code { font-family: ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
+
+@media (max-width: 700px) {
+  .tb__head { display: none; }
+  .tb__row { grid-template-columns: 56px 1fr; row-gap: .35rem; }
+  .tb__place, .tb__date { grid-column: 2; text-align: left; font-size: .8rem; }
+  .tb__form-row { grid-template-columns: 1fr; }
+}
+
+/* =============================================================
+   Blog write (blog-write.html)
+   ============================================================= */
+.bw__row { margin-bottom: .4rem; }
+.bw__row--3 { display: grid; grid-template-columns: 150px 1fr 1.4fr; gap: 1rem; }
+.bw select { width: 100%; padding: .85em 1em; font: inherit; color: var(--ink);
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px; }
+
+.bw__tools { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .5rem; }
+.bw__tools button {
+  font-size: .84rem; padding: .4em .8em; border: 1px solid var(--line);
+  border-radius: 8px; color: #55504e; background: #fff;
+  transition: border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+}
+.bw__tools button:hover { border-color: var(--teal); color: var(--teal-text); background: rgba(79,157,146,.06); }
+
+.bw__editor {
+  min-height: 320px; padding: 1.2rem 1.3rem; line-height: 1.85; color: #3f3a38;
+  background: #fff; border: 1.5px solid var(--line); border-radius: 12px;
+  outline: none; overflow-wrap: break-word;
+}
+.bw__editor:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(79,157,146,.14); }
+.bw__editor:empty::before { content: attr(data-placeholder); color: #a9a3a0; }
+.bw__editor h3 { font-size: 1.2rem; font-weight: 700; margin: 1.2rem 0 .5rem; color: var(--navy); }
+.bw__editor p { margin-bottom: .9rem; }
+.bw__editor ul, .bw__editor ol { padding-left: 1.4rem; margin: .6rem 0 1rem; }
+.bw__editor li { list-style: inherit; margin-bottom: .3rem; }
+.bw__editor ul li { list-style: disc; }
+.bw__editor ol li { list-style: decimal; }
+.bw__editor blockquote {
+  margin: 1rem 0; padding: .6rem 1rem; border-left: 3px solid var(--teal);
+  background: var(--paper-2); color: #4a4442;
+}
+.bw__editor a { color: var(--teal-text); text-decoration: underline; }
+.bw__inline { margin: 1.1rem 0; }
+.bw__inline img { width: 100%; border-radius: 10px; }
+.bw__inline figcaption { margin-top: .4rem; font-size: .82rem; color: var(--mauve); }
+
+.bw__drop {
+  padding: 1.6rem; text-align: center; color: var(--mauve); font-size: .92rem;
+  border: 2px dashed var(--line); border-radius: 12px; background: var(--paper);
+  transition: border-color .2s var(--ease), background .2s var(--ease);
+}
+.bw__drop.is-over { border-color: var(--teal); background: rgba(79,157,146,.07); }
+.bw__pick { font: inherit; font-weight: 600; color: var(--teal-text); text-decoration: underline; }
+
+.bw__thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .8rem; margin-top: .9rem; }
+.bw__thumbs li { list-style: none; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+.bw__thumbs img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+.bw__thumbs span { display: block; padding: .4rem .5rem 0; font-size: .72rem; color: var(--mauve); word-break: break-all; }
+.bw__thumbs button { width: 100%; font-size: .78rem; padding: .45em; color: var(--teal-text); border-top: 1px solid var(--line); }
+.bw__thumbs button:hover { background: rgba(79,157,146,.08); }
+.bw__thumbs .bw__x { color: #b02b22; }
+.bw__thumbs .bw__x:hover { background: rgba(224,70,60,.08); }
+
+.bw__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; margin-top: 1.6rem; }
+.bw__danger { color: #b02b22; border-color: rgba(176,43,34,.4); }
+.bw__saved { font-size: .82rem; color: var(--teal-text); }
+
+.bw__notice {
+  margin-top: .9rem; padding: .85rem 1.05rem;
+  border-left: 3px solid var(--teal);
+  background: rgba(79,157,146,.09); border-radius: 0 8px 8px 0;
+  font-size: .9rem; line-height: 1.7; color: #4a4442;
+}
+.bw__notice strong { color: var(--teal-text); }
+
+.bw__out, .bw__prev {
+  margin-top: 2rem; padding: clamp(1.2rem, 3vw, 2rem);
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-lg);
+}
+.bw__out h3, .bw__prev h3 {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase;
+  font-size: 1.3rem; margin-bottom: 1rem;
+}
+.bw__steps { padding-left: 1.3rem; margin-bottom: 1rem; }
+.bw__steps li { list-style: decimal; margin-bottom: .45rem; color: #4a4442; line-height: 1.7; }
+.bw__hint { font-size: .88rem; color: var(--mauve); margin-bottom: 1rem; }
+.bw__out pre {
+  background: var(--charcoal); color: #e8e4e1; padding: 1rem 1.1rem; border-radius: 10px;
+  overflow-x: auto; font-size: .78rem; line-height: 1.6; margin-bottom: 1rem; max-height: 320px;
+}
+.bw__out code { font-family: ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-all; }
+
+/* 게시판 상단 글쓰기 버튼 */
+.blog-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
+.blog-bar__count { font-size: .9rem; color: var(--mauve); }
+.blog-bar__count strong { color: var(--ink); }
+.blog-bar__actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+  .bw__row--3 { grid-template-columns: 1fr; }
+}
 
 /* =============================================================
    Contact

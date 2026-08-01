@@ -1,0 +1,91 @@
+# Decap CMS 설정
+# 글을 쓰면 content/blog/*.md 로 GitHub 에 커밋되고,
+# Netlify 빌드(tools/build-posts.mjs)가 assets/data/posts.js 를 다시 만들어 사이트에 반영합니다.
+
+backend:
+  name: github
+  repo: sky0ish/skyish-site
+  branch: main
+  # 아래 두 줄이 우리 사이트의 OAuth 함수(netlify/functions)를 가리킵니다.
+  base_url: https://skyish.kr
+  auth_endpoint: oauth
+  commit_messages:
+    create: '블로그: {{slug}} 새 글'
+    update: '블로그: {{slug}} 수정'
+    delete: '블로그: {{slug}} 삭제'
+    uploadMedia: '블로그 사진 추가 {{path}}'
+    deleteMedia: '블로그 사진 삭제 {{path}}'
+
+publish_mode: simple
+locale: ko
+
+# 한글 제목을 파일명에 그대로 살립니다.
+slug:
+  encoding: unicode
+  clean_accents: true
+  sanitize_replacement: '-'
+
+media_folder: assets/img/blog
+public_folder: /assets/img/blog
+
+collections:
+  - name: blog
+    label: 블로그
+    label_singular: 글
+    folder: content/blog
+    create: true
+    delete: true
+    extension: md
+    format: yaml-frontmatter
+    slug: '{{year}}-{{month}}-{{day}}-{{slug}}'
+    summary: '{{date}} · {{title}}'
+    sortable_fields: ['date', 'title']
+    view_filters:
+      - { label: '일상', field: category, pattern: 'daily' }
+      - { label: '건축', field: category, pattern: 'arch' }
+      - { label: '도시', field: category, pattern: 'urban' }
+    fields:
+      - { label: '제목', name: title, widget: string }
+      - {
+          label: '날짜',
+          name: date,
+          widget: datetime,
+          date_format: 'YYYY-MM-DD',
+          time_format: false,
+          format: 'YYYY-MM-DD',
+          picker_utc: false
+        }
+      - {
+          label: '분류',
+          name: category,
+          widget: select,
+          default: 'daily',
+          options:
+            [
+              { label: '일상 (Daily Life)', value: 'daily' },
+              { label: '건축 (Portfolio · Architecture)', value: 'arch' },
+              { label: '도시 (Portfolio · Urban)', value: 'urban' },
+              { label: 'Future HOME', value: 'future' },
+              { label: 'My dream', value: 'dream' }
+            ]
+        }
+      - {
+          label: '한 줄 요약',
+          name: excerpt,
+          widget: string,
+          required: false,
+          hint: '목록에 보일 요약. 비워 두면 본문 첫 문장을 씁니다.'
+        }
+      - {
+          label: '대표 사진',
+          name: cover,
+          widget: image,
+          required: false,
+          hint: '글 맨 위에 크게 들어갑니다.'
+        }
+      - {
+          label: '본문',
+          name: body,
+          widget: markdown,
+          hint: '사진은 툴바의 이미지 버튼으로 본문 어디에나 넣을 수 있습니다.'
+        }

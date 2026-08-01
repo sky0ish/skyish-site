@@ -12,4 +12,20 @@ desktop.ini
 
 # 로컬 전용 도구 — 실제 사이트(배포)에는 포함하지 않음
 preview.cmd
+preview_server.py
+build_travel_data.py
+map-picker.html
 .claude/
+node_modules/
+
+# 원본 노트 PDF (내용은 게시판 글로 옮겨 실림) — 배포 불필요
+travel/
+
+# 채택하지 않은 지도 후보
+assets/img/world-b-outline.svg
+assets/img/world-c-solid.svg
+assets/img/world-map.svg
+assets/img/map-italy.svg
+assets/img/italy-a-stipple.svg
+assets/img/italy-c-vintage.svg
+assets/img/italy-d-mono.svg

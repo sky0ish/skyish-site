@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>글쓰기 — Jee-Hyun NAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section page-intro" style="padding-bottom:0">
+      <div class="container container--narrow">
+        <a class="tpost__back" href="blog.html">← 블로그 목록</a>
+        <span class="eyebrow reveal">Write</span>
+        <h1 class="section-title reveal" data-delay="1" style="color:var(--teal)">글쓰기</h1>
+        <p class="lead reveal" data-delay="2">제목과 내용을 쓰고 사진을 넣은 뒤, 아래 <strong>내보내기</strong>를 누르면 글 파일이 저장됩니다. 쓰는 도중 내용은 이 브라우저에 자동으로 보관됩니다.</p>
+        <p class="bw__notice reveal" data-delay="3">이 사이트는 <strong>정적 사이트</strong>라 글이 바로 게시되지는 않습니다. 내보낸 파일을 사이트에 반영해야 블로그 목록에 올라갑니다 — 다 쓰신 뒤 저에게 <em>“블로그에 새 글 올렸어”</em> 라고 알려주세요.</p>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:1.5rem">
+      <div class="container container--narrow">
+        <div class="bw">
+
+          <div class="bw__row">
+            <div class="field">
+              <label for="bw-title">제목</label>
+              <input id="bw-title" type="text" placeholder="글 제목">
+            </div>
+          </div>
+
+          <div class="bw__row bw__row--3">
+            <div class="field">
+              <label for="bw-date">날짜</label>
+              <input id="bw-date" type="date">
+            </div>
+            <div class="field">
+              <label for="bw-cat">분류</label>
+              <select id="bw-cat">
+                <option value="daily|Daily Life">일상 (Daily Life)</option>
+                <option value="arch|Portfolio · Architecture">건축 (Architecture)</option>
+                <option value="urban|Portfolio · Urban">도시 (Urban)</option>
+                <option value="future|Future HOME">Future HOME</option>
+                <option value="dream|My dream">My dream</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="bw-excerpt">한 줄 요약</label>
+              <input id="bw-excerpt" type="text" placeholder="목록에 보일 요약">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>내용</label>
+            <div class="bw__tools" role="toolbar" aria-label="서식">
+              <button type="button" data-cmd="bold" title="굵게"><b>B</b></button>
+              <button type="button" data-cmd="italic" title="기울임"><i>I</i></button>
+              <button type="button" data-cmd="h3" title="소제목">제목</button>
+              <button type="button" data-cmd="ul" title="목록">• 목록</button>
+              <button type="button" data-cmd="ol" title="번호 목록">1. 목록</button>
+              <button type="button" data-cmd="quote" title="인용">❝ 인용</button>
+              <button type="button" data-cmd="link" title="링크">🔗 링크</button>
+              <button type="button" data-cmd="clear" title="서식 지우기">서식 해제</button>
+            </div>
+            <div id="bw-body" class="bw__editor" contenteditable="true"
+                 data-placeholder="여기에 자유롭게 쓰세요. 사진은 아래에서 넣거나, 이미지를 이 안으로 끌어다 놓으면 됩니다."></div>
+          </div>
+
+          <div class="field">
+            <label>사진</label>
+            <div id="bw-drop" class="bw__drop">
+              <p>사진을 여기로 끌어다 놓거나 <button type="button" id="bw-pick" class="bw__pick">파일 선택</button></p>
+              <input id="bw-file" type="file" accept="image/*" multiple hidden>
+            </div>
+            <ul id="bw-thumbs" class="bw__thumbs"></ul>
+          </div>
+
+          <div class="bw__actions">
+            <button type="button" id="bw-preview" class="btn btn--ghost">미리보기</button>
+            <button type="button" id="bw-export" class="btn btn--teal">내보내기 (파일 저장)</button>
+            <button type="button" id="bw-clear" class="btn btn--ghost bw__danger">전체 지우기</button>
+            <span id="bw-saved" class="bw__saved"></span>
+          </div>
+
+          <div id="bw-out" class="bw__out" hidden>
+            <h3>내보내기 완료</h3>
+            <ol class="bw__steps">
+              <li><strong>사진</strong>을 <code>assets/img/blog/</code> 폴더에 넣으세요. (없으면 폴더를 만드세요)</li>
+              <li><strong>글 파일</strong>(<code>새글.txt</code>)을 열어 안의 내용을 복사하세요.</li>
+              <li><code>assets/data/posts.js</code> 의 <code>window.POSTS = [</code> 바로 다음 줄에 붙여넣으면 글이 올라갑니다.</li>
+            </ol>
+            <p class="bw__hint">또는 저에게 <em>“블로그에 새 글 올렸어”</em> 라고 말씀하시면 제가 넣어 드립니다.</p>
+            <pre><code id="bw-code"></code></pre>
+            <button type="button" id="bw-copy" class="btn btn--solid">코드 복사</button>
+          </div>
+
+          <div id="bw-prev" class="bw__prev" hidden>
+            <h3>미리보기</h3>
+            <article class="post">
+              <div class="post__meta">
+                <span class="tag" id="pv-cat"></span><span class="dot"></span>
+                <span>Jeehyun NAM</span><span class="dot"></span><span id="pv-date"></span>
+              </div>
+              <h2 id="pv-title"></h2>
+              <p class="post__excerpt" id="pv-excerpt"></p>
+              <div class="post__full open" id="pv-body"></div>
+            </article>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/blog-write.js" defer></script>
+</body>
+</html>
