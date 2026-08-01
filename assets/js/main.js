@@ -1068,7 +1068,7 @@
         emptyMsg: "기고·이슈 대응 글을 이곳에 모을 예정입니다. (준비 중)" },
       { key: "theses",  label: "학위논문", kind: "paper", grouped: true }
     ];
-    var tierOrder = ["박사학위논문", "석사학위논문", "SCIE", "SCOPUS", "KCI", "기고", "기타"];
+    var tierOrder = ["박사학위논문", "석사학위논문", "학사 졸업작품", "SCIE", "SCOPUS", "KCI", "기고", "기타"];
     function byDateDesc(a, b) { return (b.sort || 0) - (a.sort || 0); }
 
     function itemHtml(it, kind, hideRole) {
@@ -1076,11 +1076,14 @@
       var role = (!hideRole && it.role)
         ? '<span class="pub__role' + (/(1저자|주저자|책임)/.test(it.role) ? " is-lead" : "") + '">' + escapeHtml(it.role) + "</span>"
         : "";
+      // 온라인에 원문이 없는 항목(설계 작품 등)은 링크 없이 제목만 보여 준다
+      var title = it.nolink
+        ? '<span class="pub__title">' + escapeHtml(it.title) + "</span>"
+        : '<a class="pub__title" href="' + link + '" target="_blank" rel="noopener noreferrer">' +
+            escapeHtml(it.title) + '<span class="pub__ext" aria-hidden="true">↗</span></a>';
       return '<li class="pub">' +
           '<span class="pub__date">' + escapeHtml(it.date) + "</span>" +
-          '<span class="pub__body">' +
-            '<a class="pub__title" href="' + link + '" target="_blank" rel="noopener noreferrer">' +
-              escapeHtml(it.title) + '<span class="pub__ext" aria-hidden="true">↗</span></a>' +
+          '<span class="pub__body">' + title +
             (it.venue ? '<span class="pub__meta">' + escapeHtml(it.venue) + "</span>" : "") +
           "</span>" + role +
         "</li>";
