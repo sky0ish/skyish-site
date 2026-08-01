@@ -574,7 +574,8 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 }
 
 /* ---- Blog banner — 회색 거리 사진 위에 흩어진 글자 블록 (이중 레이어) ---- */
-.page-banner--blog { min-height: 64vh; }
+/* RESEARCH 배너와 같은 비례 — 좌우로 길고 위아래는 낮게 */
+.page-banner--blog { min-height: clamp(300px, 27vw, 430px); }
 /* 항공뷰 아스팔트가 밝아서 살짝 눌러 주되, 걸어가는 사람들은 보이도록 */
 .page-banner--blog .page-banner__media img { filter: grayscale(100%) contrast(1.08) brightness(.74); }
 .page-banner--blog .page-banner__media::after {
@@ -587,7 +588,7 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
   position: absolute; width: 1px; height: 1px; margin: -1px;
   padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
-.page-banner--blog .page-banner__inner { padding-block: 130px 54px; }
+.page-banner--blog .page-banner__inner { padding-block: 104px 34px; }
 .page-banner--blog .eyebrow { margin-bottom: .6rem; }
 .page-banner__letters {
   position: absolute; inset: 0; z-index: -1; pointer-events: none;
