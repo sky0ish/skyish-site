@@ -86,8 +86,9 @@ ul { list-style: none; padding: 0; }
 /* ---------- Layout helpers ---------- */
 .container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
 .container--narrow { max-width: 860px; }
-/* 목록형 콘텐츠(연구 실적·블로그 등) — 좌우를 넓게 써서 한 줄에 더 많이 담기게 */
-.container--wide { max-width: 1360px; }
+/* 목록형 콘텐츠(연구 실적·블로그·여행 게시판) — 기본 폭보다 넓되 과하지 않게.
+   860px(좁음) 과 1360px(넓음) 의 중간, 사이트 기본 컨테이너와 같은 값으로 맞춘다. */
+.container--wide { max-width: 1180px; }
 
 .section { padding-block: var(--section-y); }
 .section--paper2 { background: var(--paper-2); }
@@ -619,7 +620,7 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 .blog-board::before {
   content: ""; position: absolute; z-index: 0; pointer-events: none;
   left: 50%; transform: translateX(-50%);
-  top: 0; width: min(1400px, 96vw); height: 100%;
+  top: 0; width: min(1220px, 95vw); height: 100%;
   background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(250,248,246,.55) 40%, transparent);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: 0 -1px 0 rgba(0,0,0,.04) inset;
