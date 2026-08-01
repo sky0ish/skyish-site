@@ -423,6 +423,13 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 }
 .tl .award strong { color: var(--teal-text); }
 .tl .award em { font-style: italic; color: var(--ink); }
+/* 수여기관·분과 같은 짧은 꼬리표 */
+.tl__tag {
+  font-style: normal; font-size: .74rem; font-weight: 600; letter-spacing: .02em;
+  color: var(--teal-text); background: rgba(79,157,146,.12);
+  padding: .18em .6em; border-radius: 999px; margin-left: .45em;
+  white-space: nowrap;
+}
 
 /* facts row */
 .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.4rem; }
