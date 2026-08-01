@@ -942,6 +942,31 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   border-radius: 4px;
 }
 .tb__article h3:first-child, .tb__article .lead + h3 { margin-top: .4rem; }
+
+/* 출장보고서에서 정리한 보강 블록 — 타임라인 목록과 시각적으로 구분 */
+.tb__article .treport {
+  margin: .2rem 0 2.2rem;
+  padding: clamp(1.1rem, 2.6vw, 1.7rem) clamp(1.1rem, 2.6vw, 1.8rem) .4rem;
+  background: linear-gradient(180deg, rgba(79,157,146,.09), rgba(79,157,146,.03));
+  border: 1px solid rgba(79,157,146,.28);
+  border-left: 5px solid var(--teal);
+  border-radius: var(--radius-md);
+}
+.tb__article .treport h3 {
+  margin: 1.5rem 0 .7rem; padding: 0;
+  background: none; border-left: 0; border-radius: 0;
+  font-family: var(--font-body); font-weight: 700; font-size: .82rem;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--teal-text);
+}
+.tb__article .treport h3:first-child { margin-top: 0; }
+.tb__article .treport ul { margin: 0 0 1.1rem; padding-left: 1.05rem; }
+.tb__article .treport li {
+  list-style: disc; margin-bottom: .5rem; line-height: 1.72;
+  color: #413b39; font-size: .95rem;
+}
+.tb__article .treport li::marker { color: rgba(79,157,146,.75); }
+.tb__article .treport strong { color: var(--ink); }
+.tb__article .treport + h3 { margin-top: .4rem; }
 .tpost__sub {
   font-family: var(--font-body); font-size: .74rem; font-weight: 600;
   color: var(--mauve); letter-spacing: 0; margin-left: .5em;

@@ -465,7 +465,7 @@
       return;
     }
     var p = posts[idx];
-    var col = ((window.TRAVEL_PLACES || {})[p.country] || {}).color;
+    var col = ((window.TRAVEL_PLACES || {})[postCountries(p)[0]] || {}).color;
     document.title = p.title + " — Jee-Hyun NAM";
 
     // ordered list without the pinned notice, for prev/next
@@ -572,15 +572,25 @@
      8c. Travel world map — grayscale map + colored pins per country.
          Pin click → filters/scrolls the board below.
      ----------------------------------------------------------- */
+  /* 한 게시글이 여러 나라에 걸칠 수 있습니다 (예: 영국+독일).
+     countries 배열이 있으면 그것을, 없으면 country 하나를 씁니다. */
+  function postCountries(p) {
+    if (!p) return [];
+    if (p.countries && p.countries.length) return p.countries;
+    return p.country ? [p.country] : [];
+  }
+
   function travelMap() {
     var host = document.getElementById("travel-map");
     if (!host || !window.TRAVEL_PLACES) return;
     var places = window.TRAVEL_PLACES;
     var posts = window.TRAVEL_POSTS || [];
 
-    // how many posts per country
+    // how many posts per country (한 여행이 여러 나라에 걸치면 모두 집계)
     var counts = {};
-    posts.forEach(function (p) { if (p.country) counts[p.country] = (counts[p.country] || 0) + 1; });
+    posts.forEach(function (p) {
+      postCountries(p).forEach(function (k) { counts[k] = (counts[k] || 0) + 1; });
+    });
 
     var W = 2000, H = 1000;
     function px(lon) { return (lon + 180) * (W / 360); }
@@ -647,7 +657,7 @@
         var first = null;
         rows.forEach(function (row, i) {
           var post = (window.__tbOrder || [])[i];
-          var match = post && post.country === key;
+          var match = post && postCountries(post).indexOf(key) >= 0;
           row.classList.toggle("is-hit", !!match);
           if (match && !first) first = row;
         });
