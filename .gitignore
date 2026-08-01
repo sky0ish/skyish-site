@@ -21,6 +21,9 @@ node_modules/
 # 원본 노트 PDF (내용은 게시판 글로 옮겨 실림) — 배포 불필요
 travel/
 
+# 원본 이미지 임시 보관함 (실제 사용본은 assets/img/ 에 있음)
+image/
+
 # 채택하지 않은 지도 후보
 assets/img/world-b-outline.svg
 assets/img/world-c-solid.svg
