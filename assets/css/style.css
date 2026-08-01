@@ -133,19 +133,24 @@ ul { list-style: none; padding: 0; }
 /* 실제 책등 사진 — 원본 색 그대로, 왼쪽을 크게 잡아 크림색으로 페이드 */
 .research-intro__photo { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 /* 책이 세로로 서 있는 사진이라 잘라내지 않고, 사진 전체가 다 보이도록 오른쪽에 놓는다 */
-/* 사진 전체가 잘리지 않고 다 보이도록 — 오른쪽에 맞춰 통째로 */
+/* 사진 전체가 잘리지 않고 다 보이도록 — 오른쪽에 맞춰 통째로.
+   요소 크기를 사진 크기와 정확히 일치시켜야 아래 마스크가 사진 기준으로 걸린다. */
 .research-intro__photo img {
-  width: 100%; height: 100%; display: block;
-  object-fit: contain; object-position: right center;
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  height: 100%; width: auto; max-width: none; display: block;
+  /* 사진의 왼쪽 끝을 서서히 투명하게 — 경계선(세로줄)이 생기지 않게 */
+  -webkit-mask-image: linear-gradient(90deg,
+    transparent 0%, rgba(0,0,0,.35) 8%, rgba(0,0,0,.8) 16%, #000 26%);
+          mask-image: linear-gradient(90deg,
+    transparent 0%, rgba(0,0,0,.35) 8%, rgba(0,0,0,.8) 16%, #000 26%);
 }
 
-/* 왼쪽 방향으로만 종이색 그라데이션 (위·아래는 그대로) */
+/* 왼쪽 제목·본문 쪽만 종이색으로 살짝 되돌린다 (위·아래는 그대로) */
 .research-intro__photo::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(90deg,
-    var(--paper) 0%, rgba(246,244,241,.97) 14%, rgba(246,244,241,.8) 26%,
-    rgba(246,244,241,.5) 38%, rgba(246,244,241,.22) 50%,
-    rgba(246,244,241,.06) 62%, rgba(246,244,241,0) 74%);
+    rgba(246,244,241,.9) 0%, rgba(246,244,241,.7) 14%, rgba(246,244,241,.42) 26%,
+    rgba(246,244,241,.18) 38%, rgba(246,244,241,.05) 50%, rgba(246,244,241,0) 62%);
 }
 /* 사진이 있으면 그려 넣은 대체 책더미는 감춘다 */
 .research-intro:not(.no-photo) .research-intro__art .rbooks { display: none; }
