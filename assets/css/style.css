@@ -128,42 +128,24 @@ ul { list-style: none; padding: 0; }
 
 /* Research page — 책등에서 흘러나온 글자가 모여 RESEARCH 가 되는 배경 (+ 안경) */
 .research-intro { position: relative; overflow: hidden; }
-.research-intro { min-height: 46vh; display: flex; align-items: center; }
+.research-intro { min-height: clamp(320px, 30vw, 460px); display: flex; align-items: center; }
 
 /* 실제 책등 사진 — 원본 색 그대로, 왼쪽을 크게 잡아 크림색으로 페이드 */
 .research-intro__photo { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 /* 책이 세로로 서 있는 사진이라 잘라내지 않고, 사진 전체가 다 보이도록 오른쪽에 놓는다 */
-/* 사진 본체 — 오른쪽에 통째로, 잘라내거나 흐리지 않는다 */
+/* 사진 전체가 잘리지 않고 다 보이도록 — 오른쪽에 맞춰 통째로 */
 .research-intro__photo img {
-  position: absolute; right: 3%; top: 50%; transform: translateY(-50%);
-  height: 90%; width: auto; max-width: none; display: block;
-  /* 왼쪽 모서리만 살짝 풀어 아래 확장 레이어와 이어지게 */
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.5) 5%, #000 14%);
-          mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.5) 5%, #000 14%);
+  width: 100%; height: 100%; display: block;
+  object-fit: contain; object-position: right center;
 }
 
-/* 사진의 왼쪽(벽·산호·선반) 영역을 가로로 늘여 배경을 왼쪽으로 이어 붙인 레이어 */
-.rp-ext {
-  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  right: 30%; height: 90%;
-  background: url("../img/research-books.jpg") left center / 620% 100% no-repeat;
-  filter: blur(9px) saturate(.9) brightness(1.03);
-  -webkit-mask-image:
-    linear-gradient(90deg, transparent 2%, rgba(0,0,0,.22) 26%, rgba(0,0,0,.62) 52%, #000 76%),
-    linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  -webkit-mask-composite: source-in;
-          mask-image:
-    linear-gradient(90deg, transparent 2%, rgba(0,0,0,.22) 26%, rgba(0,0,0,.62) 52%, #000 76%),
-    linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
-          mask-composite: intersect;
-}
-
-/* 왼쪽 제목·본문 쪽만 종이색으로 되돌린다 (오른쪽 사진은 그대로 살림) */
+/* 왼쪽 방향으로만 종이색 그라데이션 (위·아래는 그대로) */
 .research-intro__photo::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(90deg,
-    var(--paper) 0%, rgba(246,244,241,.9) 16%, rgba(246,244,241,.6) 30%,
-    rgba(246,244,241,.26) 44%, rgba(246,244,241,.06) 58%, rgba(246,244,241,0) 70%);
+    var(--paper) 0%, rgba(246,244,241,.97) 14%, rgba(246,244,241,.8) 26%,
+    rgba(246,244,241,.5) 38%, rgba(246,244,241,.22) 50%,
+    rgba(246,244,241,.06) 62%, rgba(246,244,241,0) 74%);
 }
 /* 사진이 있으면 그려 넣은 대체 책더미는 감춘다 */
 .research-intro:not(.no-photo) .research-intro__art .rbooks { display: none; }
@@ -185,12 +167,11 @@ ul { list-style: none; padding: 0; }
 @media (max-width: 860px) {
   .research-intro { min-height: 0; display: block; }
   .research-intro__art { opacity: .28; }
-  /* 좁은 화면에서는 사진을 작게 물려 두고 글자 가독성을 우선 */
-  .research-intro__photo img { height: 58%; right: -8%; opacity: .55; }
-  .research-intro__photo::before { opacity: .45; }
+  /* 좁은 화면에서는 사진을 옅게 깔고 글자 가독성을 우선 */
+  .research-intro__photo img { object-position: 72% 66%; opacity: .6; }
   .research-intro__photo::after {
     background: linear-gradient(90deg,
-      var(--paper) 0%, rgba(246,244,241,.95) 38%, rgba(246,244,241,.74) 70%, rgba(246,244,241,.5) 100%);
+      rgba(248,246,243,.94) 0%, rgba(248,246,243,.82) 44%, rgba(248,246,243,.6) 100%);
   }
 }
 
