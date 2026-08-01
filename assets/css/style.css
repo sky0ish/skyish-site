@@ -406,6 +406,15 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 .tl .yr { display: block; font-weight: 700; font-size: .82rem; letter-spacing: .06em; color: var(--teal-text); margin-bottom: .2rem; }
 .tl .role { font-weight: 600; }
 .tl .org { color: var(--mauve); font-size: .95rem; }
+/* 수상 등 학력에 딸린 부가 기록 */
+.tl .award {
+  display: block; margin-top: .5rem; padding: .5rem .8rem;
+  border-left: 3px solid var(--teal); background: rgba(79,157,146,.08);
+  border-radius: 0 6px 6px 0;
+  font-size: .88rem; line-height: 1.6; color: #4a4442;
+}
+.tl .award strong { color: var(--teal-text); }
+.tl .award em { font-style: italic; color: var(--ink); }
 
 /* facts row */
 .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.4rem; }
