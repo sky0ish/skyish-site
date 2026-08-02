@@ -13,13 +13,31 @@ GitHub(sky0ish/skyish-site) ──push──▶ Netlify ──빌드──▶ sk
 
 ## 현재 상태
 
+**Netlify 프로젝트: `skyish` / 주소: <https://skyish.kr>**
+(초기에 만든 `spectacular-capybara-6d4360` 프로젝트는 삭제했습니다. 한 저장소에 사이트가 둘이면
+푸시 한 번에 빌드가 두 번 돌아 크레딧이 두 배로 소모됩니다.)
+
 | 단계 | 상태 |
 |---|---|
-| Netlify 연결·자동 배포 | ✅ 완료 — <https://spectacular-capybara-6d4360.netlify.app> |
+| Netlify 연결·자동 배포 | ✅ 완료 |
+| skyish.kr 도메인 + HTTPS | ✅ 완료 |
 | 빌드 (`node tools/build-posts.mjs`) | ✅ 정상 |
 | `/admin` CMS 화면 | ✅ 열림 (로그인 버튼까지) |
 | **GitHub 로그인 키 등록** | ⬜ **남음 — 아래 1번** |
-| skyish.kr 도메인 연결 | ⬜ 남음 — 아래 2번 |
+
+### ⚠️ 배포 일시 중지 중 (크레딧 소진)
+
+Netlify 팀 크레딧을 모두 써서 **production 배포가 일시 중지**된 상태입니다.
+사이트는 계속 살아 있고, 새 커밋만 `Skipped — account credit usage exceeded` 로 넘어갑니다.
+
+**크레딧이 리셋되면 (좌측 하단 아바타 → Billing 에서 날짜 확인)**
+
+1. 로컬에서 `git push origin main`
+2. Netlify → **Deploys → `Trigger deploy` ▾ → `Deploy site`** 를 **한 번** 클릭
+   (Skipped 된 배포는 자동으로 다시 시도되지 않습니다)
+
+**크레딧을 아끼려면** — 수정할 때마다 푸시하지 말고 여러 건을 모아 한 번에 푸시합니다.
+푸시 1회 = 빌드 1회입니다.
 
 ---
 
@@ -35,8 +53,8 @@ GitHub(sky0ish/skyish-site) ──push──▶ Netlify ──빌드──▶ sk
 | 항목 | 입력값 |
 |---|---|
 | Application name | `skyish CMS` |
-| Homepage URL | `https://spectacular-capybara-6d4360.netlify.app` |
-| Authorization callback URL | `https://spectacular-capybara-6d4360.netlify.app/callback` |
+| Homepage URL | `https://skyish.kr` |
+| Authorization callback URL | `https://skyish.kr/callback` |
 
 **Register application** → **Client ID** 복사 → **Generate a new client secret** → **Client secret** 복사
 (secret 은 화면을 벗어나면 다시 볼 수 없습니다. 저에게 보내지 마세요.)
@@ -54,25 +72,18 @@ Netlify → **Site configuration → Environment variables → Add a variable**
 
 ### 1-3. 확인
 
-<https://spectacular-capybara-6d4360.netlify.app/admin/> → **GitHub 로 로그인** → 글 목록이 보이면 완료.
+<https://skyish.kr/admin/> → **GitHub 로 로그인** → 글 목록이 보이면 완료.
 
-## 2. 도메인 연결 (skyish.kr)
+## 2. 도메인 연결 (skyish.kr) — ✅ 완료
 
-**Netlify** → Site configuration → **Domain management** → Add a domain → `skyish.kr`
-
-그다음 **가비아 DNS 관리 → skyish.kr → DNS 설정** 에서 두 줄을 등록합니다.
+가비아 DNS 에 아래 두 줄이 등록되어 있고, Netlify 가 HTTPS 인증서를 발급한 상태입니다.
 
 | 타입 | 호스트 | 값 |
 |---|---|---|
 | A | `@` | `75.2.60.5` |
-| CNAME | `www` | `spectacular-capybara-6d4360.netlify.app.` ← **끝에 점(.)** |
+| CNAME | `www` | (Netlify 가 안내한 사이트 주소, 끝에 점) |
 
-> 정확한 A 레코드 값은 Netlify 의 Domain management 화면에 표시된 것을 우선하세요.
-> DNS 반영에 보통 10분~1시간, 최대 하루. 반영되면 Netlify 가 HTTPS 인증서를 자동 발급합니다.
-
-도메인이 붙은 뒤에는 `https://skyish.kr/admin/` 으로도 글쓰기가 됩니다.
-단, GitHub OAuth 앱의 **Authorization callback URL 을 `https://skyish.kr/callback` 로 바꿔** 주세요
-(OAuth 앱은 콜백 주소를 하나만 등록할 수 있습니다).
+`www.skyish.kr` 은 `skyish.kr` 로 301 리다이렉트됩니다.
 
 ---
 
