@@ -423,6 +423,60 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 }
 .tl .award strong { color: var(--teal-text); }
 .tl .award em { font-style: italic; color: var(--ink); }
+/* =============================================================
+   관련 기관 배너 (홈)
+   ============================================================= */
+.orgs {
+  display: grid; gap: .85rem;
+  /* 넓은 화면에서는 5개가 한 줄에 나란히 */
+  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
+  margin-top: 2.4rem;
+}
+.orgs > li { list-style: none; }
+.orgs a {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  height: 100%; gap: .55rem;
+  padding: 1.5rem 1.1rem 1.3rem;
+  background: var(--white); border: 1px solid var(--line-soft); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); color: inherit;
+  transition: transform .28s var(--ease), box-shadow .28s var(--ease), border-color .28s var(--ease);
+}
+.orgs a:hover, .orgs a:focus-visible {
+  transform: translateY(-4px); box-shadow: var(--shadow-md);
+  border-color: rgba(79,157,146,.45);
+}
+.orgs__logo {
+  display: flex; align-items: center; justify-content: center;
+  height: 46px; width: 100%; margin-bottom: .3rem;
+}
+.orgs__logo img {
+  max-height: 100%; max-width: 100%; width: auto; object-fit: contain;
+  filter: saturate(.92);
+  transition: filter .28s var(--ease);
+}
+.orgs a:hover .orgs__logo img { filter: saturate(1); }
+/* 로고 이미지가 없는 곳(SNS)은 브랜드색 칩으로 */
+.orgs__logo--chip {
+  align-self: center; width: auto; height: auto;
+  padding: .42em 1.1em; border-radius: 999px;
+  background: var(--chip, var(--teal)); color: #fff;
+  font-size: .82rem; font-weight: 700; letter-spacing: .04em;
+}
+.orgs__name { font-weight: 600; font-size: .95rem; line-height: 1.45; color: var(--ink); }
+.orgs__desc { font-size: .78rem; color: var(--mauve); line-height: 1.5; }
+.orgs a::after {
+  content: "↗"; font-size: .82rem; color: var(--teal-text);
+  opacity: 0; transform: translateY(-3px);
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+}
+.orgs a:hover::after, .orgs a:focus-visible::after { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 560px) {
+  .orgs { grid-template-columns: 1fr 1fr; gap: .7rem; }
+  .orgs a { padding: 1.1rem .7rem 1rem; }
+  .orgs__name { font-size: .86rem; }
+}
+
 /* 수여기관·분과 같은 짧은 꼬리표 */
 .tl__tag {
   font-style: normal; font-size: .74rem; font-weight: 600; letter-spacing: .02em;
