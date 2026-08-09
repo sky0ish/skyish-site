@@ -46,7 +46,7 @@ window.RESEARCH_LINKS = {
   "스마트 축소를 위한 쇠퇴도시 유형과 도시관리 전략 — 해외사례를 중심으로": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20210622&schBookResultNo=15024",
   "지역경쟁력 강화를 위한 경기도 특별건축구역 운영방안": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20210142&schBookResultNo=14780",
   "경기도 농어촌 외국인 노동자 주거시설 모델개발을 위한 정책연구": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20210141&schBookResultNo=14726",
-  "스마트 축소로서의 역세권 지역관리에 관한 연구": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20200243&schBookResultNo=14646",
+  "스마트 축소를 위한 경기도 역세권의 유형화에 관한 연구": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20200243&schBookResultNo=14646",
   "반지하의 거주환경 개선방안": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20200411&schBookResultNo=14695",
   "경기도 산업안전 트레이닝센터 건립방안": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20200349&schBookResultNo=14629",
   "경기도 건설기능학교 설립 타당성 연구": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20200090&schBookResultNo=14574",
