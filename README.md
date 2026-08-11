@@ -73,7 +73,6 @@ var SITE = {
   tagline: "Architecture · Urban Design",
   nav: [ { label: "HOME", file: "index.html" }, ... ],  // 메뉴
   email: "whlove@gmail.com",
-  phone: "***REMOVED***",
   org:   "Gyeonggi Research Institute"
 };
 ```
