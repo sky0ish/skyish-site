@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>로그인 — Jee-Hyun NAM</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main" class="authwrap">
+    <div class="authcard">
+      <h1>로그인</h1>
+      <p class="authlead">
+        TRAVEL 기록과 DATA ANALYSIS 자료는 승인된 분만 보실 수 있습니다.
+        한 번 로그인하면 계속 유지됩니다.
+      </p>
+
+      <form id="form">
+        <div class="authfield">
+          <label for="email">이메일</label>
+          <input id="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="authfield">
+          <label for="pw">비밀번호</label>
+          <input id="pw" type="password" autocomplete="current-password" required>
+        </div>
+
+        <label class="authkeep">
+          <input id="keep" type="checkbox" checked>
+          로그인 상태 유지
+        </label>
+
+        <button id="submit" class="authbtn" type="submit">로그인</button>
+      </form>
+
+      <p id="msg" class="authmsg" hidden></p>
+
+      <p class="authalt">
+        아직 계정이 없으신가요? <a href="signup.html">가입 신청</a><br>
+        <a href="../index.html">← 홈으로</a>
+      </p>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="../assets/js/main.js" defer></script>
+
+  <script type="module">
+    import { sb, showMsg, analysisAccess } from "./auth.js";
+
+    const form = document.getElementById("form");
+    const msg  = document.getElementById("msg");
+    const btn  = document.getElementById("submit");
+
+    // 로그인 후 돌아갈 곳 (?next=travel.html)
+    const params = new URLSearchParams(location.search);
+    const next = params.get("next") || "../index.html";
+    function goNext() { location.href = next.startsWith("http") ? "../index.html" : next; }
+
+    // 이미 로그인돼 있으면 바로 통과
+    (async () => {
+      const { state } = await analysisAccess();
+      if (state === "ok") goNext();
+      else if (state === "pending") {
+        showMsg(msg, "가입 신청이 접수되었습니다. 승인 후 이용하실 수 있습니다.");
+      }
+    })();
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      msg.hidden = true;
+
+      // '로그인 상태 유지' 해제 시, 다음 브라우저 실행에서 세션을 비움
+      try { localStorage.setItem("skyish-keep", document.getElementById("keep").checked ? "1" : "0"); } catch (_) {}
+
+      const { error } = await sb.auth.signInWithPassword({
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("pw").value,
+      });
+
+      if (error) {
+        showMsg(msg, error.message === "Invalid login credentials"
+          ? "이메일 또는 비밀번호가 맞지 않습니다."
+          : "로그인에 실패했습니다: " + error.message);
+        btn.disabled = false;
+        return;
+      }
+
+      const { state } = await analysisAccess();
+      if (state === "ok") { showMsg(msg, "로그인되었습니다. 이동합니다…", true); goNext(); }
+      else {
+        showMsg(msg, "로그인은 되었지만 아직 승인 전입니다. 승인되면 바로 열람하실 수 있습니다.");
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

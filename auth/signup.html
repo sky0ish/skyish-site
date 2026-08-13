@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>가입 신청 — Jee-Hyun NAM</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main" class="authwrap">
+    <div class="authcard">
+      <h1>가입 신청</h1>
+      <p class="authlead">
+        가입 후 <strong>승인</strong>을 거쳐야 TRAVEL·DATA ANALYSIS 자료를 보실 수 있습니다.
+        승인은 수동으로 확인해 처리합니다.
+      </p>
+
+      <form id="form">
+        <div class="authfield">
+          <label for="name">이름</label>
+          <input id="name" type="text" autocomplete="name" required>
+        </div>
+        <div class="authfield">
+          <label for="affil">소속 <span style="font-weight:400;color:var(--mauve)">(선택)</span></label>
+          <input id="affil" type="text" autocomplete="organization" placeholder="예: 경기연구원">
+          <span class="hint">승인 판단에 참고합니다.</span>
+        </div>
+        <div class="authfield">
+          <label for="email">이메일</label>
+          <input id="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="authfield">
+          <label for="pw">비밀번호</label>
+          <input id="pw" type="password" autocomplete="new-password" minlength="8" required>
+          <span class="hint">8자 이상</span>
+        </div>
+
+        <button id="submit" class="authbtn" type="submit">가입 신청</button>
+      </form>
+
+      <p id="msg" class="authmsg" hidden></p>
+
+      <p class="authalt">
+        이미 계정이 있으신가요? <a href="login.html">로그인</a><br>
+        <a href="../index.html">← 홈으로</a>
+      </p>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="../assets/js/main.js" defer></script>
+
+  <script type="module">
+    import { sb, showMsg } from "./auth.js";
+
+    const form = document.getElementById("form");
+    const msg  = document.getElementById("msg");
+    const btn  = document.getElementById("submit");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      msg.hidden = true;
+
+      const email = document.getElementById("email").value.trim();
+      const { error } = await sb.auth.signUp({
+        email,
+        password: document.getElementById("pw").value,
+        options: {
+          data: {
+            name: document.getElementById("name").value.trim(),
+            affiliation: document.getElementById("affil").value.trim(),
+          },
+          emailRedirectTo: location.origin + "/auth/login.html",
+        },
+      });
+
+      if (error) {
+        showMsg(msg, error.message.includes("already registered")
+          ? "이미 가입된 이메일입니다. 로그인해 주세요."
+          : "가입에 실패했습니다: " + error.message);
+        btn.disabled = false;
+        return;
+      }
+
+      showMsg(msg,
+        "가입 신청이 접수되었습니다. 확인 메일이 갔다면 인증까지 마쳐 주세요. " +
+        "관리자 승인 후 자료를 보실 수 있습니다.", true);
+      form.reset();
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
