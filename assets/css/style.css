@@ -435,8 +435,10 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 .orgs > li { list-style: none; }
 .orgs a {
   display: flex; flex-direction: column; align-items: center; text-align: center;
+  justify-content: center;          /* 카드 높이가 달라도 내용이 세로 가운데에 오도록 */
+  position: relative;
   height: 100%; gap: .55rem;
-  padding: 1.5rem 1.1rem 1.3rem;
+  padding: 1.4rem 1.1rem;
   background: var(--white); border: 1px solid var(--line-soft); border-radius: var(--radius);
   box-shadow: var(--shadow-sm); color: inherit;
   transition: transform .28s var(--ease), box-shadow .28s var(--ease), border-color .28s var(--ease);
@@ -464,8 +466,10 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-6px) rotate
 }
 .orgs__name { font-weight: 600; font-size: .95rem; line-height: 1.45; color: var(--ink); }
 .orgs__desc { font-size: .78rem; color: var(--mauve); line-height: 1.5; }
+/* ↗ 는 숨겨져 있어도 자리를 차지하면 내용이 위로 밀리므로 띄워서 배치 */
 .orgs a::after {
-  content: "↗"; font-size: .82rem; color: var(--teal-text);
+  content: "↗"; position: absolute; right: .9rem; bottom: .7rem;
+  font-size: .82rem; color: var(--teal-text);
   opacity: 0; transform: translateY(-3px);
   transition: opacity .25s var(--ease), transform .25s var(--ease);
 }
