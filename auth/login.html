@@ -34,10 +34,7 @@
           <input id="pw" type="password" autocomplete="current-password" required>
         </div>
 
-        <label class="authkeep">
-          <input id="keep" type="checkbox" checked>
-          로그인 상태 유지
-        </label>
+        <p class="authkeep">한 번 로그인하면 로그아웃하실 때까지 계속 유지됩니다.</p>
 
         <button id="submit" class="authbtn" type="submit">로그인</button>
       </form>
@@ -96,9 +93,6 @@
       e.preventDefault();
       btn.disabled = true;
       msg.hidden = true;
-
-      // '로그인 상태 유지' 해제 시, 다음 브라우저 실행에서 세션을 비움
-      try { localStorage.setItem("skyish-keep", document.getElementById("keep").checked ? "1" : "0"); } catch (_) {}
 
       const { error } = await sb.auth.signInWithPassword({
         email: document.getElementById("email").value.trim(),

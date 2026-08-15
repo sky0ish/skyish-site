@@ -18,13 +18,13 @@
     /* `sub` 가 있으면 마우스를 올렸을 때 펼쳐지는 아래 차림표가 생깁니다.
        `also` 는 그 메뉴에 속한 다른 화면들 — 지금 보고 있는 쪽을 밝혀 줍니다. */
     nav: [
-      { label: "HOME",     file: "index.html"    },
-      { label: "ABOUT",    file: "about.html", sub: [
-        { label: "Education",     file: "about.html#education"  },
-        { label: "Career",        file: "about.html#career"     },
-        { label: "Awards",        file: "about.html#awards"     },
-        { label: "Committees",    file: "about.html#committees" },
-        { label: "Presentations", file: "about.html#talks"      }
+      /* 첫 화면이 곧 ABOUT 입니다 (예전 about.html 은 이리로 넘어옵니다) */
+      { label: "ABOUT",    file: "index.html", also: ["about.html"], sub: [
+        { label: "Education",     file: "index.html#education"  },
+        { label: "Career",        file: "index.html#career"     },
+        { label: "Awards",        file: "index.html#awards"     },
+        { label: "Committees",    file: "index.html#committees" },
+        { label: "Presentations", file: "index.html#talks"      }
       ] },
       { label: "RESEARCH", file: "works.html", sub: [
         { label: "Journals",   file: "works.html?tab=papers"  },
@@ -95,17 +95,30 @@
   function upgradeAuthBox(box) {
     try {
       import(url("auth/auth.js")).then(function (m) {
-        return m.myProfile().then(function (me) {
-          if (!me) return;
-          var name = me.name || (me.email || "").split("@")[0] || "회원";
-          box.innerHTML = "";
-          var who = el("span", { class: "authwho" }, escapeHtml(name));
-          if (!me.analysis_access && !me.is_admin) who.classList.add("is-pending");
-          if (!me.analysis_access && !me.is_admin) who.title = "승인 대기 중입니다";
-          var out = el("button", { class: "authbtn authbtn--out", type: "button" }, "로그아웃");
-          out.addEventListener("click", function () { m.logout(url("index.html")); });
-          box.appendChild(who);
-          box.appendChild(out);
+        return m.currentUser().then(function (user) {
+          if (!user) return;                       // 로그인 안 하셨으면 '로그인' 그대로
+          // 프로필을 못 읽어도 로그인 상태는 그대로 보여줍니다.
+          // (프로필 행이 없을 때 이름만 못 가져올 뿐 로그인은 유지됩니다)
+          return m.myProfile().catch(function () { return null; }).then(function (me) {
+            var name = (me && me.name)
+              || (user.email || "").split("@")[0] || "회원";
+            var ok = !!(me && (me.analysis_access || me.is_admin));
+            box.innerHTML = "";
+            var who = el("span", { class: "authwho" }, escapeHtml(name));
+            if (!ok) { who.classList.add("is-pending"); who.title = "승인 대기 중입니다"; }
+            /* 들어와 계실 때는 붉은 '로그인중'. 누르면 로그아웃합니다. */
+            var out = el("button", {
+              class: "authbtn authbtn--in", type: "button",
+              title: "누르면 로그아웃합니다"
+            }, "로그인중");
+            out.addEventListener("mouseenter", function () { out.textContent = "로그아웃"; });
+            out.addEventListener("focus",      function () { out.textContent = "로그아웃"; });
+            out.addEventListener("mouseleave", function () { out.textContent = "로그인중"; });
+            out.addEventListener("blur",       function () { out.textContent = "로그인중"; });
+            out.addEventListener("click", function () { m.logout(url("index.html")); });
+            box.appendChild(who);
+            box.appendChild(out);
+          });
         });
       }).catch(function () { /* 못 불러오면 '로그인'인 채로 둡니다 */ });
     } catch (e) { /* import() 를 모르는 브라우저 */ }
