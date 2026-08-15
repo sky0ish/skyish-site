@@ -57,7 +57,10 @@
       { label: "MAP",      file: "map.html", sub: [
         { label: "핫플",     file: "map.html?g=hot"    },
         { label: "도시건축", file: "map.html?g=urban"  },
-        { label: "부동산",   file: "map.html?g=estate" }
+        { label: "부동산",   file: "map.html?g=estate" },
+        { label: "여행",     file: "map.html?g=trip"   },
+        { label: "일상",     file: "map.html?g=daily"  },
+        { label: "기타",     file: "map.html?g=etc"    }
       ] },
       { label: "BLOG",     file: "blog.html"     },
       { label: "CONTACT",  file: "contact.html"  }

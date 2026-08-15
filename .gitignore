@@ -44,3 +44,6 @@ assets/img/map-italy.svg
 assets/img/italy-a-stipple.svg
 assets/img/italy-c-vintage.svg
 assets/img/italy-d-mono.svg
+tools/rail/all.json
+tools/rail/chunk*.json
+tools/rail/chunk*.txt

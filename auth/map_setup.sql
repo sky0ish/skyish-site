@@ -1,10 +1,13 @@
 -- ═══════════════════════════════════════════════════════════
---  MAP — 서울 지도 (핫플 · 도시건축 · 부동산)
+--  MAP — 지도 (핫플 · 도시건축 · 부동산 · 여행 · 일상 · 기타)
 --
---  세 갈래가 표 하나를 함께 씁니다. grp 칸으로 나뉩니다.
+--  여섯 갈래가 표 하나를 함께 씁니다. grp 칸으로 나뉩니다.
 --    hot    핫플        map.html?g=hot
 --    urban  도시건축    map.html?g=urban
 --    estate 부동산      map.html?g=estate
+--    trip   여행        map.html?g=trip
+--    daily  일상        map.html?g=daily
+--    etc    기타        map.html?g=etc
 --
 --  실행 : Supabase(skyish 전용 프로젝트) → SQL Editor → 전체 붙여넣기 → Run
 --  먼저 : auth/setup.sql 을 실행해 두셔야 합니다 (profiles 표가 필요합니다)
@@ -60,7 +63,7 @@ create index if not exists map_places_grp_cat_idx
 
 alter table public.map_places drop constraint if exists map_places_grp_check;
 alter table public.map_places add  constraint map_places_grp_check
-  check (grp in ('hot','urban','estate'));
+  check (grp in ('hot','urban','estate','trip','daily','etc'));
 
 alter table public.map_places drop constraint if exists map_places_category_check;
 alter table public.map_places add  constraint map_places_category_check

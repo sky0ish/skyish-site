@@ -14,6 +14,12 @@ export const GROUPS = {
             lead: "눈여겨본 건축물과 도시공간 — 설계와 배치, 주변과의 관계를 기록합니다." },
   estate: { name: "부동산",   en: "Real Estate",    first: "apt",
             lead: "아파트 · 주거단지 · 개발지 — 위치와 여건을 지도 위에 정리합니다." },
+  trip:   { name: "여행",     en: "Travel",         first: "hot",
+            lead: "다녀온 곳과 다시 가고 싶은 곳 — 출장과 여행에서 만난 장소들입니다." },
+  daily:  { name: "일상",     en: "Daily Life",     first: "food",
+            lead: "자주 가는 곳, 손에 익은 자리 — 주차장 · 단골집처럼 늘 쓰는 장소입니다." },
+  etc:    { name: "기타",     en: "Etc",            first: "hot",
+            lead: "어느 갈래에도 넣기 어려운 곳들을 모아둡니다." },
 };
 export const GROUP_KEYS = Object.keys(GROUPS);
 
@@ -377,13 +383,23 @@ export async function initMap(mountId = "mapapp") {
       });
       railLayer = L.layerGroup();
       rows.forEach(s => {
+        const lines = s.L || [];
+        // 세모는 첫 호선 색으로, 이름 옆에는 호선 번호를 그 색 배지로 붙입니다
+        const head = lines[0] ? lines[0][1] : "#2f9e44";
+        const tags = lines.map(([lab, col]) =>
+          `<em class="rl" style="background:${col}">${esc(lab)}</em>`).join("");
         L.marker([s.a, s.o], {
           zIndexOffset: -400,               // 회원이 올린 장소보다 아래에
           icon: L.divIcon({
             className: "", iconSize: [0, 0],
-            html: `<div class="cmark c-rail railmark"><i></i><b>${esc(s.n)}</b></div>`,
+            html: `<div class="cmark railmark">` +
+                  `<i style="border-bottom-color:${head}"></i>` +
+                  `<b>${tags}${esc(s.n)}</b></div>`,
           }),
-        }).bindTooltip(s.l ? `${esc(s.n)} · ${esc(s.l)}` : esc(s.n)).addTo(railLayer);
+        }).bindTooltip(
+          lines.length ? `${esc(s.n)} · ${lines.map(l => l[0]).join(" · ")}호선`
+                       : esc(s.n)
+        ).addTo(railLayer);
       });
       railLayer.addTo(map);
     } catch (e) {
