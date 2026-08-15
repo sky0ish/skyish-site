@@ -294,6 +294,31 @@ ul { list-style: none; padding: 0; }
   border-color: var(--teal); transform: translateY(-1px);
 }
 
+/* ── 로그인 단추 ───────────────────────────────────────── */
+.authbox { display: flex; align-items: center; gap: .55rem; margin-left: .5rem; }
+.authbtn {
+  display: inline-block; padding: .42em 1.05em; border-radius: 100px;
+  font-size: .82rem; font-weight: 600; letter-spacing: .02em; line-height: 1.4;
+  color: #fff; border: 1px solid rgba(255,255,255,.55);
+  transition: background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease);
+}
+.authbtn::after { content: none; }
+.authbtn:hover { background: var(--teal); border-color: var(--teal); color: #fff; }
+.authwho {
+  font-size: .82rem; font-weight: 600; color: #fff; opacity: .95;
+  max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.authwho.is-pending { opacity: .7; }
+.authwho.is-pending::after {
+  content: "승인 대기"; display: inline-block; margin-left: .4em;
+  padding: .1em .5em; border-radius: 100px; font-size: .68rem; font-weight: 500;
+  background: rgba(255,255,255,.18);
+}
+.site-header.is-solid .authbtn { color: var(--ink); border-color: var(--line); }
+.site-header.is-solid .authbtn:hover { color: #fff; border-color: var(--teal); }
+.site-header.is-solid .authwho { color: var(--ink); }
+.site-header.is-solid .authwho.is-pending::after { background: rgba(28,26,25,.1); }
+
 /* solid state after scroll or on inner (non-hero) pages */
 .site-header.is-solid {
   background: rgba(246, 244, 241, .97);
@@ -1574,7 +1599,17 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
     box-shadow: var(--shadow-lg);
   }
   body.nav-open .nav { transform: translateX(0); visibility: visible; }
-  .nav > a, .nav > .nav__group { flex: none; }
+  .nav > a, .nav > .nav__group, .nav > .authbox { flex: none; }
+  /* 서랍에서는 맨 아래에 큼직하게 */
+  .authbox {
+    order: 99; width: 100%; margin: .6rem 0 0;
+    padding-top: 1.1rem; border-top: 1px solid rgba(255,255,255,.16);
+  }
+  .authbtn {
+    flex: 1; text-align: center; padding: .7em 1em; font-size: .95rem;
+    color: #fff !important; border-color: rgba(255,255,255,.45);
+  }
+  .authwho { font-size: .95rem; color: #fff; }
   .nav a { color: #fff !important; font-size: 1.3rem; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .03em; }
   .nav::before {
     content: "MENU"; position: absolute; top: 26px; left: 2.4rem;

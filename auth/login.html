@@ -61,6 +61,23 @@
     const msg  = document.getElementById("msg");
     const btn  = document.getElementById("submit");
 
+    /* Supabase 가 돌려주는 영어 오류를 알아볼 수 있는 말로 바꿉니다.
+       무엇이 잘못됐고 무엇을 하면 되는지까지 적어 둡니다. */
+    function explain(m) {
+      m = String(m || "");
+      if (/Email not confirmed/i.test(m))
+        return "비밀번호는 맞습니다. 다만 이메일 확인이 아직 끝나지 않았습니다 — " +
+               "가입하실 때 받은 확인 메일의 링크를 눌러주세요. " +
+               "메일이 오지 않았다면 운영자에게 알려주세요.";
+      if (/Invalid login credentials/i.test(m))
+        return "이메일 또는 비밀번호가 맞지 않습니다.";
+      if (/rate limit|too many/i.test(m))
+        return "시도가 잦습니다. 잠시 뒤에 다시 해주세요.";
+      if (/Failed to fetch|NetworkError/i.test(m))
+        return "서버에 닿지 못했습니다. 인터넷 연결을 확인해주세요.";
+      return "로그인에 실패했습니다: " + m;
+    }
+
     // 로그인 후 돌아갈 곳 (?next=travel.html)
     const params = new URLSearchParams(location.search);
     const next = params.get("next") || "../index.html";
@@ -89,9 +106,7 @@
       });
 
       if (error) {
-        showMsg(msg, error.message === "Invalid login credentials"
-          ? "이메일 또는 비밀번호가 맞지 않습니다."
-          : "로그인에 실패했습니다: " + error.message);
+        showMsg(msg, explain(error.message));
         btn.disabled = false;
         return;
       }

@@ -57,11 +57,42 @@
     var path = location.pathname.split("/").pop();
     return path && path.length ? path : "index.html";
   }
+  /* auth/login.html 처럼 하위 폴더에 있는 화면에서도 링크가 맞도록,
+     맨 위 폴더까지 거슬러 올라가는 길을 붙여줍니다. (auth/ 안이면 "../") */
+  function rootPath() {
+    var segs = location.pathname.split("/").filter(Boolean);
+    var depth = Math.max(0, segs.length - 1);   // 마지막은 파일 이름
+    return depth ? new Array(depth + 1).join("../") : "";
+  }
+  var ROOT = rootPath();
+  function url(p) { return ROOT + p; }
   function el(tag, attrs, html) {
     var n = document.createElement(tag);
     if (attrs) { for (var k in attrs) { if (attrs[k] != null) n.setAttribute(k, attrs[k]); } }
     if (html != null) n.innerHTML = html;
     return n;
+  }
+
+  /* 들어와 계신 분이면 로그인 단추를 이름·로그아웃으로 바꿉니다.
+     auth/auth.js 는 모듈이라 필요할 때만 불러옵니다 —
+     Supabase 설정이 아직이거나 인터넷이 끊겨도 '로그인'은 그대로 보입니다. */
+  function upgradeAuthBox(box) {
+    try {
+      import(url("auth/auth.js")).then(function (m) {
+        return m.myProfile().then(function (me) {
+          if (!me) return;
+          var name = me.name || (me.email || "").split("@")[0] || "회원";
+          box.innerHTML = "";
+          var who = el("span", { class: "authwho" }, escapeHtml(name));
+          if (!me.analysis_access && !me.is_admin) who.classList.add("is-pending");
+          if (!me.analysis_access && !me.is_admin) who.title = "승인 대기 중입니다";
+          var out = el("button", { class: "authbtn authbtn--out", type: "button" }, "로그아웃");
+          out.addEventListener("click", function () { m.logout(url("index.html")); });
+          box.appendChild(who);
+          box.appendChild(out);
+        });
+      }).catch(function () { /* 못 불러오면 '로그인'인 채로 둡니다 */ });
+    } catch (e) { /* import() 를 모르는 브라우저 */ }
   }
 
   /* -----------------------------------------------------------
@@ -76,7 +107,7 @@
     var inner  = el("div", { class: "container" });
     var bar    = el("div", { class: "site-header__inner" });
 
-    var brand = el("a", { href: "index.html", class: "brand", "aria-label": SITE.brand });
+    var brand = el("a", { href: url("index.html"), class: "brand", "aria-label": SITE.brand });
     brand.innerHTML = SITE.brand + "<small>" + SITE.tagline + "</small>";
 
     var nav = el("nav", { class: "nav", "aria-label": "Main" });
@@ -93,7 +124,7 @@
       }
 
       if (!item.sub) {
-        var plain = el("a", { href: item.file }, item.label);
+        var plain = el("a", { href: url(item.file) }, item.label);
         markHere(plain);
         nav.appendChild(plain);
         return;
@@ -102,7 +133,7 @@
       /* 아래로 펼쳐지는 차림표 — 마우스를 올리거나 단추를 누르면 열립니다 */
       var id = "nav-sub-" + idx;
       var group = el("div", { class: "nav__group" });
-      var a = el("a", { href: item.file, class: "nav__top" }, item.label);
+      var a = el("a", { href: url(item.file), class: "nav__top" }, item.label);
       markHere(a);
 
       var open = el("button", {
@@ -114,7 +145,7 @@
       var sub = el("div", { class: "nav__sub", id: id });
       var subin = el("div", { class: "nav__subin" });   // 서랍에서 접었다 펴는 데 쓰입니다
       item.sub.forEach(function (s) {
-        subin.appendChild(el("a", { href: s.file }, s.label));
+        subin.appendChild(el("a", { href: url(s.file) }, s.label));
       });
       sub.appendChild(subin);
 
@@ -142,6 +173,17 @@
     document.addEventListener("click", function (e) {
       if (!nav.contains(e.target)) closeGroups();
     });
+
+    /* 로그인 단추 — 처음에는 '로그인'으로 두고,
+       이미 들어와 계신 분이면 아래에서 이름·로그아웃으로 바꿉니다. */
+    var authBox = el("div", { class: "authbox" });
+    var authLink = el("a", {
+      class: "authbtn",
+      href: url("auth/login.html") + "?next=" + encodeURIComponent(location.pathname + location.search)
+    }, "로그인");
+    authBox.appendChild(authLink);
+    nav.appendChild(authBox);
+    upgradeAuthBox(authBox);
 
     var toggle = el("button", {
       class: "nav-toggle", "aria-label": "Toggle menu",
