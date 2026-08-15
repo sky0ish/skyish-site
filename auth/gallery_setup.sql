@@ -30,12 +30,22 @@ create table if not exists public.gallery_albums (
   title       text not null,
   event_date  date,                        -- 언제 찍은 것인지 (목록 정렬 기준)
   cover_url   text,                        -- 대표 사진 (없으면 첫 사진)
+  address     text,                        -- 주소 (제목으로 찾아 자동으로 채웁니다)
+  lat         double precision,
+  lng         double precision,
+  feature     text,                        -- 건축특징
   note        text,
   owner_name  text,
   owner_admin boolean not null default false,
   created_by  uuid,
   created_at  timestamptz not null default now()
 );
+
+-- 표를 이미 만들어 두셨던 분을 위해 — 없으면 더하고, 있으면 그대로 둡니다
+alter table public.gallery_albums add column if not exists address text;
+alter table public.gallery_albums add column if not exists lat     double precision;
+alter table public.gallery_albums add column if not exists lng     double precision;
+alter table public.gallery_albums add column if not exists feature text;
 
 -- ── 2) 사진 ──────────────────────────────────────────────────
 

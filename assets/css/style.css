@@ -1981,3 +1981,43 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   background: rgba(20,18,17,.7); color: #fff; font-size: .68rem;
 }
 .gthumb button:hover { background: #c8402f; }
+
+/* 이름으로 주소 찾기 — 후보 목록 */
+.gfield { position: relative; }
+.gsug {
+  display: none; position: absolute; left: 0; right: 0; top: 100%; z-index: 20;
+  margin-top: 4px; max-height: 230px; overflow-y: auto;
+  background: #fff; border: 1px solid var(--line); border-radius: 9px;
+  box-shadow: 0 8px 22px rgba(28,26,25,.16);
+}
+.gsug.on { display: block; }
+.gsug__item {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: 9px 13px; border: 0; border-bottom: 1px solid #f1eee8;
+  background: #fff; font-family: inherit; transition: .14s var(--ease);
+}
+.gsug__item:last-child { border-bottom: 0; }
+.gsug__item:hover { background: #f4faf8; }
+.gsug__item b { display: block; font-size: .86rem; font-weight: 600; color: var(--ink); }
+.gsug__item span { display: block; margin-top: 2px; font-size: .74rem; color: var(--mauve);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gsug__msg { padding: 11px 13px; font-size: .8rem; color: var(--mauve); }
+.gmodal__box textarea, .albedit textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px;
+  font-family: inherit; font-size: .92rem; background: #fff; color: var(--ink);
+  line-height: 1.6; resize: vertical;
+}
+.gmodal__box textarea:focus, .albedit textarea:focus { outline: 0; border-color: var(--teal); }
+
+/* 사진첩 화면의 주소·건축특징 */
+.albaddr { margin: .5rem 0 0; font-size: .87rem; color: #4a463a; }
+.albaddr a { margin-left: .5em; color: var(--teal-text); font-weight: 500; font-size: .82rem; }
+.albfeat {
+  margin: .9rem 0 0; padding: 13px 17px; background: #fff;
+  border: 1px solid var(--line); border-radius: 10px; max-width: 720px;
+}
+.albfeat__lab {
+  display: block; font-size: .7rem; font-weight: 700; letter-spacing: .06em;
+  color: var(--teal-text); margin-bottom: 5px;
+}
+.albfeat p { margin: 0; font-size: .89rem; color: #4a463a; line-height: 1.75; word-break: keep-all; }
