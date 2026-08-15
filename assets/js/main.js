@@ -15,13 +15,34 @@
   var SITE = {
     brand: "Jee-Hyun NAM",
     tagline: "Architecture · Urban Design",
+    /* `sub` 가 있으면 마우스를 올렸을 때 펼쳐지는 아래 차림표가 생깁니다.
+       `also` 는 그 메뉴에 속한 다른 화면들 — 지금 보고 있는 쪽을 밝혀 줍니다. */
     nav: [
       { label: "HOME",     file: "index.html"    },
-      { label: "ABOUT",    file: "about.html"    },
-      { label: "RESEARCH", file: "works.html"    },
-      { label: "DATA ANALYSIS", file: "pictures.html" },
-      { label: "TRAVEL",   file: "travel.html"   },
-      { label: "MAP",      file: "map.html"      },
+      { label: "ABOUT",    file: "about.html", sub: [
+        { label: "Education",     file: "about.html#education"  },
+        { label: "Career",        file: "about.html#career"     },
+        { label: "Awards",        file: "about.html#awards"     },
+        { label: "Committees",    file: "about.html#committees" },
+        { label: "Presentations", file: "about.html#talks"      }
+      ] },
+      { label: "RESEARCH", file: "works.html", sub: [
+        { label: "Journals",   file: "works.html?tab=papers"  },
+        { label: "Reports",    file: "works.html?tab=reports" },
+        { label: "이슈 대응",  file: "works.html?tab=issues"  },
+        { label: "학위논문",   file: "works.html?tab=theses"  }
+      ] },
+      { label: "DATA ANALYSIS", file: "pictures.html",
+        also: ["defense-cluster.html", "flood-basement.html"], sub: [
+        { label: "방위산업 클러스터", file: "defense-cluster.html" },
+        { label: "침수 반지하",      file: "flood-basement.html" }
+      ] },
+      { label: "TRAVEL",   file: "travel.html", also: ["travel-post.html"] },
+      { label: "MAP",      file: "map.html", sub: [
+        { label: "핫플",     file: "map.html?g=hot"    },
+        { label: "도시건축", file: "map.html?g=urban"  },
+        { label: "부동산",   file: "map.html?g=estate" }
+      ] },
       { label: "BLOG",     file: "blog.html"     },
       { label: "CONTACT",  file: "contact.html"  }
     ],
@@ -59,10 +80,67 @@
     brand.innerHTML = SITE.brand + "<small>" + SITE.tagline + "</small>";
 
     var nav = el("nav", { class: "nav", "aria-label": "Main" });
-    SITE.nav.forEach(function (item) {
-      var a = el("a", { href: item.file }, item.label);
-      if (item.file === here) a.setAttribute("aria-current", "page");
-      nav.appendChild(a);
+    SITE.nav.forEach(function (item, idx) {
+      /* 지금 이 화면 자체인가 / 이 메뉴에 딸린 다른 화면인가를 나눕니다.
+         aria-current="page" 는 '이 링크가 지금 문서'일 때만 붙여야 하므로,
+         딸린 화면일 때는 밑줄만 켜는 표시(is-here)를 씁니다. */
+      var isSelf  = item.file === here;
+      var inGroup = isSelf || (item.also || []).indexOf(here) >= 0;
+
+      function markHere(node) {
+        if (isSelf) node.setAttribute("aria-current", "page");
+        else if (inGroup) node.classList.add("is-here");
+      }
+
+      if (!item.sub) {
+        var plain = el("a", { href: item.file }, item.label);
+        markHere(plain);
+        nav.appendChild(plain);
+        return;
+      }
+
+      /* 아래로 펼쳐지는 차림표 — 마우스를 올리거나 단추를 누르면 열립니다 */
+      var id = "nav-sub-" + idx;
+      var group = el("div", { class: "nav__group" });
+      var a = el("a", { href: item.file, class: "nav__top" }, item.label);
+      markHere(a);
+
+      var open = el("button", {
+        class: "nav__caret", type: "button",
+        "aria-label": item.label + " 하위 메뉴", "aria-expanded": "false",
+        "aria-controls": id
+      }, '<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>');
+
+      var sub = el("div", { class: "nav__sub", id: id });
+      var subin = el("div", { class: "nav__subin" });   // 서랍에서 접었다 펴는 데 쓰입니다
+      item.sub.forEach(function (s) {
+        subin.appendChild(el("a", { href: s.file }, s.label));
+      });
+      sub.appendChild(subin);
+
+      open.addEventListener("click", function (e) {
+        e.preventDefault();
+        var was = group.classList.contains("is-open");
+        closeGroups();
+        group.classList.toggle("is-open", !was);
+        open.setAttribute("aria-expanded", was ? "false" : "true");
+      });
+
+      group.appendChild(a);
+      group.appendChild(open);
+      group.appendChild(sub);
+      nav.appendChild(group);
+    });
+
+    function closeGroups() {
+      [].forEach.call(nav.querySelectorAll(".nav__group.is-open"), function (g) {
+        g.classList.remove("is-open");
+        var b = g.querySelector(".nav__caret");
+        if (b) b.setAttribute("aria-expanded", "false");
+      });
+    }
+    document.addEventListener("click", function (e) {
+      if (!nav.contains(e.target)) closeGroups();
     });
 
     var toggle = el("button", {
@@ -89,13 +167,16 @@
       else { toggle.focus(); }
     });
     nav.addEventListener("click", function (e) {
-      if (e.target.tagName === "A") {
+      if (e.target.closest && e.target.closest("a")) {
         document.body.classList.remove("nav-open");
         toggle.setAttribute("aria-expanded", "false");
+        closeGroups();
       }
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && document.body.classList.contains("nav-open")) {
+      if (e.key !== "Escape") return;
+      closeGroups();
+      if (document.body.classList.contains("nav-open")) {
         document.body.classList.remove("nav-open");
         toggle.setAttribute("aria-expanded", "false");
         toggle.focus();
@@ -1116,15 +1197,21 @@
       }).join("");
     }
 
+    /* 주소에 ?tab=... 이 붙어 오면 그 갈래를 펴 놓습니다 (상단 차림표에서 옵니다) */
+    var want = new URLSearchParams(location.search).get("tab");
+    var start = 0;
+    cats.forEach(function (c, i) { if (c.key === want) start = i; });
+
     var tabs = '<div class="pub-tabs" role="tablist" aria-label="연구 분류">';
     var panels = '<div class="pub-panels">';
     cats.forEach(function (cat, i) {
       var count = (R[cat.key] || []).length;
-      tabs += '<button class="pub-tab' + (i === 0 ? " active" : "") + '" role="tab" aria-selected="' +
-        (i === 0 ? "true" : "false") + '" data-cat="' + cat.key + '">' +
+      var on = i === start;
+      tabs += '<button class="pub-tab' + (on ? " active" : "") + '" role="tab" aria-selected="' +
+        (on ? "true" : "false") + '" data-cat="' + cat.key + '">' +
         escapeHtml(cat.label) + ' <span class="pub-tab__n">' + count + "</span></button>";
-      panels += '<div class="pub-panel' + (i === 0 ? " active" : "") + '" role="tabpanel" data-cat="' + cat.key + '"' +
-        (i === 0 ? "" : " hidden") + ">" + panelBody(cat) + "</div>";
+      panels += '<div class="pub-panel' + (on ? " active" : "") + '" role="tabpanel" data-cat="' + cat.key + '"' +
+        (on ? "" : " hidden") + ">" + panelBody(cat) + "</div>";
     });
     mount.innerHTML = tabs + "</div>" + panels + "</div>";
 

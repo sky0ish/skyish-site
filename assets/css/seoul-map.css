@@ -9,11 +9,11 @@
   box-shadow:inset 0 1px 0 rgba(255,255,255,.95), 0 2px 4px rgba(90,70,20,.12);}
 .mtabs a:hover{transform:translateY(-2px);color:var(--map-accent,#4a3c14);}
 .mtabs a.on{font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 3px 7px rgba(60,50,20,.16);}
-.mtabs a.c-utokyo.on{background:#d8e6f8;border-color:#2a5fa8;color:#1c4478;}
-.mtabs a.c-food.on  {background:#fbdcd8;border-color:#d63a2f;color:#8e281f;}
-.mtabs a.c-cafe.on  {background:#fbedc9;border-color:#d9a52c;color:#7a5c10;}
-.mtabs a.c-memory.on{background:#e9dcf5;border-color:#ff2d95;color:#4e3168;}
-.mtabs a.c-arch.on  {background:#d6e9dd;border-color:#ef7d18;color:#143b26;}
+.mtabs a.c-food.on{background:#fbdcd8;border-color:#d63a2f;color:#8e281f;}
+.mtabs a.c-cafe.on{background:#fbedc9;border-color:#d9a52c;color:#7a5c10;}
+.mtabs a.c-apt.on {background:#d8e6f8;border-color:#2a5fa8;color:#1c4478;}
+.mtabs a.c-arch.on{background:#fce3cd;border-color:#ef7d18;color:#9a4e05;}
+.mtabs a.c-hot.on {background:#ffdcee;border-color:#ff2d95;color:#b5106a;}
 
 /* 분류 설명 */
 .catdesc{display:flex;align-items:flex-start;gap:13px;margin:0 0 16px;padding:14px 18px;
@@ -68,11 +68,11 @@
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));
   clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
 /* 분류 색 — 범례·목록 어디서나 같게 */
-.ly.c-utokyo .lydot i, .lydot.c-utokyo i{background:#2a5fa8;}
-.ly.c-food   .lydot i, .lydot.c-food   i{background:#d63a2f;}
-.ly.c-cafe   .lydot i, .lydot.c-cafe   i{background:#e8b53a;}
-.ly.c-memory .lydot i, .lydot.c-memory i{background:#ff2d95;}
-.ly.c-arch   .lydot i, .lydot.c-arch   i{background:#ef7d18;}
+.ly.c-food .lydot i, .lydot.c-food i{background:#d63a2f;}
+.ly.c-cafe .lydot i, .lydot.c-cafe i{background:#e8b53a;}
+.ly.c-apt  .lydot i, .lydot.c-apt  i{background:#2a5fa8;}
+.ly.c-arch .lydot i, .lydot.c-arch i{background:#ef7d18;}
+.ly.c-hot  .lydot i, .lydot.c-hot  i{background:#ff2d95;}
 .lyall{margin-top:4px;padding:4px 5px;border-radius:5px;border:1px solid #e5ddc9;
   background:#fff;font-family:inherit;font-size:9.5px;color:#a09a86;cursor:pointer;width:100%;}
 .lyall:hover{background:#f7f4ec;}
@@ -161,11 +161,11 @@
          drop-shadow(0 5px 8px rgba(0,0,0,.32));
   clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
 /* 분류별 색 */
-.cmark.c-utokyo i,.cdmark.c-utokyo i{background:#2a5fa8;}
-.cmark.c-food   i,.cdmark.c-food   i{background:#d63a2f;}
-.cmark.c-cafe   i,.cdmark.c-cafe   i{background:#e8b53a;}
-.cmark.c-memory i,.cdmark.c-memory i{background:#ff2d95;}
-.cmark.c-arch   i,.cdmark.c-arch   i{background:#ef7d18;}
+.cmark.c-food i,.cdmark.c-food i{background:#d63a2f;}
+.cmark.c-cafe i,.cdmark.c-cafe i{background:#e8b53a;}
+.cmark.c-apt  i,.cdmark.c-apt  i{background:#2a5fa8;}
+.cmark.c-arch i,.cdmark.c-arch i{background:#ef7d18;}
+.cmark.c-hot  i,.cdmark.c-hot  i{background:#ff2d95;}
 .cmark b{margin-top:2px;padding:1px 7px;border-radius:100px;background:rgba(255,255,255,.95);
   border:1px solid var(--map-line,#e6dfcb);font-size:11.5px;font-weight:600;
   color:#2f2a1d;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.18);}
@@ -197,18 +197,18 @@
              0 1px 2px rgba(0,0,0,.28);}
 .apdot.star i{width:16px;height:16px;border:none;box-shadow:none;border-radius:0;
   clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
-.apcat.c-utokyo .apdot i{background:#2a5fa8;}
-.apcat.c-food   .apdot i{background:#d63a2f;}
-.apcat.c-cafe   .apdot i{background:#e8b53a;}
-.apcat.c-memory .apdot i{background:#ff2d95;}
-.apcat.c-arch   .apdot i{background:#ef7d18;}
+.apcat.c-food .apdot i{background:#d63a2f;}
+.apcat.c-cafe .apdot i{background:#e8b53a;}
+.apcat.c-apt  .apdot i{background:#2a5fa8;}
+.apcat.c-arch .apdot i{background:#ef7d18;}
+.apcat.c-hot  .apdot i{background:#ff2d95;}
 
 /* 분류별 파스텔 버튼 */
-.apcat.c-utokyo{background:#eef3fb;border-color:#c6d7ee;color:#24548f;}
-.apcat.c-food  {background:#fdefed;border-color:#f2c6c0;color:#a83127;}
-.apcat.c-cafe  {background:#fdf7e8;border-color:#f0ddb2;color:#8f6c15;}
-.apcat.c-memory{background:#ffe9f3;border-color:#ffb6d5;color:#c01467;}
-.apcat.c-arch  {background:#fdf0e2;border-color:#f4d3ae;color:#a1550a;}
+.apcat.c-food{background:#fdefed;border-color:#f2c6c0;color:#a83127;}
+.apcat.c-cafe{background:#fdf7e8;border-color:#f0ddb2;color:#8f6c15;}
+.apcat.c-apt {background:#eef3fb;border-color:#c6d7ee;color:#24548f;}
+.apcat.c-arch{background:#fdf0e2;border-color:#f4d3ae;color:#a1550a;}
+.apcat.c-hot {background:#ffe9f3;border-color:#ffb6d5;color:#c01467;}
 .apcat:hover{filter:brightness(.97);}
 /* 고른 분류는 회색으로 — 어느 것을 고르셨는지 한눈에 */
 .apcat.on{background:#5c6068 !important;border-color:#464a51 !important;color:#fff !important;

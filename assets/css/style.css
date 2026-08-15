@@ -249,14 +249,63 @@ ul { list-style: none; padding: 0; }
   transition: transform .3s var(--ease);
 }
 .nav a:hover { opacity: 1; }
-.nav a:hover::after, .nav a[aria-current="page"]::after { transform: scaleX(1); }
-.nav a[aria-current="page"] { opacity: 1; }
+.nav a:hover::after, .nav a[aria-current="page"]::after, .nav a.is-here::after { transform: scaleX(1); }
+.nav a[aria-current="page"], .nav a.is-here { opacity: 1; }
+
+/* 하위 차림표로 건너뛴 자리가 고정 머리글에 가리지 않게
+   (앵커로 쓰이는 제목·구획만 — 모든 id 에 걸면 안쪽 스크롤 상자까지 밀립니다) */
+:where(h1, h2, h3, section, article)[id] { scroll-margin-top: 96px; }
+
+/* ── 펼쳐지는 하위 차림표 ────────────────────────────────── */
+.nav__group { position: relative; display: flex; align-items: center; gap: 3px; }
+.nav__caret {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; margin: -4px -6px -4px -3px;   /* 겉보기는 그대로, 누를 곳만 넓힘 */
+  padding: 0; color: #fff; opacity: .6;
+  transition: transform .25s var(--ease), opacity .25s var(--ease);
+}
+.nav__caret svg { width: 9px; height: 6px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.nav__group:hover .nav__caret, .nav__group.is-open .nav__caret { opacity: 1; }
+.nav__group.is-open .nav__caret { transform: rotate(180deg); }
+.site-header.is-solid .nav__caret { color: var(--ink); }
+
+.nav__sub {
+  position: absolute; top: 100%; left: 50%; z-index: 300;
+  padding-top: 14px; min-width: 156px;
+  opacity: 0; visibility: hidden; transform: translate(-50%, -5px);
+  transition: opacity .2s var(--ease), transform .2s var(--ease), visibility .2s;
+}
+.nav__subin { display: flex; flex-direction: column; gap: 6px; }
+.nav__group:hover .nav__sub, .nav__group:focus-within .nav__sub, .nav__group.is-open .nav__sub {
+  opacity: 1; visibility: visible; transform: translate(-50%, 0);
+}
+.nav__sub a {
+  display: block; text-align: center; white-space: nowrap;
+  padding: 9px 18px; font-size: .8rem; font-weight: 500; letter-spacing: 0;
+  color: var(--ink) !important; opacity: 1;
+  background: rgba(255, 255, 255, .96); border: 1px solid var(--line);
+  border-radius: 7px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 3px 9px rgba(28,26,25,.16);
+  transition: .18s var(--ease);
+}
+.nav__sub a::after { content: none; }
+.nav__sub a:hover {
+  background: #fff; color: var(--teal-text) !important;
+  border-color: var(--teal); transform: translateY(-1px);
+}
 
 /* solid state after scroll or on inner (non-hero) pages */
 .site-header.is-solid {
-  background: rgba(246, 244, 241, .9);
-  backdrop-filter: saturate(140%) blur(12px);
+  background: rgba(246, 244, 241, .97);
   box-shadow: 0 1px 0 var(--line);
+}
+/* 흐림 효과는 넓은 화면에서만 — 좁은 화면에서는 이 효과가
+   고정된 메뉴 서랍을 머리글 높이 안에 가둬 버립니다. */
+@media (min-width: 761px) {
+  .site-header.is-solid {
+    background: rgba(246, 244, 241, .9);
+    backdrop-filter: saturate(140%) blur(12px);
+  }
 }
 .site-header.is-solid .brand,
 .site-header.is-solid .nav a { color: var(--ink); }
@@ -1517,17 +1566,60 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   .nav-toggle { display: block; }
   .nav {
     position: fixed; inset: 0 0 0 auto; width: min(80vw, 340px);
-    flex-direction: column; align-items: flex-start; justify-content: center; gap: 1.4rem;
-    padding: 4rem 2.4rem; background: var(--charcoal);
+    flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 1.1rem;
+    padding: 4.6rem 2.4rem 2.4rem; background: var(--charcoal);
+    overflow-y: auto; overscroll-behavior: contain;
     transform: translateX(100%); visibility: hidden;
     transition: transform .4s var(--ease), visibility .4s var(--ease);
     box-shadow: var(--shadow-lg);
   }
   body.nav-open .nav { transform: translateX(0); visibility: visible; }
+  .nav > a, .nav > .nav__group { flex: none; }
   .nav a { color: #fff !important; font-size: 1.3rem; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .03em; }
   .nav::before {
     content: "MENU"; position: absolute; top: 26px; left: 2.4rem;
     font-size: .7rem; letter-spacing: .3em; color: #8f8885;
+  }
+
+  /* 서랍 안에서는 아래로 밀려 나오는 방식 */
+  .nav__group { display: block; width: 100%; }
+  .nav__group > .nav__top { display: inline-block; }
+  .nav__caret {
+    position: absolute; top: 0; right: 0; width: 44px; height: 44px;
+    color: #fff !important;   /* is-solid 규칙(어두운 글자색)이 서랍 안까지 따라오지 않게 */
+    opacity: .55;
+  }
+  .nav__group { position: relative; padding-right: 40px; }
+  .nav__caret svg { width: 12px; height: 8px; stroke-width: 1.6; }
+  /* 서랍에서는 마우스를 올리는 것만으로 펴지지 않습니다 — 화살표를 눌러야 합니다.
+     접혀 있는 동안에는 링크가 탭 순서에서도 빠지도록 visibility 로 감춥니다. */
+  .nav__sub {
+    position: static; transform: none; min-width: 0; width: 100%;
+    padding: 0; margin: 0;
+    display: grid; grid-template-rows: 0fr;
+    opacity: 1; visibility: hidden;
+    transition: grid-template-rows .3s var(--ease), margin .3s var(--ease), visibility .3s;
+  }
+  .nav__group:hover .nav__sub, .nav__group:focus-within .nav__sub {
+    grid-template-rows: 0fr; visibility: hidden;
+  }
+  .nav__group.is-open .nav__sub,
+  .nav__group.is-open:hover .nav__sub,
+  .nav__group.is-open:focus-within .nav__sub {
+    grid-template-rows: 1fr; visibility: visible; transform: none; margin-top: .75rem;
+  }
+  .nav__subin { overflow: hidden; display: flex; flex-direction: column; gap: .5rem; }
+  .nav__sub a {
+    text-align: left; padding: .42rem 0 .42rem .95rem;
+    font-family: var(--font-body); font-size: .95rem; text-transform: none;
+    letter-spacing: 0; font-weight: 400;
+    color: rgba(255,255,255,.72) !important;
+    background: none; border: none; border-left: 2px solid rgba(255,255,255,.22);
+    border-radius: 0; box-shadow: none; white-space: normal;
+  }
+  .nav__sub a:hover {
+    background: none; transform: none;
+    color: #fff !important; border-left-color: var(--teal);
   }
   body.nav-open::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; }
 

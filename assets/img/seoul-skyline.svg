@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 260" fill="#101820" aria-hidden="true" focusable="false">
+  <!-- 서울 스카이라인 실루엣 — 남산·N서울타워 · 63빌딩 · IFC · DDP · 롯데월드타워 -->
+
+  <!-- 남산 능선 -->
+  <path d="M0 260 V206 C34 200 62 186 92 170 C124 152 152 132 186 124 C214 117 238 122 262 132 C286 142 306 156 330 166 L330 260 Z"/>
+
+  <!-- N서울타워 (남산 위) -->
+  <g>
+    <rect x="180" y="70" width="7" height="56"/>          <!-- 안테나 -->
+    <path d="M170 118 h27 l-4 16 h-19 Z"/>                 <!-- 전망대 -->
+    <path d="M175 134 h17 l6 40 h-29 Z"/>                  <!-- 몸통 -->
+    <path d="M167 174 h33 l7 32 h-47 Z"/>                  <!-- 기단 -->
+  </g>
+
+  <!-- 한강 다리 (아치) -->
+  <g>
+    <rect x="330" y="196" width="196" height="6"/>
+    <path d="M340 196 C368 168 404 168 432 196 L426 196 C402 176 370 176 346 196 Z"/>
+    <path d="M434 196 C462 168 498 168 526 196 L520 196 C496 176 464 176 440 196 Z"/>
+    <rect x="352" y="196" width="4" height="18"/>
+    <rect x="428" y="196" width="4" height="18"/>
+    <rect x="504" y="196" width="4" height="18"/>
+  </g>
+
+  <!-- 여의도 : 63빌딩 (오른쪽으로 좁아지는 판상) -->
+  <path d="M470 96 h34 l10 110 h-54 Z"/>
+
+  <!-- 여의도 IFC 3동 -->
+  <rect x="530" y="128" width="20" height="78"/>
+  <rect x="554" y="112" width="22" height="94"/>
+  <rect x="580" y="140" width="18" height="66"/>
+
+  <!-- 일반 시가지 -->
+  <rect x="604" y="162" width="26" height="44"/>
+  <rect x="634" y="150" width="18" height="56"/>
+  <rect x="656" y="170" width="30" height="36"/>
+  <rect x="690" y="156" width="20" height="50"/>
+
+  <!-- DDP (동대문디자인플라자) 곡면 -->
+  <path d="M714 206 C726 178 762 166 800 172 C830 177 848 190 856 206 Z"/>
+
+  <!-- 시가지 -->
+  <rect x="862" y="158" width="22" height="48"/>
+  <rect x="888" y="172" width="28" height="34"/>
+  <rect x="920" y="146" width="20" height="60"/>
+  <rect x="944" y="166" width="26" height="40"/>
+
+  <!-- 롯데월드타워 (가늘고 높게, 끝이 갈라진 형태) -->
+  <g>
+    <path d="M1006 42 l10 0 l14 164 h-38 Z"/>
+    <rect x="1009" y="20" width="4" height="24"/>
+  </g>
+
+  <!-- 잠실 일대 -->
+  <rect x="1042" y="168" width="24" height="38"/>
+  <rect x="1070" y="152" width="18" height="54"/>
+  <rect x="1092" y="176" width="30" height="30"/>
+  <rect x="1126" y="160" width="20" height="46"/>
+  <rect x="1150" y="180" width="34" height="26"/>
+  <rect x="1188" y="166" width="22" height="40"/>
+  <rect x="1214" y="186" width="26" height="20"/>
+
+  <!-- 지면 -->
+  <rect x="0" y="206" width="1240" height="6"/>
+</svg>
