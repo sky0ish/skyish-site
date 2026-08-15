@@ -53,6 +53,9 @@ export const CATS = [
 ];
 export const CAT_NAME = Object.fromEntries(CATS);
 
+/** 철도역 자료 — 서울과 그 언저리 440곳 (OpenStreetMap 에서 받아 정리) */
+const RAIL_URL = "assets/data/seoul-rail.json";
+
 /** 분류별 지도 표시 모양과 안내 문구 */
 export const CAT_INFO = {
   food: { shape: "star", mark: "빨간 별",
@@ -326,25 +329,72 @@ export async function initMap(mountId = "mapapp") {
   let layer = L.layerGroup().addTo(map);
 
   // ── 레이어 체크박스 ──
+  //    회원이 올린 분류 다섯 + 기본으로 깔리는 철도역(초록)
   const boxes = document.getElementById("lyBoxes");
   const LEG = CATS.slice();
   boxes.innerHTML = LEG.map(([k, v]) =>
     `<label class="ly c-${k}"><input type="checkbox" data-c="${k}" checked>` +
-    `<span class="lydot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</label>`).join("");
-  boxes.querySelectorAll("input").forEach(c => c.addEventListener("change", () => {
+    `<span class="lydot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</label>`).join("")
+    + `<label class="ly c-rail off"><input type="checkbox" data-rail="1">` +
+      `<span class="lydot rail c-rail"><i></i></span>철도역</label>`;
+
+  boxes.querySelectorAll("input[data-c]").forEach(c => c.addEventListener("change", () => {
     c.checked ? shown.add(c.dataset.c) : shown.delete(c.dataset.c);
     c.closest(".ly").classList.toggle("off", !c.checked);
     draw();
   }));
+  const railBox = boxes.querySelector("input[data-rail]");
+  railBox.addEventListener("change", () => {
+    railBox.closest(".ly").classList.toggle("off", !railBox.checked);
+    setRail(railBox.checked);
+  });
+
   document.getElementById("lyAll").addEventListener("click", () => {
     const on = shown.size < CATS.length;                 // 하나라도 꺼져 있으면 전체 켜기
-    boxes.querySelectorAll("input").forEach(c => {
+    boxes.querySelectorAll("input[data-c]").forEach(c => {
       c.checked = on;
       c.closest(".ly").classList.toggle("off", !on);
       on ? shown.add(c.dataset.c) : shown.delete(c.dataset.c);
     });
     draw();
   });
+
+  /* ── 철도역 레이어 ────────────────────────────────────────
+     assets/data/seoul-rail.json 의 역들을 초록 점으로 깝니다.
+     회원이 올린 장소와 섞이지 않도록 따로 둡니다.
+     처음에는 꺼져 있고, 체크하면 그때 한 번만 자료를 받아 옵니다. */
+  let railLayer = null, railLoading = false;
+  async function setRail(on) {
+    if (!on) { if (railLayer) map.removeLayer(railLayer); return; }
+    if (railLayer) { railLayer.addTo(map); return; }
+    if (railLoading) return;
+    railLoading = true;
+    railBox.disabled = true;
+    try {
+      const rows = await fetch(RAIL_URL).then(r => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      });
+      railLayer = L.layerGroup();
+      rows.forEach(s => {
+        L.marker([s.a, s.o], {
+          zIndexOffset: -400,               // 회원이 올린 장소보다 아래에
+          icon: L.divIcon({
+            className: "", iconSize: [0, 0],
+            html: `<div class="cmark c-rail railmark"><i></i><b>${esc(s.n)}</b></div>`,
+          }),
+        }).bindTooltip(s.l ? `${esc(s.n)} · ${esc(s.l)}` : esc(s.n)).addTo(railLayer);
+      });
+      railLayer.addTo(map);
+    } catch (e) {
+      railBox.checked = false;
+      railBox.closest(".ly").classList.add("off");
+      alert("철도역 자료를 불러오지 못했습니다. 잠시 뒤 다시 눌러주세요.");
+    } finally {
+      railLoading = false;
+      railBox.disabled = false;
+    }
+  }
 
   function tabHtml() {
     const pick = document.getElementById("apCats");

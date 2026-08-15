@@ -28,6 +28,9 @@ image/
 # 침수흔적도 원본 캐시 (API 수집분 50MB 남짓) — 결과 JSON만 저장소에 둡니다
 tools/flood/cache/
 
+# 철도역 원본 (OpenStreetMap 에서 받은 것) — 정리한 seoul-rail.json 만 둡니다
+tools/rail/raw.json
+
 # 방산 네트워크 '따로 전달용' 꾸러미 — 남에게 건네려고 만든 낱개 파일 묶음입니다.
 # 홈페이지에는 defense-cluster.html 로 이미 실려 있고, 그쪽은 로그인 보호가 걸려 있습니다.
 # 이 꾸러미에는 보호가 없어서 함께 올리면 보호가 무의미해집니다.
