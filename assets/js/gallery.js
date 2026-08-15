@@ -94,6 +94,120 @@ async function upload(file, catKey) {
   return { url: sb.storage.from("gallery").getPublicUrl(path).data.publicUrl, path };
 }
 
+/** 붙여넣기(Ctrl+V) 로 들어온 사진을 모읍니다.
+    · 화면을 캡처한 그림  → clipboardData.items 에 담깁니다
+    · 탐색기에서 Ctrl+C 로 복사한 사진 파일 → clipboardData.files 에 담깁니다
+    둘 다 살펴야 어느 쪽으로 넣으셔도 받아집니다. */
+function clipboardImages(e) {
+  const cd = e.clipboardData || window.clipboardData;
+  if (!cd) return [];
+  const out = [], seen = new Set();
+  const add = (f) => {
+    if (!f || !f.type || !f.type.startsWith("image/")) return;
+    const key = f.name + "|" + f.size + "|" + f.type;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(f);
+  };
+  [...(cd.files || [])].forEach(add);                    // 복사해 온 사진 파일
+  [...(cd.items || [])].forEach((it) => {
+    if (it.kind === "file") add(it.getAsFile());         // 캡처한 그림
+  });
+  return out;
+}
+
+/* ── 이름으로 주소 찾기 ────────────────────────────────────
+   건물·장소 이름을 적으면 주소 후보를 찾아 줍니다. (지도와 같은 방식)
+   한국 안에서만 찾고, 열쇠(API key)는 필요 없습니다. */
+async function findAddress(q) {
+  q = (q || "").trim();
+  if (q.length < 2) return [];
+  const pick = (o) => ({ label: o.label, addr: o.addr, lat: o.lat, lng: o.lng });
+
+  // 1) Nominatim — 한국어 주소를 먼저 찾습니다 (도·시 → 구 → 길 → 번호 차례로)
+  try {
+    const u = "https://nominatim.openstreetmap.org/search?format=json&limit=6"
+            + "&addressdetails=1&namedetails=1&accept-language=ko"
+            + "&countrycodes=kr&q=" + encodeURIComponent(q);
+    const j = await fetch(u, { headers: { Accept: "application/json" } }).then((r) => r.json());
+    const out = (j || []).map((h) => {
+      const a = h.address || {};
+      const addr = [
+        a.province || a.state || a.city,
+        a.city && a.city !== a.state ? a.city : "",
+        a.borough || a.county,
+        a.city_district || a.district,
+        a.road || a.pedestrian || a.neighbourhood || a.quarter,
+        a.house_number,
+      ].filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i).join(" ");
+      const nd = h.namedetails || {};
+      return pick({
+        label: nd["name:ko"] || nd.name || (h.display_name || "").split(",")[0],
+        addr: addr || (h.display_name || "").replace(/, 대한민국$/, ""),
+        lat: parseFloat(h.lat), lng: parseFloat(h.lon),
+      });
+    }).filter((x) => x.lat && x.lng && x.addr);
+    if (out.length) return out;
+  } catch (e) { /* 다음 방법으로 */ }
+
+  // 2) Photon — 일부만 쳐도 찾아 줍니다 (한국어가 없으면 영어로 나올 수 있습니다)
+  try {
+    const u = "https://photon.komoot.io/api/?limit=6&lang=ko"
+            + "&lat=37.5665&lon=126.9780&location_bias_scale=0.5&q=" + encodeURIComponent(q);
+    const j = await fetch(u).then((r) => r.json());
+    return (j.features || [])
+      .filter((f) => (f.properties || {}).countrycode === "KR")
+      .map((f) => {
+        const p = f.properties || {}, c = (f.geometry || {}).coordinates || [];
+        const addr = [p.state, p.county, p.city, p.district, p.street, p.housenumber]
+                       .filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i).join(" ");
+        return pick({ label: p.name || q, addr: addr || p.name || "", lat: c[1], lng: c[0] });
+      })
+      .filter((x) => x.lat && x.lng && x.addr);
+  } catch (e) { return []; }
+}
+
+/** 이름칸에 적으면 주소 후보를 아래에 펼쳐 주는 장치를 붙입니다 */
+function attachAddressFinder(nameEl, addrEl, sugEl) {
+  let timer = null, last = "";
+  const hide = () => { sugEl.classList.remove("on"); sugEl.innerHTML = ""; };
+
+  async function look(q) {
+    if (q === last) return;
+    last = q;
+    sugEl.innerHTML = '<div class="gsug__msg">주소를 찾는 중…</div>';
+    sugEl.classList.add("on");
+    const list = await findAddress(q);
+    if (!list.length) {
+      sugEl.innerHTML = '<div class="gsug__msg">찾지 못했습니다. 주소를 직접 적어주세요.</div>';
+      return;
+    }
+    sugEl.innerHTML = list.map((h, i) =>
+      `<button type="button" class="gsug__item" data-i="${i}">` +
+      `<b>${esc(h.label)}</b><span>${esc(h.addr)}</span></button>`).join("");
+    sugEl.querySelectorAll(".gsug__item").forEach((b) => b.addEventListener("click", () => {
+      const h = list[+b.dataset.i];
+      addrEl.value = h.addr;
+      addrEl.dataset.lat = h.lat;
+      addrEl.dataset.lng = h.lng;
+      hide();
+    }));
+  }
+
+  nameEl.addEventListener("input", () => {
+    clearTimeout(timer);
+    const q = nameEl.value.trim();
+    if (q.length < 2) { hide(); return; }
+    timer = setTimeout(() => look(q), 600);      // 타이핑이 멈추면 찾습니다
+  });
+  addrEl.addEventListener("input", () => {
+    delete addrEl.dataset.lat; delete addrEl.dataset.lng;   // 직접 고치면 좌표는 버립니다
+  });
+  document.addEventListener("click", (e) => {
+    if (!sugEl.contains(e.target) && e.target !== nameEl) hide();
+  });
+}
+
 function friendly(m) {
   m = String(m || "");
   if (/schema cache|does not exist|relation/i.test(m))
@@ -138,7 +252,19 @@ export async function initGallery(mountId = "galapp") {
         <select id="mCat"></select>
 
         <label for="mTitle">사진첩 이름 <span class="req">*</span></label>
-        <input type="text" id="mTitle" maxlength="80" placeholder="예: 세운상가 답사">
+        <div class="gfield">
+          <input type="text" id="mTitle" maxlength="80" autocomplete="off"
+                 placeholder="예: 판교 스케일링 하우스 — 적으면 아래 주소를 찾아 드립니다">
+          <div class="gsug" id="mSug"></div>
+        </div>
+
+        <label for="mAddr">주소</label>
+        <input type="text" id="mAddr" maxlength="160" autocomplete="off"
+               placeholder="이름을 적으면 자동으로 채워집니다 (직접 고치셔도 됩니다)">
+
+        <label for="mFeat">건축특징</label>
+        <textarea id="mFeat" maxlength="600" rows="3"
+                  placeholder="설계자 · 준공연도 · 구조와 재료 · 눈여겨볼 점"></textarea>
 
         <label for="mDate">행사 날짜 <span class="req">*</span></label>
         <input type="text" id="mDate" maxlength="12" autocomplete="off"
@@ -283,13 +409,16 @@ export async function initGallery(mountId = "galapp") {
     e.preventDefault(); drop.classList.remove("over");
     addFiles(e.dataTransfer.files);
   });
-  // 창이 열려 있을 때 Ctrl+V 로 캡처한 그림 붙여넣기
+  // 창이 열려 있을 때 Ctrl+V — 캡처한 그림도, 복사해 온 사진 파일도 받습니다
   document.addEventListener("paste", (e) => {
     if (!modal.classList.contains("on")) return;
-    const items = [...((e.clipboardData || {}).items || [])]
-      .filter(i => i.type.startsWith("image/")).map(i => i.getAsFile()).filter(Boolean);
-    if (items.length) { e.preventDefault(); addFiles(items); }
+    const imgs = clipboardImages(e);
+    if (imgs.length) { e.preventDefault(); addFiles(imgs); }
   });
+
+  attachAddressFinder(document.getElementById("mTitle"),
+                      document.getElementById("mAddr"),
+                      document.getElementById("mSug"));
 
   document.getElementById("gNew").addEventListener("click", () => {
     mMsg.textContent = "";
@@ -314,10 +443,15 @@ export async function initGallery(mountId = "galapp") {
     if (!title) { mMsg.textContent = "사진첩 이름을 적어주세요."; return; }
     e.target.disabled = true;
     mMsg.textContent = "만드는 중…";
+    const addrEl = document.getElementById("mAddr");
     const { data, error } = await sb.from("gallery_albums").insert({
       category: mCat.value,
       title,
       event_date: parseDate(mDate.value),
+      address: addrEl.value.trim() || null,
+      lat: addrEl.dataset.lat ? parseFloat(addrEl.dataset.lat) : null,
+      lng: addrEl.dataset.lng ? parseFloat(addrEl.dataset.lng) : null,
+      feature: document.getElementById("mFeat").value.trim() || null,
       owner_name: (me && me.is_admin) ? "" : ((me && me.name) || ""),
       owner_admin: !!(me && me.is_admin),
       created_by: user.id,
@@ -381,6 +515,14 @@ export async function initAlbum(mountId = "albapp") {
           ${album.owner_name ? " · " + esc(album.owner_name) : ""}
           <span id="albn"></span>
         </p>
+        ${album.address ? `<p class="albaddr">📍 ${esc(album.address)}
+          ${album.lat && album.lng
+            ? `<a href="https://www.google.com/maps/search/?api=1&query=${album.lat},${album.lng}"
+                  target="_blank" rel="noopener">지도에서 보기 →</a>` : ""}</p>` : ""}
+        ${album.feature ? `<div class="albfeat">
+          <span class="albfeat__lab">건축특징</span>
+          <p>${esc(album.feature).replace(/\n/g, "<br>")}</p>
+        </div>` : ""}
       </div>
       ${canEdit ? '<div class="albacts">' +
         '<button type="button" class="gbtn" id="albEdit">✎ 내용 고치기</button>' +
@@ -390,7 +532,16 @@ export async function initAlbum(mountId = "albapp") {
     ${canEdit ? `
     <div class="albedit" id="albEditBox" hidden>
       <label for="eTitle">이름</label>
-      <input type="text" id="eTitle" maxlength="80">
+      <div class="gfield">
+        <input type="text" id="eTitle" maxlength="80" autocomplete="off">
+        <div class="gsug" id="eSug"></div>
+      </div>
+      <label for="eAddr">주소</label>
+      <input type="text" id="eAddr" maxlength="160" autocomplete="off"
+             placeholder="이름을 고치면 주소를 다시 찾아 드립니다">
+      <label for="eFeat">건축특징</label>
+      <textarea id="eFeat" maxlength="600" rows="3"
+                placeholder="설계자 · 준공연도 · 구조와 재료 · 눈여겨볼 점"></textarea>
       <label for="eCat">갈래</label>
       <select id="eCat">${CATS.map(([k, v]) =>
         `<option value="${k}"${k === album.category ? " selected" : ""}>${esc(v)}</option>`).join("")}</select>
@@ -484,19 +635,23 @@ export async function initAlbum(mountId = "albapp") {
     addFiles(e.dataTransfer.files);
   });
   document.addEventListener("paste", (e) => {
-    const items = [...(e.clipboardData || {}).items || []]
-      .filter((i) => i.type.startsWith("image/")).map((i) => i.getAsFile());
-    if (items.length) addFiles(items);
+    const imgs = clipboardImages(e);
+    if (imgs.length) { e.preventDefault(); addFiles(imgs); }
   });
 
   /* ── 사진첩 내용 고치기 (이름 · 갈래 · 날짜) ── */
   const eBox = document.getElementById("albEditBox");
   if (eBox) {
     const eMsg = document.getElementById("eMsg");
+    attachAddressFinder(document.getElementById("eTitle"),
+                        document.getElementById("eAddr"),
+                        document.getElementById("eSug"));
     const open = (on) => {
       eBox.hidden = !on;
       if (on) {
         document.getElementById("eTitle").value = album.title || "";
+        document.getElementById("eAddr").value = album.address || "";
+        document.getElementById("eFeat").value = album.feature || "";
         document.getElementById("eCat").value = album.category;
         document.getElementById("eDate").value = ymd(album.event_date);
         eMsg.textContent = "";
@@ -510,11 +665,20 @@ export async function initAlbum(mountId = "albapp") {
       if (!title) { eMsg.textContent = "이름을 적어주세요."; return; }
       ev.target.disabled = true;
       eMsg.textContent = "저장하는 중…";
-      const { error } = await sb.from("gallery_albums").update({
+      const ea = document.getElementById("eAddr");
+      const patch = {
         title,
         category: document.getElementById("eCat").value,
         event_date: parseDate(document.getElementById("eDate").value),
-      }).eq("id", id);
+        address: ea.value.trim() || null,
+        feature: document.getElementById("eFeat").value.trim() || null,
+      };
+      // 후보에서 고르셨을 때만 좌표를 새로 넣습니다 (직접 적으신 주소는 좌표를 모릅니다)
+      if (ea.dataset.lat) {
+        patch.lat = parseFloat(ea.dataset.lat);
+        patch.lng = parseFloat(ea.dataset.lng);
+      }
+      const { error } = await sb.from("gallery_albums").update(patch).eq("id", id);
       ev.target.disabled = false;
       if (error) { eMsg.textContent = friendly(error.message); return; }
       location.reload();
