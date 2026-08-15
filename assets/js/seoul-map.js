@@ -183,7 +183,7 @@ const SHELL = `
     <div class="apfields aprow">
       <div class="apcell">
         <input type="text" id="apName" maxlength="60" autocomplete="off"
-               placeholder="장소 이름 * (예: 아카몬 앞 커피집) — 상호를 적으면 아래에 주소 후보가 뜹니다">
+               placeholder="장소 이름 * (예: 익선동 골목 커피집) — 상호를 적으면 아래에 주소 후보가 뜹니다">
         <div class="apsug" id="apSug"></div>
       </div>
       <input type="text" id="apAddr" maxlength="160" placeholder="주소 * (예: 서울 종로구 사직로 161)">
@@ -196,7 +196,7 @@ const SHELL = `
     </div>
     <div class="apfields">
       <textarea id="apMemo" maxlength="600" rows="1"
-        placeholder="추천사유 및 추억공유&#10;예시) 첫사랑을 만난 장소 / 아르바이트하던 곳 / 논문 쓰며 밤새우던 자리 / 유학 첫날 밥 먹은 집  (안 적으셔도 됩니다)"></textarea>
+        placeholder="추천 이유와 얽힌 기억&#10;예시) 답사 갔다 들른 집 / 설계가 인상 깊었던 곳 / 자주 가던 자리 / 처음 서울 왔을 때 밥 먹은 집  (안 적으셔도 됩니다)"></textarea>
     </div>
     <div class="apfields">
       <label class="apdrop" id="apDrop">
