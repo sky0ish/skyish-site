@@ -164,7 +164,9 @@
       var open = document.body.classList.toggle("nav-open");
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
       if (open) { var first = nav.querySelector("a"); if (first) first.focus(); }
-      else { toggle.focus(); }
+      // 서랍을 닫을 때 펼쳐 둔 하위 차림표도 함께 접습니다.
+      // 그냥 두면 닫힌 서랍 안의 하위 링크에 탭 초점이 계속 걸립니다.
+      else { closeGroups(); toggle.focus(); }
     });
     nav.addEventListener("click", function (e) {
       if (e.target.closest && e.target.closest("a")) {
