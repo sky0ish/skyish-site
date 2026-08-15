@@ -347,3 +347,17 @@
 
 
 
+
+/* 내용 고치기 — 올린 본인과 관리자에게 열립니다 */
+.pedit{margin:10px 0 4px;}
+.pedit .plab{display:block;margin:10px 0 5px;}
+.pedit input,.pedit textarea{width:100%;padding:9px 11px;border:1px solid #ddd6c4;border-radius:7px;
+  font-family:inherit;font-size:13.5px;color:#2f2a1d;background:#fffdf8;line-height:1.6;}
+.pedit input:focus,.pedit textarea:focus{outline:0;border-color:#4f9d92;}
+.pedit textarea{resize:vertical;min-height:66px;}
+.peditfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+.pbtn.save{background:#4f9d92;border-color:#4f9d92;color:#fff;}
+.pbtn.save:hover{background:#3f8b80;}
+.pbtn.edit{background:#fff;border-color:#c6d7ee;color:#24548f;}
+.pbtn.edit:hover{border-color:#2a5fa8;background:#eef3fb;}
+.pemsg{margin-top:9px;font-size:12.5px;color:#7d7768;min-height:1.2em;}

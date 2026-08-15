@@ -106,16 +106,15 @@
             box.innerHTML = "";
             var who = el("span", { class: "authwho" }, escapeHtml(name));
             if (!ok) { who.classList.add("is-pending"); who.title = "승인 대기 중입니다"; }
-            /* 들어와 계실 때는 붉은 '로그인중'. 누르면 로그아웃합니다. */
+            /* 들어와 계실 때는 붉은 '로그인중'. 한 번 더 누르면 로그아웃합니다. */
             var out = el("button", {
               class: "authbtn authbtn--in", type: "button",
-              title: "누르면 로그아웃합니다"
+              title: "한 번 더 누르면 로그아웃합니다"
             }, "로그인중");
-            out.addEventListener("mouseenter", function () { out.textContent = "로그아웃"; });
-            out.addEventListener("focus",      function () { out.textContent = "로그아웃"; });
-            out.addEventListener("mouseleave", function () { out.textContent = "로그인중"; });
-            out.addEventListener("blur",       function () { out.textContent = "로그인중"; });
-            out.addEventListener("click", function () { m.logout(url("index.html")); });
+            out.addEventListener("click", function () {
+              out.textContent = "나가는 중";
+              m.logout(url("index.html"));
+            });
             box.appendChild(who);
             box.appendChild(out);
           });

@@ -275,8 +275,26 @@ export async function initAlbum(mountId = "albapp") {
           <span id="albn"></span>
         </p>
       </div>
-      ${canEdit ? '<button type="button" class="gbtn albdel" id="albDel">사진첩 지우기</button>' : ""}
+      ${canEdit ? '<div class="albacts">' +
+        '<button type="button" class="gbtn" id="albEdit">✎ 내용 고치기</button>' +
+        '<button type="button" class="gbtn albdel" id="albDel">사진첩 지우기</button>' +
+        "</div>" : ""}
     </div>
+    ${canEdit ? `
+    <div class="albedit" id="albEditBox" hidden>
+      <label for="eTitle">이름</label>
+      <input type="text" id="eTitle" maxlength="80">
+      <label for="eCat">갈래</label>
+      <select id="eCat">${CATS.map(([k, v]) =>
+        `<option value="${k}"${k === album.category ? " selected" : ""}>${esc(v)}</option>`).join("")}</select>
+      <label for="eDate">날짜</label>
+      <input type="date" id="eDate">
+      <div class="albedit__foot">
+        <button type="button" class="gbtn" id="eCancel">그만두기</button>
+        <button type="button" class="gbtn gbtn--dark" id="eSave">저장하기</button>
+      </div>
+      <p class="albedit__msg" id="eMsg"></p>
+    </div>` : ""}
     ${canAdd ? `
     <label class="albdrop" id="albDrop">
       <b>＋ 사진 올리기</b>
@@ -362,6 +380,38 @@ export async function initAlbum(mountId = "albapp") {
       .filter((i) => i.type.startsWith("image/")).map((i) => i.getAsFile());
     if (items.length) addFiles(items);
   });
+
+  /* ── 사진첩 내용 고치기 (이름 · 갈래 · 날짜) ── */
+  const eBox = document.getElementById("albEditBox");
+  if (eBox) {
+    const eMsg = document.getElementById("eMsg");
+    const open = (on) => {
+      eBox.hidden = !on;
+      if (on) {
+        document.getElementById("eTitle").value = album.title || "";
+        document.getElementById("eCat").value = album.category;
+        document.getElementById("eDate").value = (album.event_date || "").slice(0, 10);
+        eMsg.textContent = "";
+        document.getElementById("eTitle").focus();
+      }
+    };
+    document.getElementById("albEdit").addEventListener("click", () => open(eBox.hidden));
+    document.getElementById("eCancel").addEventListener("click", () => open(false));
+    document.getElementById("eSave").addEventListener("click", async (ev) => {
+      const title = document.getElementById("eTitle").value.trim();
+      if (!title) { eMsg.textContent = "이름을 적어주세요."; return; }
+      ev.target.disabled = true;
+      eMsg.textContent = "저장하는 중…";
+      const { error } = await sb.from("gallery_albums").update({
+        title,
+        category: document.getElementById("eCat").value,
+        event_date: document.getElementById("eDate").value || null,
+      }).eq("id", id);
+      ev.target.disabled = false;
+      if (error) { eMsg.textContent = friendly(error.message); return; }
+      location.reload();
+    });
+  }
 
   const del = document.getElementById("albDel");
   if (del) del.addEventListener("click", async () => {

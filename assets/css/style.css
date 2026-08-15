@@ -1943,3 +1943,19 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
     inset 0 -4px 8px rgba(0,0,0,.26),
     0 8px 20px rgba(200,64,47,.6);
 }
+
+/* 사진첩 내용 고치기 */
+.albacts { display: flex; gap: 8px; flex-wrap: wrap; }
+.albedit {
+  margin: 0 0 1.4rem; padding: 20px; background: #fff;
+  border: 1px solid var(--line); border-radius: var(--radius-md);
+}
+.albedit label { display: block; font-size: .8rem; font-weight: 500; color: #5a5648; margin: 12px 0 6px; }
+.albedit label:first-child { margin-top: 0; }
+.albedit input, .albedit select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px;
+  font-family: inherit; font-size: .92rem; background: #fff; color: var(--ink);
+}
+.albedit input:focus, .albedit select:focus { outline: 0; border-color: var(--teal); }
+.albedit__foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.albedit__msg { margin: 10px 0 0; font-size: .85rem; color: var(--mauve); min-height: 1.2em; }
