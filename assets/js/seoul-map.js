@@ -1,7 +1,48 @@
-// ─── MAP — 서울의 맛집 · 카페 · 아파트 · 건축물 · 핫플 ────────────
+// ─── MAP — 서울 지도 ─────────────────────────────────────────
 // u-tokyo.kr 의 도쿄 지도를 서울판으로 옮긴 것입니다.
 // 화면은 map.html, 장소 자료는 Supabase 의 map_places 표에 쌓입니다.
+//
+// 지도는 세 갈래로 나뉩니다 — 핫플 · 도시건축 · 부동산.
+// 주소 뒤에 ?g=hot / ?g=urban / ?g=estate 를 붙여 갈래를 고릅니다.
+// 화면 구성은 셋이 같고, 올린 장소만 갈래별로 따로 쌓입니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
+
+export const GROUPS = {
+  hot:    { name: "핫플",     en: "Hot Places",     first: "hot",
+            lead: "요즘 사람들이 모이는 곳 — 맛집 · 카페 · 거리 · 새로 생긴 공간을 모았습니다." },
+  urban:  { name: "도시건축", en: "Urban & Architecture", first: "arch",
+            lead: "눈여겨본 건축물과 도시공간 — 설계와 배치, 주변과의 관계를 기록합니다." },
+  estate: { name: "부동산",   en: "Real Estate",    first: "apt",
+            lead: "아파트 · 주거단지 · 개발지 — 위치와 여건을 지도 위에 정리합니다." },
+};
+export const GROUP_KEYS = Object.keys(GROUPS);
+
+/** 지금 보고 있는 갈래 (주소에 없거나 모르는 값이면 핫플) */
+export function currentGroup() {
+  const g = new URLSearchParams(location.search).get("g");
+  return GROUPS[g] ? g : "hot";
+}
+
+/** 배너 제목·안내글·탭 제목을 지금 갈래에 맞춥니다 */
+function applyGroupChrome(key) {
+  const g = GROUPS[key];
+  const en   = document.querySelector(".banner .en");
+  const h1   = document.querySelector(".banner h1");
+  const lead = document.getElementById("mapLead");
+  if (en)   en.textContent   = g.en;
+  if (h1)   h1.textContent   = "서울 " + g.name;
+  if (lead) lead.textContent = g.lead;
+  document.title = `MAP · ${g.name} — Jee-Hyun NAM`;
+  document.body.dataset.mapGroup = key;
+
+  /* 갈래 사이를 오갈 수 있게 지도 위에 작은 단추줄을 둡니다 */
+  const row = document.getElementById("mapGroups");
+  if (row) {
+    row.innerHTML = GROUP_KEYS.map(k =>
+      `<a href="map.html?g=${k}"${k === key ? ' class="on" aria-current="page"' : ""}>${GROUPS[k].name}</a>`
+    ).join("");
+  }
+}
 
 export const CATS = [
   ["food", "맛집"],
@@ -96,7 +137,7 @@ async function describeFromWiki(name) {
       return hit ? hit.title : null;
     } catch (e) { return null; }
   };
-  for (const host of ["ko.wikipedia.org", "ja.wikipedia.org"]) {
+  for (const host of ["ko.wikipedia.org", "en.wikipedia.org"]) {
     const title = await find(host);
     if (!title) continue;
     const sum = await get(host, title);
@@ -145,7 +186,7 @@ const SHELL = `
                placeholder="장소 이름 * (예: 아카몬 앞 커피집) — 상호를 적으면 아래에 주소 후보가 뜹니다">
         <div class="apsug" id="apSug"></div>
       </div>
-      <input type="text" id="apAddr" maxlength="160" placeholder="주소 * (예: 東京都文京区本郷5-25-16)">
+      <input type="text" id="apAddr" maxlength="160" placeholder="주소 * (예: 서울 종로구 사직로 161)">
       <button type="button" class="appin" id="apFind">🔎 주소로 찾기</button>
       <button type="button" class="appin" id="apPin">📍 지도에서 찍기</button>
     </div>
@@ -216,8 +257,12 @@ export async function initMap(mountId = "mapapp") {
   if (!mount) return;
   mount.innerHTML = SHELL;
 
+  const GRP = currentGroup();               // hot · urban · estate
+  applyGroupChrome(GRP);
+
+  // 주소에 분류가 없으면 그 갈래에 가장 어울리는 분류로 시작합니다
   let cur = new URLSearchParams(location.search).get("cat");
-  if (!CAT_NAME[cur]) cur = "food";
+  if (!CAT_NAME[cur]) cur = GROUPS[GRP].first;
 
   const map = L.map("cmap", { scrollWheelZoom: true, zoomControl: true })
                .setView([37.5665, 126.9780], 11);
@@ -245,7 +290,8 @@ export async function initMap(mountId = "mapapp") {
   // ── 로그인 상태 ──
   const user = await currentUser();
   const me = user ? await myProfile() : null;
-  const canAdd = !!(me && (me.approved || me.is_admin));
+  // 이 홈페이지는 승인 여부를 profiles.analysis_access 로 관리합니다
+  const canAdd = !!(me && (me.analysis_access || me.is_admin));
   const isAdmin = !!(me && me.is_admin);
   document.getElementById("addplace").classList.toggle("on", canAdd);
   const down = document.getElementById("mapDown");
@@ -257,6 +303,7 @@ export async function initMap(mountId = "mapapp") {
   });
 
   let places = [];                          // 지도에 그려진 장소들
+  let loadError = "";                       // 불러오기가 실패했을 때 알려줄 말
   let markers = [];                         // 그 장소들의 지도 표시
   const shown = new Set(CATS.map(([k]) => k));   // 지도에 보이는 분류 (처음엔 모두)
   let layer = L.layerGroup().addTo(map);
@@ -289,7 +336,11 @@ export async function initMap(mountId = "mapapp") {
       `<span class="apdot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</button>`).join("");
     pick.querySelectorAll(".apcat").forEach(b => b.addEventListener("click", () => {
       cur = b.dataset.c;
-      history.replaceState(null, "", "?cat=" + cur);
+      // 갈래(g)는 그대로 두고 분류(cat)만 바꿉니다 — 주소를 통째로 바꾸면
+      // ?g= 가 사라져 새로고침·공유했을 때 엉뚱한 갈래로 열립니다.
+      const q = new URLSearchParams(location.search);
+      q.set("g", GRP); q.set("cat", cur);
+      history.replaceState(null, "", "?" + q.toString());
       tabHtml(); draw();
     }));
   }
@@ -298,12 +349,27 @@ export async function initMap(mountId = "mapapp") {
     const list = [...shown];
     const base = [];   // 기본 제공 장소 없음 — 모두 회원이 등록합니다
     let rows = [];
+    loadError = "";
     if (list.length) {
       try {
-        const r = await sb.from("map_places").select("*").in("category", list)
+        const r = await sb.from("map_places").select("*")
+                          .eq("grp", GRP).in("category", list)
                           .order("created_at", { ascending: false });
-        rows = r.data || [];
-      } catch (e) { rows = []; }
+        // supabase 는 조회 실패를 예외로 던지지 않고 error 로 돌려줍니다.
+        // 이걸 안 보면 표가 없어도 "장소 0곳" 으로만 보여 원인을 알 수 없습니다.
+        if (r.error) {
+          const m = r.error.message || "";
+          loadError = /schema cache|does not exist|relation/i.test(m)
+            ? "지도 자료칸이 아직 준비되지 않았습니다 — auth/map_setup.sql 을 한 번 실행해주세요."
+            : "장소를 불러오지 못했습니다: " + m;
+          rows = [];
+        } else {
+          rows = r.data || [];
+        }
+      } catch (e) {
+        loadError = "장소를 불러오지 못했습니다: " + (e && e.message ? e.message : e);
+        rows = [];
+      }
     }
     places = base.concat(rows);
   }
@@ -333,11 +399,13 @@ export async function initMap(mountId = "mapapp") {
   /** 오른쪽 목록 — 분류별로 묶어서 보여준다 */
   function drawList() {
     const box = document.getElementById("plist");
-    const listed = places.filter(p => !p.builtin);   // 기본 캠퍼스는 왼쪽 범례에서 봅니다
+    const listed = places.filter(p => !p.builtin);
     const total = listed.length;
     if (!total) {
       box.innerHTML = '<div class="pltitle">회원이 올린 장소 0곳</div>' +
-        '<div class="plempty">아직 없습니다.<br>아래에서 올려주세요.</div>';
+        '<div class="plempty">' + (loadError
+          ? esc(loadError)
+          : "아직 없습니다.<br>아래에서 올려주세요.") + "</div>";
       return;
     }
     const canAny = places.some(p => !p.builtin && ((user && p.created_by === user.id) || isAdmin));
@@ -355,7 +423,7 @@ export async function initMap(mountId = "mapapp") {
         const can = mine || (isAdmin && !p.builtin);
         const dot = `<span class="lydot ${(CAT_INFO[k] || {}).shape || "dot"} c-${k}"><i></i></span>`;
         return `<div class="plitem">
-          <div class="plrow" data-i="${i}">
+          <div class="plrow" data-i="${i}"${can ? ' draggable="true"' : ""}>
             ${can ? `<button class="plmark" data-i="${i}" title="분류 바꾸기">${dot}</button>` : dot}
             <button class="plname" data-i="${i}" title="${esc(p.name)}">${esc(p.name)}</button>
             ${can ? `<button class="pldel" data-i="${i}" title="이 장소 지우기">✕</button>` : ""}
@@ -411,7 +479,7 @@ export async function initMap(mountId = "mapapp") {
 
     // 줄을 끌어다 분류 머리줄에 놓아도 됩니다
     let dragI = null;
-    box.querySelectorAll(".plrow[data-i]").forEach(row => {
+    box.querySelectorAll('.plrow[draggable="true"]').forEach(row => {
       row.addEventListener("dragstart", (e) => {
         dragI = +row.dataset.i;
         row.classList.add("dragging");
@@ -541,49 +609,52 @@ export async function initMap(mountId = "mapapp") {
     modal.classList.add("on");
   }
 
-  /** 일본 주소는 표기가 제각각이라, 여러 형태로 바꿔가며 찾아본다 */
+  /** 한국 주소는 도로명·지번이 섞여 들어오므로, 여러 형태로 바꿔가며 찾아본다 */
   async function geocode(raw) {
     const one = async (q, extra = "") => {
       try {
         const u = "https://nominatim.openstreetmap.org/search?format=json&limit=1"
                 + "&addressdetails=1&extratags=1&namedetails=1&accept-language=ko"
-                + "&countrycodes=jp" + extra + "&q=" + encodeURIComponent(q);
+                + "&countrycodes=kr" + extra + "&q=" + encodeURIComponent(q);
         const j = await fetch(u, { headers: { Accept: "application/json" } }).then(r => r.json());
         return (j && j[0]) || null;
       } catch (e) { return null; }
     };
     const base = String(raw || "").trim();
     if (!base) return null;
-    const tries = [];
-    tries.push(base);
-    const nospace = base.replace(/\s+/g, "");
-    if (nospace !== base) tries.push(nospace);
-    // 우편번호(〒123-4567)는 빼고
-    const nozip = nospace.replace(/〒?\d{3}-?\d{4}/g, "");
-    if (nozip && nozip !== nospace) tries.push(nozip);
-    // 번지(6-51-11)를 뒤에서부터 하나씩 덜어내며
-    let cut = nozip || nospace;
+    const tries = [base];
+    // 우편번호(06236 / 서울 06236)는 빼고
+    const nozip = base.replace(/\b\d{5}\b/g, "").trim();
+    if (nozip && nozip !== base) tries.push(nozip);
+    // 괄호 안 참고사항 (예: "…로 12 (역삼동, 대륭빌딩)") 은 빼고
+    const noparen = nozip.replace(/[([（][^)\]）]*[)\]）]/g, "").trim();
+    if (noparen && noparen !== nozip) tries.push(noparen);
+    // 층·호·동 표기 (3층, 201호, 101동) 는 빼고
+    const nofloor = noparen.replace(/\s*\d+\s*(층|호|동)\b/g, "").trim();
+    if (nofloor && nofloor !== noparen) tries.push(nofloor);
+    // 건물번호를 뒤에서부터 덜어내며 (…대로 123-4 → …대로 123 → …대로)
+    let cut = nofloor || noparen || nozip;
     for (let i = 0; i < 3; i++) {
-      const m = cut.match(/^(.*?)[-−ー]\d+$/);
-      if (!m) break;
-      cut = m[1];
-      if (cut.length > 4) tries.push(cut);
+      const m = cut.match(/^(.*?)[\s]*\d+(-\d+)?$/);
+      if (!m || !m[1]) break;
+      cut = m[1].trim();
+      if (cut.length > 3) tries.push(cut);
     }
-    // 번지를 통째로 떼고 동네 이름까지만
-    const town = (nozip || nospace).replace(/[0-9０-９]+([-−ー][0-9０-９]+)*.*$/, "");
-    if (town.length > 4) tries.push(town);
+    // 서울이 안 적혀 있으면 붙여서도 한 번
+    if (!/서울/.test(base)) tries.push("서울 " + base);
 
-    for (const q of [...new Set(tries)]) {
+    for (const q of [...new Set(tries)].filter(Boolean)) {
       const hit = await one(q);
       if (hit) return hit;
     }
-    // 그래도 없으면 자동완성 검색으로 한 번 더
+    // 그래도 없으면 자동완성 검색으로 한 번 더 — 서울 도심 쪽을 우선으로
     try {
-      const u = "https://photon.komoot.io/api/?limit=1&lang=en&lat=35.68&lon=139.76"
+      const u = "https://photon.komoot.io/api/?limit=1&lang=en&lat=37.5665&lon=126.9780"
               + "&location_bias_scale=0.6&q=" + encodeURIComponent(base);
       const j = await fetch(u, { headers: { Accept: "application/json" } }).then(r => r.json());
-      const ft = (j.features || [])[0];
-      if (ft) {
+      const ft = (j.features || []).find(f => (f.properties || {}).countrycode === "KR")
+              || (j.features || [])[0];
+      if (ft && (ft.properties || {}).countrycode === "KR") {
         const c = ft.geometry.coordinates;
         return { lat: c[1], lon: c[0], display_name: base, extratags: {},
                  class: ft.properties.osm_key, type: ft.properties.osm_value, address: {} };
@@ -691,14 +762,15 @@ export async function initMap(mountId = "mapapp") {
     const nameEl = document.getElementById("apName");
     const addrEl = document.getElementById("apAddr");
     const sug = document.getElementById("apSug");
-    const TOKYO = "&viewbox=138.90,36.25,140.55,35.15&bounded=1";
+    // 서울과 그 언저리 — 이 네모 안에서 먼저 찾습니다
+    const SEOUL = "&viewbox=126.55,37.85,127.35,37.35&bounded=1";
     let timer = null, lastQ = "";
 
     const hide = () => { sug.classList.remove("on"); sug.innerHTML = ""; };
     addrEl.addEventListener("input", () => { picked = null; });      // 직접 고치면 다시 찾습니다
     document.addEventListener("click", (e) => { if (!sug.contains(e.target) && e.target !== nameEl) hide(); });
 
-    /** 한글 이름은 OpenStreetMap 에 거의 없다 → 위키백과로 일본어 이름을 찾아 다시 검색 */
+    /** OpenStreetMap 에 없는 이름은 위키백과에서 좌표(또는 영어 이름)를 얻어 다시 찾습니다 */
     async function viaWiki(q) {
       const api = (host, p) => fetch(`https://${host}/w/api.php?origin=*&format=json&` + p)
                                  .then(r => r.json()).catch(() => null);
@@ -708,27 +780,27 @@ export async function initMap(mountId = "mapapp") {
       if (!hits.length) return [];
       const titles = hits.map(h => h.title);
       const info = await api("ko.wikipedia.org",
-        "action=query&prop=coordinates|langlinks&lllang=ja&lllimit=1&titles="
+        "action=query&prop=coordinates|langlinks&lllang=en&lllimit=1&titles="
         + encodeURIComponent(titles.join("|")));
       const pages = (info && info.query && info.query.pages) || {};
       const out = [];
       for (const key of Object.keys(pages)) {
         const p = pages[key];
-        const ja = p.langlinks && p.langlinks[0] && p.langlinks[0]["*"];
+        const en = p.langlinks && p.langlinks[0] && p.langlinks[0]["*"];
         const co = p.coordinates && p.coordinates[0];
-        out.push({ ko: p.title, ja, lat: co && co.lat, lon: co && co.lon });
+        out.push({ ko: p.title, alt: en, lat: co && co.lat, lon: co && co.lon });
       }
-      return out.filter(x => x.ja || (x.lat && x.lon));
+      return out.filter(x => x.alt || (x.lat && x.lon));
     }
 
     /** Photon — 일부만 쳐도 찾아주는 자동완성 검색 */
     async function photon(q) {
       try {
         const u = "https://photon.komoot.io/api/?limit=8&lang=en"
-                + "&lat=35.68&lon=139.76&location_bias_scale=0.6"
+                + "&lat=37.5665&lon=126.9780&location_bias_scale=0.6"
                 + "&q=" + encodeURIComponent(q);
         const j = await fetch(u, { headers: { Accept: "application/json" } }).then(r => r.json());
-        return (j.features || []).map(ft => {
+        return (j.features || []).filter(ft => (ft.properties || {}).countrycode === "KR").map(ft => {
           const p = ft.properties || {};
           const c = (ft.geometry && ft.geometry.coordinates) || [];
           const line = [p.housenumber, p.street, p.district, p.city, p.state, p.country]
@@ -750,7 +822,7 @@ export async function initMap(mountId = "mapapp") {
     async function nomi(q) {
       const u = "https://nominatim.openstreetmap.org/search?format=json&limit=6"
               + "&addressdetails=1&extratags=1&namedetails=1&accept-language=ko"
-              + TOKYO + "&q=" + encodeURIComponent(q);
+              + SEOUL + "&q=" + encodeURIComponent(q);
       try { return await fetch(u, { headers: { Accept: "application/json" } }).then(r => r.json()); }
       catch (e) { return []; }
     }
@@ -762,13 +834,13 @@ export async function initMap(mountId = "mapapp") {
       sug.classList.add("on");
       let list = await photon(q);            // 일부만 쳐도 찾아주는 검색
       if (!list.length) list = await nomi(q);  // 그래도 없으면 정밀 검색
-      // 한글로 적으셨는데 못 찾으면 위키백과로 일본어 이름을 찾아 다시 검색합니다
+      // 한글로 적으셨는데 못 찾으면 위키백과로 다른 이름·좌표를 찾아 다시 검색합니다
       if ((!list || !list.length) && /[가-힣]/.test(q)) {
-        sug.innerHTML = '<div class="apsmsg">한국어 이름으로 다시 찾는 중…</div>';
+        sug.innerHTML = '<div class="apsmsg">다른 이름으로 다시 찾는 중…</div>';
         const wk = await viaWiki(q);
         for (const w of wk) {
-          if (w.ja) {
-            const r = await nomi(w.ja);
+          if (w.alt) {
+            const r = await nomi(w.alt);
             if (r && r.length) { list = r; break; }
           }
         }
@@ -791,7 +863,8 @@ export async function initMap(mountId = "mapapp") {
       }
       if (!list || !list.length) {
         sug.innerHTML = '<div class="apsmsg">찾지 못했습니다.<br>' +
-          '일본어나 영어 이름으로 적어보시거나(예: teamLab Planets), 주소를 직접 적어주세요.</div>';
+          '도로명 주소로 적어보시거나(예: 서울 종로구 사직로 161), ' +
+          '아래 <b>📍 지도에서 찍기</b> 로 자리를 직접 짚어주세요.</div>';
         return;
       }
       sug.innerHTML = list.map((h, i) => {
@@ -952,7 +1025,7 @@ export async function initMap(mountId = "mapapp") {
     if (file) {
       msg.textContent = "사진을 올리는 중…";
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      storage_path = `map/${cur}_${Math.random().toString(36).slice(2, 10)}.${ext}`;
+      storage_path = `map/${GRP}/${cur}_${Math.random().toString(36).slice(2, 10)}.${ext}`;
       const up = await sb.storage.from("map").upload(storage_path, file, { cacheControl: "3600" });
       if (up.error) {
         btn.disabled = false; msg.textContent = "사진 올리기 실패: " + up.error.message;
@@ -961,6 +1034,7 @@ export async function initMap(mountId = "mapapp") {
       image_url = sb.storage.from("map").getPublicUrl(storage_path).data.publicUrl;
     }
     const { error } = await sb.from("map_places").insert({
+      grp: GRP,
       category: cur, name, address: addr, note: note || null,
       memory: memo || null, image_url, storage_path,
       lat: parseFloat(hit.lat), lng: parseFloat(hit.lon),
@@ -973,7 +1047,7 @@ export async function initMap(mountId = "mapapp") {
       const m = error.message || "";
       msg.textContent =
         /schema cache|does not exist/i.test(m)
-          ? "지도 기능이 아직 켜지지 않았습니다 — 운영진이 board/map_places.sql 을 한 번 실행해주세요."
+          ? "지도 기능이 아직 켜지지 않았습니다 — auth/map_setup.sql 을 한 번 실행해주세요."
         : /row-level security|policy/i.test(m)
           ? "승인된 회원만 올릴 수 있습니다. 운영진 승인 후 다시 시도해주세요."
         : "올리기 실패: " + m;

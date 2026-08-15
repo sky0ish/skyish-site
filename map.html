@@ -8,29 +8,104 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="assets/css/seoul-map.css">
+  <style>
+    /* ── 배너 — 밤하늘 위에 서울 스카이라인 (도쿄 지도와 같은 구성) ── */
+    .banner {
+      position: relative; overflow: hidden; padding-bottom: 0;
+      margin-top: 76px;                       /* 고정 헤더 높이만큼 */
+      background:
+        radial-gradient(60% 14px at 24% 26%, rgba(255,214,150,.16), transparent 70%),
+        radial-gradient(46% 10px at 58% 20%, rgba(180,210,255,.14), transparent 70%),
+        radial-gradient(40% 9px  at 80% 32%, rgba(255,190,150,.14), transparent 70%),
+        radial-gradient(70% 40% at 62% 100%, rgba(255,176,96,.22), transparent 68%),
+        linear-gradient(180deg, #060b18 0%, #0b1428 26%, #14203c 48%, #1e2c4e 66%, #2b3a5c 80%, #47506e 100%);
+    }
+    /* 도시 불빛 번짐 */
+    .banner::before {
+      content: ""; position: absolute; left: 64%; bottom: 30px;
+      width: 260px; height: 120px; transform: translateX(-50%); z-index: 1;
+      background: radial-gradient(ellipse at center, rgba(255,226,170,.30) 0%, rgba(255,180,110,.12) 40%, transparent 72%);
+    }
+    .banner .binner {
+      position: relative; z-index: 3; max-width: 1180px; margin: 0 auto;
+      padding: 26px var(--gutter) 0;
+    }
+    .banner .en {
+      font-family: Georgia, serif; font-style: italic; font-size: 13px; letter-spacing: .14em;
+      color: #ffdcae; display: block; margin-bottom: 3px; text-shadow: 0 1px 10px rgba(0,0,0,.5);
+    }
+    .banner h1 {
+      font-family: 'Noto Serif KR', serif; font-size: 27px; font-weight: 600;
+      color: #fdf6ea; text-shadow: 0 2px 22px rgba(0,0,0,.75); margin: 0;
+    }
+    /* 아래줄 : 왼쪽으로 뻗는 흰 선 — 오른쪽 서울 스카이라인 */
+    .skyrow {
+      position: relative; z-index: 3; max-width: 1180px; margin: -6px auto 0;
+      padding: 0 var(--gutter) 14px; display: flex; align-items: flex-end;
+    }
+    .ssline {
+      flex: 1; height: 3px; background: rgba(255,255,255,.92); border-radius: 2px;
+      margin-bottom: 5px; box-shadow: 0 1px 6px rgba(0,0,0,.35);
+    }
+    .ssky {
+      flex: none; height: 96px; width: auto; display: block;
+      filter: brightness(0) invert(1) drop-shadow(0 1px 6px rgba(0,0,0,.45)); opacity: .96;
+    }
+    /* 세 갈래 — 핫플 · 도시건축 · 부동산 */
+    .mapgroups { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 0; }
+    .mapgroups a {
+      padding: 9px 20px; border-radius: 100px; font-size: 14px; font-weight: 500;
+      color: #5a5648; background: #fff; border: 1px solid var(--line);
+      transition: .18s var(--ease);
+    }
+    .mapgroups a:hover { border-color: var(--teal); color: var(--teal-text); }
+    .mapgroups a.on {
+      background: var(--teal); border-color: var(--teal); color: #fff; font-weight: 600;
+      box-shadow: 0 2px 8px rgba(79,157,146,.32);
+    }
+    .mapnote {
+      margin: 14px 0 18px; padding: 15px 20px; background: #fff;
+      border: 1px solid var(--line); border-radius: 11px;
+      font-size: 14.5px; color: #4a463a; line-height: 1.7; word-break: keep-all;
+    }
+    .mapnote b { color: var(--ink); font-weight: 600; }
+
+    @media (max-width: 680px) {
+      .banner::before { left: 62%; bottom: 34px; width: 150px; }
+      .banner .binner { padding-top: 20px; }
+      .banner h1 { font-size: 21px; }
+      .skyrow { padding-bottom: 12px; margin-top: -4px; }
+      .ssky { height: 60px; }
+      .ssline { height: 2px; margin-bottom: 3px; }
+    }
+  </style>
 </head>
 <body>
   <div id="site-header"></div>
 
   <main id="main">
-    <section class="section page-intro">
-      <div class="container container--wide">
-        <span class="eyebrow reveal">Seoul</span>
-        <h1 class="section-title reveal" data-delay="1" style="color:var(--teal)">MAP</h1>
-        <p class="lead reveal" data-delay="2">
-          서울의 <strong>맛집 · 카페 · 아파트 · 건축물 · 핫플</strong>을 지도 위에 모았습니다.
-          표시를 누르면 주소와 그곳의 특징이 열립니다. 장소 등록은 로그인 후 가능합니다.
-        </p>
+    <div class="banner">
+      <div class="binner">
+        <span class="en">Seoul Map</span>
+        <h1>서울 지도</h1>
       </div>
-    </section>
+      <div class="skyrow">
+        <span class="ssline"></span>
+        <img class="ssky" src="assets/img/seoul-skyline.svg" alt="서울 스카이라인">
+      </div>
+    </div>
 
-    <section class="section" style="padding-top:0">
+    <section class="section" style="padding-top:1.6rem">
       <div class="container container--wide">
+        <nav class="mapgroups" id="mapGroups" aria-label="지도 갈래"></nav>
+        <div class="mapnote" id="mapLead">
+          요즘 사람들이 모이는 곳 — 맛집 · 카페 · 거리 · 새로 생긴 공간을 모았습니다.
+        </div>
         <div id="mapapp"></div>
       </div>
     </section>

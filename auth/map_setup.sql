@@ -1,5 +1,7 @@
 -- ═══════════════════════════════════════════════════════════
---  MAP — 서울의 맛집 · 카페 · 아파트 · 건축물 · 핫플
+--  MAP — 서울 지도 (핫플 · 도시건축 · 부동산)
+--
+--  세 갈래가 한 표를 함께 씁니다. grp 칸으로 나뉩니다.
 --
 --  실행 : Supabase(skyish 전용 프로젝트) → SQL Editor → 전체 붙여넣기 → Run
 --  먼저 : auth/setup.sql 을 실행해 두셔야 합니다 (profiles 표가 필요합니다)
@@ -7,9 +9,11 @@
 -- ═══════════════════════════════════════════════════════════
 
 -- ── 0) 승인 여부를 확인하는 함수 ──
+--     관리자는 analysis_access 를 따로 켜 두지 않아도 승인된 것으로 봅니다.
+--     (화면 쪽 판정과 같게 맞춘 것입니다 — seoul-map.js 의 canAdd)
 create or replace function public.is_approved()
 returns boolean language sql security definer stable set search_path = public
-as $$ select coalesce((select analysis_access from public.profiles where id = auth.uid()), false) $$;
+as $$ select coalesce((select analysis_access or is_admin from public.profiles where id = auth.uid()), false) $$;
 
 create or replace function public.is_admin()
 returns boolean language sql security definer stable set search_path = public
@@ -18,6 +22,7 @@ as $$ select coalesce((select is_admin from public.profiles where id = auth.uid(
 -- ── 1) 장소 표 ──
 create table if not exists public.map_places (
   id           uuid primary key default gen_random_uuid(),
+  grp          text not null default 'hot',   -- 갈래 : hot(핫플) · urban(도시건축) · estate(부동산)
   category     text not null default 'food',
   name         text not null,
   address      text not null,
@@ -35,9 +40,17 @@ create table if not exists public.map_places (
   created_at   timestamptz not null default now()
 );
 
-create index if not exists map_places_cat_idx on public.map_places (category, created_at desc);
+-- 이미 만들어 두셨던 분이라면 이 줄이 grp 칸을 더해 줍니다
+alter table public.map_places add column if not exists grp text not null default 'hot';
 
--- ── 2) 분류 규칙 (분류를 바꾸면 다시 실행하세요) ──
+create index if not exists map_places_grp_cat_idx
+  on public.map_places (grp, category, created_at desc);
+
+-- ── 2) 갈래·분류 규칙 (바꾸면 다시 실행하세요) ──
+alter table public.map_places drop constraint if exists map_places_grp_check;
+alter table public.map_places add  constraint map_places_grp_check
+  check (grp in ('hot','urban','estate'));
+
 alter table public.map_places drop constraint if exists map_places_category_check;
 alter table public.map_places add  constraint map_places_category_check
   check (category in ('food','cafe','apt','arch','hot'));
@@ -51,17 +64,24 @@ alter table public.map_places enable row level security;
 drop policy if exists "read places" on public.map_places;
 create policy "read places" on public.map_places for select using (true);
 
+--     owner_admin 은 실제 관리자일 때만 참으로 넣을 수 있습니다.
+--     (이 검사가 없으면 일반 회원이 관리자 명의로 장소를 올릴 수 있습니다)
 drop policy if exists "insert places" on public.map_places;
 create policy "insert places" on public.map_places for insert
-  with check (public.is_approved() and created_by = auth.uid());
+  with check (
+    public.is_approved()
+    and created_by  = auth.uid()
+    and owner_admin = public.is_admin()
+  );
 
+--     승인이 취소된 회원은 자기 글이라도 더는 고치거나 지울 수 없습니다.
 drop policy if exists "update places" on public.map_places;
 create policy "update places" on public.map_places for update
-  using (created_by = auth.uid() or public.is_admin());
+  using ((created_by = auth.uid() and public.is_approved()) or public.is_admin());
 
 drop policy if exists "delete places" on public.map_places;
 create policy "delete places" on public.map_places for delete
-  using (created_by = auth.uid() or public.is_admin());
+  using ((created_by = auth.uid() and public.is_approved()) or public.is_admin());
 
 
 -- ═══════════════════════════════════════════════════════════

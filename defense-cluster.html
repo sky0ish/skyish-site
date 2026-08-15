@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>경기도 방위산업 기업체와 연구장비 — Jee-Hyun NAM</title>
+  <meta name="description" content="경기도 방위산업 기업체 135개사와 연구장비 1,602대의 분포를 확대 가능한 지도로 봅니다. 분야별 레이어를 골라 볼 수 있습니다.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <!-- 로그인·승인된 사람만 열람 -->
+  <script type="module" src="assets/js/guard.js"></script>
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+  <style>
+    /* ④ 네트워크 — 지도 + 옆 설명패널 */
+    .dc-net-grid{display:grid;gap:1rem;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr)}
+    @media (max-width:900px){.dc-net-grid{grid-template-columns:minmax(0,1fr)}}
+    .dc-net-map .fb-map{background:#0b1220}
+    .dc-net-side{max-height:560px;overflow:auto}
+    .dc-net-side h4{margin:0 0 .2rem;font-size:1rem;display:flex;align-items:center;gap:.45rem}
+    .dc-net-side .dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto}
+    .dc-net-list{list-style:none;margin:.7rem 0 0;padding:0}
+    .dc-net-list li{padding:.5rem 0;border-top:1px solid rgba(0,0,0,.08);font-size:.92rem}
+    .dc-net-list li.hd{border-top:0;font-weight:700;color:#6b6360}
+    .dc-net-list .km{float:right;color:#8b8280;font-variant-numeric:tabular-nums}
+    .tag-out{font-size:.72rem;font-weight:400;color:#92400e;background:#fef3c7;
+             border:1px solid #fde68a;border-radius:999px;padding:.02rem .4rem}
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <article class="section fb-wrap">
+      <div class="container container--wide">
+
+        <span class="eyebrow">Data Analysis</span>
+        <h1 class="fb-title">[경기도 방위산업 기업체와 연구장비]</h1>
+        <p class="fb-lead">
+          경기도에 본사를 둔 방위산업 관련 기업체와, 도내 연구기관이 보유한 연구장비를 같은 지도 위에 놓았습니다.
+          기업은 <strong>분야별로 켜고 끌 수</strong> 있고, 연구장비는 <strong>원의 크기가 장비 수</strong>입니다.
+          휠로 확대하면 개별 기업·기관까지 보이고, 점을 누르면 상세가 나옵니다.
+        </p>
+        <p class="fb-crumb" style="margin-top:1.2rem">
+          <a class="btn btn--ghost" href="pictures.html">← 목록으로</a>
+        </p>
+
+        <!-- ① 방산기업 -->
+        <section class="fb-fig" id="fig1">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">①</span>
+            <h2>방위산업 기업체 — 분야별 분포</h2>
+            <span class="fb-fig__src" id="dc-co-src">—</span>
+          </div>
+          <p class="fb-fig__desc" id="dc-co-note"></p>
+
+          <div class="fb-controls" id="dc-co-layers">
+            <span class="fb-fig__src">자료를 불러오는 중…</span>
+          </div>
+
+          <div class="fb-mapbox">
+            <div class="fb-map" id="dc-map1"></div>
+            <div class="fb-legend" id="dc-legend1"></div>
+            <div class="fb-busy" id="dc-busy1">자료를 불러오는 중입니다…</div>
+          </div>
+        </section>
+
+        <!-- ② 연구장비 -->
+        <section class="fb-fig" id="fig2">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">②</span>
+            <h2>연구장비 보유기관 — 장비 수에 비례한 원</h2>
+            <span class="fb-fig__src" id="dc-eq-src">—</span>
+          </div>
+          <p class="fb-fig__desc" id="dc-eq-note"></p>
+
+          <div class="fb-controls">
+            <fieldset>
+              <legend>보여줄 자료</legend>
+              <button type="button" class="chip" data-eq="all">연구장비 전체</button>
+              <button type="button" class="chip" data-eq="def">방산 관련 장비만</button>
+            </fieldset>
+            <fieldset>
+              <legend>겹쳐 보기</legend>
+              <label class="fb-check"><input type="checkbox" id="dc-eq-co"> 방산기업 함께 표시</label>
+            </fieldset>
+          </div>
+
+          <div class="fb-mapbox">
+            <div class="fb-map" id="dc-map2"></div>
+            <div class="fb-legend" id="dc-legend2"></div>
+            <div class="fb-busy" id="dc-busy2">자료를 불러오는 중입니다…</div>
+          </div>
+        </section>
+
+        <!-- ④ 네트워크 -->
+        <section class="fb-fig" id="fig4">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">④</span>
+            <h2>기업 × 연구장비 네트워크 — 어디서 시험할 수 있나</h2>
+            <span class="fb-fig__src" id="dc-net-src">—</span>
+          </div>
+          <p class="fb-fig__desc" id="dc-net-note"></p>
+
+          <div class="fb-controls" id="dc-net-layers">
+            <span class="fb-fig__src">자료를 불러오는 중…</span>
+          </div>
+
+          <div class="dc-net-grid">
+            <div class="fb-mapbox dc-net-map">
+              <div class="fb-map" id="dc-map4"></div>
+              <div class="fb-legend" id="dc-legend4"></div>
+              <div class="fb-busy" id="dc-busy4">자료를 불러오는 중입니다…</div>
+            </div>
+            <div class="fb-card dc-net-side" id="dc-net-info"></div>
+          </div>
+        </section>
+
+        <!-- ③ 통계 -->
+        <section class="fb-fig" id="fig3">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">③</span>
+            <h2>숫자로 보기</h2>
+            <span class="fb-fig__src">기업 분야 · 장비 분야 · 시군별</span>
+          </div>
+
+          <div class="fb-chart" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+            <div class="fb-card">
+              <h3>기업 분야별</h3>
+              <p class="fb-sub">경기도 소재 본사 기준</p>
+              <div class="fb-bars" id="dc-bar-cat"></div>
+
+              <h3 style="margin-top:1.4rem">방산 관련 장비 — 시험 유형별</h3>
+              <p class="fb-sub">장비 수</p>
+              <div class="fb-bars" id="dc-bar-dcat"></div>
+            </div>
+
+            <div class="fb-card">
+              <h3>시군별</h3>
+              <p class="fb-sub">기업 수와 연구장비 수</p>
+              <div class="fb-scroll">
+                <table class="fb-table">
+                  <thead><tr><th>시군</th><th>기업</th><th>연구장비</th></tr></thead>
+                  <tbody id="dc-sgg"></tbody>
+                </table>
+              </div>
+
+              <dl class="fb-meta" id="dc-meta"></dl>
+            </div>
+          </div>
+        </section>
+
+        <p class="placeholder-note" lang="ko" style="margin-top:2rem">
+          ✎ 기업 위치는 <strong>본사 주소를 지오코딩</strong>한 값이라 실제 공장·연구소 위치와 다를 수 있습니다.
+          연구장비는 주소 단위로 묶어 한 점에 여러 기관이 함께 잡히기도 합니다.
+          방산 관련 장비는 장비명·제조사·활용분야를 기준으로 <strong>추정 분류</strong>한 것이라 실제 방산 납품 실적과는 다릅니다.
+        </p>
+
+      </div>
+    </article>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/vendor/leaflet/leaflet.js"></script>
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/defense-cluster.js" defer></script>
+  <script src="assets/js/defense-cluster-network.js" defer></script>
+</body>
+</html>

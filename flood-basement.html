@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>반지하와 침수흔적도 — Jee-Hyun NAM</title>
+  <meta name="description" content="경기도 반지하 주택을 침수흔적도 위에 얹은 지도, 로컬 벡터 침수흔적도 레이어 지도, 그리고 침수흔적도 안에 있는 반지하 비율 차트.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <!-- 로그인·승인된 사람만 열람 -->
+  <script type="module" src="assets/js/guard.js"></script>
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <article class="section fb-wrap">
+      <div class="container container--wide">
+
+        <!-- 머리말 -->
+        <span class="eyebrow">Data Analysis</span>
+        <h1 class="fb-title">[반지하와 침수흔적도]</h1>
+        <p class="fb-lead">
+          경기도의 반지하(지하층) 주택 <strong>135,847호</strong>가 실제 침수가 기록된 구역 안에 얼마나 들어가 있는지 봅니다.
+          지도 ①은 <strong>행정안전부 OpenAPI</strong> 로 받은 침수흔적도, 지도 ②는 <strong>로컬 벡터(SHP) 침수흔적도</strong> 입니다.
+          출처가 다르면 수록 연도·범위도 달라서 나란히 두고 비교합니다.
+        </p>
+        <p class="fb-crumb" style="margin-top:1.2rem">
+          <a class="btn btn--ghost" href="pictures.html">← 목록으로</a>
+        </p>
+
+        <!-- ① 침수흔적도 × 반지하 -->
+        <section class="fb-fig" id="fig1">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">①</span>
+            <h2>침수흔적도 위의 반지하 — 흔적도 안은 노란 점, 밖은 검은 점</h2>
+            <span class="fb-fig__src" id="fb-src-label">행정안전부 침수흔적도</span>
+          </div>
+          <p class="fb-fig__desc">
+            반지하 좌표가 침수흔적 폴리곤 안에 들어가는지(point-in-polygon)로 판정했습니다.
+            휠로 확대·축소하고, 침수 구역을 누르면 발생 연도·침수심이 나옵니다.
+          </p>
+
+          <div class="fb-controls">
+            <fieldset>
+              <legend>침수흔적도 출처</legend>
+              <button type="button" class="chip" data-src="mois">행정안전부 (safetydata.go.kr)</button>
+              <button type="button" class="chip" data-src="safemap">경기도 침수흔적도 SHP</button>
+            </fieldset>
+            <fieldset>
+              <legend>반지하 자료</legend>
+              <button type="button" class="chip" data-set="est">반지하 추정치</button>
+              <button type="button" class="chip" data-set="srv">침수우려 실태조사</button>
+            </fieldset>
+            <fieldset>
+              <legend>표시</legend>
+              <label class="fb-check"><input type="checkbox" id="fb-show-flood" checked> 침수흔적</label>
+              <label class="fb-check"><input type="checkbox" id="fb-show-out" checked> 흔적도 밖 점</label>
+            </fieldset>
+          </div>
+
+          <div class="fb-mapbox">
+            <div class="fb-map" id="fb-map1"></div>
+            <div class="fb-legend">
+              <div><i style="background:#facc15;border:1px solid #7c5b00"></i>침수흔적도 안 반지하</div>
+              <div><i style="background:#1a1a1a"></i>침수흔적도 밖 반지하</div>
+              <div><i class="sw-flood"></i>침수흔적 구역</div>
+            </div>
+            <div class="fb-busy" id="fb-busy1">자료를 불러오는 중입니다…</div>
+          </div>
+        </section>
+
+        <!-- ② 침수흔적도 폴리곤 레이어 지도 (경기도) -->
+        <section class="fb-fig" id="fig2">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">②</span>
+            <h2>폴리곤(벡터) 침수흔적도 — 레이어를 골라 보기</h2>
+            <span class="fb-fig__src" id="fb-src-label2">행정안전부 침수흔적도 · 경기도</span>
+          </div>
+          <p class="fb-fig__desc">
+            지도 ①과 같은 <strong>경기도 침수흔적 폴리곤</strong>을 침수심 또는 침수 시기로 나눠 봅니다.
+            구분 기준을 바꾸면 레이어 목록이 함께 바뀌고, 참고 레이어로 자연재해 위험개선지구·급경사지
+            붕괴위험지역(모두 경기도)도 겹쳐 볼 수 있습니다.
+          </p>
+
+          <div class="fb-controls" id="fb-layers">
+            <span class="fb-fig__src">레이어를 불러오는 중…</span>
+          </div>
+
+          <div class="fb-mapbox">
+            <div class="fb-map" id="fb-map2"></div>
+            <div class="fb-legend" id="fb-legend2"></div>
+            <div class="fb-busy" id="fb-busy2">자료를 불러오는 중입니다…</div>
+          </div>
+
+          <!-- ②의 반지하 비율 — 켜 놓은 구간만으로 다시 셉니다 -->
+          <div class="fb-chart" style="margin-top:1rem">
+            <div class="fb-card">
+              <h3>이 지도 기준 반지하 비율</h3>
+              <p class="fb-sub" id="fb-pie2-sub">—</p>
+              <svg class="fb-pie" id="fb-pie2" viewBox="0 0 200 200" role="img"></svg>
+              <div class="fb-keys" id="fb-keys2"></div>
+              <p class="fb-sub" id="fb-match" style="margin:.8rem 0 0"></p>
+            </div>
+
+            <div class="fb-card">
+              <h3>구간별</h3>
+              <p class="fb-sub">끈 구간은 흐리게 표시됩니다</p>
+              <table class="fb-table">
+                <thead><tr><th>구간</th><th>침수구역</th><th>반지하</th><th>전체 대비</th></tr></thead>
+                <tbody id="fb-band-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ③ 파이차트 -->
+        <section class="fb-fig" id="fig3">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">③</span>
+            <h2>침수흔적도 안에 있는 반지하 비율</h2>
+            <span class="fb-fig__src" id="fb-chart-src">행정안전부 침수흔적도 기준</span>
+          </div>
+          <p class="fb-fig__desc">
+            지도 ①에서 고른 출처·반지하 자료가 그대로 반영됩니다.
+          </p>
+
+          <div class="fb-chart">
+            <div class="fb-card">
+              <h3>전체 비율</h3>
+              <p class="fb-sub" id="fb-pie-sub">—</p>
+              <svg class="fb-pie" id="fb-pie" viewBox="0 0 200 200" role="img" aria-labelledby="fb-pie-title">
+                <title id="fb-pie-title">침수흔적도 내·외 반지하 비율</title>
+              </svg>
+              <div class="fb-keys" id="fb-keys"></div>
+              <dl class="fb-meta" id="fb-meta"></dl>
+            </div>
+
+            <div class="fb-card">
+              <h3>시군구별</h3>
+              <p class="fb-sub">침수흔적도 안 반지하 수 기준 · 1호 이상인 시군구</p>
+              <div class="fb-scroll">
+                <table class="fb-table">
+                  <thead><tr><th>시군구</th><th>반지하</th><th>흔적도 안</th><th>비율</th></tr></thead>
+                  <tbody id="fb-sgg"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 자료 출처 -->
+        <section class="fb-fig" id="sources">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">※</span>
+            <h2>자료 출처</h2>
+          </div>
+
+          <div class="fb-card">
+            <table class="fb-table fb-src-table">
+              <thead>
+                <tr><th>자료</th><th style="text-align:left">출처 · 식별자</th><th style="text-align:left">비고</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>침수흔적도 <strong>(현재 사용)</strong></td>
+                  <td>행정안전부 「행정안전부_침수흔적도」<br>
+                      재난안전데이터공유플랫폼
+                      <a href="https://www.safetydata.go.kr/" target="_blank" rel="noopener">safetydata.go.kr</a>
+                      OpenAPI <code>DSSP-IF-00117</code></td>
+                  <td>폴리곤(WKT, EPSG:3857). 전국 38,003건을 받아 경기도 6,730건 사용.
+                      수록연도 2006–2022</td>
+                </tr>
+                <tr>
+                  <td>침수흔적도 <span style="color:#8b8280">(원 계보)</span></td>
+                  <td>행정안전부 생활안전지도
+                      <a href="https://safemap.go.kr/opna/data/dataView.do?objtId=212" target="_blank" rel="noopener">safemap.go.kr · objtId=212</a><br>
+                      WMS 레이어 <code>A2SM_FLUDMARKS</code> / 스타일 <code>A2SM_FludMarks</code></td>
+                  <td>이 분석의 출발점이던
+                      <code>3_MAP/1_침수흔적도_반지하/5.침수흔적도/침수피해도_API_arcmap연동.ipynb</code>
+                      가 쓰던 경로. 래스터(WMS) 이미지라 포함관계 판정에는 못 씁니다.
+                      노트북 기준 “2019년 이전 침수흔적도”이고, 저장된 인증키는 현재 만료 상태입니다.</td>
+                </tr>
+                <tr>
+                  <td>반지하 추정치</td>
+                  <td>국토교통부 건축물대장 <strong>층별개요</strong> (2023.07)</td>
+                  <td>지하층이 있는 주택(단독·다가구·다세대·연립·다중) 추출 →
+                      주소 지오코딩(카카오/네이버). 경기도 135,847호</td>
+                </tr>
+                <tr>
+                  <td>침수우려 반지하 실태조사</td>
+                  <td>경기도 건축디자인과 · 도시재생과 (2022–2023 우선조사 대상)</td>
+                  <td>현장 조사 목록을 지오코딩. 9,494호</td>
+                </tr>
+                <tr>
+                  <td>자연재해 위험개선지구</td>
+                  <td>국가공간정보포털 <code>LSMD_CONT_UP201</code> (2023.08, 경기)</td>
+                  <td>지도 ②의 참고 레이어. 53건</td>
+                </tr>
+                <tr>
+                  <td>급경사지 붕괴위험지역</td>
+                  <td>국가공간정보포털 <code>LSMD_CONT_UP401</code> (2023.08, 경기)</td>
+                  <td>지도 ②의 참고 레이어. 14건</td>
+                </tr>
+                <tr>
+                  <td>배경지도</td>
+                  <td>OpenStreetMap · CARTO Voyager</td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="placeholder-note" lang="ko" style="margin-top:2rem">
+          ✎ 반지하 위치는 <strong>주소 지오코딩 결과</strong>라 실제 건물 위치와 수 m~수십 m 차이가 날 수 있습니다.
+          침수흔적도는 <strong>기록된 침수 이력</strong>이므로, 흔적도 밖이라고 해서 침수 위험이 없다는 뜻은 아닙니다.
+          지도 ②의 비율은 <strong>지도 ①과 같은 폴리곤·같은 판정</strong>을 쓰므로, 모든 구간을 켜면 ①의 수치와 정확히 같습니다.
+        </p>
+
+      </div>
+    </article>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/vendor/leaflet/leaflet.js"></script>
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/flood-basement.js" defer></script>
+</body>
+</html>

@@ -11,6 +11,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="assets/css/style.css">
+  <!-- 로그인·승인된 사람만 열람 -->
+  <script type="module" src="assets/js/guard.js"></script>
 </head>
 <body data-hero>
   <div id="site-header"></div>
@@ -30,11 +32,45 @@
 
     <!-- content -->
     <section class="section">
-      <div class="container">
+      <div class="container container--wide">
+
+        <div class="archive-bar reveal">
+          <h2 class="archive-bar__title">MAP ARCHIVE <span id="archive-count">2</span></h2>
+          <label class="archive-search">
+            <span class="sr-only">분석물 검색</span>
+            <input type="search" id="archive-search" placeholder="Search" autocomplete="off">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          </label>
+        </div>
+
+        <div class="mapcards" id="mapcards">
+
+          <a class="mapcard reveal" href="defense-cluster.html"
+             data-title="경기도 방위산업 기업체와 연구장비 방산 클러스터 defense">
+            <img src="assets/img/defense-cluster-card.jpg"
+                 alt="경기도 시군 위에 방위산업 기업체와 연구장비 보유기관을 표시한 지도">
+            <span class="mapcard__by">Jeehyun NAM</span>
+            <span class="mapcard__title">[경기도 방위산업 기업체와 연구장비]</span>
+            <span class="mapcard__foot">지도 3 · 통계 1</span>
+          </a>
+
+          <a class="mapcard reveal" href="flood-basement.html"
+             data-title="반지하와 침수흔적도 경기도 침수 flood basement">
+            <img src="assets/img/flood-basement-card.jpg"
+                 alt="경기도 반지하 주택 분포와 침수흔적도를 겹친 지도">
+            <span class="mapcard__by">Jeehyun NAM</span>
+            <span class="mapcard__title">[반지하와 침수흔적도]</span>
+            <span class="mapcard__foot">지도 2 · 차트 1</span>
+          </a>
+
+        </div>
+
+        <p class="archive-empty" id="archive-empty" hidden>검색 결과가 없습니다.</p>
+
         <p class="placeholder-note reveal" lang="ko">
-          ✎ <strong>데이터 분석·시각화 콘텐츠 준비 중입니다.</strong>
-          차트 이미지나 인터랙티브 시각화(지도·그래프·대시보드)를 이 페이지(<code>pictures.html</code>)에 추가할 수 있습니다.
-          원하시는 형태와 데이터를 알려주시면 만들어 드리겠습니다.
+          ✎ 새 분석물은 <code>pictures.html</code> 의 <code>.mapcards</code> 안에
+          <code>&lt;a class="mapcard"&gt;</code> 한 덩어리를 추가하면 목록에 붙습니다.
+          지도·차트가 들어가는 글은 별도 페이지를 만들어 카드에 링크를 겁니다.
         </p>
       </div>
     </section>
