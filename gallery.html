@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery — Jee-Hyun NAM</title>
+  <meta name="description" content="도시와 건축, 집과 일상 — 눈에 담은 장면들을 사진첩으로 모읍니다.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <header class="page-banner">
+      <div class="page-banner__media">
+        <img src="assets/img/pictures-banner.jpg" alt="Black and white street scene">
+      </div>
+      <div class="container page-banner__inner">
+        <span class="eyebrow" style="color:#d9cfcf">Gallery</span>
+        <h1>Gallery</h1>
+        <p>도시와 건축, 집과 일상 — 눈에 담은 장면들을 사진첩으로 모읍니다.</p>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="container container--wide">
+        <div id="galapp"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/main.js" defer></script>
+  <script type="module">
+    import { initGallery } from "./assets/js/gallery.js";
+    initGallery();
+  </script>
+</body>
+</html>

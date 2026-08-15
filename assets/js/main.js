@@ -32,12 +32,28 @@
         { label: "이슈 대응",  file: "works.html?tab=issues"  },
         { label: "학위논문",   file: "works.html?tab=theses"  }
       ] },
-      { label: "DATA ANALYSIS", file: "pictures.html",
+      { label: "DATA", file: "pictures.html",
         also: ["defense-cluster.html", "flood-basement.html"], sub: [
-        { label: "방위산업 클러스터", file: "defense-cluster.html" },
-        { label: "침수 반지하",      file: "flood-basement.html" }
+        { label: "산업",     file: "pictures.html?cat=industry" },
+        { label: "주택",     file: "pictures.html?cat=housing"  },
+        { label: "도시쇠퇴", file: "pictures.html?cat=decline"  },
+        { label: "기타",     file: "pictures.html?cat=etc"      }
       ] },
-      { label: "TRAVEL",   file: "travel.html", also: ["travel-post.html"] },
+      { label: "TRAVEL",   file: "travel.html", also: ["travel-post.html"], sub: [
+        { label: "유럽", file: "travel.html?region=europe" },
+        { label: "일본", file: "travel.html?region=japan"  },
+        { label: "미국", file: "travel.html?region=usa"    },
+        { label: "중국", file: "travel.html?region=china"  },
+        { label: "기타", file: "travel.html?region=etc"    }
+      ] },
+      { label: "GALLERY",  file: "gallery.html", also: ["album.html"], sub: [
+        { label: "Urban",        file: "gallery.html?cat=urban"      },
+        { label: "Architecture", file: "gallery.html?cat=arch"       },
+        { label: "Architects",   file: "gallery.html?cat=architects" },
+        { label: "House",        file: "gallery.html?cat=house"      },
+        { label: "Daily Life",   file: "gallery.html?cat=daily"      },
+        { label: "ETC",          file: "gallery.html?cat=etc"        }
+      ] },
       { label: "MAP",      file: "map.html", sub: [
         { label: "핫플",     file: "map.html?g=hot"    },
         { label: "도시건축", file: "map.html?g=urban"  },
@@ -385,6 +401,50 @@
          목록은 최신순, pinned 글은 항상 맨 위.
          "글쓰기" 버튼 → 폼 작성 → 붙여넣을 코드 자동 생성.
      ----------------------------------------------------------- */
+  /* 여행 글의 나라를 권역으로 묶습니다.
+     여기에 없는 나라는 모두 '기타'로 들어갑니다. */
+  var TRAVEL_REGIONS = [
+    { key: "all",    label: "전체",  of: null },
+    { key: "europe", label: "유럽",  of: ["uk", "france", "germany", "netherlands",
+                                          "italy", "spain", "ireland", "belgium",
+                                          "switzerland", "austria", "portugal", "denmark",
+                                          "sweden", "norway", "finland", "czech", "poland",
+                                          "greece", "hungary"] },
+    { key: "japan",  label: "일본",  of: ["japan"] },
+    { key: "usa",    label: "미국",  of: ["usa"] },
+    { key: "china",  label: "중국",  of: ["china", "hongkong", "taiwan", "macau"] },
+    { key: "etc",    label: "기타",  of: null }
+  ];
+
+  function regionLabel(k) {
+    for (var i = 0; i < TRAVEL_REGIONS.length; i++) {
+      if (TRAVEL_REGIONS[i].key === k) return TRAVEL_REGIONS[i].label;
+    }
+    return "전체";
+  }
+  /** 글 하나가 속한 권역들 (여러 나라를 다녀온 글은 여러 권역에 듭니다) */
+  function postRegions(p) {
+    var out = [];
+    postCountries(p).forEach(function (c) {
+      var hit = "etc";
+      TRAVEL_REGIONS.forEach(function (r) {
+        if (r.of && r.of.indexOf(c) >= 0) hit = r.key;
+      });
+      if (out.indexOf(hit) < 0) out.push(hit);
+    });
+    return out.length ? out : ["etc"];
+  }
+  function regionTabs(cur) {
+    var all = (window.TRAVEL_POSTS || []);
+    return '<nav class="tregions" aria-label="여행 권역">' + TRAVEL_REGIONS.map(function (r) {
+      var n = r.key === "all" ? all.length
+        : all.filter(function (p) { return postRegions(p).indexOf(r.key) >= 0; }).length;
+      return '<a href="travel.html' + (r.key === "all" ? "" : "?region=" + r.key) + '"' +
+        (r.key === cur ? ' class="on" aria-current="page"' : "") + ">" +
+        escapeHtml(r.label) + ' <span class="tregions__n">' + n + "</span></a>";
+    }).join("") + "</nav>";
+  }
+
   function travelBoard() {
     var mount = document.getElementById("travel-board");
     if (!mount) return;
@@ -393,6 +453,14 @@
       return (b.sort || 0) - (a.sort || 0);
     });
     window.__tbOrder = posts;   // rendered order — used by the map to match rows
+
+    /* 권역으로 거르기 — 주소의 ?region= 으로 정해집니다 */
+    var wantR = (new URLSearchParams(location.search).get("region") || "all").toLowerCase();
+    if (!TRAVEL_REGIONS.some(function (r) { return r.key === wantR; })) wantR = "all";
+    if (wantR !== "all") {
+      posts = posts.filter(function (p) { return postRegions(p).indexOf(wantR) >= 0; });
+      window.__tbOrder = posts;
+    }
 
     var rows = posts.map(function (p, i) {
       var num = p.pinned ? '<span class="tb__pin">공지</span>' : (posts.length - i);
@@ -415,8 +483,10 @@
     }).join("");
 
     mount.innerHTML =
+      regionTabs(wantR) +
       '<div class="tb__bar">' +
-        '<span class="tb__count">전체 <strong>' + posts.length + "</strong>건</span>" +
+        '<span class="tb__count">' + escapeHtml(regionLabel(wantR)) +
+          " <strong>" + posts.length + "</strong>건</span>" +
         '<button class="btn btn--teal tb__write" type="button">✎ 글쓰기</button>' +
       "</div>" +
       '<ul class="tb">' +
@@ -1279,29 +1349,85 @@
   }
 
   /* -----------------------------------------------------------
-     Map archive 검색 — pictures.html 의 카드 목록을 이름으로 거릅니다.
+     Map archive — pictures.html 의 카드 목록을 갈래와 이름으로 거릅니다.
+     갈래는 주소의 ?cat= 으로 정해지고, 위쪽 단추줄로도 오갈 수 있습니다.
      ----------------------------------------------------------- */
+  var ARCHIVE_CATS = [
+    { key: "all",      label: "전체"     },
+    { key: "industry", label: "산업"     },
+    { key: "housing",  label: "주택"     },
+    { key: "decline",  label: "도시쇠퇴" },
+    { key: "etc",      label: "기타"     }
+  ];
+
   function mapArchive() {
-    var box = document.getElementById("archive-search");
+    var box  = document.getElementById("archive-search");
     var grid = document.getElementById("mapcards");
-    if (!box || !grid) return;
+    if (!grid) return;
     var cards = Array.prototype.slice.call(grid.querySelectorAll(".mapcard"));
     var count = document.getElementById("archive-count");
     var empty = document.getElementById("archive-empty");
-    if (count) count.textContent = cards.length;
+    var row   = document.getElementById("archive-cats");
 
-    box.addEventListener("input", function () {
-      var q = box.value.trim().toLowerCase();
+    var want = (new URLSearchParams(location.search).get("cat") || "all").toLowerCase();
+    var known = ARCHIVE_CATS.some(function (c) { return c.key === want; });
+    var cur = known ? want : "all";
+
+    /* 갈래 단추줄 */
+    if (row) {
+      row.innerHTML = "";
+      ARCHIVE_CATS.forEach(function (c) {
+        var n = cards.filter(function (x) {
+          return c.key === "all" || (x.dataset.cat || "etc") === c.key;
+        }).length;
+        var b = el("button", { type: "button", class: "archcat" + (c.key === cur ? " on" : ""), "data-c": c.key },
+          escapeHtml(c.label) + '<span class="archcat__n">' + n + "</span>");
+        b.addEventListener("click", function () {
+          cur = c.key;
+          var q = new URLSearchParams(location.search);
+          if (cur === "all") q.delete("cat"); else q.set("cat", cur);
+          history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : ""));
+          [].forEach.call(row.children, function (x) { x.classList.remove("on"); });
+          b.classList.add("on");
+          apply();
+        });
+        row.appendChild(b);
+      });
+    }
+
+    var summary = document.getElementById("archive-summary");
+    function label(k) {
+      for (var i = 0; i < ARCHIVE_CATS.length; i++) {
+        if (ARCHIVE_CATS[i].key === k) return ARCHIVE_CATS[i].label;
+      }
+      return "전체";
+    }
+
+    function apply() {
+      var q = box ? box.value.trim().toLowerCase() : "";
       var shown = 0;
       cards.forEach(function (c) {
+        var inCat = cur === "all" || (c.dataset.cat || "etc") === cur;
         var hay = ((c.dataset.title || "") + " " + c.textContent).toLowerCase();
-        var hit = !q || hay.indexOf(q) !== -1;
+        var hit = inCat && (!q || hay.indexOf(q) !== -1);
         c.hidden = !hit;
         if (hit) shown++;
       });
       if (count) count.textContent = shown;
-      if (empty) empty.hidden = shown !== 0;
-    });
+      if (summary) {
+        summary.textContent = label(cur) + " · 분석 " + shown + "개"
+          + (q ? ' · "' + box.value.trim() + '" 검색' : "");
+      }
+      if (empty) {
+        empty.hidden = shown !== 0;
+        empty.textContent = q
+          ? "검색 결과가 없습니다."
+          : "이 갈래에는 아직 올린 분석이 없습니다.";
+      }
+    }
+
+    if (box) box.addEventListener("input", apply);
+    apply();
   }
 
   /* -----------------------------------------------------------

@@ -43,10 +43,14 @@
           </label>
         </div>
 
+        <!-- 갈래 : 산업 · 주택 · 도시쇠퇴 · 기타 (main.js 가 개수와 함께 채웁니다) -->
+        <nav class="archcats" id="archive-cats" aria-label="분석 갈래"></nav>
+        <p class="archive-summary" id="archive-summary"></p>
+
         <div class="mapcards" id="mapcards">
 
-          <a class="mapcard reveal" href="defense-cluster.html"
-             data-title="경기도 방위산업 기업체와 연구장비 방산 클러스터 defense">
+          <a class="mapcard reveal" href="defense-cluster.html" data-cat="industry"
+             data-title="경기도 방위산업 기업체와 연구장비 방산 클러스터 defense 산업">
             <img src="assets/img/defense-cluster-card.jpg"
                  alt="경기도 시군 위에 방위산업 기업체와 연구장비 보유기관을 표시한 지도">
             <span class="mapcard__by">Jeehyun NAM</span>
@@ -54,8 +58,8 @@
             <span class="mapcard__foot">지도 3 · 통계 1</span>
           </a>
 
-          <a class="mapcard reveal" href="flood-basement.html"
-             data-title="반지하와 침수흔적도 경기도 침수 flood basement">
+          <a class="mapcard reveal" href="flood-basement.html" data-cat="housing"
+             data-title="반지하와 침수흔적도 경기도 침수 flood basement 주택">
             <img src="assets/img/flood-basement-card.jpg"
                  alt="경기도 반지하 주택 분포와 침수흔적도를 겹친 지도">
             <span class="mapcard__by">Jeehyun NAM</span>
@@ -69,7 +73,9 @@
 
         <p class="placeholder-note reveal" lang="ko">
           ✎ 새 분석물은 <code>pictures.html</code> 의 <code>.mapcards</code> 안에
-          <code>&lt;a class="mapcard"&gt;</code> 한 덩어리를 추가하면 목록에 붙습니다.
+          <code>&lt;a class="mapcard" data-cat="…"&gt;</code> 한 덩어리를 추가하면 목록에 붙습니다.
+          <code>data-cat</code> 은 <code>industry</code>(산업) · <code>housing</code>(주택) ·
+          <code>decline</code>(도시쇠퇴) · <code>etc</code>(기타) 중 하나이며, 없으면 기타로 들어갑니다.
           지도·차트가 들어가는 글은 별도 페이지를 만들어 카드에 링크를 겁니다.
         </p>
       </div>
