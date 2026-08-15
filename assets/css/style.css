@@ -299,35 +299,37 @@ ul { list-style: none; padding: 0; }
   display: flex; align-items: center; gap: .5rem;
   margin-left: .6rem; flex: none;          /* 메뉴가 길어져도 눌리지 않게 */
 }
-.authbtn {
-  display: inline-block; white-space: nowrap;
-  padding: .5em 1.15em; border-radius: 100px;
-  font-size: .8rem; font-weight: 600; letter-spacing: .02em; line-height: 1.35;
-  color: #fff; opacity: 1;
-  /* 위는 밝고 아래는 어둡게 — 살짝 볼록해 보이도록 */
-  background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.06));
-  border: 1px solid rgba(255,255,255,.5);
+/* 선택자를 둘로 겹쳐 .nav a (여백 0 · 밑줄) 규칙을 확실히 눌러 줍니다 */
+.authbox .authbtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 54px; height: 54px; padding: 0; border-radius: 50%;   /* 완전한 동그라미 */
+  white-space: nowrap; text-align: center;
+  font-size: .69rem; font-weight: 700; letter-spacing: 0; line-height: 1.2;
+  color: #fff !important; opacity: 1;
+  background: linear-gradient(180deg, #67b6aa 0%, var(--teal) 55%, #3d8b80 100%);
+  border: 1px solid rgba(255,255,255,.45);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.55),      /* 윗면 하이라이트 */
-    inset 0 -2px 4px rgba(0,0,0,.18),         /* 아랫면 그늘 */
-    0 2px 5px rgba(0,0,0,.22);                /* 바닥 그림자 */
-  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+    inset 0 2px 2px rgba(255,255,255,.5),     /* 윗면 하이라이트 — 구슬처럼 */
+    inset 0 -4px 7px rgba(0,0,0,.26),         /* 아랫면 그늘 */
+    0 4px 10px rgba(28,26,25,.34),            /* 바닥 그림자 */
+    0 0 0 3px rgba(255,255,255,.14);          /* 바깥 테 — 어두운 사진 위에서 뜨게 */
+  text-shadow: 0 1px 2px rgba(0,0,0,.34);
   transition: transform .18s var(--ease), box-shadow .18s var(--ease),
-              background .25s var(--ease), border-color .25s var(--ease);
+              background .25s var(--ease);
 }
-.authbtn::after { content: none; }
-.authbtn:hover {
-  transform: translateY(-1px);
-  background: linear-gradient(180deg, #63b3a7, var(--teal));
-  border-color: rgba(255,255,255,.6);
+.authbox .authbtn::after { content: none; }   /* .nav a 의 밑줄 없애기 */
+.authbox .authbtn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, #74c4b7 0%, #55a89b 55%, #438f84 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.5),
-    inset 0 -2px 5px rgba(0,0,0,.2),
-    0 5px 13px rgba(79,157,146,.45);
+    inset 0 2px 2px rgba(255,255,255,.55),
+    inset 0 -4px 8px rgba(0,0,0,.26),
+    0 8px 20px rgba(79,157,146,.55),
+    0 0 0 3px rgba(255,255,255,.22);
 }
-.authbtn:active {
+.authbox .authbtn:active {
   transform: translateY(1px);
-  box-shadow: inset 0 2px 5px rgba(0,0,0,.28), 0 1px 2px rgba(0,0,0,.2);
+  box-shadow: inset 0 3px 7px rgba(0,0,0,.32), 0 1px 3px rgba(0,0,0,.22);
 }
 .authwho {
   font-size: .8rem; font-weight: 600; color: #fff; opacity: .95;
@@ -341,22 +343,19 @@ ul { list-style: none; padding: 0; }
   background: rgba(255,255,255,.2); box-shadow: inset 0 1px 0 rgba(255,255,255,.3);
 }
 
-/* 흰 바탕(스크롤 뒤·안쪽 화면)에서는 청록 알약으로 */
-.site-header.is-solid .authbtn {
-  color: #fff; border-color: rgba(43,110,101,.9);
-  background: linear-gradient(180deg, #5fada1, var(--teal));
+/* 흰 바탕(스크롤 뒤·안쪽 화면)에서는 바깥 테를 옅게 */
+.site-header.is-solid .authbox .authbtn {
+  border-color: rgba(43,110,101,.5);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.45),
-    inset 0 -2px 4px rgba(0,0,0,.16),
-    0 2px 6px rgba(79,157,146,.4);
-  text-shadow: 0 1px 2px rgba(0,0,0,.22);
+    inset 0 2px 2px rgba(255,255,255,.5),
+    inset 0 -4px 7px rgba(0,0,0,.24),
+    0 4px 11px rgba(79,157,146,.45);
 }
-.site-header.is-solid .authbtn:hover {
-  background: linear-gradient(180deg, #6cbcaf, #3f8b81);
+.site-header.is-solid .authbox .authbtn:hover {
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.5),
-    inset 0 -2px 5px rgba(0,0,0,.18),
-    0 6px 15px rgba(79,157,146,.5);
+    inset 0 2px 2px rgba(255,255,255,.55),
+    inset 0 -4px 8px rgba(0,0,0,.24),
+    0 8px 20px rgba(79,157,146,.55);
 }
 .site-header.is-solid .authwho { color: var(--ink); text-shadow: none; }
 .site-header.is-solid .authwho.is-pending::after {
@@ -1912,3 +1911,35 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   padding: .22em .5em; border-radius: 100px; background: rgba(28,26,25,.07);
 }
 .tregions a.on .tregions__n { background: rgba(255,255,255,.26); }
+
+/* 로그인 중임을 알리는 붉은 동그라미 (누르면 로그아웃) */
+.authbox .authbtn--in {
+  background: linear-gradient(180deg, #e8675a 0%, #cf4130 55%, #a32f1e 100%);
+  border-color: rgba(255,255,255,.45);
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.45),
+    inset 0 -4px 7px rgba(0,0,0,.28),
+    0 4px 10px rgba(28,26,25,.34),
+    0 0 0 3px rgba(224,90,78,.22);
+}
+.authbox .authbtn--in:hover {
+  background: linear-gradient(180deg, #f47c6d 0%, #dd4d3a 55%, #b53a26 100%);
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.5),
+    inset 0 -4px 8px rgba(0,0,0,.28),
+    0 8px 20px rgba(200,64,47,.6),
+    0 0 0 3px rgba(224,90,78,.3);
+}
+.site-header.is-solid .authbox .authbtn--in {
+  border-color: rgba(163,48,31,.5);
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.45),
+    inset 0 -4px 7px rgba(0,0,0,.26),
+    0 4px 11px rgba(200,64,47,.45);
+}
+.site-header.is-solid .authbox .authbtn--in:hover {
+  box-shadow:
+    inset 0 2px 2px rgba(255,255,255,.5),
+    inset 0 -4px 8px rgba(0,0,0,.26),
+    0 8px 20px rgba(200,64,47,.6);
+}
