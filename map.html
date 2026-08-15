@@ -56,8 +56,13 @@
       flex: none; height: 96px; width: auto; display: block;
       filter: brightness(0) invert(1) drop-shadow(0 1px 6px rgba(0,0,0,.45)); opacity: .96;
     }
+    /* 갈래 단추와 설명을 한 줄에 — 그만큼 지도를 크게 씁니다 */
+    .maphead {
+      display: flex; align-items: stretch; gap: 12px;
+      margin: 20px 0 14px; flex-wrap: wrap;
+    }
     /* 세 갈래 — 핫플 · 도시건축 · 부동산 */
-    .mapgroups { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 0; }
+    .mapgroups { display: flex; gap: 8px; flex-wrap: wrap; flex: none; align-items: center; }
     .mapgroups a {
       padding: 9px 20px; border-radius: 100px; font-size: 14px; font-weight: 500;
       color: #5a5648; background: #fff; border: 1px solid var(--line);
@@ -69,12 +74,21 @@
       box-shadow: 0 2px 8px rgba(79,157,146,.32);
     }
     .mapnote {
-      margin: 14px 0 18px; padding: 15px 20px; background: #fff;
+      flex: 1; min-width: 260px; display: flex; align-items: center;
+      margin: 0; padding: 11px 20px; background: #fff;
       border: 1px solid var(--line); border-radius: 11px;
-      font-size: 14.5px; color: #4a463a; line-height: 1.7; word-break: keep-all;
+      font-size: 14.5px; color: #4a463a; line-height: 1.6; word-break: keep-all;
     }
     .mapnote b { color: var(--ink); font-weight: 600; }
 
+    /* 한 줄로 아낀 만큼 지도를 키웁니다 */
+    .maprow { height: clamp(420px, 70vh, 780px); }
+    .maprow.tall .mapbox { height: clamp(420px, 70vh, 780px); }
+
+    @media (max-width: 900px) {
+      .maphead { flex-direction: column; gap: 10px; }
+      .mapnote { min-width: 0; }
+    }
     @media (max-width: 680px) {
       .banner::before { left: 62%; bottom: 34px; width: 150px; }
       .banner .binner { padding-top: 20px; }
@@ -82,6 +96,7 @@
       .skyrow { padding-bottom: 12px; margin-top: -4px; }
       .ssky { height: 60px; }
       .ssline { height: 2px; margin-bottom: 3px; }
+      .maprow { height: clamp(380px, 60vh, 560px); }
     }
   </style>
 </head>
@@ -102,9 +117,11 @@
 
     <section class="section" style="padding-top:1.6rem">
       <div class="container container--wide">
-        <nav class="mapgroups" id="mapGroups" aria-label="지도 갈래"></nav>
-        <div class="mapnote" id="mapLead">
-          요즘 사람들이 모이는 곳 — 맛집 · 카페 · 거리 · 새로 생긴 공간을 모았습니다.
+        <div class="maphead">
+          <nav class="mapgroups" id="mapGroups" aria-label="지도 갈래"></nav>
+          <p class="mapnote" id="mapLead">
+            요즘 사람들이 모이는 곳 — 맛집 · 카페 · 거리 · 새로 생긴 공간을 모았습니다.
+          </p>
         </div>
         <div id="mapapp"></div>
       </div>
