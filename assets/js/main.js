@@ -21,6 +21,7 @@
       { label: "RESEARCH", file: "works.html"    },
       { label: "DATA ANALYSIS", file: "pictures.html" },
       { label: "TRAVEL",   file: "travel.html"   },
+      { label: "MAP",      file: "map.html"      },
       { label: "BLOG",     file: "blog.html"     },
       { label: "CONTACT",  file: "contact.html"  }
     ],
@@ -1147,6 +1148,32 @@
   }
 
   /* -----------------------------------------------------------
+     Map archive 검색 — pictures.html 의 카드 목록을 이름으로 거릅니다.
+     ----------------------------------------------------------- */
+  function mapArchive() {
+    var box = document.getElementById("archive-search");
+    var grid = document.getElementById("mapcards");
+    if (!box || !grid) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll(".mapcard"));
+    var count = document.getElementById("archive-count");
+    var empty = document.getElementById("archive-empty");
+    if (count) count.textContent = cards.length;
+
+    box.addEventListener("input", function () {
+      var q = box.value.trim().toLowerCase();
+      var shown = 0;
+      cards.forEach(function (c) {
+        var hay = ((c.dataset.title || "") + " " + c.textContent).toLowerCase();
+        var hit = !q || hay.indexOf(q) !== -1;
+        c.hidden = !hit;
+        if (hit) shown++;
+      });
+      if (count) count.textContent = shown;
+      if (empty) empty.hidden = shown !== 0;
+    });
+  }
+
+  /* -----------------------------------------------------------
      Init
      ----------------------------------------------------------- */
   function init() {
@@ -1162,6 +1189,7 @@
     lightbox();
     contactForm();
     publications();   // inject before scrollReveal so its .reveal blocks are observed
+    mapArchive();
     scrollReveal();
   }
   if (document.readyState === "loading") {
