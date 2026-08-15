@@ -236,11 +236,28 @@ const SHELL = `
         <div class="plab">추천사유 및 추억</div>
         <div class="pnote" id="pMemo"></div>
       </div>
+
+      <!-- 내용 고치기 — 올린 본인과 운영자에게만 보입니다 -->
+      <div class="pedit" id="pEdit" style="display:none;">
+        <label class="plab" for="eName">이름</label>
+        <input type="text" id="eName" maxlength="60">
+        <label class="plab" for="eNote">이곳의 특징</label>
+        <input type="text" id="eNote" maxlength="200" placeholder="어떤 곳인지 한 줄로">
+        <label class="plab" for="eMemo">추천사유 및 추억</label>
+        <textarea id="eMemo" maxlength="600" rows="3" placeholder="왜 좋았는지, 어떤 기억이 있는지"></textarea>
+        <div class="peditfoot">
+          <button class="pbtn" id="eCancel" type="button">그만두기</button>
+          <button class="pbtn save" id="eSave" type="button">저장하기</button>
+        </div>
+        <div class="pemsg" id="eMsg"></div>
+      </div>
+
       <ul class="mways" id="pWays"></ul>
-      <div class="pfoot">
+      <div class="pfoot" id="pFoot">
         <a class="pbtn" id="pMap" href="#" target="_blank" rel="noopener">구글 지도에서 보기</a>
         <a class="pbtn line" id="pDir" href="#" target="_blank" rel="noopener">길찾기 →</a>
         <a class="pbtn line" id="pPost" href="#" style="display:none;">관련 글 보기</a>
+        <button class="pbtn edit" id="pEditBtn" style="display:none;">✎ 내용 고치기</button>
         <button class="pbtn move" id="pMove" style="display:none;">📍 위치 옮기기</button>
         <button class="pbtn del" id="pDel" style="display:none;">이 장소 지우기</button>
       </div>
@@ -596,6 +613,59 @@ export async function initMap(mountId = "mapapp") {
     const canEdit = !p.builtin && ((user && p.created_by === user.id) || isAdmin);
     mv.style.display = canEdit ? "" : "none";
     mv.onclick = () => startMove(i);
+
+    /* ── 내용 고치기 (이름 · 특징 · 추천사유) ── */
+    const editWrap = document.getElementById("pEdit");
+    const editBtn  = document.getElementById("pEditBtn");
+    const eMsg     = document.getElementById("eMsg");
+    editBtn.style.display = canEdit ? "" : "none";
+    editWrap.style.display = "none";           // 열 때는 늘 접힌 채로
+    eMsg.textContent = "";
+
+    function showEdit(on) {
+      editWrap.style.display = on ? "" : "none";
+      // 고치는 동안에는 읽는 칸과 아래 단추줄을 감춥니다
+      document.getElementById("pNoteBox").style.display = on ? "none" : (p.note ? "" : "none");
+      document.getElementById("pMemoBox").style.display = on ? "none" : (p.memory ? "" : "none");
+      document.getElementById("pFoot").style.display = on ? "none" : "";
+      document.getElementById("pName").style.display = on ? "none" : "";
+      if (on) {
+        document.getElementById("eName").value = p.name || "";
+        document.getElementById("eNote").value = p.note || "";
+        document.getElementById("eMemo").value = p.memory || "";
+        eMsg.textContent = "";
+        document.getElementById("eName").focus();
+      }
+    }
+    editBtn.onclick = () => showEdit(true);
+    document.getElementById("eCancel").onclick = () => showEdit(false);
+
+    document.getElementById("eSave").onclick = async (ev) => {
+      const name = document.getElementById("eName").value.trim();
+      const note = document.getElementById("eNote").value.trim();
+      const memo = document.getElementById("eMemo").value.trim();
+      if (!name) { eMsg.textContent = "이름은 비워둘 수 없습니다."; return; }
+      ev.target.disabled = true;
+      eMsg.textContent = "저장하는 중…";
+      const { error } = await sb.from("map_places")
+        .update({ name, note: note || null, memory: memo || null })
+        .eq("id", p.id);
+      ev.target.disabled = false;
+      if (error) {
+        const m = error.message || "";
+        eMsg.textContent = /row-level security|policy/i.test(m)
+          ? "고칠 권한이 없습니다. 본인이 올린 장소만 고칠 수 있습니다."
+          : "저장하지 못했습니다: " + m;
+        return;
+      }
+      // 화면에 바로 반영합니다 (다시 불러오지 않아도 되도록)
+      p.name = name; p.note = note || null; p.memory = memo || null;
+      document.getElementById("pName").textContent = p.name;
+      document.getElementById("pNote").textContent = p.note || "";
+      document.getElementById("pMemo").textContent = p.memory || "";
+      showEdit(false);
+      draw();                                   // 지도 표시의 이름표도 새로
+    };
     const del = document.getElementById("pDel");
     const mine = !p.builtin && user && p.created_by === user.id;
     del.style.display = (mine || (isAdmin && !p.builtin)) ? "" : "none";
