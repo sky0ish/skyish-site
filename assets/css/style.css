@@ -1959,3 +1959,25 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 .albedit input:focus, .albedit select:focus { outline: 0; border-color: var(--teal); }
 .albedit__foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 .albedit__msg { margin: 10px 0 0; font-size: .85rem; color: var(--mauve); min-height: 1.2em; }
+
+/* 사진첩 만들기 — 필수 표시와 사진 담는 칸 */
+.gmodal__box .req { color: #c8402f; font-weight: 700; }
+.gmodal__box .opt { color: var(--mauve); font-weight: 400; font-size: .74rem; }
+.gdrop {
+  display: block; padding: 18px; text-align: center; cursor: pointer;
+  background: #fff; border: 1.5px dashed var(--line); border-radius: 9px;
+  transition: .18s var(--ease);
+}
+.gdrop:hover, .gdrop.over { border-color: var(--teal); background: #f7fbfa; }
+.gdrop b { display: block; font-size: .86rem; color: var(--teal-text); margin-bottom: 5px; }
+.gdrop span { font-size: .76rem; color: var(--mauve); line-height: 1.6; }
+.gthumbs { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.gthumb { position: relative; width: 62px; height: 62px; border-radius: 7px;
+  overflow: hidden; border: 1px solid var(--line); }
+.gthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gthumb button {
+  position: absolute; top: 2px; right: 2px; width: 18px; height: 18px;
+  border: none; border-radius: 50%; cursor: pointer; line-height: 1;
+  background: rgba(20,18,17,.7); color: #fff; font-size: .68rem;
+}
+.gthumb button:hover { background: #c8402f; }

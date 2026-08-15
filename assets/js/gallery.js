@@ -20,6 +20,33 @@ const esc = (s) => String(s == null ? "" : s)
 
 const ymd = (d) => (d || "").toString().slice(0, 10).replace(/-/g, ".");
 
+/** 손으로 적은 날짜를 받아 줍니다.
+    2025.9.14 · 2025-09-14 · 2025/9/14 · 20250914 · 2025.9 · 2025 모두 됩니다.
+    알아보지 못하면 null (날짜 없음) 을 돌려줍니다. */
+function parseDate(s) {
+  s = (s || "").trim();
+  if (!s) return null;
+  let y, m, d;
+  const parts = s.split(/[^0-9]+/).filter(Boolean);
+  if (parts.length >= 2) {
+    // 2025.9.14 · 2025-9-14 · 2025/9/4 처럼 구분자가 있으면 그대로 나눕니다
+    y = parts[0]; m = parts[1]; d = parts[2] || "1";
+  } else {
+    // 숫자만 이어 적으신 경우 — 길이로 판단합니다
+    const n = parts[0] || "";
+    if (n.length === 8) { y = n.slice(0, 4); m = n.slice(4, 6); d = n.slice(6, 8); }
+    else if (n.length === 6) { y = n.slice(0, 4); m = n.slice(4, 6); d = "1"; }
+    else if (n.length === 4) { y = n; m = "1"; d = "1"; }
+    else return null;
+  }
+  y = parseInt(y, 10); m = parseInt(m, 10); d = parseInt(d, 10);
+  if (!y || y < 1900 || y > 2200) return null;
+  if (!m || m < 1 || m > 12) m = 1;
+  if (!d || d < 1 || d > 31) d = 1;
+  const pad = (x) => String(x).padStart(2, "0");
+  return `${y}-${pad(m)}-${pad(d)}`;
+}
+
 /** 로그인·승인 상태 — 사진첩을 만들 수 있는 분인지 */
 async function whoAmI() {
   const user = await currentUser();
@@ -105,16 +132,30 @@ export async function initGallery(mountId = "galapp") {
     <div class="gmodal" id="gModal" role="dialog" aria-modal="true" aria-label="사진첩 만들기">
       <div class="gmodal__box">
         <h3>사진첩 만들기</h3>
-        <p class="gmodal__sub">먼저 사진첩을 만들고, 그 안에 사진을 올리시면 됩니다.</p>
-        <label for="mTitle">이름</label>
-        <input type="text" id="mTitle" maxlength="80" placeholder="예: 세운상가 답사">
-        <label for="mCat">갈래</label>
+        <p class="gmodal__sub">사진첩을 만들면 회원 누구나 그 안에 사진을 더 올릴 수 있습니다.</p>
+
+        <label for="mCat">분류 <span class="req">*</span></label>
         <select id="mCat"></select>
-        <label for="mDate">날짜</label>
-        <input type="date" id="mDate">
+
+        <label for="mTitle">사진첩 이름 <span class="req">*</span></label>
+        <input type="text" id="mTitle" maxlength="80" placeholder="예: 세운상가 답사">
+
+        <label for="mDate">행사 날짜 <span class="req">*</span></label>
+        <input type="text" id="mDate" maxlength="12" autocomplete="off"
+               placeholder="2025.09.14  (연도만 적으셔도 됩니다)">
+
+        <label>사진 <span class="opt">(지금 올리지 않고 나중에 추가해도 됩니다)</span></label>
+        <label class="gdrop" id="mDrop">
+          <b>사진 고르기 · 끌어다 놓기 · 붙여넣기(Ctrl+V)</b>
+          <span id="mDropMsg">데스크탑 폴더에서 사진을 끌어다 놓으셔도 되고,
+            캡처한 그림을 Ctrl+V 로 붙여넣으셔도 됩니다.</span>
+          <input type="file" id="mFiles" accept="image/*" multiple hidden>
+        </label>
+        <div class="gthumbs" id="mThumbs"></div>
+
         <p class="gmodal__msg" id="mMsg"></p>
         <div class="gmodal__foot">
-          <button type="button" class="gbtn" id="mCancel">그만두기</button>
+          <button type="button" class="gbtn" id="mCancel">취소</button>
           <button type="button" class="gbtn gbtn--dark" id="mGo">만들기</button>
         </div>
       </div>
@@ -212,29 +253,95 @@ export async function initGallery(mountId = "galapp") {
   if (CAT_NAME[cur]) mCat.value = cur;
 
   const mMsg = document.getElementById("mMsg");
+  const mDate = document.getElementById("mDate");
+  const thumbs = document.getElementById("mThumbs");
+  const fileEl = document.getElementById("mFiles");
+  const drop = document.getElementById("mDrop");
+
+  /* 올릴 사진을 모아 둡니다 (고르기 · 끌어다 놓기 · 붙여넣기 모두 여기로) */
+  let picked = [];
+  function drawThumbs() {
+    thumbs.innerHTML = picked.map((f, i) =>
+      `<span class="gthumb"><img src="${URL.createObjectURL(f)}" alt="">` +
+      `<button type="button" data-i="${i}" title="빼기">✕</button></span>`).join("");
+    thumbs.querySelectorAll("button").forEach(b => b.addEventListener("click", (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      picked.splice(+b.dataset.i, 1); drawThumbs();
+    }));
+    document.getElementById("mDropMsg").textContent = picked.length
+      ? `사진 ${picked.length}장을 담았습니다. 더 넣으셔도 됩니다.`
+      : "데스크탑 폴더에서 사진을 끌어다 놓으셔도 되고, 캡처한 그림을 Ctrl+V 로 붙여넣으셔도 됩니다.";
+  }
+  function addFiles(list) {
+    const imgs = [...list].filter(f => f.type.startsWith("image/"));
+    if (imgs.length) { picked = picked.concat(imgs); drawThumbs(); }
+  }
+  fileEl.addEventListener("change", () => { addFiles(fileEl.files); fileEl.value = ""; });
+  drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", (e) => {
+    e.preventDefault(); drop.classList.remove("over");
+    addFiles(e.dataTransfer.files);
+  });
+  // 창이 열려 있을 때 Ctrl+V 로 캡처한 그림 붙여넣기
+  document.addEventListener("paste", (e) => {
+    if (!modal.classList.contains("on")) return;
+    const items = [...((e.clipboardData || {}).items || [])]
+      .filter(i => i.type.startsWith("image/")).map(i => i.getAsFile()).filter(Boolean);
+    if (items.length) { e.preventDefault(); addFiles(items); }
+  });
+
   document.getElementById("gNew").addEventListener("click", () => {
     mMsg.textContent = "";
+    picked = []; drawThumbs();
+    if (!mDate.value) {                    // 오늘 날짜를 미리 적어 둡니다 (고치셔도 됩니다)
+      const t = new Date();
+      mDate.value = `${t.getFullYear()}.${String(t.getMonth() + 1).padStart(2, "0")}.` +
+                    `${String(t.getDate()).padStart(2, "0")}`;
+    }
     modal.classList.add("on");
     document.getElementById("mTitle").focus();
   });
-  document.getElementById("mCancel").addEventListener("click", () => modal.classList.remove("on"));
-  modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("on"); });
+  const closeModal = () => modal.classList.remove("on");
+  document.getElementById("mCancel").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("on")) closeModal();
+  });
 
   document.getElementById("mGo").addEventListener("click", async (e) => {
     const title = document.getElementById("mTitle").value.trim();
-    if (!title) { mMsg.textContent = "이름을 적어주세요."; return; }
+    if (!title) { mMsg.textContent = "사진첩 이름을 적어주세요."; return; }
     e.target.disabled = true;
     mMsg.textContent = "만드는 중…";
     const { data, error } = await sb.from("gallery_albums").insert({
       category: mCat.value,
       title,
-      event_date: document.getElementById("mDate").value || null,
+      event_date: parseDate(mDate.value),
       owner_name: (me && me.is_admin) ? "" : ((me && me.name) || ""),
       owner_admin: !!(me && me.is_admin),
       created_by: user.id,
     }).select().single();
-    e.target.disabled = false;
-    if (error) { mMsg.textContent = friendly(error.message); return; }
+    if (error) { e.target.disabled = false; mMsg.textContent = friendly(error.message); return; }
+
+    // 담아 두신 사진이 있으면 이어서 올립니다
+    for (let i = 0; i < picked.length; i++) {
+      mMsg.textContent = `사진 올리는 중… (${i + 1}/${picked.length})`;
+      try {
+        const { url, path } = await upload(picked[i], mCat.value);
+        const r = await sb.from("gallery_photos").insert({
+          album_id: data.id, image_url: url, storage_path: path, sort: i,
+          owner_name: (me && me.is_admin) ? "" : ((me && me.name) || ""),
+          created_by: user.id,
+        });
+        if (r.error) throw r.error;
+      } catch (err) {
+        mMsg.textContent = "사진 올리기 실패: " + friendly(err.message) +
+                           " — 사진첩은 만들어졌습니다.";
+        e.target.disabled = false;
+        return;
+      }
+    }
     location.href = "album.html?a=" + encodeURIComponent(data.id);
   });
 }
@@ -288,7 +395,8 @@ export async function initAlbum(mountId = "albapp") {
       <select id="eCat">${CATS.map(([k, v]) =>
         `<option value="${k}"${k === album.category ? " selected" : ""}>${esc(v)}</option>`).join("")}</select>
       <label for="eDate">날짜</label>
-      <input type="date" id="eDate">
+      <input type="text" id="eDate" maxlength="12" autocomplete="off"
+             placeholder="2025.09.14  (연도만 적으셔도 됩니다)">
       <div class="albedit__foot">
         <button type="button" class="gbtn" id="eCancel">그만두기</button>
         <button type="button" class="gbtn gbtn--dark" id="eSave">저장하기</button>
@@ -390,7 +498,7 @@ export async function initAlbum(mountId = "albapp") {
       if (on) {
         document.getElementById("eTitle").value = album.title || "";
         document.getElementById("eCat").value = album.category;
-        document.getElementById("eDate").value = (album.event_date || "").slice(0, 10);
+        document.getElementById("eDate").value = ymd(album.event_date);
         eMsg.textContent = "";
         document.getElementById("eTitle").focus();
       }
@@ -405,7 +513,7 @@ export async function initAlbum(mountId = "albapp") {
       const { error } = await sb.from("gallery_albums").update({
         title,
         category: document.getElementById("eCat").value,
-        event_date: document.getElementById("eDate").value || null,
+        event_date: parseDate(document.getElementById("eDate").value),
       }).eq("id", id);
       ev.target.disabled = false;
       if (error) { eMsg.textContent = friendly(error.message); return; }
