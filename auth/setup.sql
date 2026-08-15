@@ -1,41 +1,77 @@
 -- ═══════════════════════════════════════════════════════════
---  skyish.kr 분석 게시판 접근 권한 설정
---  실행: Supabase 대시보드 → SQL Editor → 붙여넣기 → Run
+--  skyish.kr 회원·권한 초기 설정  (Supabase 전용 프로젝트)
 --
---  utokyo-kr 과 같은 프로젝트를 쓰므로, 기존 profiles 테이블을
---  건드리지 않고 컬럼만 덧붙입니다. 동문회 회원 승인(approved)과
---  분석자료 열람 권한(analysis_access)은 서로 별개입니다.
+--  실행: Supabase 대시보드 → SQL Editor → New query
+--        아래 전체를 붙여넣고 Run
+--
+--  여러 번 실행해도 안전합니다.
 -- ═══════════════════════════════════════════════════════════
 
--- 1) 분석 게시판 열람 권한 컬럼 (기본값 false = 승인 전)
-alter table public.profiles
-  add column if not exists analysis_access boolean not null default false;
+-- ── 1) 회원 프로필 ────────────────────────────────────────
+create table if not exists public.profiles (
+  id              uuid primary key references auth.users(id) on delete cascade,
+  email           text,
+  name            text,
+  affiliation     text,                                   -- 소속 (승인 판단용)
+  analysis_access boolean not null default false,         -- 열람 승인 여부
+  is_admin        boolean not null default false,
+  created_at      timestamptz not null default now()
+);
 
--- 소속 (승인 판단용, 선택 입력)
-alter table public.profiles
-  add column if not exists affiliation text;
+-- ── 2) 행 단위 보안 : 본인 것만 보고, 권한은 스스로 못 바꿈 ──
+alter table public.profiles enable row level security;
 
--- 2) 본인이 스스로 권한을 올리지 못하게 막기
---    (기존 update 정책을 분석 권한까지 포함해 다시 만듭니다)
+drop policy if exists "read own profile" on public.profiles;
+create policy "read own profile" on public.profiles
+  for select using (auth.uid() = id);
+
 drop policy if exists "update own profile" on public.profiles;
 create policy "update own profile" on public.profiles
   for update using (auth.uid() = id)
   with check (
     auth.uid() = id
-    and approved        = (select approved        from public.profiles where id = auth.uid())
-    and is_admin        = (select is_admin        from public.profiles where id = auth.uid())
     and analysis_access = (select analysis_access from public.profiles where id = auth.uid())
+    and is_admin        = (select is_admin        from public.profiles where id = auth.uid())
   );
 
+-- ── 3) 가입하면 프로필 자동 생성 ──────────────────────────
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, name, affiliation)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', ''),
+    coalesce(new.raw_user_meta_data->>'affiliation', '')
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- 이 SQL 실행 전에 만든 계정이 있으면 프로필을 채워 넣습니다
+insert into public.profiles (id, email)
+select u.id, u.email from auth.users u
+where not exists (select 1 from public.profiles p where p.id = u.id);
+
+
 -- ═══════════════════════════════════════════════════════════
--- 3) 분석 자료 보관함 (비공개 버킷)
+--  4) 분석 자료 보관함 (비공개 버킷)
 --
---    먼저 대시보드에서 Storage → New bucket → 이름 analysis,
---    Public bucket 은 반드시 꺼둔 상태로 만드세요.
---    그다음 아래 정책을 실행합니다.
+--     먼저 대시보드에서  Storage → New bucket
+--       이름: analysis        Public bucket: 반드시 꺼짐(OFF)
+--     그다음 아래를 실행하세요.
 -- ═══════════════════════════════════════════════════════════
 
--- 승인된 사람만 파일을 내려받을 수 있음
 drop policy if exists "analysis read for approved" on storage.objects;
 create policy "analysis read for approved" on storage.objects
   for select using (
@@ -46,7 +82,6 @@ create policy "analysis read for approved" on storage.objects
     )
   );
 
--- 업로드·수정·삭제는 관리자만
 drop policy if exists "analysis write for admin" on storage.objects;
 create policy "analysis write for admin" on storage.objects
   for all using (
@@ -57,14 +92,24 @@ create policy "analysis write for admin" on storage.objects
     )
   );
 
+
 -- ═══════════════════════════════════════════════════════════
--- 4) 회원 승인하기 (관리자가 실행)
---
---    아래 이메일을 바꿔 실행하면 그 사람이 분석 게시판을 볼 수 있습니다.
---    대시보드 Table Editor → profiles 에서 체크박스로 켜도 됩니다.
+--  5) 관리자가 쓰는 명령
 -- ═══════════════════════════════════════════════════════════
+
+-- ▸ 나에게 관리자·열람 권한 주기 (이메일을 본인 것으로)
+-- update public.profiles
+--    set analysis_access = true, is_admin = true
+--  where email = 'whlove@gmail.com';
+
+-- ▸ 승인 대기자 보기
+-- select email, name, affiliation, created_at
+--   from public.profiles
+--  where analysis_access = false
+--  order by created_at desc;
+
+-- ▸ 특정 회원 승인
 -- update public.profiles set analysis_access = true where email = 'someone@example.com';
 
--- 승인 대기자 확인
--- select email, name, affiliation, created_at
---   from public.profiles where analysis_access = false order by created_at desc;
+-- ▸ 승인 취소
+-- update public.profiles set analysis_access = false where email = 'someone@example.com';
