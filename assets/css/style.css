@@ -2087,6 +2087,12 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 .nbtn--del { color: #a8443a; }
 .nbtn--del:hover { border-color: #b3453b; color: #b3453b; }
 .nbtn:disabled { opacity: .5; cursor: default; }
+.nbtn--sm { padding: .42em .95em; font-size: .78rem; }
+/* 폴더 고르기는 label 이라 단추처럼 보이게 맞춰 줍니다 */
+.nfolder { cursor: pointer; display: inline-flex; align-items: center; }
+/* 「붙임 파일 다시 읽기」 줄 */
+.nredo { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0 0; }
+.nredo span { font-size: .76rem; color: var(--mauve); line-height: 1.6; }
 .ncount { margin: 0 0 1rem; font-size: .84rem; color: var(--mauve); }
 
 /* 글 목록 */
@@ -2169,14 +2175,15 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 .nmodal__box input:focus, .nmodal__box select:focus, .nmodal__box textarea:focus {
   outline: 0; border-color: var(--teal);
 }
-.nrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.nrow label { margin-top: 13px; }
+/* 글쓰기 칸의 3단 배치 — 목록의 .nrow 와 이름이 겹치지 않게 .nfrow 로 둡니다 */
+.nfrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.nfrow label { margin-top: 13px; }
 .nhint { margin: 10px 0 0; font-size: .76rem; color: var(--mauve); }
 .nmsg { margin: 8px 0 0; font-size: .85rem; color: var(--mauve); min-height: 1.2em; }
 .nmodal__foot { display: flex; gap: 8px; align-items: center; margin-top: 18px; }
 
 @media (max-width: 680px) {
-  .nrow { grid-template-columns: 1fr; }
+  .nfrow { grid-template-columns: 1fr; }
   .ccell { min-height: 56px; }
   .cev { font-size: .6rem; }
 }
@@ -2240,12 +2247,20 @@ button.cev--g:hover { filter:brightness(.94);
   box-shadow:0 0 0 1px color-mix(in srgb, var(--c) 45%, #fff); }
 
 /* 글 목록 — 한 줄씩, 눌러서 자세히 */
-.nrow { display:flex; align-items:center; gap:12px; width:100%; text-align:left;
-  padding:13px 16px; background:#fff; border:1px solid var(--line);
-  border-radius:var(--radius-md); cursor:pointer; font-family:inherit;
-  transition:.16s var(--ease); }
+/* 줄 하나 = 상자. 그 안에 「펴 보기」와 「지우기」가 나란히 있습니다 */
+.nrow { display:flex; align-items:stretch; width:100%;
+  background:#fff; border:1px solid var(--line);
+  border-radius:var(--radius-md); transition:.16s var(--ease); }
 .nrow:hover { border-color:var(--teal); box-shadow:0 3px 12px rgba(28,26,25,.08);
   transform:translateY(-1px); }
+.nrow__open { flex:1; min-width:0; display:flex; align-items:center; gap:12px;
+  padding:13px 8px 13px 16px; background:none; border:0; text-align:left;
+  font-family:inherit; color:inherit; cursor:pointer; }
+.nrow__del { flex:none; border:0; background:none; color:#c9c2b4; cursor:pointer;
+  padding:0 15px; font-size:.95rem; line-height:1; border-radius:0 var(--radius-md) var(--radius-md) 0;
+  transition:.15s var(--ease); }
+.nrow__del:hover { color:#b3453b; background:#fdf3f0; }
+.nrow__del:disabled { opacity:.4; cursor:default; }
 .nrow__main { flex:1; min-width:0; }
 .nrow__main b { display:block; font-size:.94rem; font-weight:600; color:var(--ink);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2269,3 +2284,26 @@ button.cev--g:hover { filter:brightness(.94);
   white-space:normal; padding:14px 16px; background:#faf8f5;
   border:1px solid var(--line); border-radius:9px; }
 .ndet__foot { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+
+/* ── 폴더에서 일정 가져오기 ── */
+.nimp { position:fixed; inset:0; background:rgba(20,18,17,.6); display:none;
+  align-items:center; justify-content:center; padding:24px; z-index:1200; }
+.nimp.on { display:flex; }
+.nimp__box { position:relative; background:#fff; border-radius:var(--radius-md);
+  width:min(1100px,100%); max-height:88vh; overflow:auto; padding:26px 28px 22px; }
+.nimp__box h3 { font-size:1.2rem; margin:.2rem 0 .8rem; color:var(--ink); }
+.nimp__msg { margin:0 0 .9rem; font-size:.85rem; color:var(--mauve); line-height:1.7; }
+.nimp__scroll { overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+.nimp__tbl { width:100%; border-collapse:collapse; font-size:.82rem; min-width:900px; }
+.nimp__tbl th, .nimp__tbl td { padding:8px 9px; border-bottom:1px solid var(--line);
+  text-align:left; vertical-align:top; }
+.nimp__tbl th { background:#faf8f5; font-weight:600; color:var(--mauve);
+  font-size:.76rem; white-space:nowrap; }
+.nimp__tbl tr.dup { background:#fdfaf6; }
+.nimp__tbl input[type="text"], .nimp__tbl select {
+  width:100%; min-width:90px; padding:5px 7px; font-family:inherit; font-size:.8rem;
+  border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); }
+.nimp__tbl input[type="text"]:focus, .nimp__tbl select:focus {
+  outline:0; border-color:var(--teal); }
+.nimp__tbl .niF { white-space:nowrap; color:var(--mauve); }
+.nimp__warn { margin-top:4px; font-size:.7rem; color:#b3543b; line-height:1.5; }

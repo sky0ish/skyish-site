@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js";
-import * as GC from "./gcal.js";
+import * as NF from "./notes-files.js?v=202608301500";
+import * as GC from "./gcal.js?v=202608301500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -26,8 +26,15 @@ export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 /** 끌어올 구글 캘린더 — 이 계정으로 크롬에 로그인돼 있어야 보입니다 */
 export const GCAL = "whlove@gmail.com";
 
-/** 회의록 말머리 — 회의록 갈래에서만 씁니다 */
-export const TAGS = ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "일상", "ETC"];
+/** 갈래마다 쓰는 말머리 — 여기 없는 갈래는 말머리 칸이 나오지 않습니다 */
+export const TAGS = {
+  schedule: ["발표", "토론", "자문회의", "자문참석", "세미나참석", "GRI행사", "ETC"],
+  minutes:  ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "일상", "ETC"],
+};
+TAGS.diary = TAGS.schedule;          // 예전 Diary 글도 Schedule 로 다룹니다
+
+/** 그 갈래에서 쓸 수 있는 말머리 */
+export const tagsFor = (cat) => TAGS[cat] || [];
 export const CAT_COLOR = Object.fromEntries(CATS.map(([k, , c]) => [k, c]));
 CAT_COLOR.diary = CAT_COLOR.schedule;
 
@@ -75,6 +82,46 @@ export function findField(text, keys) {
   return "";
 }
 
+/* ── 파일에서 뽑은 덩이를 본문에 얹기 ──
+   덩이는 「━ 파일이름」 줄로 시작합니다. 같은 파일을 다시 읽으면
+   그 덩이만 갈아 끼웁니다. 손으로 적으신 다른 글은 건드리지 않습니다. */
+export function mergeBlock(body, name, text) {
+  const NL = String.fromCharCode(10);
+  const lines = String(body || "").split(NL);
+  const head = "━ " + name;
+
+  let a = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].indexOf(head) === 0) { a = i; break; }
+  }
+  if (a < 0) {                                    // 처음 읽는 파일이면 뒤에 붙입니다
+    const b0 = String(body || "").replace(/\s+$/, "");
+    return b0 ? b0 + NL + NL + text : text;
+  }
+
+  let b = lines.length;                           // 다음 덩이가 시작되는 자리까지가 이 덩이
+  for (let i = a + 1; i < lines.length; i++) {
+    if (lines[i].indexOf("━ ") === 0) { b = i; break; }
+  }
+  const before = lines.slice(0, a);
+  const after  = lines.slice(b);
+  const tail   = after.length ? [""].concat(after) : [];
+  return before.concat(text.split(NL), tail).join(NL).replace(/\s+$/, "");
+}
+
+/* ── 만난 사람 합치기 ──
+   있던 이름은 지우지 않습니다. 같은 사람이면 소속이 붙은 쪽으로 채웁니다. */
+export function mergePeople(cur, list) {
+  const bare = (s) => String(s).replace(/\s*\(.*$/, "").trim();
+  const has = String(cur || "").split(/\s*,\s*/).map((s) => s.trim()).filter(Boolean);
+  (list || []).forEach((p) => {
+    const i = has.findIndex((h) => bare(h) === bare(p));
+    if (i < 0) has.push(p);
+    else if (has[i].length < p.length) has[i] = p;
+  });
+  return has.join(", ");
+}
+
 function friendly(m) {
   m = String(m || "");
   if (/schema cache|does not exist|relation/i.test(m))
@@ -84,16 +131,35 @@ function friendly(m) {
   return m;
 }
 
+/* ── 글에서 시각 찾아내기 ──
+   「시각: 14:00」 「시간: 14:00~16:00」 처럼 적혀 있으면 그것을,
+   없으면 본문 어딘가의 14:00 꼴을 씁니다. */
+export function findTime(text) {
+  const s = String(text || "");
+  const f = findField(s, ["시각", "시간", "time"]);
+  if (f) {
+    const m = f.match(/\d{1,2}\s*[:시]\s*\d{0,2}\s*(?:[-~–]\s*\d{1,2}\s*[:시]\s*\d{0,2})?/);
+    if (m) return m[0].replace(/\s+/g, "");
+    return f.slice(0, 30);
+  }
+  const m = s.match(/\b([01]?\d|2[0-3]):[0-5]\d(?:\s*[-~–]\s*([01]?\d|2[0-3]):[0-5]\d)?/);
+  return m ? m[0].replace(/\s+/g, "") : "";
+}
+
 /* ── 엑셀로 내려받기 ──
    CSV 앞에 BOM 을 붙이면 엑셀에서 한글이 깨지지 않습니다. */
 function toCSV(rows) {
   const q = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
-  const head = ["날짜", "갈래", "말머리", "이벤트", "장소", "만난 사람", "내용", "적은 때"];
+  const head = ["날짜", "시간", "말머리", "이벤트", "장소", "만난 사람", "내용"];
   const lines = [head.map(q).join(",")];
   rows.forEach((r) => lines.push([
-    ymd(r.event_date), CAT_NAME[r.category] || r.category, r.tag || "",
-    r.title, r.place, r.people,
-    (r.body || "").replace(/\r?\n/g, " "), ymd(r.created_at),
+    ymd(r.event_date),
+    findTime(r.body),
+    r.tag || "",
+    r.event || r.title,          // 행사명을 찾아 두었으면 그것을, 없으면 제목을
+    r.place,
+    r.people,
+    (r.body || "").replace(/\r?\n/g, " "),
   ].map(q).join(",")));
   return "﻿" + lines.join("\r\n");
 }
@@ -142,6 +208,12 @@ export async function initNotes(mountId = "notesapp") {
       '<button type="button" class="nbtn" id="nGo">🔍 검색</button>' +
       '<button type="button" class="nbtn" id="nCal">📅 달력</button>' +
       '<button type="button" class="nbtn" id="nXls">⤓ 엑셀로 받기</button>' +
+      '<button type="button" class="nbtn" id="nFill" ' +
+        'title="붙임 파일이 있는 글을 모두 다시 읽어 행사명·만난 사람·요약을 채웁니다">' +
+        "⟳ 요약 채우기</button>" +
+      '<label class="nbtn nfolder" id="nFolderBtn" ' +
+        'title="0_schedule 폴더를 고르면 행사마다 글을 만들어 드립니다">📁 폴더에서 가져오기' +
+        '<input type="file" id="nFolder" webkitdirectory directory multiple hidden></label>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
@@ -150,6 +222,7 @@ export async function initNotes(mountId = "notesapp") {
     '<div class="nlist" id="nList"></div>' +
     '<p class="nempty" id="nEmpty" hidden></p>' +
     '<div class="ndet" id="nDetail"></div>' +
+    '<div class="nimp" id="nImp"></div>' +
     '<div class="nmodal" id="nModal" role="dialog" aria-modal="true" aria-label="글 쓰기">' +
       '<div class="nmodal__box">' +
         '<h3 id="nmTitle">새 글</h3>' +
@@ -160,7 +233,10 @@ export async function initNotes(mountId = "notesapp") {
         '<input type="text" id="nmT" maxlength="120" placeholder="예: 2026.09.14 세운상가 답사">' +
         '<label for="nmB">내용</label>' +
         '<textarea id="nmB" rows="7" placeholder="날짜를 적으면 달력에 저절로 올라갑니다.&#10;장소: 세운상가&#10;사람: 김철수, 이영희"></textarea>' +
-        '<div class="nrow">' +
+        '<label for="nmE">행사명</label>' +
+        '<input type="text" id="nmE" maxlength="200" ' +
+          'placeholder="예: 2026년 한국지방자치학회 하계학술대회 (붙임 파일에서 저절로 찾습니다)">' +
+        '<div class="nfrow">' +
           '<div><label for="nmD">날짜</label>' +
             '<input type="text" id="nmD" maxlength="12" placeholder="2026.09.14"></div>' +
           '<div><label for="nmP">장소</label>' +
@@ -176,7 +252,12 @@ export async function initNotes(mountId = "notesapp") {
           '<input type="file" id="nmFiles" multiple hidden>' +
         "</label>" +
         '<div class="nfiles" id="nmFileList"></div>' +
-        '<p class="nhint">제목과 내용에 날짜·장소·사람이 있으면 위 칸을 저절로 채워 드립니다.</p>' +
+        '<div class="nredo">' +
+          '<button type="button" class="nbtn nbtn--sm" id="nmRe">⟳ 붙임 파일 다시 읽기</button>' +
+          '<span>예전에 올린 글도 이 단추로 행사명 · 만난 사람 · 요약을 채울 수 있습니다.</span>' +
+        "</div>" +
+        '<p class="nhint">제목과 내용에 날짜·장소·사람이 있으면 위 칸을 저절로 채워 드립니다. ' +
+          '손으로 고치신 것은 다시 읽어도 지워지지 않습니다.</p>' +
         '<p class="nmsg" id="nmMsg"></p>' +
         '<div class="nmodal__foot">' +
           '<button type="button" class="nbtn nbtn--del" id="nmDel" hidden>지우기</button>' +
@@ -187,9 +268,11 @@ export async function initNotes(mountId = "notesapp") {
       "</div>" +
     "</div>";
 
+  /* 일반회원에게는 쓰기 단추를 치웁니다.
+     cur 는 아래에서 let 으로 만들어집니다. 선언보다 먼저 건드리면
+     화면 전체가 멈추므로, 첫값 자리에서 정합니다. */
   if (!isAdmin) {
-    cur = MEMBER_CATS[0];
-    ["nNew", "nXls"].forEach((id) => {
+    ["nNew", "nXls", "nFill", "nFolderBtn"].forEach((id) => {
       const b = document.getElementById(id);
       if (b) b.remove();
     });
@@ -206,7 +289,7 @@ export async function initNotes(mountId = "notesapp") {
 
   // 주소에 ?cat= 이 붙어 오면 그 갈래를 펴 놓습니다 (상단 차림표에서 옵니다)
   const wantCat = new URLSearchParams(location.search).get("cat");
-  let rows = [], cur = "all", editing = null;
+  let rows = [], cur = isAdmin ? "all" : MEMBER_CATS[0], editing = null;
   let gEvents = [];   // 구글에서 받아 온 일정
   if (wantCat && CATS.some(([k]) => k === wantCat)) cur = wantCat;
   let calAt = new Date(); calAt.setDate(1);
@@ -215,10 +298,20 @@ export async function initNotes(mountId = "notesapp") {
   mCat.innerHTML = CATS.map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
   const mTag = document.getElementById("nmTag");
   const mTagBox = document.getElementById("nmTagBox");
-  mTag.innerHTML = '<option value="">(없음)</option>' +
-    TAGS.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  /* 말머리는 갈래마다 다릅니다. 갈래를 바꾸면 목록을 다시 그리되,
+     고르셨던 값이 새 목록에도 있으면 그대로 둡니다. */
+  const fillTags = (cat) => {
+    const keep = mTag.value;
+    const list = tagsFor(cat);
+    mTag.innerHTML = '<option value="">(없음)</option>' +
+      list.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+    mTag.value = list.indexOf(keep) >= 0 ? keep : "";
+  };
   // 말머리는 회의록에서만 씁니다
-  const syncTag = () => { mTagBox.hidden = mCat.value !== "minutes"; };
+  const syncTag = () => {
+    fillTags(mCat.value);
+    mTagBox.hidden = !tagsFor(mCat.value).length;
+  };
   mCat.addEventListener("change", syncTag);
 
   async function load() {
@@ -237,7 +330,7 @@ export async function initNotes(mountId = "notesapp") {
     const s = q.value.trim().toLowerCase();
     if (!s) return true;
     return ((r.title || "") + " " + (r.body || "") + " " + (r.tag || "") + " " +
-            (r.place || "") + " " + (r.people || "")).toLowerCase().includes(s);
+            (r.place || "") + " " + (r.people || "") + " " + (r.event || "")).toLowerCase().includes(s);
   };
   // 예전 Diary 글은 Schedule 에 함께 담습니다
   const catOf = (r) => (r.category === "diary" ? "schedule" : r.category);
@@ -277,22 +370,60 @@ export async function initNotes(mountId = "notesapp") {
     emptyEl.hidden = true;
     list.innerHTML = l.map((r) => {
       const nf = Array.isArray(r.files) ? r.files.length : 0;
-      const sub = [r.place ? "⊙ " + esc(r.place) : "",
+      const sub = [r.event ? "◇ " + esc(r.event) : "",
+                   r.place ? "⊙ " + esc(r.place) : "",
                    r.people ? "○ " + esc(r.people) : "",
                    nf ? "□ " + nf : ""].filter(Boolean).join("   ");
-      return `<button type="button" class="nrow" data-id="${r.id}">` +
-        `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
-          `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
-        `<span class="nrow__main">` +
-          `<b>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</b>` +
-          (sub ? `<small>${sub}</small>` : "") +
-        `</span>` +
-        `<span class="nrow__date">${r.event_date ? ymd(r.event_date) : ""}</span>` +
-      `</button>`;
+      /* 단추 안에 단추를 넣을 수 없어, 줄은 상자로 두고
+         「펴 보기」와 「지우기」를 나란히 둡니다. */
+      return `<div class="nrow">` +
+        `<button type="button" class="nrow__open" data-id="${r.id}">` +
+          `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
+            `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
+          `<span class="nrow__main">` +
+            `<b>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</b>` +
+            (sub ? `<small>${sub}</small>` : "") +
+          `</span>` +
+          `<span class="nrow__date">${r.event_date ? ymd(r.event_date) : ""}</span>` +
+        `</button>` +
+        (isAdmin
+          ? `<button type="button" class="nrow__del" data-id="${r.id}" ` +
+            `title="이 글 지우기" aria-label="${esc(r.title)} 지우기">✕</button>`
+          : "") +
+      `</div>`;
     }).join("");
 
-    list.querySelectorAll(".nrow").forEach((btn) =>
+    list.querySelectorAll(".nrow__open").forEach((btn) =>
       btn.addEventListener("click", () => detail(rows.find((x) => x.id === btn.dataset.id))));
+    list.querySelectorAll(".nrow__del").forEach((btn) =>
+      btn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        removePost(rows.find((x) => x.id === btn.dataset.id), btn);
+      }));
+  }
+
+  /* ── 글 지우기 ──
+     붙임 파일도 보관함에서 함께 치웁니다. 안 그러면 아무도 안 보는
+     파일만 보관함에 쌓입니다. */
+  async function removePost(r, btn) {
+    if (!r) return false;
+    const nf = Array.isArray(r.files) ? r.files.length : 0;
+    if (!confirm(`「${r.title}」 을 지울까요?` +
+                 (nf ? `${String.fromCharCode(10)}붙임 파일 ${nf}개도 함께 지웁니다.` : "") +
+                 `${String.fromCharCode(10)}되돌릴 수 없습니다.`)) return false;
+    if (btn) btn.disabled = true;
+    const { error } = await sb.from("notes").delete().eq("id", r.id);
+    if (error) {
+      alert(friendly(error.message));
+      if (btn) btn.disabled = false;
+      return false;
+    }
+    // 글이 지워진 뒤에 파일을 치웁니다 (실패해도 글은 이미 없어졌습니다)
+    for (const f of (Array.isArray(r.files) ? r.files : [])) {
+      try { await NF.remove(f.path); } catch (e) {}
+    }
+    await load();
+    return true;
   }
 
   /* ── 글 하나 자세히 보기 ── */
@@ -308,6 +439,7 @@ export async function initNotes(mountId = "notesapp") {
         `<h3>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</h3>` +
         '<p class="ndet__meta">' +
           (r.event_date ? `<b>${ymd(r.event_date)}</b>` : "") +
+          (r.event ? ` · ◇ ${esc(r.event)}` : "") +
           (r.place ? ` · ⊙ ${esc(r.place)}` : "") +
           (r.people ? ` · ○ ${esc(r.people)}` : "") +
         "</p>" +
@@ -438,9 +570,11 @@ export async function initNotes(mountId = "notesapp") {
     mCat.value = row ? row.category : (cur === "all" ? "diary" : cur);
     document.getElementById("nmT").value = row ? row.title || "" : "";
     document.getElementById("nmB").value = row ? row.body || "" : "";
+    document.getElementById("nmE").value = row ? row.event || "" : "";
     document.getElementById("nmD").value = row ? ymd(row.event_date) : "";
     document.getElementById("nmP").value = row ? row.place || "" : "";
     document.getElementById("nmW").value = row ? row.people || "" : "";
+    fillTags(mCat.value);
     mTag.value = row ? (row.tag || "") : "";
     syncTag();
     picked = [];
@@ -451,7 +585,8 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmT").focus();
   }
   const close = () => modal.classList.remove("on");
-  document.getElementById("nNew").addEventListener("click", () => open(null));
+  const nNewBtn = document.getElementById("nNew");
+  if (nNewBtn) nNewBtn.addEventListener("click", () => open(null));
   document.getElementById("nmCancel").addEventListener("click", close);
   modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
   document.addEventListener("keydown", (e) => {
@@ -488,24 +623,69 @@ export async function initNotes(mountId = "notesapp") {
       : "그림 · 엑셀 · PDF · 문서를 올리실 수 있습니다. 엑셀과 PDF 는 내 이름이 든 줄을 뽑아 아래에 적어 드립니다.";
   }
 
+  /* 파일 하나에서 뽑은 것을 글에 얹습니다.
+     손으로 적어 두신 것은 지우지 않습니다 —
+     행사명은 비었을 때만 채우고, 사람은 있는 것에 더하고,
+     본문은 같은 파일의 옛 덩이만 갈아 끼웁니다. */
+  async function applyOne(f, opt) {
+    const body  = document.getElementById("nmB");
+    const evEl  = document.getElementById("nmE");
+    const whoEl = document.getElementById("nmW");
+    let r;
+    try { r = await NF.extract(f); }
+    catch (err) { r = { total: 0, mine: [], head: [], people: [], event: "", error: err.message }; }
+
+    const t = NF.asText(f.name, r);
+    if (t) body.value = mergeBlock(body.value, f.name, t);
+
+    autofill();   // 본문이 바뀐 뒤 날짜·장소를 먼저 훑습니다
+
+    if (r.event && (!evEl.value.trim() || (opt && opt.force))) evEl.value = r.event;
+    if (r.people && r.people.length) whoEl.value = mergePeople(whoEl.value, r.people);
+    return r;
+  }
+
   async function addFiles(list) {
     const arr = [...list];
     if (!arr.length) return;
     picked = picked.concat(arr);
     drawFiles();
-    // 엑셀·PDF·문서에서 쓸 만한 줄을 뽑아 내용 칸에 이어 붙입니다
-    const body = document.getElementById("nmB");
     for (const f of arr) {
       const k = NF.kind(f);
       if (k === "image" || k === "file") continue;
       fMsg.textContent = f.name + " 에서 글을 뽑는 중…";
-      const r = await NF.extract(f);
-      const t = NF.asText(f.name, r);
-      if (t) body.value = (body.value ? body.value + String.fromCharCode(10, 10) : "") + t;
+      const r = await applyOne(f);
+      if (r.error) fMsg.textContent = f.name + " — " + r.error;
     }
     drawFiles();
-    autofill();
   }
+
+  /* 이미 올라간 붙임 파일을 도로 내려받아 다시 읽습니다.
+     예전에 올린 글도 이 단추로 요약·사람·행사명을 채울 수 있습니다. */
+  async function reExtract(btn) {
+    const all = attached.concat(picked.map((f) => ({ name: f.name, _file: f })));
+    const todo = all.filter((f) => {
+      const k = NF.kind(f._file || { name: f.name, type: "" });
+      return k !== "image" && k !== "file";
+    });
+    if (!todo.length) { fMsg.textContent = "다시 읽을 엑셀·PDF·문서가 없습니다."; return; }
+
+    if (btn) btn.disabled = true;
+    for (let i = 0; i < todo.length; i++) {
+      const f = todo[i];
+      fMsg.textContent = "다시 읽는 중… (" + (i + 1) + "/" + todo.length + ") " + f.name;
+      try {
+        const file = f._file || await NF.fileFromStore(f);
+        await applyOne(file, { force: true });
+      } catch (err) {
+        fMsg.textContent = f.name + " — 내려받지 못했습니다: " + friendly(err.message);
+      }
+    }
+    if (btn) btn.disabled = false;
+    fMsg.textContent = todo.length + "개를 다시 읽었습니다. 확인하시고 저장을 눌러 주세요.";
+  }
+
+  document.getElementById("nmRe").addEventListener("click", (e) => reExtract(e.target));
 
   document.getElementById("nmFiles").addEventListener("change", (e) => {
     addFiles(e.target.files); e.target.value = "";
@@ -550,7 +730,8 @@ export async function initNotes(mountId = "notesapp") {
       event_date: dRaw ? findDate(dRaw) : findDate(title + "\n" + body),
       place:  document.getElementById("nmP").value.trim() || null,
       people: document.getElementById("nmW").value.trim() || null,
-      tag:    mCat.value === "minutes" ? (mTag.value || null) : null,
+      event:  document.getElementById("nmE").value.trim() || null,
+      tag:    tagsFor(mCat.value).length ? (mTag.value || null) : null,
     };
     e.target.disabled = true;
     // 새로 담은 파일을 먼저 올립니다
@@ -565,22 +746,33 @@ export async function initNotes(mountId = "notesapp") {
     }
     patch.files = attached.concat(up);
     msg.textContent = "저장하는 중…";
-    const r = editing
-      ? await sb.from("notes").update(patch).eq("id", editing.id)
-      : await sb.from("notes").insert({ ...patch, created_by: user.id });
+
+    /* auth/event_setup.sql 을 아직 안 돌리셨으면 event 칸이 없습니다.
+       그때는 행사명만 빼고 저장해서, 글을 잃지 않게 합니다. */
+    const put = (p) => editing
+      ? sb.from("notes").update(p).eq("id", editing.id)
+      : sb.from("notes").insert({ ...p, created_by: user.id });
+
+    let r = await put(patch);
+    let noCol = false;
+    if (r.error && /event/.test(r.error.message) && /column|schema cache/i.test(r.error.message)) {
+      noCol = true;
+      const { event, ...rest } = patch;
+      r = await put(rest);
+    }
     e.target.disabled = false;
     if (r.error) { msg.textContent = friendly(r.error.message); return; }
+    if (noCol) {
+      alert("저장했습니다. 다만 행사명 칸이 아직 없어 그것만 빠졌습니다.\n" +
+            "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
+    }
     close();
     await load();
   });
 
   document.getElementById("nmDel").addEventListener("click", async () => {
     if (!editing) return;
-    if (!confirm(`「${editing.title}」 을 지울까요?`)) return;
-    const { error } = await sb.from("notes").delete().eq("id", editing.id);
-    if (error) { msg.textContent = friendly(error.message); return; }
-    close();
-    await load();
+    if (await removePost(editing)) close();
   });
 
   /* ── 달력 켜고 끄기 · 엑셀 ── */
@@ -633,7 +825,80 @@ export async function initNotes(mountId = "notesapp") {
   }
 
 
-  document.getElementById("nXls").addEventListener("click", () => {
+  /* ── 이미 올라간 글을 한꺼번에 다시 읽기 ──
+     붙임 파일이 있는 글을 모두 열어 행사명 · 만난 사람 · 요약을 채웁니다.
+     손으로 적어 두신 것은 그대로 두고 빠진 것만 채웁니다. */
+  async function fillAll(btn) {
+    const todo = rows.filter((r) => Array.isArray(r.files) && r.files.some((f) => {
+      const k = NF.kind({ name: f.name || "", type: "" });
+      return k === "pdf" || k === "excel" || k === "csv" || k === "text";
+    }));
+    if (!todo.length) { alert("붙임 파일이 있는 글이 없습니다."); return; }
+    if (!confirm(`붙임 파일이 있는 글 ${todo.length}건을 다시 읽습니다.\n` +
+                 "손으로 적어 두신 것은 지우지 않습니다. 이어서 할까요?")) return;
+
+    const was = btn.textContent;
+    btn.disabled = true;
+    let done = 0, failed = 0;
+
+    for (const r of todo) {
+      btn.textContent = `⟳ ${++done}/${todo.length}`;
+      let body = r.body || "", people = r.people || "", event = r.event || "";
+      let changed = false;
+
+      for (const f of r.files) {
+        const k = NF.kind({ name: f.name || "", type: "" });
+        if (k === "image" || k === "file") continue;
+        try {
+          const file = await NF.fileFromStore(f);
+          const x = await NF.extract(file);
+          const t = NF.asText(f.name, x);
+          if (t) { const nb = mergeBlock(body, f.name, t); if (nb !== body) { body = nb; changed = true; } }
+          if (x.event && !event.trim()) { event = x.event; changed = true; }
+          if (x.people && x.people.length) {
+            const np = mergePeople(people, x.people);
+            if (np !== people) { people = np; changed = true; }
+          }
+        } catch (err) { failed++; }
+      }
+
+      if (!changed) continue;
+      const patch = { body: body || null, people: people || null, event: event || null };
+      let up = await sb.from("notes").update(patch).eq("id", r.id);
+      if (up.error && /event/.test(up.error.message) && /column|schema cache/i.test(up.error.message)) {
+        const { event: _drop, ...rest } = patch;
+        up = await sb.from("notes").update(rest).eq("id", r.id);
+      }
+      if (up.error) failed++;
+    }
+
+    btn.disabled = false;
+    btn.textContent = was;
+    await load();
+    alert(`${todo.length}건을 다시 읽었습니다.` + (failed ? `\n${failed}개는 실패했습니다.` : ""));
+  }
+
+  const fillBtn = document.getElementById("nFill");
+  if (fillBtn) fillBtn.addEventListener("click", (e) => fillAll(e.currentTarget));
+
+  /* ── 0_schedule 폴더에서 일정 글 만들기 ── */
+  const folderEl = document.getElementById("nFolder");
+  if (folderEl) folderEl.addEventListener("change", async (e) => {
+    const list = e.target.files;
+    e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
+    if (!list || !list.length) return;
+    const NFD = await import("./notes-folder.js?v=202608301500");
+    await NFD.openImport(list, {
+      user, rows,
+      tags: tagsFor("schedule"),
+      reload: load,
+      // 달력이 이어져 있을 때만 맞춰 봅니다 (연결 창은 사람이 눌러서 띄웁니다)
+      monthEvents: GC.connected() ? ((y, m0) => GC.month(y, m0)) : null,
+    });
+  });
+
+  const nXlsBtn = document.getElementById("nXls");
+  if (nXlsBtn) nXlsBtn.addEventListener("click", () => {
     const l = shown();
     if (!l.length) { alert("내려받을 글이 없습니다."); return; }
     const t = new Date();
