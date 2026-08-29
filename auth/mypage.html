@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyPage — Jee-Hyun NAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .mycard { max-width:560px; padding:26px 28px; background:#fff;
+      border:1px solid var(--line); border-radius:var(--radius-md); margin:0 0 1.2rem; }
+    .mycard h2 { font-size:1.1rem; margin:0 0 .3rem; }
+    .mycard .sub { font-size:.82rem; color:var(--mauve); margin:0 0 1.1rem; line-height:1.6; }
+    .mycard label { display:block; font-size:.8rem; font-weight:500; color:#5a5648; margin:13px 0 6px; }
+    .mycard input { width:100%; padding:10px 12px; border:1px solid var(--line);
+      border-radius:7px; font-family:inherit; font-size:.92rem; background:#fff; color:var(--ink); }
+    .mycard input:focus { outline:0; border-color:var(--teal); }
+    .mycard input:disabled { background:#f7f5f2; color:var(--mauve); }
+    .myfoot { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+    .mybtn { padding:.6em 1.4em; border-radius:100px; font-family:inherit; font-size:.87rem;
+      font-weight:600; cursor:pointer; border:1px solid var(--line);
+      background:#fff; color:var(--ink); transition:.18s var(--ease); }
+    .mybtn:hover { border-color:var(--teal); color:var(--teal-text); }
+    .mybtn--go { background:var(--teal); border-color:var(--teal); color:#fff; }
+    .mybtn--go:hover { background:#3f8b80; color:#fff; }
+    .mybtn:disabled { opacity:.5; cursor:default; }
+    .mymsg { margin:10px 0 0; font-size:.85rem; color:var(--mauve); min-height:1.2em; }
+    .mystat { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 1.4rem; }
+    .mytag { padding:.3em .9em; border-radius:100px; font-size:.78rem; font-weight:600; }
+    .mytag--ok { background:#e3f3ef; color:#2f6a62; }
+    .mytag--wait { background:#fdeee9; color:#b3543b; }
+    .mytag--admin { background:#e8eefb; color:#2a5fa8; }
+    .myhint { font-size:.78rem; color:var(--mauve); margin:.5rem 0 0; line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section" style="padding-top:7rem">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">MyPage</span>
+          <h1 class="section-title">내 정보</h1>
+        </div>
+        <div id="myapp"><p style="color:var(--mauve)">확인 중…</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../assets/js/main.js" defer></script>
+  <script type="module">
+    import { sb, currentUser, myProfile } from "./auth.js";
+
+    const app = document.getElementById("myapp");
+    const esc = (s) => String(s == null ? "" : s)
+      .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+    const user = await currentUser();
+    if (!user) {
+      location.replace("login.html?next=" + encodeURIComponent("../auth/mypage.html"));
+      throw new Error("로그인 필요");
+    }
+    const me = await myProfile().catch(() => null);
+    const ok = !!(me && (me.analysis_access || me.is_admin));
+
+    app.innerHTML =
+      '<div class="mystat">' +
+        '<span class="mytag ' + (ok ? "mytag--ok" : "mytag--wait") + '">' +
+          (ok ? "승인됨 — 자료를 보실 수 있습니다" : "승인 대기 중입니다") + "</span>" +
+        (me && me.is_admin ? '<span class="mytag mytag--admin">관리자</span>' : "") +
+      "</div>" +
+
+      '<div class="mycard">' +
+        "<h2>가입 정보</h2>" +
+        '<p class="sub">이름과 소속을 고치실 수 있습니다.</p>' +
+        '<label for="pEmail">이메일</label>' +
+        '<input type="email" id="pEmail" disabled>' +
+        '<p class="myhint">이메일은 바꿀 수 없습니다. 바꾸셔야 하면 알려주세요.</p>' +
+        '<label for="pName">이름</label>' +
+        '<input type="text" id="pName" maxlength="40">' +
+        '<label for="pAffil">소속</label>' +
+        '<input type="text" id="pAffil" maxlength="80" placeholder="예: 경기연구원">' +
+        '<div class="myfoot"><button type="button" class="mybtn mybtn--go" id="pSave">저장</button></div>' +
+        '<p class="mymsg" id="pMsg"></p>' +
+      "</div>" +
+
+      '<div class="mycard">' +
+        "<h2>비밀번호 바꾸기</h2>" +
+        '<p class="sub">새 비밀번호를 두 번 적어 주세요. 8자 이상이어야 합니다.</p>' +
+        '<label for="w1">새 비밀번호</label>' +
+        '<input type="password" id="w1" autocomplete="new-password" minlength="8">' +
+        '<label for="w2">한 번 더</label>' +
+        '<input type="password" id="w2" autocomplete="new-password" minlength="8">' +
+        '<div class="myfoot"><button type="button" class="mybtn mybtn--go" id="wSave">바꾸기</button></div>' +
+        '<p class="mymsg" id="wMsg"></p>' +
+      "</div>" +
+
+      (me && me.is_admin
+        ? '<div class="mycard"><h2>운영</h2>' +
+          '<p class="sub">관리자에게만 보입니다.</p>' +
+          '<div class="myfoot" style="justify-content:flex-start">' +
+            '<a class="mybtn" href="../admin/index.html">운영 관리</a>' +
+            '<a class="mybtn" href="../admin/members.html">회원 관리</a>' +
+            '<a class="mybtn" href="../blog.html">기록장</a>' +
+          "</div></div>"
+        : "");
+
+    document.getElementById("pEmail").value = user.email || "";
+    document.getElementById("pName").value = (me && me.name) || "";
+    document.getElementById("pAffil").value = (me && me.affiliation) || "";
+
+    const pMsg = document.getElementById("pMsg");
+    document.getElementById("pSave").addEventListener("click", async (e) => {
+      const name = document.getElementById("pName").value.trim();
+      if (!name) { pMsg.textContent = "이름을 적어주세요."; return; }
+      e.target.disabled = true;
+      pMsg.textContent = "저장하는 중…";
+      const { error } = await sb.from("profiles").update({
+        name, affiliation: document.getElementById("pAffil").value.trim() || null,
+      }).eq("id", user.id);
+      e.target.disabled = false;
+      pMsg.textContent = error
+        ? "저장하지 못했습니다: " + error.message
+        : "저장했습니다.";
+    });
+
+    const wMsg = document.getElementById("wMsg");
+    document.getElementById("wSave").addEventListener("click", async (e) => {
+      const a = document.getElementById("w1").value;
+      const b = document.getElementById("w2").value;
+      if (a.length < 8) { wMsg.textContent = "8자 이상으로 적어주세요."; return; }
+      if (a !== b) { wMsg.textContent = "두 번 적은 것이 서로 다릅니다."; return; }
+      e.target.disabled = true;
+      wMsg.textContent = "바꾸는 중…";
+      const { error } = await sb.auth.updateUser({ password: a });
+      e.target.disabled = false;
+      if (error) { wMsg.textContent = "바꾸지 못했습니다: " + error.message; return; }
+      document.getElementById("w1").value = "";
+      document.getElementById("w2").value = "";
+      wMsg.textContent = "비밀번호를 바꿨습니다. 다음 로그인부터 새 비밀번호를 쓰세요.";
+    });
+  </script>
+</body>
+</html>

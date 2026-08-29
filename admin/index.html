@@ -3,44 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
-  <title>글 관리 — Jee-Hyun NAM</title>
+  <title>운영 관리 — Jee-Hyun NAM</title>
+  <meta name="robots" content="noindex">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
   <style>
-    .cms-note {
-      position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
-      z-index: 9999; max-width: 92vw;
-      font: 13px/1.6 "Noto Sans KR", system-ui, sans-serif; color: #4a4442;
-      background: #fff; border: 1px solid rgba(28,26,25,.14); border-radius: 10px;
-      padding: .6rem 1rem; box-shadow: 0 6px 22px rgba(0,0,0,.1);
-    }
-    .cms-note b { color: #2f6a62; }
+    .acards { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+      gap:14px; margin:0 0 2rem; }
+    .acard { display:block; padding:20px; background:#fff; border:1px solid var(--line);
+      border-radius:var(--radius-md); transition:.2s var(--ease); }
+    .acard:hover { transform:translateY(-3px); border-color:var(--teal);
+      box-shadow:0 8px 20px rgba(28,26,25,.12); }
+    .acard h3 { font-size:1rem; margin:0 0 .35rem; color:var(--ink); }
+    .acard p { margin:0; font-size:.82rem; color:var(--mauve); line-height:1.6; }
+    .acard .big { display:block; font-size:1.9rem; font-weight:700; color:var(--teal-text);
+      line-height:1.1; margin:.4rem 0 .2rem; font-family:var(--font-display); }
+    .acard .warn { color:#b3543b; }
+    .asec { margin:0 0 1rem; font-size:.72rem; font-weight:700; letter-spacing:.08em;
+      color:var(--mauve); }
+    .astat { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+      gap:12px; margin:0 0 2rem; }
+    .astat div { padding:16px 18px; background:#fff; border:1px solid var(--line);
+      border-radius:var(--radius-md); }
+    .astat b { display:block; font-size:1.6rem; font-weight:700; color:var(--ink);
+      font-family:var(--font-display); line-height:1.15; }
+    .astat span { font-size:.78rem; color:var(--mauve); }
+    .aerr { padding:14px 18px; background:#fdf3f0; border:1px solid #f0cfc6;
+      border-radius:10px; font-size:.85rem; color:#8e3b2c; line-height:1.7; margin:0 0 1.4rem; }
   </style>
 </head>
 <body>
-  <!-- Decap CMS — 브라우저에서 글을 쓰면 GitHub 에 커밋되고 Netlify 가 자동 재배포합니다. -->
-  <script>window.CMS_MANUAL_INIT = true;</script>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-  <script>
-    (function () {
-      // 로그인 인증은 이 페이지가 열린 바로 그 도메인의 /oauth 함수를 씁니다.
-      // 덕분에 netlify.app 주소와 skyish.kr 어느 쪽에서 열어도 그대로 동작합니다.
-      // (GitHub OAuth 앱의 callback URL 은 실제로 쓰는 도메인 하나로 맞춰 주세요.)
-      if (!window.CMS || typeof window.CMS.init !== "function") {
-        document.body.innerHTML =
-          '<p style="font:15px/1.7 system-ui;padding:2rem">CMS 를 불러오지 못했습니다. ' +
-          '인터넷 연결을 확인하고 새로고침해 주세요.</p>';
-        return;
-      }
-      window.CMS.init({ config: { backend: { base_url: window.location.origin } } });
+  <div id="site-header"></div>
 
-      var note = document.createElement("div");
-      note.className = "cms-note";
-      note.innerHTML =
-        '글을 <b>Publish</b> 하면 GitHub 에 저장되고, 1~2분 뒤 사이트에 반영됩니다.';
-      document.body.appendChild(note);
-      setTimeout(function () { note.remove(); }, 12000);
-    })();
+  <main id="main">
+    <section class="section" style="padding-top:7rem">
+      <div class="container container--wide">
+        <div class="section-head">
+          <span class="eyebrow">Admin</span>
+          <h1 class="section-title">운영 관리</h1>
+        </div>
+        <div id="aapp"><p style="color:var(--mauve)">확인 중…</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../assets/js/main.js" defer></script>
+  <script type="module">
+    import { sb, currentUser, myProfile } from "../auth/auth.js";
+
+    const app = document.getElementById("aapp");
+    const user = await currentUser();
+    if (!user) {
+      location.replace("../auth/login.html?next=" + encodeURIComponent("../admin/index.html"));
+      throw new Error("로그인 필요");
+    }
+    const me = await myProfile().catch(() => null);
+    if (!me || !me.is_admin) {
+      app.innerHTML = '<p style="padding:60px 0;text-align:center;color:var(--mauve)">' +
+        '이 화면은 관리자만 볼 수 있습니다.<br><a href="../index.html">← 홈으로</a></p>';
+      throw new Error("관리자 아님");
+    }
+
+    /* 각 표의 개수를 세어 봅니다. 표가 없으면 -1 로 둡니다. */
+    async function count(table) {
+      const r = await sb.from(table).select("*", { count: "exact", head: true });
+      if (r.error) return { n: -1, err: r.error.message };
+      return { n: r.count || 0 };
+    }
+    const [prof, wait, places, albums, photos, notes] = await Promise.all([
+      count("profiles"),
+      sb.from("profiles").select("*", { count: "exact", head: true })
+        .eq("analysis_access", false).eq("is_admin", false)
+        .then((r) => ({ n: r.error ? -1 : (r.count || 0) })),
+      count("map_places"), count("gallery_albums"), count("gallery_photos"), count("notes"),
+    ]);
+
+    const missing = [];
+    if (prof.n   < 0) missing.push("auth/setup.sql");
+    if (places.n < 0) missing.push("auth/map_setup.sql");
+    if (albums.n < 0) missing.push("auth/gallery_setup.sql");
+    if (notes.n  < 0) missing.push("auth/notes_setup.sql");
+    const cannotList = prof.n === 1 && /policy|permission/i.test(prof.err || "");
+
+    const stat = (n, label) =>
+      "<div><b>" + (n < 0 ? "—" : n) + "</b><span>" + label + "</span></div>";
+
+    app.innerHTML =
+      (missing.length
+        ? '<div class="aerr">아직 실행하지 않은 설정이 있습니다 — <b>' +
+          missing.join(" · ") + "</b><br>SQL Editor 에서 한 번씩 돌려 주세요.</div>"
+        : "") +
+      (prof.n >= 0 && prof.n <= 1
+        ? '<div class="aerr">회원 목록이 1명 이하로 보입니다. 다른 회원이 있는데도 이렇게 나오면 ' +
+          "<b>auth/admin_setup.sql</b> 을 아직 안 돌리신 것입니다.</div>"
+        : "") +
+
+      '<p class="asec">한눈에</p>' +
+      '<div class="astat">' +
+        stat(prof.n, "가입 회원") + stat(wait.n, "승인 대기") +
+        stat(places.n, "지도 장소") + stat(albums.n, "사진첩") +
+        stat(photos.n, "사진") + stat(notes.n, "기록") +
+      "</div>" +
+
+      '<p class="asec">바로 가기</p>' +
+      '<div class="acards">' +
+        '<a class="acard" href="members.html"><h3>회원 관리</h3>' +
+          '<span class="big' + (wait.n > 0 ? " warn" : "") + '">' +
+          (wait.n < 0 ? "—" : wait.n) + "</span>" +
+          "<p>승인을 기다리는 분</p></a>" +
+        '<a class="acard" href="../blog.html"><h3>기록장</h3>' +
+          '<span class="big">' + (notes.n < 0 ? "—" : notes.n) + "</span>" +
+          "<p>일정 · 일기 · 연락망 · 사람들 · 회의록</p></a>" +
+        '<a class="acard" href="../map.html"><h3>지도</h3>' +
+          '<span class="big">' + (places.n < 0 ? "—" : places.n) + "</span>" +
+          "<p>올린 장소</p></a>" +
+        '<a class="acard" href="../gallery.html"><h3>갤러리</h3>' +
+          '<span class="big">' + (albums.n < 0 ? "—" : albums.n) + "</span>" +
+          "<p>사진첩</p></a>" +
+        '<a class="acard" href="../pictures.html"><h3>데이터 분석</h3>' +
+          "<p style=\"margin-top:.6rem\">방위산업 · 침수 반지하</p></a>" +
+        '<a class="acard" href="../auth/mypage.html"><h3>내 정보</h3>' +
+          "<p style=\"margin-top:.6rem\">이름 · 소속 · 비밀번호</p></a>" +
+      "</div>" +
+
+      '<p class="asec">Supabase</p>' +
+      '<div class="acards">' +
+        '<a class="acard" href="https://supabase.com/dashboard/project/qmdovjlxfvinknuizelw" ' +
+          'target="_blank" rel="noopener"><h3>대시보드</h3>' +
+          "<p style=\"margin-top:.6rem\">표 · 보관함 · 설정</p></a>" +
+        '<a class="acard" href="https://supabase.com/dashboard/project/qmdovjlxfvinknuizelw/sql/new" ' +
+          'target="_blank" rel="noopener"><h3>SQL 실행</h3>' +
+          "<p style=\"margin-top:.6rem\">설정 파일을 돌릴 때</p></a>" +
+        '<a class="acard" href="https://supabase.com/dashboard/project/qmdovjlxfvinknuizelw/storage/buckets" ' +
+          'target="_blank" rel="noopener"><h3>보관함</h3>' +
+          "<p style=\"margin-top:.6rem\">map · gallery · analysis</p></a>" +
+      "</div>";
   </script>
 </body>
 </html>

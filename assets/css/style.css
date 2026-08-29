@@ -2190,3 +2190,15 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 .ngcal iframe { width: 100%; height: 640px; border: 1px solid var(--line);
   border-radius: 9px; background: #fff; display: block; }
 @media (max-width: 680px) { .ngcal iframe { height: 460px; } }
+
+/* MyPage 단추 — 로그인한 분 모두에게 */
+.authbox .authadmin--my {
+  background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.34);
+}
+.authbox .authadmin--my:hover { background: var(--teal); border-color: var(--teal); }
+.site-header.is-solid .authbox .authadmin--my {
+  color: var(--teal-text) !important; background: #eaf5f2; border-color: #bfdfd8;
+}
+.site-header.is-solid .authbox .authadmin--my:hover {
+  color: #fff !important; background: var(--teal); border-color: var(--teal);
+}

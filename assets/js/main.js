@@ -109,12 +109,16 @@
             box.innerHTML = "";
             var who = el("span", { class: "authwho" }, escapeHtml(name));
             if (!ok) { who.classList.add("is-pending"); who.title = "승인 대기 중입니다"; }
-            // 관리자에게만 회원 관리 문이 보입니다
+            // 들어와 계신 분에게는 내 정보, 관리자에게는 운영 관리까지
+            box.appendChild(el("a", {
+              class: "authadmin authadmin--my", href: url("auth/mypage.html"),
+              title: "내 정보 (MyPage)"
+            }, "MyPage"));
             if (me && me.is_admin) {
               box.appendChild(el("a", {
-                class: "authadmin", href: url("admin/members.html"),
-                title: "회원 관리"
-              }, "회원"));
+                class: "authadmin", href: url("admin/index.html"),
+                title: "운영 관리"
+              }, "운영"));
             }
             /* 들어와 계실 때는 붉은 '로그인중'. 한 번 더 누르면 로그아웃합니다. */
             var out = el("button", {
