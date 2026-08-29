@@ -13,7 +13,10 @@ export const BUCKET = "files";
 /** 내 이름·자주 쓰는 낱말 — 이 말이 든 줄을 먼저 뽑습니다 */
 export const MINE = ["남지현", "지현", "Jee-Hyun", "Jeehyun", "NAM", "경기연구원"];
 
-const MAX = 20 * 1024 * 1024;                 // 한 파일 20MB 까지
+const MAX = 20 * 1024 * 1024;              // 한 파일 20MB 까지
+
+// PDF 를 짧은 조각으로 끊는 기준 — 문장 끝 · 줄바꿈 · 가운뎃점 · 말줄임
+const SPLIT = new RegExp("(?<=[.\u3002!?;])\s+|\n+|\s[\u00b7\u2022]\s|\.{3,}");
 
 export const kind = (f) => {
   const n = (f.name || "").toLowerCase();
@@ -107,7 +110,9 @@ async function fromPdf(file) {
     const page = await doc.getPage(i);
     const tc = await page.getTextContent();
     const text = tc.items.map((x) => x.str).join(" ");
-    text.split(/(?<=[.。!?])\s+|\n+/).forEach((s) => {
+    // 문장 끝·가운뎃점·쉼표까지 끊어 조각을 짧게 만듭니다.
+    // 그러지 않으면 한 쪽이 통째로 한 줄이 되어 읽을 수 없습니다.
+    text.split(SPLIT).forEach((s) => {
       const line = s.replace(/\s+/g, " ").trim();
       if (line.length > 6) out.push({ where: i + "쪽", line });
     });
@@ -143,8 +148,27 @@ export async function extract(file, words) {
   const keys = (words && words.length ? words : MINE).map((w) => w.toLowerCase());
   const hit = (s) => keys.some((w) => s.toLowerCase().includes(w));
 
-  const mine = lines.filter((x) => hit(x.line)).slice(0, 40);
-  const head = mine.length ? [] : lines.filter((x) => x.line.length > 8).slice(0, 8);
+  /* 긴 줄은 내 이름 둘레만 잘라 냅니다.
+     한 쪽이 통째로 들어오면 어디가 내 얘기인지 알 수 없습니다. */
+  const WIN = 90;                       // 이름 앞뒤로 남길 글자 수
+  function around(line) {
+    if (line.length <= WIN * 2) return line;
+    const low = line.toLowerCase();
+    let at = -1;
+    for (const w of keys) { const i = low.indexOf(w); if (i >= 0) { at = i; break; } }
+    if (at < 0) return line.slice(0, WIN * 2) + "…";
+    const a = Math.max(0, at - WIN);
+    const b = Math.min(line.length, at + WIN);
+    return (a > 0 ? "… " : "") + line.slice(a, b).trim() + (b < line.length ? " …" : "");
+  }
+
+  const mine = lines.filter((x) => hit(x.line))
+    .map((x) => ({ where: x.where, line: around(x.line) }))
+    .slice(0, 25);
+  const head = mine.length ? []
+    : lines.filter((x) => x.line.length > 8)
+           .map((x) => ({ where: x.where, line: x.line.slice(0, 180) + (x.line.length > 180 ? "…" : "") }))
+           .slice(0, 8);
   return { mine, head, total: lines.length };
 }
 

@@ -8,7 +8,6 @@ import * as GC from "./gcal.js";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
-  ["diary",    "Diary",    "#c8925a"],
   ["contacts", "연락망",   "#2a5fa8"],
   ["people",   "사람들",   "#8a6bb0"],
   ["minutes",  "회의록",   "#b3543b"],
@@ -19,6 +18,7 @@ export const CATS = [
 /** 일반회원에게 열어 주는 갈래 — 「일상」만 봅니다 */
 export const MEMBER_CATS = ["daily"];
 export const CAT_NAME  = Object.fromEntries(CATS.map(([k, v]) => [k, v]));
+CAT_NAME.diary = "Schedule";           // 예전 Diary 글도 Schedule 로 보입니다
 
 /** 주인 이메일 — 회원 정보 줄이 없어도 관리자로 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -29,6 +29,7 @@ export const GCAL = "whlove@gmail.com";
 /** 회의록 말머리 — 회의록 갈래에서만 씁니다 */
 export const TAGS = ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "일상", "ETC"];
 export const CAT_COLOR = Object.fromEntries(CATS.map(([k, , c]) => [k, c]));
+CAT_COLOR.diary = CAT_COLOR.schedule;
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -237,11 +238,13 @@ export async function initNotes(mountId = "notesapp") {
     return ((r.title || "") + " " + (r.body || "") + " " + (r.tag || "") + " " +
             (r.place || "") + " " + (r.people || "")).toLowerCase().includes(s);
   };
-  const shown = () => rows.filter((r) => (cur === "all" || r.category === cur)).filter(match);
+  // 예전 Diary 글은 Schedule 에 함께 담습니다
+  const catOf = (r) => (r.category === "diary" ? "schedule" : r.category);
+  const shown = () => rows.filter((r) => (cur === "all" || catOf(r) === cur)).filter(match);
 
   function draw() {
     const mk = (k, label) => {
-      const n = (k === "all" ? rows : rows.filter((r) => r.category === k)).filter(match).length;
+      const n = (k === "all" ? rows : rows.filter((r) => catOf(r) === k)).filter(match).length;
       return `<button type="button" data-k="${k}"${k === cur ? ' class="on"' : ""}>` +
              `${esc(label)}<span class="n">${n}</span></button>`;
     };
@@ -273,7 +276,7 @@ export async function initNotes(mountId = "notesapp") {
     emptyEl.hidden = true;
     list.innerHTML = l.map((r) =>
       `<article class="nitem" data-id="${r.id}">` +
-        `<span class="ncat" style="--c:${CAT_COLOR[r.category] || "#888"}">${esc(CAT_NAME[r.category] || "")}</span>` +
+        `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">${esc(CAT_NAME[catOf(r)] || "")}</span>` +
         `<div class="nitem__main">` +
           `<h3>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</h3>` +
           (r.body ? `<p>${esc(r.body).replace(/\n/g, "<br>")}</p>` : "") +
@@ -329,7 +332,7 @@ export async function initNotes(mountId = "notesapp") {
       const key = iso(d);
       const out = d.getMonth() !== m;
       const items = (byDay[key] || []).map((r) =>
-        `<span class="cev" style="--c:${CAT_COLOR[r.category]}" title="${esc(r.title)}">` +
+        `<span class="cev" style="--c:${CAT_COLOR[catOf(r)] || CAT_COLOR.schedule}" title="${esc(r.title)}">` +
         `${esc(r.title)}</span>`).join("")
         + (gByDay[key] || []).map((e, gi) =>
         `<${isAdmin ? "button type=\"button\"" : "span"} class="cev cev--g" ` +
@@ -493,8 +496,12 @@ export async function initNotes(mountId = "notesapp") {
     const pEl = document.getElementById("nmP");
     const wEl = document.getElementById("nmW");
     if (!dEl.value) { const d = findDate(text); if (d) dEl.value = ymd(d); }
-    if (!pEl.value) { const p = findField(text, ["장소", "place", "위치"]); if (p) pEl.value = p; }
-    if (!wEl.value) { const w = findField(text, ["사람", "만난", "people", "참석"]); if (w) wEl.value = w; }
+    // 「장소:」 「사람:」 을 적으시면 늘 그 값으로 맞춥니다.
+    // 비었을 때만 채우면, 적어 넣어도 칸이 그대로여서 헷갈립니다.
+    const p = findField(text, ["장소", "place", "위치"]);
+    if (p) pEl.value = p;
+    const w = findField(text, ["만난 사람", "참석자", "사람", "만난", "people", "참석"]);
+    if (w) wEl.value = w;
   }
   document.getElementById("nmT").addEventListener("input", autofill);
   document.getElementById("nmB").addEventListener("input", autofill);
