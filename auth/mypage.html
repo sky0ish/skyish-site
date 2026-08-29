@@ -36,6 +36,14 @@
     .mytag--wait { background:#fdeee9; color:#b3543b; }
     .mytag--admin { background:#e8eefb; color:#2a5fa8; }
     .myhint { font-size:.78rem; color:var(--mauve); margin:.5rem 0 0; line-height:1.6; }
+    .myfix { max-width:560px; padding:22px 26px; margin:0 0 1.4rem;
+      background:#fdf6ee; border:1px solid #ecd9bf; border-radius:var(--radius-md); }
+    .myfix h2 { font-size:1.05rem; margin:0 0 .5rem; color:#8a5a1e; }
+    .myfix p { margin:0 0 .9rem; font-size:.86rem; color:#5a4a33; line-height:1.7; }
+    .myfix pre { margin:0; padding:13px 15px; background:#2f2a24; color:#f3ece0;
+      border-radius:9px; font-size:.74rem; line-height:1.65; overflow-x:auto;
+      white-space:pre; font-family:ui-monospace,Menlo,Consolas,monospace; }
+    .myfix__act { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
   </style>
 </head>
 <body>
@@ -71,7 +79,33 @@
     const me = await myProfile().catch(() => null);
     const ok = !!(me && (me.analysis_access || me.is_admin));
 
+    /* 아직 승인 전이면, 무엇을 하면 되는지 바로 알려 줍니다 */
+    const fixSql = [
+      "insert into public.profiles (id, email, name, affiliation, analysis_access, is_admin)",
+      "select u.id, u.email,",
+      "       coalesce(nullif(u.raw_user_meta_data->>'name',''), '남지현'),",
+      "       coalesce(nullif(u.raw_user_meta_data->>'affiliation',''), '경기연구원'),",
+      "       true, true",
+      "  from auth.users u",
+      " where lower(u.email) = '" + (user.email || "").toLowerCase() + "'",
+      "    on conflict (id) do update",
+      "   set analysis_access = true, is_admin = true;",
+    ].join("\n");
+
     app.innerHTML =
+      (!ok ? '<div class="myfix">' +
+        "<h2>아직 승인 전입니다</h2>" +
+        "<p>이 홈페이지는 가입 뒤 승인을 거치도록 되어 있습니다. " +
+        "첫 관리자는 승인해 줄 사람이 없어, 아래를 <b>한 번만</b> 실행하시면 됩니다.</p>" +
+        '<pre id="fixSql"></pre>' +
+        '<div class="myfix__act">' +
+          '<button type="button" class="mybtn mybtn--go" id="fixCopy">SQL 복사</button>' +
+          '<a class="mybtn" target="_blank" rel="noopener" ' +
+            'href="https://supabase.com/dashboard/project/qmdovjlxfvinknuizelw/sql/new">' +
+            "SQL Editor 열기 →</a>" +
+        "</div>" +
+        '<p class="myhint">붙여넣고 Run 한 뒤, 이 화면을 새로고침하시면 승인됨으로 바뀝니다.</p>' +
+      "</div>" : "") +
       '<div class="mystat">' +
         '<span class="mytag ' + (ok ? "mytag--ok" : "mytag--wait") + '">' +
           (ok ? "승인됨 — 자료를 보실 수 있습니다" : "승인 대기 중입니다") + "</span>" +
@@ -112,6 +146,21 @@
             '<a class="mybtn" href="../blog.html">기록장</a>' +
           "</div></div>"
         : "");
+
+    if (!ok) {
+      document.getElementById("fixSql").textContent = fixSql;
+      document.getElementById("fixCopy").addEventListener("click", async (e) => {
+        try {
+          await navigator.clipboard.writeText(fixSql);
+          e.target.textContent = "복사했습니다";
+          setTimeout(() => { e.target.textContent = "SQL 복사"; }, 2000);
+        } catch (err) {
+          const r = document.createRange();
+          r.selectNode(document.getElementById("fixSql"));
+          getSelection().removeAllRanges(); getSelection().addRange(r);
+        }
+      });
+    }
 
     document.getElementById("pEmail").value = user.email || "";
     document.getElementById("pName").value = (me && me.name) || "";

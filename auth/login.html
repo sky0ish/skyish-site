@@ -80,13 +80,10 @@
     const next = params.get("next") || "../index.html";
     function goNext() { location.href = next.startsWith("http") ? "../index.html" : next; }
 
-    // 이미 로그인돼 있으면 바로 통과
+    // 이미 로그인돼 있으면 바로 통과 (승인 전이어도 들여보냅니다)
     (async () => {
       const { state } = await analysisAccess();
-      if (state === "ok") goNext();
-      else if (state === "pending") {
-        showMsg(msg, "가입 신청이 접수되었습니다. 승인 후 이용하실 수 있습니다.");
-      }
+      if (state === "ok" || state === "pending") goNext();
     })();
 
     form.addEventListener("submit", async (e) => {
@@ -105,12 +102,10 @@
         return;
       }
 
-      const { state } = await analysisAccess();
-      if (state === "ok") { showMsg(msg, "로그인되었습니다. 이동합니다…", true); goNext(); }
-      else {
-        showMsg(msg, "로그인은 되었지만 아직 승인 전입니다. 승인되면 바로 열람하실 수 있습니다.");
-        btn.disabled = false;
-      }
+      // 로그인이 됐으면 일단 들여보냅니다.
+      // 승인이 필요한 화면은 각자 알아서 막으므로, 여기서 붙잡아 둘 이유가 없습니다.
+      showMsg(msg, "로그인되었습니다. 이동합니다…", true);
+      goNext();
     });
   </script>
 </body>
