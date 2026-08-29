@@ -192,7 +192,10 @@ export async function initNotes(mountId = "notesapp") {
   const modal = document.getElementById("nModal");
   const msg = document.getElementById("nmMsg");
 
+  // 주소에 ?cat= 이 붙어 오면 그 갈래를 펴 놓습니다 (상단 차림표에서 옵니다)
+  const wantCat = new URLSearchParams(location.search).get("cat");
   let rows = [], cur = "all", editing = null;
+  if (wantCat && CATS.some(([k]) => k === wantCat)) cur = wantCat;
   let calAt = new Date(); calAt.setDate(1);
 
   const mCat = document.getElementById("nmCat");
@@ -234,7 +237,13 @@ export async function initNotes(mountId = "notesapp") {
     tabs.innerHTML = (isAdmin ? mk("all", "전체") : "") +
       VIEW.map(([k, v]) => mk(k, v)).join("");
     tabs.querySelectorAll("button").forEach((b) =>
-      b.addEventListener("click", () => { cur = b.dataset.k; draw(); }));
+      b.addEventListener("click", () => {
+        cur = b.dataset.k;
+        const p = new URLSearchParams(location.search);
+        if (cur === "all") p.delete("cat"); else p.set("cat", cur);
+        history.replaceState(null, "", location.pathname + (p.toString() ? "?" + p : ""));
+        draw();
+      }));
 
     const l = shown();
     countEl.textContent =

@@ -62,7 +62,15 @@
         { label: "일상",     file: "map.html?g=daily"  },
         { label: "기타",     file: "map.html?g=etc"    }
       ] },
-      { label: "BLOG",     file: "blog.html"     },
+      { label: "BLOG",     file: "blog.html", sub: [
+        { label: "Schedule", file: "blog.html?cat=schedule" },
+        { label: "Diary",    file: "blog.html?cat=diary"    },
+        { label: "연락망",   file: "blog.html?cat=contacts" },
+        { label: "사람들",   file: "blog.html?cat=people"   },
+        { label: "회의록",   file: "blog.html?cat=minutes"  },
+        { label: "일상",     file: "blog.html?cat=daily"    },
+        { label: "ETC",      file: "blog.html?cat=etc"      }
+      ] },
       { label: "CONTACT",  file: "contact.html"  }
     ],
     email: "whlove@gmail.com",
