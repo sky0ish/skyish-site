@@ -13,4 +13,5 @@ export const ANALYSIS_BUCKET = "analysis";
 // 만드는 방법은 assets/js/gcal.js 맨 위 주석에 적어 두었습니다.
 // 이 값은 브라우저에 드러나도 되는 공개 값입니다
 // (승인된 원본이 skyish.kr 로 묶여 있어 다른 곳에서는 쓸 수 없습니다).
-export const GCAL_CLIENT_ID = "";
+export const GCAL_CLIENT_ID =
+  "837685540720-kfchnbh2f437oct140j7utkdso3626bs.apps.googleusercontent.com";
