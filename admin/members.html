@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원 관리 — Jee-Hyun NAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .mbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 1.2rem; }
+    .mbar__count { font-size:.86rem; color:var(--mauve); margin:0; }
+    .mfilter { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 1rem; }
+    .mfilter button {
+      padding:.5em 1.15em; border-radius:100px; font-family:inherit; font-size:.88rem;
+      font-weight:500; color:#5a5648; background:#fff; border:1px solid var(--line);
+      cursor:pointer; transition:.18s var(--ease);
+    }
+    .mfilter button:hover { border-color:var(--teal); color:var(--teal-text); }
+    .mfilter button.on {
+      background:var(--teal); border-color:var(--teal); color:#fff; font-weight:600;
+      box-shadow:0 2px 8px rgba(79,157,146,.3);
+    }
+    .mfilter .n { font-size:.74rem; font-weight:600; padding:.22em .5em;
+      border-radius:100px; background:rgba(28,26,25,.07); margin-left:.4em; }
+    .mfilter button.on .n { background:rgba(255,255,255,.26); }
+    .msearch { flex:1; min-width:200px; }
+    .msearch input {
+      width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:100px;
+      font-family:inherit; font-size:.9rem; background:#fff; color:var(--ink);
+    }
+    .msearch input:focus { outline:0; border-color:var(--teal); }
+
+    .mtable { width:100%; border-collapse:collapse; background:#fff;
+      border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; }
+    .mtable th, .mtable td { padding:11px 14px; text-align:left; font-size:.86rem;
+      border-bottom:1px solid #f1eee8; vertical-align:middle; }
+    .mtable th { font-size:.72rem; font-weight:700; letter-spacing:.04em;
+      color:var(--mauve); background:#faf8f5; white-space:nowrap; }
+    .mtable tr:last-child td { border-bottom:0; }
+    .mtable tr:hover td { background:#fbfaf8; }
+    .mname { font-weight:600; color:var(--ink); }
+    .memail { font-size:.78rem; color:var(--mauve); }
+    .mtag { display:inline-block; padding:.2em .6em; border-radius:100px;
+      font-size:.7rem; font-weight:600; white-space:nowrap; }
+    .mtag--ok { background:#e3f3ef; color:#2f6a62; }
+    .mtag--wait { background:#fdeee9; color:#b3543b; }
+    .mtag--admin { background:#e8eefb; color:#2a5fa8; margin-left:.3em; }
+    .mact { display:flex; gap:6px; flex-wrap:wrap; }
+    .mbtn { padding:.4em 1em; border-radius:100px; font-family:inherit; font-size:.78rem;
+      font-weight:600; cursor:pointer; border:1px solid var(--line);
+      background:#fff; color:var(--ink); transition:.16s var(--ease); white-space:nowrap; }
+    .mbtn:hover { border-color:var(--teal); color:var(--teal-text); }
+    .mbtn--go { background:var(--teal); border-color:var(--teal); color:#fff; }
+    .mbtn--go:hover { background:#3f8b80; color:#fff; }
+    .mbtn--off { color:#a8443a; }
+    .mbtn--off:hover { border-color:#b3453b; color:#b3453b; }
+    .mbtn:disabled { opacity:.45; cursor:default; }
+    .mempty { padding:60px 0; text-align:center; color:var(--mauve); }
+    .mmsg { margin:1rem 0 0; font-size:.86rem; color:var(--mauve); min-height:1.3em; }
+    .mwrap { overflow-x:auto; }
+    @media (max-width:640px) { .mtable th:nth-child(3), .mtable td:nth-child(3) { display:none; } }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section" style="padding-top:7rem">
+      <div class="container container--wide">
+        <div class="section-head">
+          <span class="eyebrow">Admin</span>
+          <h1 class="section-title">회원 관리</h1>
+          <p class="lead" style="margin-top:1rem">
+            가입 신청을 승인하면 TRAVEL · DATA 자료를 보고,
+            지도와 사진첩에 올릴 수 있게 됩니다.
+          </p>
+        </div>
+
+        <div id="mapp"><p class="mempty">확인 중…</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../assets/js/main.js" defer></script>
+  <script type="module">
+    import { sb, currentUser, myProfile } from "../auth/auth.js";
+
+    const app = document.getElementById("mapp");
+    const esc = (s) => String(s == null ? "" : s)
+      .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const ymd = (d) => (d || "").toString().slice(0, 10).replace(/-/g, ".");
+
+    /* 관리자만 들어올 수 있습니다 */
+    const user = await currentUser();
+    if (!user) {
+      location.replace("../auth/login.html?next=" +
+        encodeURIComponent("../admin/members.html"));
+      throw new Error("로그인 필요");
+    }
+    const me = await myProfile().catch(() => null);
+    if (!me || !me.is_admin) {
+      app.innerHTML = '<p class="mempty">이 화면은 관리자만 볼 수 있습니다.<br>' +
+        '<a href="../index.html">← 홈으로</a></p>';
+      throw new Error("관리자 아님");
+    }
+
+    app.innerHTML =
+      '<div class="mfilter" id="mFilter"></div>' +
+      '<div class="mbar">' +
+        '<label class="msearch"><span class="sr-only">회원 찾기</span>' +
+        '<input type="search" id="mQ" placeholder="이름 · 이메일 · 소속으로 찾기" autocomplete="off">' +
+        '</label>' +
+        '<p class="mbar__count" id="mCount"></p>' +
+      '</div>' +
+      '<div class="mwrap"><table class="mtable">' +
+        '<thead><tr><th>회원</th><th>소속</th><th>가입일</th><th>상태</th><th>바꾸기</th></tr></thead>' +
+        '<tbody id="mBody"></tbody>' +
+      '</table></div>' +
+      '<p class="mempty" id="mEmpty" hidden></p>' +
+      '<p class="mmsg" id="mMsg"></p>';
+
+    const body = document.getElementById("mBody");
+    const q = document.getElementById("mQ");
+    const msg = document.getElementById("mMsg");
+    const emptyEl = document.getElementById("mEmpty");
+    let rows = [], cur = "wait";
+
+    const FILTERS = [
+      { k: "wait",  label: "승인 대기", of: (r) => !r.analysis_access && !r.is_admin },
+      { k: "ok",    label: "승인됨",   of: (r) => r.analysis_access || r.is_admin },
+      { k: "admin", label: "관리자",   of: (r) => r.is_admin },
+      { k: "all",   label: "전체",     of: () => true },
+    ];
+
+    async function load() {
+      const r = await sb.from("profiles").select("*")
+                        .order("created_at", { ascending: false });
+      if (r.error) {
+        app.innerHTML = '<p class="mempty">회원 목록을 불러오지 못했습니다.<br>' +
+          esc(/policy|permission/i.test(r.error.message)
+            ? "auth/admin_setup.sql 을 한 번 실행해 주세요."
+            : r.error.message) + "</p>";
+        throw r.error;
+      }
+      rows = r.data || [];
+      draw();
+    }
+
+    function match(r) {
+      const s = q.value.trim().toLowerCase();
+      if (!s) return true;
+      return ((r.name || "") + " " + (r.email || "") + " " + (r.affiliation || ""))
+        .toLowerCase().includes(s);
+    }
+
+    function draw() {
+      document.getElementById("mFilter").innerHTML = FILTERS.map((f) =>
+        '<button type="button" data-k="' + f.k + '"' + (f.k === cur ? ' class="on"' : "") + ">" +
+        f.label + '<span class="n">' + rows.filter(f.of).length + "</span></button>").join("");
+      document.querySelectorAll("#mFilter button").forEach((b) =>
+        b.addEventListener("click", () => { cur = b.dataset.k; draw(); }));
+
+      const f = FILTERS.find((x) => x.k === cur);
+      const list = rows.filter(f.of).filter(match);
+      document.getElementById("mCount").textContent =
+        f.label + " " + list.length + "명 · 전체 " + rows.length + "명";
+
+      if (!list.length) {
+        body.innerHTML = "";
+        emptyEl.hidden = false;
+        emptyEl.textContent = q.value.trim()
+          ? "찾으시는 회원이 없습니다." : "해당하는 회원이 없습니다.";
+        return;
+      }
+      emptyEl.hidden = true;
+
+      body.innerHTML = list.map((r) => {
+        const ok = r.analysis_access || r.is_admin;
+        const self = r.id === user.id;
+        const approveBtn = r.analysis_access
+          ? '<button class="mbtn mbtn--off" data-do="revoke">승인 취소</button>'
+          : '<button class="mbtn mbtn--go" data-do="approve">승인</button>';
+        const adminBtn = r.is_admin
+          ? '<button class="mbtn mbtn--off" data-do="unadmin"' +
+            (self ? ' disabled title="본인 관리자 권한은 뺄 수 없습니다"' : "") + ">관리자 해제</button>"
+          : '<button class="mbtn" data-do="admin">관리자로</button>';
+        return '<tr data-id="' + r.id + '">' +
+          "<td>" +
+            '<div class="mname">' + esc(r.name || "(이름 없음)") + (self ? " (나)" : "") + "</div>" +
+            '<div class="memail">' + esc(r.email || "") + "</div>" +
+          "</td>" +
+          "<td>" + esc(r.affiliation || "—") + "</td>" +
+          "<td>" + ymd(r.created_at) + "</td>" +
+          "<td>" +
+            '<span class="mtag ' + (ok ? "mtag--ok" : "mtag--wait") + '">' +
+            (ok ? "승인됨" : "대기") + "</span>" +
+            (r.is_admin ? '<span class="mtag mtag--admin">관리자</span>' : "") +
+          "</td>" +
+          '<td><div class="mact">' + approveBtn + adminBtn + "</div></td>" +
+        "</tr>";
+      }).join("");
+
+      body.querySelectorAll("button[data-do]").forEach((b) =>
+        b.addEventListener("click", () => act(b)));
+    }
+
+    async function act(btn) {
+      const id = btn.closest("tr").dataset.id;
+      const row = rows.find((r) => r.id === id);
+      const patch = {
+        approve: { analysis_access: true },
+        revoke:  { analysis_access: false },
+        admin:   { is_admin: true },
+        unadmin: { is_admin: false },
+      }[btn.dataset.do];
+      const who = row.name || row.email;
+
+      if (btn.dataset.do === "revoke" &&
+          !confirm("「" + who + "」 님의 승인을 취소할까요?\n자료를 더는 볼 수 없게 됩니다.")) return;
+      if (btn.dataset.do === "admin" &&
+          !confirm("「" + who + "」 님을 관리자로 만들까요?\n다른 회원의 승인을 다룰 수 있게 됩니다.")) return;
+
+      btn.disabled = true;
+      msg.textContent = "바꾸는 중…";
+      const { error } = await sb.from("profiles").update(patch).eq("id", id);
+      btn.disabled = false;
+      if (error) {
+        msg.textContent = /policy|permission/i.test(error.message)
+          ? "바꿀 권한이 없습니다 — auth/admin_setup.sql 을 실행해 주세요."
+          : "바꾸지 못했습니다: " + error.message;
+        return;
+      }
+      Object.assign(row, patch);
+      msg.textContent = who + " 님을 바꿨습니다.";
+      draw();
+    }
+
+    q.addEventListener("input", draw);
+    await load();
+  </script>
+</body>
+</html>

@@ -2021,3 +2021,25 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   color: var(--teal-text); margin-bottom: 5px;
 }
 .albfeat p { margin: 0; font-size: .89rem; color: #4a463a; line-height: 1.75; word-break: keep-all; }
+
+/* 관리자에게만 보이는 회원 관리 문 */
+.authbox .authadmin {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: .34em .8em; border-radius: 100px; white-space: nowrap;
+  font-size: .72rem; font-weight: 600; letter-spacing: 0;
+  color: #fff !important; opacity: 1;
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.4);
+  transition: .18s var(--ease);
+}
+.authbox .authadmin::after { content: none; }
+.authbox .authadmin:hover { background: var(--navy); border-color: var(--navy); }
+.site-header.is-solid .authbox .authadmin {
+  color: var(--navy) !important; background: #eef2fb; border-color: #c6d4ee;
+}
+.site-header.is-solid .authbox .authadmin:hover {
+  color: #fff !important; background: var(--navy); border-color: var(--navy);
+}
+@media (max-width: 760px) {
+  .authbox .authadmin { flex: none; font-size: .9rem; padding: .6em 1.2em; }
+}
