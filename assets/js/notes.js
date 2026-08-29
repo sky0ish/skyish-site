@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608302100";
-import * as GC from "./gcal.js?v=202608302100";
+import * as NF from "./notes-files.js?v=202608302230";
+import * as GC from "./gcal.js?v=202608302230";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -28,7 +28,7 @@ export const GCAL = "whlove@gmail.com";
 
 /** 갈래마다 쓰는 말머리 — 여기 없는 갈래는 말머리 칸이 나오지 않습니다 */
 export const TAGS = {
-  schedule: ["발표", "토론", "자문회의", "자문참석", "세미나참석", "GRI행사", "ETC"],
+  schedule: ["발표", "토론", "자문회의", "자문참석", "위원회", "세미나참석", "GRI행사", "ETC"],
   minutes:  ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "일상", "ETC"],
 };
 TAGS.diary = TAGS.schedule;          // 예전 Diary 글도 Schedule 로 다룹니다
@@ -971,7 +971,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608302100");
+    const NFD = await import("./notes-folder.js?v=202608302230");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

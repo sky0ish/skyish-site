@@ -19,7 +19,7 @@
 // intro·final 자료에서 행사명·장소·같은 자리 사람을 뽑고,
 // 구글 달력의 같은 날 일정과 맞춰 봅니다.
 // 마지막에 표로 보여 드리니, 고칠 것은 고치고 만드시면 됩니다.
-import * as NF from "./notes-files.js?v=202608302100";
+import * as NF from "./notes-files.js?v=202608302230";
 
 const NL = String.fromCharCode(10);
 const esc = (s) => String(s == null ? "" : s)
@@ -87,6 +87,7 @@ export function tagFor(kind) {
   const k = String(kind || "");
   if (/자문\s*회의/.test(k)) return "자문회의";
   if (/자문/.test(k))        return "자문참석";
+  if (/위원회/.test(k))      return "위원회";
   if (/토론/.test(k))        return "토론";
   if (/(발표|특강|강의|강연)/.test(k)) return "발표";
   if (/세미나/.test(k))      return "세미나참석";
