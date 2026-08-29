@@ -44,10 +44,12 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
+  // 자료는 공개 폴더가 아니라 Supabase 의 비공개 보관함(analysis)에서 받습니다.
+  // 승인된 분만 받을 수 있고, 주소를 직접 쳐도 열리지 않습니다.
   function getJSON(url) {
-    return fetch(url, { cache: "force-cache" }).then(function (r) {
-      if (!r.ok) throw new Error(url + " → HTTP " + r.status);
-      return r.json();
+    var path = String(url).replace(/^assets\/data\//, "");   // → "flood/basement-points.json"
+    return import("./auth/auth.js").then(function (m) {
+      return m.loadAnalysisJson(path);
     });
   }
   // file:// 로 열면 브라우저가 데이터 파일 읽기를 막습니다.

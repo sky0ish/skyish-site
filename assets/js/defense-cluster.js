@@ -214,11 +214,9 @@
     busy("dc-busy1", "자료를 불러오는 중입니다…");
     busy("dc-busy2", "자료를 불러오는 중입니다…");
 
-    fetch(DATA_URL, { cache: "force-cache" })
-      .then(function (r) {
-        if (!r.ok) throw new Error(DATA_URL + " → HTTP " + r.status);
-        return r.json();
-      })
+    // 비공개 보관함(analysis)에서 받습니다 — 승인된 분만 열 수 있습니다
+    import("./auth/auth.js")
+      .then(function (m) { return m.loadAnalysisJson("defense/points.json"); })
       .then(function (j) {
         doc = j;
         buildCompanies();

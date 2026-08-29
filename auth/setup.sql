@@ -100,7 +100,7 @@ create policy "analysis write for admin" on storage.objects
 -- ▸ 나에게 관리자·열람 권한 주기 (이메일을 본인 것으로)
 -- update public.profiles
 --    set analysis_access = true, is_admin = true
---  where email = 'whlove@gmail.com';
+--  where email = 'skyish76@gmail.com';
 
 -- ▸ 승인 대기자 보기
 -- select email, name, affiliation, created_at

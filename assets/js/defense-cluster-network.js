@@ -233,9 +233,8 @@
     // 배포본(단독 폴더)에서는 자료를 파일에 박아두므로 fetch 없이 바로 그린다
     var pre = window.DC_NETWORK_DATA
       ? Promise.resolve(window.DC_NETWORK_DATA)
-      : fetch(URL, { cache: "force-cache" }).then(function (r) {
-          if (!r.ok) throw new Error(URL + " → HTTP " + r.status);
-          return r.json();
+      : import("./auth/auth.js").then(function (m) {
+          return m.loadAnalysisJson("defense/network.json");
         });
     pre
       .then(function (j) {
