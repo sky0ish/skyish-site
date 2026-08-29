@@ -47,3 +47,8 @@ assets/img/italy-d-mono.svg
 tools/rail/all.json
 tools/rail/chunk*.json
 tools/rail/chunk*.txt
+
+# 분석 자료 — Supabase 의 비공개 보관함(analysis)에 둡니다.
+# 공개 폴더에 두면 로그인 없이 주소만으로 받아지므로 저장소에 올리지 않습니다.
+assets/data/defense/
+assets/data/flood/
