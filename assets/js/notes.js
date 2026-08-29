@@ -331,7 +331,9 @@ export async function initNotes(mountId = "notesapp") {
         `<span class="cev" style="--c:${CAT_COLOR[r.category]}" title="${esc(r.title)}">` +
         `${esc(r.title)}</span>`).join("")
         + (gByDay[key] || []).map((e) =>
-        `<span class="cev cev--g" title="${esc(e.title)}${e.place ? " · " + esc(e.place) : ""}">` +
+        `<span class="cev cev--g" style="--c:${esc(e.color || "#4285f4")}" ` +
+        `title="${esc(e.title)}${e.place ? " · " + esc(e.place) : ""}` +
+        `${e.cal ? " · " + esc(e.cal) : ""}">` +
         `${e.time ? esc(e.time) + " " : ""}${esc(e.title)}</span>`).join("");
       cells += `<div class="ccell${out ? " out" : ""}${key === todayIso ? " today" : ""}">` +
         `<span class="cday${d.getDay() === 0 ? " sun" : d.getDay() === 6 ? " sat" : ""}">${d.getDate()}</span>` +
@@ -537,9 +539,12 @@ export async function initNotes(mountId = "notesapp") {
       await GC.connect(force);
       gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth());
       gBox.hidden = false;
+      const cals = [...new Set(gEvents.map(function (e) { return e.cal; }).filter(Boolean))];
       gBox.innerHTML = '<p class="ngcal__note">구글 일정 <b>' + gEvents.length +
         '건</b>을 달력에 얹었습니다 (' + calAt.getFullYear() + '년 ' +
-        (calAt.getMonth() + 1) + '월). 달을 옮기면 다시 받아 옵니다. ' +
+        (calAt.getMonth() + 1) + '월' +
+        (cals.length ? ' · 캘린더 ' + esc(cals.join(", ")) : "") +
+        '). 달을 옮기면 다시 받아 옵니다. ' +
         '<button type="button" class="nlink" id="gAgain">다른 계정으로</button></p>';
       document.getElementById("gAgain").addEventListener("click", () => pullGoogle(true));
       calBox.hidden = false;

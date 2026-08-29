@@ -80,36 +80,70 @@ export function disconnect() {
 
 export const connected = () => !!(token || saved());
 
+/** 내가 쓰는 캘린더 목록 (숨긴 것은 뺍니다) */
+export async function calendars() {
+  const t = token || saved() || await connect();
+  const r = await fetch(
+    "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader",
+    { headers: { Authorization: "Bearer " + t } });
+  if (r.status === 401 || r.status === 403) {
+    disconnect();
+    throw new Error("권한이 풀렸습니다. 다시 연결해 주세요.");
+  }
+  if (!r.ok) throw new Error("캘린더 목록을 받지 못했습니다 (HTTP " + r.status + ")");
+  const j = await r.json();
+  return (j.items || [])
+    .filter((c) => c.selected !== false && !c.deleted)
+    .map((c) => ({
+      id: c.id,
+      name: c.summaryOverride || c.summary || c.id,
+      color: c.backgroundColor || "#4285f4",
+    }));
+}
+
 /**
- * 한 달치 일정을 받아 옵니다.
- * @returns [{date:"2026-08-14", title, place, allDay}]
+ * 한 달치 일정을 받아 옵니다 — 쓰고 계신 캘린더를 모두 훑습니다.
+ * @returns [{date:"2026-08-14", title, place, time, cal, color}]
  */
 export async function month(year, mon0) {
   const t = token || saved() || await connect();
   const from = new Date(year, mon0, 1);
   const to = new Date(year, mon0 + 1, 1);
-  const u = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
-    + "?singleEvents=true&orderBy=startTime&maxResults=250"
-    + "&timeMin=" + encodeURIComponent(from.toISOString())
-    + "&timeMax=" + encodeURIComponent(to.toISOString());
+  const cals = await calendars();
 
-  const r = await fetch(u, { headers: { Authorization: "Bearer " + t } });
-  if (r.status === 401 || r.status === 403) {
-    disconnect();
-    throw new Error("권한이 풀렸습니다. 다시 연결해 주세요.");
-  }
-  if (!r.ok) throw new Error("일정을 받지 못했습니다 (HTTP " + r.status + ")");
+  const one = async (c) => {
+    const u = "https://www.googleapis.com/calendar/v3/calendars/"
+      + encodeURIComponent(c.id) + "/events"
+      + "?singleEvents=true&orderBy=startTime&maxResults=250"
+      + "&timeMin=" + encodeURIComponent(from.toISOString())
+      + "&timeMax=" + encodeURIComponent(to.toISOString());
+    try {
+      const r = await fetch(u, { headers: { Authorization: "Bearer " + t } });
+      if (!r.ok) return [];
+      const j = await r.json();
+      return (j.items || []).map((e) => {
+        const s = e.start || {};
+        const day = s.date || (s.dateTime || "").slice(0, 10);
+        return {
+          date: day,
+          title: e.summary || "(제목 없음)",
+          place: e.location || "",
+          allDay: !!s.date,
+          time: s.dateTime ? s.dateTime.slice(11, 16) : "",
+          cal: c.name,
+          color: c.color,
+        };
+      }).filter((x) => x.date);
+    } catch (err) { return []; }
+  };
 
-  const j = await r.json();
-  return (j.items || []).map((e) => {
-    const s = e.start || {};
-    const day = s.date || (s.dateTime || "").slice(0, 10);
-    return {
-      date: day,
-      title: e.summary || "(제목 없음)",
-      place: e.location || "",
-      allDay: !!s.date,
-      time: s.dateTime ? s.dateTime.slice(11, 16) : "",
-    };
-  }).filter((x) => x.date);
+  const lists = await Promise.all(cals.map(one));
+  const all = [].concat.apply([], lists);
+  // 같은 일정이 여러 캘린더에 겹쳐 있으면 한 번만
+  const seen = new Set();
+  return all.filter((e) => {
+    const k = e.date + "|" + e.title + "|" + e.time;
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 }
