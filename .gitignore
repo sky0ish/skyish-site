@@ -52,3 +52,10 @@ tools/rail/chunk*.txt
 # 공개 폴더에 두면 로그인 없이 주소만으로 받아지므로 저장소에 올리지 않습니다.
 assets/data/defense/
 assets/data/flood/
+
+# 개인 자료 — 실수로 올라가지 않게
+*.xlsx
+*.xls
+*.hwp
+*.hwpx
+개인명함첩*
