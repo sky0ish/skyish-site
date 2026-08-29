@@ -26,7 +26,13 @@ export async function currentUser() {
 export async function myProfile() {
   const user = await currentUser();
   if (!user) return null;
-  const { data } = await sb.from("profiles").select("*").eq("id", user.id).single();
+  const { data, error } = await sb.from("profiles").select("*").eq("id", user.id).single();
+  // 저장된 로그인 흔적이 옛 서버 것이면 여기서 걸립니다.
+  // 그대로 두면 '로그인은 됐는데 아무것도 안 되는' 상태로 맴돌기에, 지우고 처음으로 돌립니다.
+  if (error && /JWT|token|not authorized|invalid|expired/i.test(error.message || "")) {
+    try { await sb.auth.signOut(); } catch (e) {}
+    return null;
+  }
   return data;
 }
 

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 상태 확인</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <style>
+    body { font-family: "Malgun Gothic", system-ui, sans-serif; background: #f6f4f1;
+      color: #1c1a19; margin: 0; padding: 30px 20px; line-height: 1.7; }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.35rem; margin: 0 0 .3rem; }
+    .sub { color: #8a8378; font-size: .88rem; margin: 0 0 1.6rem; }
+    .row { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid #e8e3db;
+      align-items: flex-start; }
+    .row b { flex: none; width: 150px; font-size: .86rem; color: #5a5648; font-weight: 600; }
+    .row span { flex: 1; font-size: .88rem; word-break: break-all; }
+    .ok { color: #2f6a62; font-weight: 600; }
+    .no { color: #b3453b; font-weight: 600; }
+    .dim { color: #8a8378; }
+    .acts { display: flex; gap: 8px; flex-wrap: wrap; margin: 1.8rem 0 0; }
+    button, a.btn {
+      padding: .65em 1.3em; border-radius: 100px; border: 1px solid #ddd6c9;
+      background: #fff; color: #1c1a19; font-family: inherit; font-size: .88rem;
+      font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;
+    }
+    button:hover, a.btn:hover { border-color: #4f9d92; color: #2f6a62; }
+    .warn { background: #b3453b; border-color: #b3453b; color: #fff; }
+    .warn:hover { background: #963a31; color: #fff; }
+    .go { background: #4f9d92; border-color: #4f9d92; color: #fff; }
+    .go:hover { background: #3f8b80; color: #fff; }
+    .note { margin: 1.6rem 0 0; padding: 14px 18px; background: #fff;
+      border: 1px solid #e8e3db; border-radius: 10px; font-size: .85rem; color: #4a463a; }
+    #msg { margin: 1rem 0 0; font-size: .88rem; color: #8a8378; min-height: 1.3em; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>로그인 상태 확인</h1>
+    <p class="sub">지금 브라우저가 어떤 상태인지 그대로 보여 줍니다.
+      화면을 캡처해서 보내주시면 원인을 짚을 수 있습니다.</p>
+    <div id="out"><p class="dim">확인 중…</p></div>
+
+    <div class="acts">
+      <button type="button" class="warn" id="clear">저장된 로그인 정보 지우기</button>
+      <a class="btn go" href="login.html">로그인 화면으로</a>
+      <a class="btn" href="signup.html">가입 신청</a>
+      <a class="btn" href="../index.html">홈으로</a>
+    </div>
+    <p id="msg"></p>
+
+    <div class="note">
+      <b>저장된 로그인 정보 지우기</b> 는 이 브라우저에 남아 있는 로그인 흔적만 없앱니다.
+      계정이나 홈페이지 자료는 지워지지 않습니다.
+      옛 서버의 흔적이 남아 있으면 로그인 화면이 이상하게 도는 일이 있어, 그때 쓰시면 됩니다.
+    </div>
+  </div>
+
+  <script type="module">
+    import { SUPABASE_URL } from "./config.js";
+    import { sb, currentUser, myProfile, analysisAccess } from "./auth.js";
+
+    const out = document.getElementById("out");
+    const esc = (s) => String(s == null ? "" : s)
+      .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const row = (k, v, cls) =>
+      '<div class="row"><b>' + esc(k) + '</b><span class="' + (cls || "") + '">' + v + "</span></div>";
+
+    const keys = Object.keys(localStorage).filter((k) => /skyish|supabase|sb-/i.test(k));
+
+    let user = null, uErr = "", prof = null, pErr = "", state = "";
+    try { user = await currentUser(); } catch (e) { uErr = e.message; }
+    try {
+      const r = await sb.from("profiles").select("*").eq("id", user ? user.id : "-").single();
+      prof = r.data; if (r.error) pErr = r.error.message;
+    } catch (e) { pErr = e.message; }
+    try { state = (await analysisAccess()).state; } catch (e) { state = "확인 실패: " + e.message; }
+
+    const stateWord = { guest: "로그인 안 함", pending: "로그인했지만 승인 전", ok: "승인 완료" };
+
+    out.innerHTML =
+      row("보고 있는 서버", esc(SUPABASE_URL), "dim") +
+      row("저장된 로그인 흔적", keys.length ? esc(keys.join(", ")) : "없음",
+          keys.length ? "" : "dim") +
+      row("로그인 상태", user ? '<span class="ok">로그인됨</span>' : '<span class="no">로그인 안 됨</span>') +
+      (user ? row("이메일", esc(user.email || "-")) : "") +
+      (user ? row("계정 번호", esc(user.id), "dim") : "") +
+      (uErr ? row("확인 중 오류", esc(uErr), "no") : "") +
+      row("회원 정보(profiles)", prof
+          ? '<span class="ok">있음</span> — 이름 ' + esc(prof.name || "(없음)") +
+            " · 승인 " + (prof.analysis_access ? "예" : "아니오") +
+            " · 관리자 " + (prof.is_admin ? "예" : "아니오")
+          : '<span class="no">없음</span>' + (pErr ? " — " + esc(pErr) : "")) +
+      row("종합 판정", esc(stateWord[state] || state),
+          state === "ok" ? "ok" : state === "guest" ? "dim" : "no");
+
+    document.getElementById("clear").addEventListener("click", async () => {
+      try { await sb.auth.signOut(); } catch (e) {}
+      Object.keys(localStorage)
+        .filter((k) => /skyish|supabase|sb-/i.test(k))
+        .forEach((k) => localStorage.removeItem(k));
+      try { sessionStorage.clear(); } catch (e) {}
+      document.getElementById("msg").textContent =
+        "지웠습니다. 이제 로그인 화면으로 가서 다시 해보세요.";
+      setTimeout(() => location.reload(), 1200);
+    });
+  </script>
+</body>
+</html>
