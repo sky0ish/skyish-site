@@ -107,7 +107,69 @@
   /* 들어와 계신 분이면 로그인 단추를 이름·로그아웃으로 바꿉니다.
      auth/auth.js 는 모듈이라 필요할 때만 불러옵니다 —
      Supabase 설정이 아직이거나 인터넷이 끊겨도 '로그인'은 그대로 보입니다. */
+  var OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
+
+  /* 머리글을 '로그인중' 모습으로 그립니다.
+     me 가 없어도(회원 정보를 아직 못 읽었어도) 로그인 상태는 보여 줍니다. */
+  function paintLoggedIn(box, email, me, mod) {
+    var mail = (email || "").toLowerCase();
+    var isOwner = OWNERS.indexOf(mail) >= 0;
+    var isAdmin = !!(me && me.is_admin) || isOwner;
+    var ok = !!(me && me.analysis_access) || isAdmin;
+    var name = (me && me.name) || mail.split("@")[0] || "회원";
+
+    box.innerHTML = "";
+    var who = el("span", { class: "authwho" }, escapeHtml(name));
+    if (me && !ok) { who.classList.add("is-pending"); who.title = "승인 대기 중입니다"; }
+    box.appendChild(el("a", {
+      class: "authadmin authadmin--my", href: url("auth/mypage.html"),
+      title: "내 정보 (MyPage)"
+    }, "MyPage"));
+    if (isAdmin) {
+      box.appendChild(el("a", {
+        class: "authadmin", href: url("admin/index.html"), title: "운영 관리"
+      }, "운영"));
+    }
+    var out = el("button", {
+      class: "authbtn authbtn--in", type: "button",
+      title: "한 번 더 누르면 로그아웃합니다"
+    }, "로그인중");
+    out.addEventListener("click", function () {
+      out.textContent = "나가는 중";
+      if (mod) { mod.logout(url("index.html")); return; }
+      // 모듈을 못 불렀으면 저장소를 비워 로그아웃합니다
+      try {
+        Object.keys(localStorage)
+          .filter(function (k) { return /skyish-auth|^sb-.*-auth-token$/.test(k); })
+          .forEach(function (k) { localStorage.removeItem(k); });
+      } catch (e) {}
+      location.href = url("index.html");
+    });
+    box.appendChild(who);
+    box.appendChild(out);
+  }
+
+  /* 브라우저에 저장된 로그인 정보를 곧바로 읽습니다.
+     Supabase 모듈을 불러오지 못해도 로그인 여부는 알 수 있어야 하므로,
+     저장소를 직접 봅니다. (앞서 모듈을 못 불러 머리글이 늘 '로그인' 이던 일이 있었습니다) */
+  function storedSession() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!/skyish-auth|^sb-.*-auth-token$/.test(k)) continue;
+        var v = JSON.parse(localStorage.getItem(k) || "null");
+        var u = v && (v.user || (v.currentSession && v.currentSession.user));
+        if (u && u.email) return { email: u.email, id: u.id };
+      }
+    } catch (e) {}
+    return null;
+  }
+
   function upgradeAuthBox(box) {
+    /* ① 저장소만 보고 먼저 바꿔 둡니다 — 인터넷이 느려도 바로 보입니다 */
+    var sess = storedSession();
+    if (sess) paintLoggedIn(box, sess.email, null);
+
     try {
       import(modUrl("auth/auth.js")).then(function (m) {
         return m.currentUser().then(function (user) {
@@ -115,39 +177,7 @@
           // 프로필을 못 읽어도 로그인 상태는 그대로 보여줍니다.
           // (프로필 행이 없을 때 이름만 못 가져올 뿐 로그인은 유지됩니다)
           return m.myProfile().catch(function () { return null; }).then(function (me) {
-            var name = (me && me.name)
-              || (user.email || "").split("@")[0] || "회원";
-            // 주인 이메일이면 회원 정보 줄이 없어도 관리자로 봅니다
-            var OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
-            var mail = (user.email || "").toLowerCase();
-            var isOwner = OWNERS.indexOf(mail) >= 0;
-            var isAdmin = !!(me && me.is_admin) || isOwner;
-            var ok = !!(me && me.analysis_access) || isAdmin;
-            box.innerHTML = "";
-            var who = el("span", { class: "authwho" }, escapeHtml(name));
-            if (!ok) { who.classList.add("is-pending"); who.title = "승인 대기 중입니다"; }
-            // 들어와 계신 분에게는 내 정보, 관리자에게는 운영 관리까지
-            box.appendChild(el("a", {
-              class: "authadmin authadmin--my", href: url("auth/mypage.html"),
-              title: "내 정보 (MyPage)"
-            }, "MyPage"));
-            if (isAdmin) {
-              box.appendChild(el("a", {
-                class: "authadmin", href: url("admin/index.html"),
-                title: "운영 관리"
-              }, "운영"));
-            }
-            /* 들어와 계실 때는 붉은 '로그인중'. 한 번 더 누르면 로그아웃합니다. */
-            var out = el("button", {
-              class: "authbtn authbtn--in", type: "button",
-              title: "한 번 더 누르면 로그아웃합니다"
-            }, "로그인중");
-            out.addEventListener("click", function () {
-              out.textContent = "나가는 중";
-              m.logout(url("index.html"));
-            });
-            box.appendChild(who);
-            box.appendChild(out);
+            paintLoggedIn(box, user.email, me, m);
           });
         });
       }).catch(function () { /* 못 불러오면 '로그인'인 채로 둡니다 */ });

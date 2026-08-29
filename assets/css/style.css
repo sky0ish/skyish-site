@@ -2202,3 +2202,27 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 .site-header.is-solid .authbox .authadmin--my:hover {
   color: #fff !important; background: var(--teal); border-color: var(--teal);
 }
+
+/* 기록에 붙이는 파일 */
+.ndrop { display:block; padding:16px; text-align:center; cursor:pointer;
+  background:#fff; border:1.5px dashed var(--line); border-radius:9px;
+  transition:.18s var(--ease); }
+.ndrop:hover, .ndrop.over { border-color:var(--teal); background:#f7fbfa; }
+.ndrop b { display:block; font-size:.85rem; color:var(--teal-text); margin-bottom:4px; }
+.ndrop span { font-size:.75rem; color:var(--mauve); line-height:1.6; }
+.nfiles { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+.nfile { display:inline-flex; align-items:center; gap:6px; padding:.35em .7em;
+  border-radius:100px; background:#f4f1ec; border:1px solid var(--line);
+  font-size:.76rem; max-width:100%; }
+.nfile b { font-weight:600; color:var(--ink); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; max-width:15em; }
+.nfile em { font-style:normal; color:var(--mauve); font-size:.7rem; }
+.nfile button { border:0; background:none; cursor:pointer; color:var(--mauve);
+  font-size:.72rem; padding:0 0 0 2px; line-height:1; }
+.nfile button:hover { color:#b3453b; }
+.nfile--dl { background:#fff; transition:.16s var(--ease); }
+.nfile--dl:hover { border-color:var(--teal); }
+.nfilerow { display:flex; flex-wrap:wrap; gap:8px; margin:.5rem 0 !important; }
+.nshot { display:block; width:110px; height:82px; border-radius:8px; overflow:hidden;
+  border:1px solid var(--line); }
+.nshot img { width:100%; height:100%; object-fit:cover; display:block; }

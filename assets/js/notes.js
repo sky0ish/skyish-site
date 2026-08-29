@@ -3,6 +3,7 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
+import * as NF from "./notes-files.js";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -164,6 +165,14 @@ export async function initNotes(mountId = "notesapp") {
           '<div><label for="nmW">만난 사람</label>' +
             '<input type="text" id="nmW" maxlength="200"></div>' +
         "</div>" +
+        '<label>붙임 파일</label>' +
+        '<label class="ndrop" id="nmDrop">' +
+          '<b>파일 고르기 · 끌어다 놓기 · 붙여넣기(Ctrl+V)</b>' +
+          '<span id="nmDropMsg">그림 · 엑셀 · PDF · 문서를 올리실 수 있습니다. ' +
+          '엑셀과 PDF 는 내 이름이 든 줄을 뽑아 아래에 적어 드립니다.</span>' +
+          '<input type="file" id="nmFiles" multiple hidden>' +
+        "</label>" +
+        '<div class="nfiles" id="nmFileList"></div>' +
         '<p class="nhint">제목과 내용에 날짜·장소·사람이 있으면 위 칸을 저절로 채워 드립니다.</p>' +
         '<p class="nmsg" id="nmMsg"></p>' +
         '<div class="nmodal__foot">' +
@@ -265,6 +274,8 @@ export async function initNotes(mountId = "notesapp") {
         `<div class="nitem__main">` +
           `<h3>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</h3>` +
           (r.body ? `<p>${esc(r.body).replace(/\n/g, "<br>")}</p>` : "") +
+          (Array.isArray(r.files) && r.files.length
+            ? `<p class="nfilerow" data-id="${r.id}"></p>` : "") +
           `<p class="nmeta">` +
             (r.event_date ? `<b>${ymd(r.event_date)}</b>` : "") +
             (r.place ? ` · 📍 ${esc(r.place)}` : "") +
@@ -275,6 +286,23 @@ export async function initNotes(mountId = "notesapp") {
       "</article>").join("");
     list.querySelectorAll(".nedit").forEach((b) =>
       b.addEventListener("click", () => open(rows.find((x) => x.id === b.dataset.id))));
+
+    // 붙임 파일 — 비공개라 볼 때마다 임시 주소를 받아 옵니다
+    list.querySelectorAll(".nfilerow").forEach(async (el) => {
+      const r = rows.find((x) => x.id === el.dataset.id);
+      if (!r || !Array.isArray(r.files)) return;
+      const parts = [];
+      for (const f of r.files) {
+        const u = await NF.signedUrl(f.path);
+        if (!u) continue;
+        parts.push(f.type === "image"
+          ? `<a href="${u}" target="_blank" rel="noopener" class="nshot">` +
+            `<img src="${u}" alt="${esc(f.name)}" loading="lazy"></a>`
+          : `<a href="${u}" target="_blank" rel="noopener" class="nfile nfile--dl">` +
+            `<b>${esc(f.name)}</b><em>${NF.niceSize(f.size || 0)}</em></a>`);
+      }
+      el.innerHTML = parts.join("");
+    });
   }
 
   /* ── 달력 ── */
@@ -333,6 +361,9 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmW").value = row ? row.people || "" : "";
     mTag.value = row ? (row.tag || "") : "";
     syncTag();
+    picked = [];
+    attached = (row && Array.isArray(row.files)) ? row.files.slice() : [];
+    drawFiles();
     msg.textContent = "";
     modal.classList.add("on");
     document.getElementById("nmT").focus();
@@ -343,6 +374,70 @@ export async function initNotes(mountId = "notesapp") {
   modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && modal.classList.contains("on")) close();
+  });
+
+  /* ── 붙임 파일 ── */
+  let picked = [];              // 아직 안 올린 것
+  let attached = [];            // 이미 올라간 것 (고칠 때)
+  const fList = document.getElementById("nmFileList");
+  const fDrop = document.getElementById("nmDrop");
+  const fMsg  = document.getElementById("nmDropMsg");
+
+  function drawFiles() {
+    const chip = (f, i, isNew) =>
+      '<span class="nfile" data-i="' + i + '" data-new="' + (isNew ? 1 : 0) + '">' +
+      '<b>' + esc(f.name) + "</b>" +
+      '<em>' + NF.niceSize(f.size || 0) + "</em>" +
+      '<button type="button" title="빼기">✕</button></span>';
+    fList.innerHTML =
+      attached.map((f, i) => chip(f, i, false)).join("") +
+      picked.map((f, i) => chip(f, i, true)).join("");
+    fList.querySelectorAll(".nfile button").forEach((b) =>
+      b.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        const el = b.closest(".nfile");
+        const i = +el.dataset.i;
+        if (el.dataset.new === "1") picked.splice(i, 1); else attached.splice(i, 1);
+        drawFiles();
+      }));
+    const n = picked.length + attached.length;
+    fMsg.textContent = n
+      ? "파일 " + n + "개를 담았습니다. 저장할 때 함께 올라갑니다."
+      : "그림 · 엑셀 · PDF · 문서를 올리실 수 있습니다. 엑셀과 PDF 는 내 이름이 든 줄을 뽑아 아래에 적어 드립니다.";
+  }
+
+  async function addFiles(list) {
+    const arr = [...list];
+    if (!arr.length) return;
+    picked = picked.concat(arr);
+    drawFiles();
+    // 엑셀·PDF·문서에서 쓸 만한 줄을 뽑아 내용 칸에 이어 붙입니다
+    const body = document.getElementById("nmB");
+    for (const f of arr) {
+      const k = NF.kind(f);
+      if (k === "image" || k === "file") continue;
+      fMsg.textContent = f.name + " 에서 글을 뽑는 중…";
+      const r = await NF.extract(f);
+      const t = NF.asText(f.name, r);
+      if (t) body.value = (body.value ? body.value + String.fromCharCode(10, 10) : "") + t;
+    }
+    drawFiles();
+    autofill();
+  }
+
+  document.getElementById("nmFiles").addEventListener("change", (e) => {
+    addFiles(e.target.files); e.target.value = "";
+  });
+  fDrop.addEventListener("dragover", (e) => { e.preventDefault(); fDrop.classList.add("over"); });
+  fDrop.addEventListener("dragleave", () => fDrop.classList.remove("over"));
+  fDrop.addEventListener("drop", (e) => {
+    e.preventDefault(); fDrop.classList.remove("over");
+    addFiles(NF.filesFrom(e));
+  });
+  document.addEventListener("paste", (e) => {
+    if (!modal.classList.contains("on")) return;
+    const f = NF.filesFrom(e);
+    if (f.length) { e.preventDefault(); addFiles(f); }
   });
 
   /* 제목·내용을 적으면 날짜·장소·사람을 저절로 채웁니다 (비어 있을 때만) */
@@ -372,6 +467,17 @@ export async function initNotes(mountId = "notesapp") {
       tag:    mCat.value === "minutes" ? (mTag.value || null) : null,
     };
     e.target.disabled = true;
+    // 새로 담은 파일을 먼저 올립니다
+    const up = [];
+    for (let i = 0; i < picked.length; i++) {
+      msg.textContent = "파일 올리는 중… (" + (i + 1) + "/" + picked.length + ")";
+      try { up.push(await NF.upload(picked[i])); }
+      catch (err) {
+        msg.textContent = "파일 올리기 실패: " + friendly(err.message);
+        e.target.disabled = false; return;
+      }
+    }
+    patch.files = attached.concat(up);
     msg.textContent = "저장하는 중…";
     const r = editing
       ? await sb.from("notes").update(patch).eq("id", editing.id)
