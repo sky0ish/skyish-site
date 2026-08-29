@@ -143,8 +143,8 @@ export async function initNotes(mountId = "notesapp") {
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
-    '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="ngcal" id="nGcalBox" hidden></div>' +
+    '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="nlist" id="nList"></div>' +
     '<p class="nempty" id="nEmpty" hidden></p>' +
     '<div class="nmodal" id="nModal" role="dialog" aria-modal="true" aria-label="글 쓰기">' +
@@ -253,6 +253,7 @@ export async function initNotes(mountId = "notesapp") {
         if (cur === "all") p.delete("cat"); else p.set("cat", cur);
         history.replaceState(null, "", location.pathname + (p.toString() ? "?" + p : ""));
         draw();
+        autoCal();
       }));
 
     const l = shown();
@@ -599,6 +600,16 @@ export async function initNotes(mountId = "notesapp") {
              `${t.getFullYear()}${pad(t.getMonth() + 1)}${pad(t.getDate())}.csv`, toCSV(l));
   });
 
+  /* Schedule 갈래에서는 달력이 먼저 보입니다 (아래에 글 목록이 이어집니다) */
+  async function autoCal() {
+    if (cur !== "schedule" || !calBox.hidden) return;
+    calBox.hidden = false;
+    calBtn.classList.add("on");
+    drawCal();
+    if (GC.ready()) await pullGoogle(false, GC.connected());
+  }
+
   q.addEventListener("input", draw);
   await load();
+  await autoCal();
 }

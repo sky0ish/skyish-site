@@ -2182,7 +2182,7 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 }
 
 /* 구글 캘린더 끼워넣기 */
-.ngcal { margin: 0 0 1.2rem; padding: 14px; background: #fff;
+.ngcal { margin: 0 0 .7rem; padding: 10px 16px; background: #fff;
   border: 1px solid var(--line); border-radius: var(--radius-md); }
 .ngcal__note { margin: 0 0 10px; font-size: .8rem; color: var(--mauve); line-height: 1.6; }
 .ngcal__note b { color: var(--ink); font-weight: 600; }
