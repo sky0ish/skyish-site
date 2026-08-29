@@ -93,6 +93,10 @@
   }
   var ROOT = rootPath();
   function url(p) { return ROOT + p; }
+  /* import() 에 넘길 주소.
+     "auth/auth.js" 처럼 앞에 점이 없으면 브라우저가 꾸러미 이름으로 보고 거부합니다.
+     첫 화면에서 머리글이 로그인중으로 안 바뀌던 것이 이 때문이었습니다. */
+  function modUrl(p) { var u = url(p); return u.charAt(0) === "." ? u : "./" + u; }
   function el(tag, attrs, html) {
     var n = document.createElement(tag);
     if (attrs) { for (var k in attrs) { if (attrs[k] != null) n.setAttribute(k, attrs[k]); } }
@@ -105,7 +109,7 @@
      Supabase 설정이 아직이거나 인터넷이 끊겨도 '로그인'은 그대로 보입니다. */
   function upgradeAuthBox(box) {
     try {
-      import(url("auth/auth.js")).then(function (m) {
+      import(modUrl("auth/auth.js")).then(function (m) {
         return m.currentUser().then(function (user) {
           if (!user) return;                       // 로그인 안 하셨으면 '로그인' 그대로
           // 프로필을 못 읽어도 로그인 상태는 그대로 보여줍니다.
