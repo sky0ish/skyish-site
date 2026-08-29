@@ -2226,3 +2226,8 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 .nshot { display:block; width:110px; height:82px; border-radius:8px; overflow:hidden;
   border:1px solid var(--line); }
 .nshot img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* 구글에서 받아 온 일정 */
+.cev--g { background:#eef2fb; color:#24548f; border-left-color:#4285f4; }
+.nlink { border:0; background:none; padding:0; cursor:pointer; font-family:inherit;
+  font-size:inherit; color:var(--teal-text); font-weight:600; text-decoration:underline; }

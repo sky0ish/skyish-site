@@ -4,6 +4,7 @@
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as NF from "./notes-files.js";
+import * as GC from "./gcal.js";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -138,7 +139,7 @@ export async function initNotes(mountId = "notesapp") {
       '<label class="nsearch"><span class="sr-only">찾기</span>' +
         '<input type="search" id="nQ" placeholder="제목 · 내용 · 장소 · 사람으로 찾기" autocomplete="off"></label>' +
       '<button type="button" class="nbtn" id="nCal">📅 달력</button>' +
-      '<button type="button" class="nbtn" id="nGcal">🗓 구글 캘린더</button>' +
+      '<button type="button" class="nbtn" id="nGcal">🗓 구글 일정 불러오기</button>' +
       '<button type="button" class="nbtn" id="nXls">⤓ 엑셀로 받기</button>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
@@ -204,6 +205,7 @@ export async function initNotes(mountId = "notesapp") {
   // 주소에 ?cat= 이 붙어 오면 그 갈래를 펴 놓습니다 (상단 차림표에서 옵니다)
   const wantCat = new URLSearchParams(location.search).get("cat");
   let rows = [], cur = "all", editing = null;
+  let gEvents = [];   // 구글에서 받아 온 일정
   if (wantCat && CATS.some(([k]) => k === wantCat)) cur = wantCat;
   let calAt = new Date(); calAt.setDate(1);
 
@@ -315,6 +317,9 @@ export async function initNotes(mountId = "notesapp") {
       if (!r.event_date) return;
       (byDay[r.event_date.slice(0, 10)] ||= []).push(r);
     });
+    // 구글에서 받아 온 일정도 같은 칸에 얹습니다
+    const gByDay = {};
+    gEvents.forEach((e) => { (gByDay[e.date] ||= []).push(e); });
     const todayIso = iso(new Date());
 
     let cells = "";
@@ -324,7 +329,10 @@ export async function initNotes(mountId = "notesapp") {
       const out = d.getMonth() !== m;
       const items = (byDay[key] || []).map((r) =>
         `<span class="cev" style="--c:${CAT_COLOR[r.category]}" title="${esc(r.title)}">` +
-        `${esc(r.title)}</span>`).join("");
+        `${esc(r.title)}</span>`).join("")
+        + (gByDay[key] || []).map((e) =>
+        `<span class="cev cev--g" title="${esc(e.title)}${e.place ? " · " + esc(e.place) : ""}">` +
+        `${e.time ? esc(e.time) + " " : ""}${esc(e.title)}</span>`).join("");
       cells += `<div class="ccell${out ? " out" : ""}${key === todayIso ? " today" : ""}">` +
         `<span class="cday${d.getDay() === 0 ? " sun" : d.getDay() === 6 ? " sat" : ""}">${d.getDate()}</span>` +
         items + "</div>";
@@ -341,8 +349,15 @@ export async function initNotes(mountId = "notesapp") {
           `<div class="cwd${i === 0 ? " sun" : i === 6 ? " sat" : ""}">${d}</div>`).join("") +
       "</div>" +
       '<div class="cgrid">' + cells + "</div>";
-    document.getElementById("cPrev").addEventListener("click", () => { calAt.setMonth(m - 1); drawCal(); });
-    document.getElementById("cNext").addEventListener("click", () => { calAt.setMonth(m + 1); drawCal(); });
+    const hop = async (d) => {
+      calAt.setMonth(m + d);
+      if (GC.connected()) {
+        try { gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth()); } catch (e) {}
+      }
+      drawCal();
+    };
+    document.getElementById("cPrev").addEventListener("click", () => hop(-1));
+    document.getElementById("cNext").addEventListener("click", () => hop(1));
     document.getElementById("cToday").addEventListener("click", () => {
       calAt = new Date(); calAt.setDate(1); drawCal();
     });
@@ -503,25 +518,42 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nCal").classList.toggle("on", !calBox.hidden);
     if (!calBox.hidden) drawCal();
   });
-  /* 구글 캘린더 — 크롬이 그 계정으로 로그인돼 있으면 그대로 보입니다 */
-  const gBox = document.getElementById("nGcalBox");
+  /* 구글 일정 — 읽기 권한을 받아 달력에 함께 얹습니다 */
   const gBtn = document.getElementById("nGcal");
-  gBtn.addEventListener("click", () => {
-    gBox.hidden = !gBox.hidden;
-    gBtn.classList.toggle("on", !gBox.hidden);
-    if (!gBox.hidden && !gBox.dataset.on) {
-      gBox.dataset.on = "1";
-      const url = "https://calendar.google.com/calendar/embed?" +
-        "src=" + encodeURIComponent(GCAL) +
-        "&ctz=Asia%2FSeoul&mode=MONTH&wkst=1&showTitle=0&showPrint=0&showTabs=1" +
-        "&showCalendars=0&showTz=0&bgcolor=%23ffffff";
-      gBox.innerHTML =
-        '<p class="ngcal__note">구글 캘린더 <b>' + esc(GCAL) + '</b> 입니다. ' +
-        '이 브라우저가 그 계정으로 로그인돼 있어야 보입니다. ' +
-        '<a href="https://calendar.google.com/" target="_blank" rel="noopener">구글 캘린더 열기 →</a></p>' +
-        '<iframe src="' + url + '" title="구글 캘린더" loading="lazy"></iframe>';
+  const gBox = document.getElementById("nGcalBox");
+  async function pullGoogle(force) {
+    if (!GC.ready()) {
+      gBox.hidden = false;
+      gBox.innerHTML = '<p class="ngcal__note">구글 일정을 불러오려면 연결 설정이 한 번 필요합니다. ' +
+        '<b>auth/config.js</b> 의 GCAL_CLIENT_ID 를 채워 주세요. ' +
+        '만드는 방법은 assets/js/gcal.js 맨 위에 적혀 있습니다.</p>';
+      return;
     }
-  });
+    gBtn.disabled = true;
+    const was = gBtn.textContent;
+    gBtn.textContent = "불러오는 중…";
+    try {
+      if (force) GC.disconnect();
+      await GC.connect(force);
+      gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth());
+      gBox.hidden = false;
+      gBox.innerHTML = '<p class="ngcal__note">구글 일정 <b>' + gEvents.length +
+        '건</b>을 달력에 얹었습니다 (' + calAt.getFullYear() + '년 ' +
+        (calAt.getMonth() + 1) + '월). 달을 옮기면 다시 받아 옵니다. ' +
+        '<button type="button" class="nlink" id="gAgain">다른 계정으로</button></p>';
+      document.getElementById("gAgain").addEventListener("click", () => pullGoogle(true));
+      calBox.hidden = false;
+      gBtn.classList.add("on");
+      drawCal();
+    } catch (e) {
+      gBox.hidden = false;
+      gBox.innerHTML = '<p class="ngcal__note">' + esc(e.message) + "</p>";
+    } finally {
+      gBtn.disabled = false;
+      gBtn.textContent = was;
+    }
+  }
+  gBtn.addEventListener("click", () => pullGoogle(false));
 
   document.getElementById("nXls").addEventListener("click", () => {
     const l = shown();
