@@ -1,4 +1,4 @@
-// ─── BLOG — 나만 보는 기록장 ─────────────────────────────
+// ─── BLOG — My Road… (나만 보는 기록) ────────────────────
 // Schedule · Diary · 연락망 · 사람들 · 회의록 다섯 갈래.
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
@@ -75,7 +75,7 @@ export function findField(text, keys) {
 function friendly(m) {
   m = String(m || "");
   if (/schema cache|does not exist|relation/i.test(m))
-    return "기록장이 아직 켜지지 않았습니다 — auth/notes_setup.sql 을 한 번 실행해주세요.";
+    return "기록이 아직 켜지지 않았습니다 — auth/notes_setup.sql 을 한 번 실행해주세요.";
   if (/row-level security|policy|permission/i.test(m))
     return "권한이 없습니다. 관리자만 쓸 수 있습니다.";
   return m;
