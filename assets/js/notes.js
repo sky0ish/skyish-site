@@ -139,7 +139,6 @@ export async function initNotes(mountId = "notesapp") {
       '<label class="nsearch"><span class="sr-only">찾기</span>' +
         '<input type="search" id="nQ" placeholder="제목 · 내용 · 장소 · 사람으로 찾기" autocomplete="off"></label>' +
       '<button type="button" class="nbtn" id="nCal">📅 달력</button>' +
-      '<button type="button" class="nbtn" id="nGcal">🗓 구글 일정 불러오기</button>' +
       '<button type="button" class="nbtn" id="nXls">⤓ 엑셀로 받기</button>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
@@ -187,7 +186,7 @@ export async function initNotes(mountId = "notesapp") {
 
   if (!isAdmin) {
     cur = MEMBER_CATS[0];
-    ["nNew", "nXls", "nGcal"].forEach((id) => {
+    ["nNew", "nXls"].forEach((id) => {
       const b = document.getElementById(id);
       if (b) b.remove();
     });
@@ -515,25 +514,29 @@ export async function initNotes(mountId = "notesapp") {
   });
 
   /* ── 달력 켜고 끄기 · 엑셀 ── */
-  document.getElementById("nCal").addEventListener("click", () => {
+  const calBtn = document.getElementById("nCal");
+  calBtn.addEventListener("click", async () => {
     calBox.hidden = !calBox.hidden;
-    document.getElementById("nCal").classList.toggle("on", !calBox.hidden);
-    if (!calBox.hidden) drawCal();
+    calBtn.classList.toggle("on", !calBox.hidden);
+    if (calBox.hidden) { gBox.hidden = true; return; }
+    drawCal();
+    // 달력을 열면 구글 일정도 함께 얹습니다 (한 번 허락하시면 그다음부터는 조용히)
+    if (GC.ready()) await pullGoogle(false, GC.connected());
   });
   /* 구글 일정 — 읽기 권한을 받아 달력에 함께 얹습니다 */
-  const gBtn = document.getElementById("nGcal");
   const gBox = document.getElementById("nGcalBox");
-  async function pullGoogle(force) {
+  async function pullGoogle(force, quiet) {
     if (!GC.ready()) {
+      if (quiet) return;
       gBox.hidden = false;
       gBox.innerHTML = '<p class="ngcal__note">구글 일정을 불러오려면 연결 설정이 한 번 필요합니다. ' +
         '<b>auth/config.js</b> 의 GCAL_CLIENT_ID 를 채워 주세요. ' +
         '만드는 방법은 assets/js/gcal.js 맨 위에 적혀 있습니다.</p>';
       return;
     }
-    gBtn.disabled = true;
-    const was = gBtn.textContent;
-    gBtn.textContent = "불러오는 중…";
+    const was = calBtn.textContent;
+    calBtn.disabled = true;
+    calBtn.textContent = "일정 불러오는 중…";
     try {
       if (force) GC.disconnect();
       await GC.connect(force);
@@ -548,17 +551,17 @@ export async function initNotes(mountId = "notesapp") {
         '<button type="button" class="nlink" id="gAgain">다른 계정으로</button></p>';
       document.getElementById("gAgain").addEventListener("click", () => pullGoogle(true));
       calBox.hidden = false;
-      gBtn.classList.add("on");
+      calBtn.classList.add("on");
       drawCal();
     } catch (e) {
       gBox.hidden = false;
       gBox.innerHTML = '<p class="ngcal__note">' + esc(e.message) + "</p>";
     } finally {
-      gBtn.disabled = false;
-      gBtn.textContent = was;
+      calBtn.disabled = false;
+      calBtn.textContent = was;
     }
   }
-  gBtn.addEventListener("click", () => pullGoogle(false));
+
 
   document.getElementById("nXls").addEventListener("click", () => {
     const l = shown();
