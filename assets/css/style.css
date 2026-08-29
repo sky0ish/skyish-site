@@ -2307,3 +2307,6 @@ button.cev--g:hover { filter:brightness(.94);
   outline:0; border-color:var(--teal); }
 .nimp__tbl .niF { white-space:nowrap; color:var(--mauve); }
 .nimp__warn { margin-top:4px; font-size:.7rem; color:#b3543b; line-height:1.5; }
+
+/* 글쓰기 칸의 2단 배치 (연락처 · 만난 사람) */
+.nfrow--2 { grid-template-columns: repeat(2, 1fr); }

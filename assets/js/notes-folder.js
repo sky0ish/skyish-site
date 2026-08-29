@@ -1,18 +1,25 @@
 // ─── 0_schedule 폴더에서 일정 글 만들기 ──────────────────────
 // 폴더 하나가 행사 하나입니다.
 //
-//   0_schedule/20260828_[토론] 자치행정학회_/
+//   폴더 이름 :  날짜_[유형] (연락처) 행사명
+//
+//   0_schedule/20260828_[토론] (박진우) 자치행정학회_/
 //       intro/    행사 정보 (프로그램 · 개최계획 · 공문 · 리플렛)
 //       final/    내 발표·토론 자료
 //       mid/      그 중간본
 //       references/  참고자료 (남의 자료)
 //
-// 폴더 이름을 읽어 날짜·유형·기관·주제를 잡고,
+//   ▸ 날짜     20260828        → 2026-08-28
+//   ▸ [유형]   [토론]          → 말머리 「토론」
+//   ▸ (연락처) (박진우)        → 만난 사람 첫머리에 놓습니다
+//                               기관 이름이면 (지방시대위원회) 사람 칸에 넣지 않습니다
+//   ▸ 행사명   자치행정학회_   → 글 제목
+//
+// 폴더 이름을 읽어 날짜·유형·연락처·행사명을 잡고,
 // intro·final 자료에서 행사명·장소·같은 자리 사람을 뽑고,
 // 구글 달력의 같은 날 일정과 맞춰 봅니다.
 // 마지막에 표로 보여 드리니, 고칠 것은 고치고 만드시면 됩니다.
-import * as NF from "./notes-files.js?v=202608301500";
-import { sb } from "../../auth/auth.js";
+import * as NF from "./notes-files.js?v=202608302100";
 
 const NL = String.fromCharCode(10);
 const esc = (s) => String(s == null ? "" : s)
@@ -29,20 +36,47 @@ export const ATTACH = ["intro", "final", "note"];
 export const MAXSIZE = 20 * 1024 * 1024;
 
 
+/* ── 이름이 사람인지 기관인지 ──
+   괄호 안이 「김찬동」이면 만난 사람으로, 「지방시대위원회」면 기관으로 봅니다. */
+const ORG_WORD =
+  /(위원회|학회|연구원|연구소|협회|재단|공사|공단|시청|도청|군청|본부|대학교|대학|학교|센터|공제회|진흥원|개발원|사업단|조합|법인|정부|부처|의회|지자체)/;
+
+export function isPerson(s) {
+  const t = String(s || "").trim();
+  if (!t) return false;
+  if (ORG_WORD.test(t)) return false;
+  return /^[가-힣]{2,4}$/.test(t) || /^[A-Za-z][A-Za-z.'\- ]{1,24}$/.test(t);
+}
+
+
 /* ── 폴더 이름 읽기 ────────────────────────────────────────
-   20260828_[토론] 자치행정학회_
-   20260824_[발표]_국토도시계획학회_역세권 주택공급
-   → { date, kind, org, topic } */
+   규칙 :  날짜_[유형] (연락처) 행사명
+     20260828_[토론] (박진우) 자치행정학회_
+     20260903_[특강] (최홍석) 인재개발원_경기북부
+     20260723_[토론] (지방시대위원회) 지방시대위원회_통계분석_
+   괄호가 없던 옛 이름도 그대로 읽힙니다.
+     20260824_[발표]_국토도시계획학회_역세권 주택공급
+   → { date, kind, contact, name, org, topic } */
 export function parseFolder(name) {
   const s = String(name || "").trim();
-  const m = s.match(/^(\d{4})(\d{2})(\d{2})[_\s]*(?:\[([^\]]*)\])?[_\s]*(.*)$/);
-  if (!m) return { date: "", kind: "", org: s, topic: "" };
+  const m = s.match(
+    /^(\d{4})(\d{2})(\d{2})[_\s]*(?:\[([^\]]*)\])?[_\s]*(?:\(([^)]*)\))?[_\s]*(.*)$/);
+  if (!m) return { date: "", kind: "", contact: "", name: s, org: s, topic: "" };
 
   const date = `${m[1]}-${m[2]}-${m[3]}`;
   const kind = (m[4] || "").trim();
-  const rest = (m[5] || "").replace(/[_\s]+$/, "");
+  const contact = (m[5] || "").trim();
+  const rest = (m[6] || "").replace(/[_\s]+$/, "");
   const bits = rest.split("_").map((x) => x.trim()).filter(Boolean);
-  return { date, kind, org: bits[0] || "", topic: bits.slice(1).join(" ") };
+
+  // 행사명이 비어 있으면 괄호 안의 기관 이름을 대신 씁니다
+  const org = bits[0] || (isPerson(contact) ? "" : contact);
+  return {
+    date, kind, contact,
+    name: bits.join(" ") || org,
+    org,
+    topic: bits.slice(1).join(" "),
+  };
 }
 
 
@@ -155,9 +189,13 @@ export async function readEvent(ev, say) {
 
   ev.eventName = "";
   ev.place = "";
-  ev.people = "";
   ev.blocks = [];
   ev.dateGuess = [];
+
+  /* 폴더 이름의 (연락처) 가 사람이면 만난 사람의 첫머리에 둡니다.
+     나를 부른 사람이라 그 자리에 함께 있었다고 봅니다.
+     기관 이름이면 사람 칸에 넣지 않습니다. */
+  ev.people = isPerson(ev.contact) ? ev.contact : "";
 
   // 파일 이름에서도 날짜를 주워 둡니다 (…_260902_final.pdf)
   ev.files.forEach((f) => datesIn(f.file.name).forEach((d) => {
@@ -171,11 +209,7 @@ export async function readEvent(ev, say) {
     catch (e) { r = { total: 0, mine: [], head: [], people: [], event: "", error: e.message }; }
 
     if (r.event && !ev.eventName) ev.eventName = r.event;
-    if (r.people && r.people.length) {
-      const has = ev.people ? ev.people.split(/\s*,\s*/) : [];
-      r.people.forEach((p) => { if (has.indexOf(p) < 0) has.push(p); });
-      ev.people = has.join(", ");
-    }
+    if (r.people && r.people.length) ev.people = NF.mergePeople(ev.people, r.people);
     const t = NF.asText(f.file.name, r);
     if (t) ev.blocks.push(t);
 
@@ -184,10 +218,9 @@ export async function readEvent(ev, say) {
       datesIn(x.line).forEach((d) => { if (ev.dateGuess.indexOf(d) < 0) ev.dateGuess.push(d); }));
   }
 
-  if (!ev.eventName) ev.eventName = [ev.org, ev.topic].filter(Boolean).join(" ");
+  if (!ev.eventName) ev.eventName = ev.name;
   ev.tag = tagFor(ev.kind);
-  ev.title = ev.kind ? `[${ev.kind}] ${[ev.org, ev.topic].filter(Boolean).join(" ")}`.trim()
-                     : ([ev.org, ev.topic].filter(Boolean).join(" ") || ev.folder);
+  ev.title = (ev.kind ? `[${ev.kind}] ` : "") + (ev.name || ev.folder);
   return ev;
 }
 
@@ -302,6 +335,7 @@ export async function openImport(list, ctx) {
             ? `<div class="nimp__warn">자료에는 ${esc(other.join(" · "))} 로도 적혀 있습니다</div>`
             : "") +
         "</td>" +
+        `<td><input type="text" class="niTm" value="${esc(e.time || "")}" size="6"></td>` +
         `<td><select class="niG">` +
           '<option value="">(없음)</option>' +
           (ctx.tags || []).map((t) =>
@@ -310,6 +344,7 @@ export async function openImport(list, ctx) {
         `<td><input type="text" class="niT" value="${esc(e.calTitle || e.title)}"></td>` +
         `<td><input type="text" class="niE" value="${esc(e.eventName)}"></td>` +
         `<td><input type="text" class="niP" value="${esc(e.place || "")}"></td>` +
+        `<td><input type="text" class="niC" value="${esc(e.contact || "")}"></td>` +
         `<td><input type="text" class="niW" value="${esc(e.people || "")}"></td>` +
         `<td class="niF">${ok.length}개` +
           (big.length ? `<div class="nimp__warn">${big.length}개는 20MB 를 넘어 뺍니다</div>` : "") +
@@ -322,8 +357,8 @@ export async function openImport(list, ctx) {
     `<p class="nimp__msg">행사 <b>${evs.length}건</b>을 찾았습니다. ` +
       "고치실 것은 고치고, 만들 것만 골라 주세요.</p>" +
     '<div class="nimp__scroll"><table class="nimp__tbl">' +
-      "<thead><tr><th></th><th>날짜</th><th>말머리</th><th>제목</th><th>행사명</th>" +
-      "<th>장소</th><th>만난 사람</th><th>붙임</th></tr></thead>" +
+      "<thead><tr><th></th><th>날짜</th><th>시간</th><th>유형</th><th>제목</th>" +
+      "<th>행사명</th><th>장소</th><th>연락처</th><th>만난 사람</th><th>붙임</th></tr></thead>" +
       "<tbody>" + evs.map(rowHtml).join("") + "</tbody>" +
     "</table></div>" +
     '<p class="nimp__msg" id="niMsg"></p>' +
@@ -343,7 +378,7 @@ export async function openImport(list, ctx) {
     if (!trs.length) { say("고른 행사가 없습니다."); return; }
 
     btn.disabled = true;
-    let made = 0, failed = 0;
+    let made = 0, failed = 0, dropped = [];
     const skippedFiles = [];
 
     for (let i = 0; i < trs.length; i++) {
@@ -352,6 +387,7 @@ export async function openImport(list, ctx) {
       const v = (cls) => tr.querySelector(cls).value.trim();
       ev.date = v(".niD"); ev.eventName = v(".niE");
       ev.place = v(".niP"); ev.people = v(".niW");
+      ev.time = v(".niTm"); ev.contact = v(".niC");
       const title = v(".niT") || ev.folder;
       ev.tag = tr.querySelector(".niG").value;
 
@@ -370,27 +406,30 @@ export async function openImport(list, ctx) {
         title,
         body: buildBody(ev) || null,
         event_date: /^\d{4}-\d{2}-\d{2}$/.test(ev.date) ? ev.date : null,
+        event_time: ev.time || null,
         place: ev.place || null,
+        contact: ev.contact || null,
         people: ev.people || null,
         event: ev.eventName || null,
         tag: ev.tag || null,
         files: up,
       };
 
-      let r = await sb.from("notes").insert({ ...patch, created_by: ctx.user.id });
-      if (r.error && /event/.test(r.error.message) && /column|schema cache/i.test(r.error.message)) {
-        const { event: _drop, ...rest } = patch;
-        r = await sb.from("notes").insert({ ...rest, created_by: ctx.user.id });
-      }
+      // 아직 없는 칸은 ctx.save 가 알아서 빼고 다시 넣습니다
+      const r = await ctx.save(patch, null);
       if (r.error) { failed++; say(title + " — " + r.error.message); }
-      else made++;
+      else { made++; if (r.dropped.length) dropped = r.dropped; }
     }
 
     btn.disabled = false;
     shut();
     if (ctx.reload) await ctx.reload();
+    const NAME = { event_time: "시간", contact: "연락처", event: "행사명" };
     alert(`${made}건을 만들었습니다.` +
       (failed ? `${NL}${failed}건은 실패했습니다.` : "") +
+      (dropped.length
+        ? `${NL}${dropped.map((c) => NAME[c] || c).join(" · ")} 칸이 아직 없어 그것만 빠졌습니다.`
+        : "") +
       (skippedFiles.length ? `${NL}${NL}뺀 파일:${NL}` + skippedFiles.join(NL) : ""));
   });
 }

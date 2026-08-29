@@ -72,6 +72,20 @@ export async function remove(path) {
   await sb.storage.from(BUCKET).remove([path]);
 }
 
+/* ── 만난 사람 합치기 ──
+   있던 이름은 지우지 않습니다. 같은 사람이면 소속이 붙은 쪽으로 채웁니다.
+   「박진우」와 「박진우 (수원시정연구원)」은 한 사람으로 봅니다. */
+export function mergePeople(cur, list) {
+  const bare = (s) => String(s).replace(/\s*\(.*$/, "").trim();
+  const has = String(cur || "").split(/\s*,\s*/).map((s) => s.trim()).filter(Boolean);
+  (list || []).forEach((p) => {
+    const i = has.findIndex((h) => bare(h) === bare(p));
+    if (i < 0) has.push(p);
+    else if (has[i].length < p.length) has[i] = p;
+  });
+  return has.join(", ");
+}
+
 /** 이미 올려 둔 붙임 파일을 도로 내려받아 File 로 돌려줍니다.
  *  올린 뒤에 글 뽑기 규칙이 좋아졌을 때, 다시 읽히려고 씁니다. */
 export async function fileFromStore(f) {

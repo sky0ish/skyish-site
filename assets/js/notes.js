@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608301500";
-import * as GC from "./gcal.js?v=202608301500";
+import * as NF from "./notes-files.js?v=202608302100";
+import * as GC from "./gcal.js?v=202608302100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -109,18 +109,8 @@ export function mergeBlock(body, name, text) {
   return before.concat(text.split(NL), tail).join(NL).replace(/\s+$/, "");
 }
 
-/* ── 만난 사람 합치기 ──
-   있던 이름은 지우지 않습니다. 같은 사람이면 소속이 붙은 쪽으로 채웁니다. */
-export function mergePeople(cur, list) {
-  const bare = (s) => String(s).replace(/\s*\(.*$/, "").trim();
-  const has = String(cur || "").split(/\s*,\s*/).map((s) => s.trim()).filter(Boolean);
-  (list || []).forEach((p) => {
-    const i = has.findIndex((h) => bare(h) === bare(p));
-    if (i < 0) has.push(p);
-    else if (has[i].length < p.length) has[i] = p;
-  });
-  return has.join(", ");
-}
+/** 만난 사람 합치기 — notes-files.js 에 있습니다 (폴더 가져오기와 함께 씁니다) */
+export const mergePeople = NF.mergePeople;
 
 function friendly(m) {
   m = String(m || "");
@@ -146,20 +136,57 @@ export function findTime(text) {
   return m ? m[0].replace(/\s+/g, "") : "";
 }
 
+/* ── 엑셀에 넣을 「내용」 간추리기 ──
+   본문에는 파일 이름·행사·사람 줄이 함께 들어 있습니다.
+   그것들은 이미 제 칸이 따로 있으니 빼고,
+   ① 내 이름이 든 대목이 있으면 그것만
+   ② 없으면 핵심 줄만 짧게
+   남깁니다. */
+export function bodyDigest(body, cap) {
+  const NL = String.fromCharCode(10);
+  const raw = String(body || "");
+  const flat = (t) => t.replace(/[.…]{3,}/g, " ").replace(/\s+/g, " ").trim();
+
+  // 파일에서 뽑은 덩이가 하나도 없으면 손으로 적으신 글입니다 — 그대로 줄여 드립니다
+  if (raw.indexOf("━") < 0 && raw.indexOf("◆") < 0) {
+    const t = flat(raw);
+    return t.length > 600 ? t.slice(0, 599) + "…" : t;
+  }
+
+  const mine = [], head = [];
+  let mode = "";
+  raw.split(NL).forEach((l) => {
+    const t = l.trim();
+    if (!t) return;
+    if (t.charAt(0) === "━") { mode = ""; return; }            // 파일 이름 줄
+    if (t.charAt(0) === "◆") { mode = /관련된/.test(t) ? "mine" : "head"; return; }
+    // 다른 칸에 이미 있는 것은 빼 둡니다
+    if (/^(행사|사람|시각|시간|장소|캘린더|역할|자료)\s*[:：]/.test(t)) return;
+    (mode === "mine" ? mine : head).push(t.replace(/^·\s*/, ""));
+  });
+
+  const pick = mine.length ? mine : head;
+  const out = pick.map(flat).filter(Boolean).join(" / ");
+  const lim = cap || (mine.length ? 700 : 300);   // 내 이름이 없으면 더 짧게
+  return out.length > lim ? out.slice(0, lim - 1) + "…" : out;
+}
+
 /* ── 엑셀로 내려받기 ──
    CSV 앞에 BOM 을 붙이면 엑셀에서 한글이 깨지지 않습니다. */
 function toCSV(rows) {
   const q = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
-  const head = ["날짜", "시간", "말머리", "이벤트", "장소", "만난 사람", "내용"];
+  const head = ["날짜", "시간", "장소", "유형", "연락처", "만난 사람", "행사명", "제목", "내용"];
   const lines = [head.map(q).join(",")];
   rows.forEach((r) => lines.push([
     ymd(r.event_date),
-    findTime(r.body),
-    r.tag || "",
-    r.event || r.title,          // 행사명을 찾아 두었으면 그것을, 없으면 제목을
+    r.event_time || findTime(r.body),   // 칸이 비었으면 본문에서 찾아 씁니다
     r.place,
+    r.tag || "",                        // 유형 = 말머리 (발표·토론·자문회의…)
+    r.contact,
     r.people,
-    (r.body || "").replace(/\r?\n/g, " "),
+    r.event,
+    r.title,
+    bodyDigest(r.body),                 // 나와 관련된 대목만 · 없으면 핵심만 짧게
   ].map(q).join(",")));
   return "﻿" + lines.join("\r\n");
 }
@@ -180,6 +207,13 @@ export async function initNotes(mountId = "notesapp") {
   const me = user ? await myProfile().catch(() => null) : null;
   const mail = ((user && user.email) || "").toLowerCase();
   const isAdmin  = !!(me && me.is_admin) || OWNERS.indexOf(mail) >= 0;
+  /* 화면에서 관리자로 보는 것과, 자료 쪽(RLS)이 관리자로 보는 것은 다릅니다.
+     auth/roles_setup.sql 을 안 돌리면 주인 메일이어도 자료 쪽은 막습니다. */
+  let dbAdmin = null;
+  try {
+    const chk = await sb.rpc("is_admin");
+    if (!chk.error) dbAdmin = !!chk.data;
+  } catch (e) { /* 함수가 없으면 모르는 채로 둡니다 */ }
   const isMember = isAdmin || !!(me && me.analysis_access);
 
   if (!user) {
@@ -239,8 +273,15 @@ export async function initNotes(mountId = "notesapp") {
         '<div class="nfrow">' +
           '<div><label for="nmD">날짜</label>' +
             '<input type="text" id="nmD" maxlength="12" placeholder="2026.09.14"></div>' +
+          '<div><label for="nmTm">시간</label>' +
+            '<input type="text" id="nmTm" maxlength="20" placeholder="14:00"></div>' +
           '<div><label for="nmP">장소</label>' +
             '<input type="text" id="nmP" maxlength="120"></div>' +
+        "</div>" +
+        '<div class="nfrow nfrow--2">' +
+          '<div><label for="nmC">연락처</label>' +
+            '<input type="text" id="nmC" maxlength="120" ' +
+              'placeholder="폴더 이름의 ( ) 안에 적은 분"></div>' +
           '<div><label for="nmW">만난 사람</label>' +
             '<input type="text" id="nmW" maxlength="200"></div>' +
         "</div>" +
@@ -364,7 +405,21 @@ export async function initNotes(mountId = "notesapp") {
     if (!l.length) {
       list.innerHTML = "";
       emptyEl.hidden = false;
-      emptyEl.textContent = q.value.trim() ? "찾으시는 글이 없습니다." : "아직 적어둔 글이 없습니다.";
+      if (q.value.trim()) {
+        emptyEl.textContent = "찾으시는 글이 없습니다.";
+      } else if (rows.length) {
+        emptyEl.textContent = "이 갈래에는 글이 없습니다.";
+      } else if (dbAdmin === false) {
+        /* 자료 쪽에서 관리자로 보지 않으면 오류 없이 0건으로 옵니다.
+           「글이 없다」와 「못 보게 막혔다」를 가려 드립니다. */
+        emptyEl.innerHTML =
+          "<b>글이 없는 게 아니라, 지금 계정이 자료 쪽에서 관리자로 잡히지 않았습니다.</b><br>" +
+          "들어온 계정 : " + esc(mail || "(모름)") + "<br>" +
+          "Supabase SQL Editor 에서 <b>auth/roles_setup.sql</b> 을 한 번 돌리시면 " +
+          "이 계정이 관리자가 되고 글이 다시 보입니다.";
+      } else {
+        emptyEl.textContent = "아직 적어둔 글이 없습니다.";
+      }
       return;
     }
     emptyEl.hidden = true;
@@ -439,8 +494,10 @@ export async function initNotes(mountId = "notesapp") {
         `<h3>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</h3>` +
         '<p class="ndet__meta">' +
           (r.event_date ? `<b>${ymd(r.event_date)}</b>` : "") +
+          (r.event_time ? ` <b>${esc(r.event_time)}</b>` : "") +
           (r.event ? ` · ◇ ${esc(r.event)}` : "") +
           (r.place ? ` · ⊙ ${esc(r.place)}` : "") +
+          (r.contact ? ` · ✆ ${esc(r.contact)}` : "") +
           (r.people ? ` · ○ ${esc(r.people)}` : "") +
         "</p>" +
         (r.body ? `<div class="ndet__body">${esc(r.body).split(String.fromCharCode(10)).join("<br>")}</div>` : "") +
@@ -572,6 +629,8 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmB").value = row ? row.body || "" : "";
     document.getElementById("nmE").value = row ? row.event || "" : "";
     document.getElementById("nmD").value = row ? ymd(row.event_date) : "";
+    document.getElementById("nmTm").value = row ? row.event_time || "" : "";
+    document.getElementById("nmC").value = row ? row.contact || "" : "";
     document.getElementById("nmP").value = row ? row.place || "" : "";
     document.getElementById("nmW").value = row ? row.people || "" : "";
     fillTags(mCat.value);
@@ -709,6 +768,8 @@ export async function initNotes(mountId = "notesapp") {
     const pEl = document.getElementById("nmP");
     const wEl = document.getElementById("nmW");
     if (!dEl.value) { const d = findDate(text); if (d) dEl.value = ymd(d); }
+    const tEl = document.getElementById("nmTm");
+    if (!tEl.value) { const t = findTime(text); if (t) tEl.value = t; }
     // 「장소:」 「사람:」 을 적으시면 늘 그 값으로 맞춥니다.
     // 비었을 때만 채우면, 적어 넣어도 칸이 그대로여서 헷갈립니다.
     const p = findField(text, ["장소", "place", "위치"]);
@@ -718,6 +779,31 @@ export async function initNotes(mountId = "notesapp") {
   }
   document.getElementById("nmT").addEventListener("input", autofill);
   document.getElementById("nmB").addEventListener("input", autofill);
+
+  /* ── 글 한 건 저장 ──
+     event · event_time · contact 는 auth/event_setup.sql 로 뒤늦게 생긴 칸입니다.
+     아직 안 돌리셨으면 그 칸만 빼고 다시 넣어, 글을 통째로 잃지 않게 합니다.
+     event 가 event_time 에도 들어 있으므로 긴 이름부터 봅니다. */
+  const LATE = ["event_time", "contact", "event"];
+  const LATE_NAME = { event_time: "시간", contact: "연락처", event: "행사명" };
+
+  async function putNote(patch, id) {
+    const p = { ...patch };
+    const dropped = [];
+    for (let i = 0; i <= LATE.length; i++) {
+      const r = id
+        ? await sb.from("notes").update(p).eq("id", id)
+        : await sb.from("notes").insert({ ...p, created_by: user.id });
+      if (!r.error) return { error: null, dropped };
+      const m = r.error.message || "";
+      const bad = /column|schema cache/i.test(m)
+        ? LATE.find((c) => c in p && m.indexOf(c) >= 0) : null;
+      if (!bad) return { error: r.error, dropped };
+      delete p[bad];
+      dropped.push(bad);
+    }
+    return { error: null, dropped };
+  }
 
   document.getElementById("nmSave").addEventListener("click", async (e) => {
     const title = document.getElementById("nmT").value.trim();
@@ -731,6 +817,8 @@ export async function initNotes(mountId = "notesapp") {
       place:  document.getElementById("nmP").value.trim() || null,
       people: document.getElementById("nmW").value.trim() || null,
       event:  document.getElementById("nmE").value.trim() || null,
+      event_time: document.getElementById("nmTm").value.trim() || null,
+      contact:    document.getElementById("nmC").value.trim() || null,
       tag:    tagsFor(mCat.value).length ? (mTag.value || null) : null,
     };
     e.target.disabled = true;
@@ -747,18 +835,13 @@ export async function initNotes(mountId = "notesapp") {
     patch.files = attached.concat(up);
     msg.textContent = "저장하는 중…";
 
-    /* auth/event_setup.sql 을 아직 안 돌리셨으면 event 칸이 없습니다.
-       그때는 행사명만 빼고 저장해서, 글을 잃지 않게 합니다. */
-    const put = (p) => editing
-      ? sb.from("notes").update(p).eq("id", editing.id)
-      : sb.from("notes").insert({ ...p, created_by: user.id });
-
-    let r = await put(patch);
-    let noCol = false;
-    if (r.error && /event/.test(r.error.message) && /column|schema cache/i.test(r.error.message)) {
-      noCol = true;
-      const { event, ...rest } = patch;
-      r = await put(rest);
+    const r = await putNote(patch, editing && editing.id);
+    e.target.disabled = false;
+    if (r.error) { msg.textContent = friendly(r.error.message); return; }
+    if (r.dropped.length) {
+      alert("저장했습니다. 다만 " + r.dropped.map((c) => LATE_NAME[c]).join(" · ") +
+            " 칸이 아직 없어 그것만 빠졌습니다." + String.fromCharCode(10) +
+            "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
     }
     e.target.disabled = false;
     if (r.error) { msg.textContent = friendly(r.error.message); return; }
@@ -796,6 +879,11 @@ export async function initNotes(mountId = "notesapp") {
         '만드는 방법은 assets/js/gcal.js 맨 위에 적혀 있습니다.</p>';
       return;
     }
+    /* 아직 이어져 있지 않은데 조용히 부르면 구글 창이 열립니다.
+       사람이 누른 게 아니라 브라우저가 막고 「Failed to open popup window」가 뜹니다.
+       그래서 조용한 호출은 이미 이어져 있을 때만 합니다. */
+    if (quiet && !GC.connected()) return;
+
     const was = calBtn.textContent;
     calBtn.disabled = true;
     calBtn.textContent = "일정 불러오는 중…";
@@ -864,11 +952,7 @@ export async function initNotes(mountId = "notesapp") {
 
       if (!changed) continue;
       const patch = { body: body || null, people: people || null, event: event || null };
-      let up = await sb.from("notes").update(patch).eq("id", r.id);
-      if (up.error && /event/.test(up.error.message) && /column|schema cache/i.test(up.error.message)) {
-        const { event: _drop, ...rest } = patch;
-        up = await sb.from("notes").update(rest).eq("id", r.id);
-      }
+      const up = await putNote(patch, r.id);
       if (up.error) failed++;
     }
 
@@ -887,11 +971,12 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608301500");
+    const NFD = await import("./notes-folder.js?v=202608302100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
       reload: load,
+      save: putNote,
       // 달력이 이어져 있을 때만 맞춰 봅니다 (연결 창은 사람이 눌러서 띄웁니다)
       monthEvents: GC.connected() ? ((y, m0) => GC.month(y, m0)) : null,
     });
