@@ -138,6 +138,7 @@ export async function initNotes(mountId = "notesapp") {
     '<div class="nbar">' +
       '<label class="nsearch"><span class="sr-only">찾기</span>' +
         '<input type="search" id="nQ" placeholder="제목 · 내용 · 장소 · 사람으로 찾기" autocomplete="off"></label>' +
+      '<button type="button" class="nbtn" id="nGo">🔍 검색</button>' +
       '<button type="button" class="nbtn" id="nCal">📅 달력</button>' +
       '<button type="button" class="nbtn" id="nXls">⤓ 엑셀로 받기</button>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
@@ -610,6 +611,8 @@ export async function initNotes(mountId = "notesapp") {
   }
 
   q.addEventListener("input", draw);
+  q.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); draw(); } });
+  document.getElementById("nGo").addEventListener("click", () => { draw(); q.focus(); });
   await load();
   await autoCal();
 }
