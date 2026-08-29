@@ -105,7 +105,7 @@ async function fromPdf(file) {
   pdfjs.GlobalWorkerOptions.workerSrc =
     "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs";
   const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
-  const out = [];
+  const out = [], blocks = [];
   for (let i = 1; i <= Math.min(doc.numPages, 40); i++) {
     const page = await doc.getPage(i);
     const tc = await page.getTextContent();
@@ -116,7 +116,9 @@ async function fromPdf(file) {
       const line = s.replace(/\s+/g, " ").trim();
       if (line.length > 6) out.push({ where: i + "쪽", line });
     });
+    blocks.push({ where: i + "쪽", text: text.replace(/\s+/g, " ") });
   }
+  out.blocks = blocks;
   return out;
 }
 
@@ -126,6 +128,42 @@ async function fromText(file) {
     .map((s) => ({ where: "", line: s.replace(/[,\t]+/g, " · ").trim() }))
     .filter((x) => x.line.length > 1);
 }
+
+/* ── 나와 같은 자리에 있던 사람 ─────────────────────────────
+   학술대회 프로그램·회의자료는 「이름 (소속)」 꼴로 적힙니다.
+   내 이름 둘레의 한 묶음 안에서 그 꼴을 모두 거두어들입니다.
+   같은 세션에 이름이 올라 있으면 그 자리에 함께 있었다고 봅니다. */
+const NAME_RE = /([가-힣]{2,4})\s*\(([^)]{1,24})\)/g;
+const NOT_NAME = /^(사회|발제|토론|좌장|사회자|발표|참석|주최|주관|후원|장소|일시|프로그램)$/;
+
+export function peopleNear(blocks, words) {
+  const keys = (words && words.length ? words : MINE).map((w) => w.toLowerCase());
+  const found = new Map();               // 이름 → 소속
+
+  /* 한 쪽을 세션 단위로 끊습니다.
+     「N분과」 「7F_소회의실」 「사회:」 가 새 세션의 시작 표시입니다.
+     이렇게 끊지 않으면 앞뒤 세션 사람까지 딸려 옵니다. */
+  const CUT = /(?=\d+\s*분과)|(?=\d+F[_\s])|(?=사회\s*[:：])/g;
+
+  (blocks || []).forEach((b) => {
+    const t = b.text || "";
+    t.split(CUT).forEach((seg) => {
+      const low = seg.toLowerCase();
+      if (!keys.some((w) => low.includes(w))) return;   // 내 이름이 없는 세션은 건너뜁니다
+      let m;
+      NAME_RE.lastIndex = 0;
+      while ((m = NAME_RE.exec(seg))) {
+        const name = m[1].trim(), org = m[2].trim();
+        if (NOT_NAME.test(name)) continue;
+        if (keys.some((w) => name.toLowerCase().includes(w))) continue;   // 나는 뺍니다
+        if (!found.has(name)) found.set(name, org);
+      }
+    });
+  });
+
+  return [...found.entries()].map(([n, o]) => (o ? n + " (" + o + ")" : n));
+}
+
 
 /**
  * 파일에서 쓸 만한 부분을 뽑습니다.
@@ -140,9 +178,9 @@ export async function extract(file, words) {
     if (k === "excel") lines = await fromExcel(file);
     else if (k === "pdf") lines = await fromPdf(file);
     else if (k === "csv" || k === "text") lines = await fromText(file);
-    else return { mine: [], head: [], total: 0 };
+    else return { mine: [], head: [], people: [], total: 0 };
   } catch (e) {
-    return { mine: [], head: [], total: 0, error: e.message };
+    return { mine: [], head: [], people: [], total: 0, error: e.message };
   }
 
   const keys = (words && words.length ? words : MINE).map((w) => w.toLowerCase());
@@ -165,17 +203,21 @@ export async function extract(file, words) {
   const mine = lines.filter((x) => hit(x.line))
     .map((x) => ({ where: x.where, line: around(x.line) }))
     .slice(0, 25);
+  const people = peopleNear(lines.blocks, words);
   const head = mine.length ? []
     : lines.filter((x) => x.line.length > 8)
            .map((x) => ({ where: x.where, line: x.line.slice(0, 180) + (x.line.length > 180 ? "…" : "") }))
            .slice(0, 8);
-  return { mine, head, total: lines.length };
+  return { mine, head, people, total: lines.length };
 }
 
 /** 뽑아낸 것을 사람이 읽는 글로 */
 export function asText(name, r) {
   if (r.error) return `[${name}] 글을 뽑지 못했습니다 — ${r.error}`;
   if (!r.total) return "";
+  const who = (r.people && r.people.length)
+    ? String.fromCharCode(10) + "같은 자리에 있던 분: " + r.people.join(", ")
+    : "";
   const head = `[${name}] 전체 ${r.total}줄`;
   if (r.mine.length) {
     return head + ` · 내 이름이 든 줄 ${r.mine.length}개\n` +

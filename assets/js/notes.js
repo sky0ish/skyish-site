@@ -149,6 +149,7 @@ export async function initNotes(mountId = "notesapp") {
     '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="nlist" id="nList"></div>' +
     '<p class="nempty" id="nEmpty" hidden></p>' +
+    '<div class="ndet" id="nDetail"></div>' +
     '<div class="nmodal" id="nModal" role="dialog" aria-modal="true" aria-label="글 쓰기">' +
       '<div class="nmodal__box">' +
         '<h3 id="nmTitle">새 글</h3>' +
@@ -274,31 +275,63 @@ export async function initNotes(mountId = "notesapp") {
       return;
     }
     emptyEl.hidden = true;
-    list.innerHTML = l.map((r) =>
-      `<article class="nitem" data-id="${r.id}">` +
-        `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">${esc(CAT_NAME[catOf(r)] || "")}</span>` +
-        `<div class="nitem__main">` +
-          `<h3>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</h3>` +
-          (r.body ? `<p>${esc(r.body).replace(/\n/g, "<br>")}</p>` : "") +
-          (Array.isArray(r.files) && r.files.length
-            ? `<p class="nfilerow" data-id="${r.id}"></p>` : "") +
-          `<p class="nmeta">` +
-            (r.event_date ? `<b>${ymd(r.event_date)}</b>` : "") +
-            (r.place ? ` · 📍 ${esc(r.place)}` : "") +
-            (r.people ? ` · 👤 ${esc(r.people)}` : "") +
-          `</p>` +
-        `</div>` +
-        (isAdmin ? `<button class="nedit" data-id="${r.id}" title="고치기">✎</button>` : "") +
-      "</article>").join("");
-    list.querySelectorAll(".nedit").forEach((b) =>
-      b.addEventListener("click", () => open(rows.find((x) => x.id === b.dataset.id))));
+    list.innerHTML = l.map((r) => {
+      const nf = Array.isArray(r.files) ? r.files.length : 0;
+      const sub = [r.place ? "⊙ " + esc(r.place) : "",
+                   r.people ? "○ " + esc(r.people) : "",
+                   nf ? "□ " + nf : ""].filter(Boolean).join("   ");
+      return `<button type="button" class="nrow" data-id="${r.id}">` +
+        `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
+          `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
+        `<span class="nrow__main">` +
+          `<b>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</b>` +
+          (sub ? `<small>${sub}</small>` : "") +
+        `</span>` +
+        `<span class="nrow__date">${r.event_date ? ymd(r.event_date) : ""}</span>` +
+      `</button>`;
+    }).join("");
 
-    // 붙임 파일 — 비공개라 볼 때마다 임시 주소를 받아 옵니다
-    list.querySelectorAll(".nfilerow").forEach(async (el) => {
-      const r = rows.find((x) => x.id === el.dataset.id);
-      if (!r || !Array.isArray(r.files)) return;
+    list.querySelectorAll(".nrow").forEach((btn) =>
+      btn.addEventListener("click", () => detail(rows.find((x) => x.id === btn.dataset.id))));
+  }
+
+  /* ── 글 하나 자세히 보기 ── */
+  async function detail(r) {
+    if (!r) return;
+    const box = document.getElementById("nDetail");
+    const nf = Array.isArray(r.files) ? r.files : [];
+    box.innerHTML =
+      '<div class="ndet__box">' +
+        '<button type="button" class="ndet__x" id="ndX">✕</button>' +
+        `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
+          `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
+        `<h3>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</h3>` +
+        '<p class="ndet__meta">' +
+          (r.event_date ? `<b>${ymd(r.event_date)}</b>` : "") +
+          (r.place ? ` · ⊙ ${esc(r.place)}` : "") +
+          (r.people ? ` · ○ ${esc(r.people)}` : "") +
+        "</p>" +
+        (r.body ? `<div class="ndet__body">${esc(r.body).split(String.fromCharCode(10)).join("<br>")}</div>` : "") +
+        (nf.length ? '<div class="nfilerow" id="ndFiles"></div>' : "") +
+        '<div class="ndet__foot">' +
+          (isAdmin ? '<button type="button" class="nbtn" id="ndEdit">✎ 고치기</button>' : "") +
+          '<button type="button" class="nbtn" id="ndClose">닫기</button>' +
+        "</div>" +
+      "</div>";
+    box.classList.add("on");
+
+    const shut = () => box.classList.remove("on");
+    document.getElementById("ndX").addEventListener("click", shut);
+    document.getElementById("ndClose").addEventListener("click", shut);
+    box.addEventListener("click", (e) => { if (e.target === box) shut(); });
+    const ed = document.getElementById("ndEdit");
+    if (ed) ed.addEventListener("click", () => { shut(); open(r); });
+
+    // 붙임 파일 — 비공개라 볼 때마다 임시 주소를 받습니다
+    if (nf.length) {
+      const wrap = document.getElementById("ndFiles");
       const parts = [];
-      for (const f of r.files) {
+      for (const f of nf) {
         const u = await NF.signedUrl(f.path);
         if (!u) continue;
         parts.push(f.type === "image"
@@ -307,8 +340,8 @@ export async function initNotes(mountId = "notesapp") {
           : `<a href="${u}" target="_blank" rel="noopener" class="nfile nfile--dl">` +
             `<b>${esc(f.name)}</b><em>${NF.niceSize(f.size || 0)}</em></a>`);
       }
-      el.innerHTML = parts.join("");
-    });
+      wrap.innerHTML = parts.join("");
+    }
   }
 
   /* ── 달력 ── */

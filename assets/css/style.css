@@ -2238,3 +2238,34 @@ button.cev--g { display:block; width:100%; text-align:left; cursor:pointer;
   font-family:inherit; border-top:0; border-right:0; border-bottom:0; }
 button.cev--g:hover { filter:brightness(.94);
   box-shadow:0 0 0 1px color-mix(in srgb, var(--c) 45%, #fff); }
+
+/* 글 목록 — 한 줄씩, 눌러서 자세히 */
+.nrow { display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  padding:13px 16px; background:#fff; border:1px solid var(--line);
+  border-radius:var(--radius-md); cursor:pointer; font-family:inherit;
+  transition:.16s var(--ease); }
+.nrow:hover { border-color:var(--teal); box-shadow:0 3px 12px rgba(28,26,25,.08);
+  transform:translateY(-1px); }
+.nrow__main { flex:1; min-width:0; }
+.nrow__main b { display:block; font-size:.94rem; font-weight:600; color:var(--ink);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nrow__main small { display:block; margin-top:3px; font-size:.76rem; color:var(--mauve);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nrow__date { flex:none; font-size:.8rem; color:var(--mauve); font-weight:500; }
+
+/* 글 자세히 보기 */
+.ndet { position:fixed; inset:0; background:rgba(20,18,17,.6); display:none;
+  z-index:820; align-items:center; justify-content:center; padding:24px; }
+.ndet.on { display:flex; }
+.ndet__box { position:relative; background:#fff; border-radius:var(--radius-md);
+  padding:28px 30px; max-width:760px; width:100%; max-height:88vh; overflow:auto; }
+.ndet__x { position:absolute; top:14px; right:16px; border:0; background:none;
+  cursor:pointer; font-size:1rem; color:var(--mauve); }
+.ndet__x:hover { color:var(--ink); }
+.ndet__box h3 { font-size:1.25rem; margin:.6rem 0 .4rem; color:var(--ink); }
+.ndet__meta { margin:0 0 1rem; font-size:.84rem; color:var(--mauve); }
+.ndet__meta b { color:var(--teal-text); }
+.ndet__body { font-size:.9rem; color:#3a362e; line-height:1.85; word-break:keep-all;
+  white-space:normal; padding:14px 16px; background:#faf8f5;
+  border:1px solid var(--line); border-radius:9px; }
+.ndet__foot { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
