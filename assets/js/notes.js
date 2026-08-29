@@ -329,11 +329,14 @@ export async function initNotes(mountId = "notesapp") {
       const items = (byDay[key] || []).map((r) =>
         `<span class="cev" style="--c:${CAT_COLOR[r.category]}" title="${esc(r.title)}">` +
         `${esc(r.title)}</span>`).join("")
-        + (gByDay[key] || []).map((e) =>
-        `<span class="cev cev--g" style="--c:${esc(e.color || "#4285f4")}" ` +
+        + (gByDay[key] || []).map((e, gi) =>
+        `<${isAdmin ? "button type=\"button\"" : "span"} class="cev cev--g" ` +
+        `style="--c:${esc(e.color || "#4285f4")}" ` +
+        `${isAdmin ? `data-g="${key}|${gi}" ` : ""}` +
         `title="${esc(e.title)}${e.place ? " · " + esc(e.place) : ""}` +
-        `${e.cal ? " · " + esc(e.cal) : ""}">` +
-        `${e.time ? esc(e.time) + " " : ""}${esc(e.title)}</span>`).join("");
+        `${e.cal ? " · " + esc(e.cal) : ""}${isAdmin ? " — 누르면 글로 옮깁니다" : ""}">` +
+        `${e.time ? esc(e.time) + " " : ""}${esc(e.title)}` +
+        `</${isAdmin ? "button" : "span"}>`).join("");
       cells += `<div class="ccell${out ? " out" : ""}${key === todayIso ? " today" : ""}">` +
         `<span class="cday${d.getDay() === 0 ? " sun" : d.getDay() === 6 ? " sat" : ""}">${d.getDate()}</span>` +
         items + "</div>";
@@ -357,11 +360,36 @@ export async function initNotes(mountId = "notesapp") {
       }
       drawCal();
     };
+    // 구글 일정을 누르면 그 내용으로 새 글을 씁니다
+    if (isAdmin) {
+      calBox.querySelectorAll("button[data-g]").forEach((b) =>
+        b.addEventListener("click", () => {
+          const [day, gi] = b.dataset.g.split("|");
+          const e = (gEvents.filter((x) => x.date === day) || [])[+gi];
+          if (e) fromGoogle(e);
+        }));
+    }
     document.getElementById("cPrev").addEventListener("click", () => hop(-1));
     document.getElementById("cNext").addEventListener("click", () => hop(1));
     document.getElementById("cToday").addEventListener("click", () => {
       calAt = new Date(); calAt.setDate(1); drawCal();
     });
+  }
+
+  /* 구글 일정을 새 글로 옮깁니다 — Schedule 갈래로, 날짜·장소를 채워서 */
+  function fromGoogle(e) {
+    open(null);
+    mCat.value = "schedule";
+    syncTag();
+    document.getElementById("nmT").value = e.title || "";
+    document.getElementById("nmD").value = ymd(e.date);
+    document.getElementById("nmP").value = e.place || "";
+    const lines = [];
+    if (e.time) lines.push("시각: " + e.time);
+    if (e.place) lines.push("장소: " + e.place);
+    if (e.cal) lines.push("캘린더: " + e.cal);
+    document.getElementById("nmB").value = lines.join(String.fromCharCode(10));
+    msg.textContent = "구글 일정을 옮겨 왔습니다. 고쳐서 저장하세요.";
   }
 
   /* ── 글 쓰기·고치기 ── */

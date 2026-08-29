@@ -2232,3 +2232,9 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   color:color-mix(in srgb, var(--c) 78%, #000); border-left-color:var(--c); }
 .nlink { border:0; background:none; padding:0; cursor:pointer; font-family:inherit;
   font-size:inherit; color:var(--teal-text); font-weight:600; text-decoration:underline; }
+
+/* 구글 일정 칸 — 누르면 글로 옮깁니다 */
+button.cev--g { display:block; width:100%; text-align:left; cursor:pointer;
+  font-family:inherit; border-top:0; border-right:0; border-bottom:0; }
+button.cev--g:hover { filter:brightness(.94);
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--c) 45%, #fff); }
