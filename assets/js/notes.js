@@ -13,6 +13,9 @@ export const CATS = [
 ];
 export const CAT_NAME  = Object.fromEntries(CATS.map(([k, v]) => [k, v]));
 
+/** 끌어올 구글 캘린더 — 이 계정으로 크롬에 로그인돼 있어야 보입니다 */
+export const GCAL = "whlove@gmail.com";
+
 /** 회의록 말머리 — 회의록 갈래에서만 씁니다 */
 export const TAGS = ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "ETC"];
 export const CAT_COLOR = Object.fromEntries(CATS.map(([k, , c]) => [k, c]));
@@ -115,11 +118,13 @@ export async function initNotes(mountId = "notesapp") {
       '<label class="nsearch"><span class="sr-only">찾기</span>' +
         '<input type="search" id="nQ" placeholder="제목 · 내용 · 장소 · 사람으로 찾기" autocomplete="off"></label>' +
       '<button type="button" class="nbtn" id="nCal">📅 달력</button>' +
+      '<button type="button" class="nbtn" id="nGcal">🗓 구글 캘린더</button>' +
       '<button type="button" class="nbtn" id="nXls">⤓ 엑셀로 받기</button>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
     '<div class="ncal" id="nCalBox" hidden></div>' +
+    '<div class="ngcal" id="nGcalBox" hidden></div>' +
     '<div class="nlist" id="nList"></div>' +
     '<p class="nempty" id="nEmpty" hidden></p>' +
     '<div class="nmodal" id="nModal" role="dialog" aria-modal="true" aria-label="글 쓰기">' +
@@ -355,6 +360,26 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nCal").classList.toggle("on", !calBox.hidden);
     if (!calBox.hidden) drawCal();
   });
+  /* 구글 캘린더 — 크롬이 그 계정으로 로그인돼 있으면 그대로 보입니다 */
+  const gBox = document.getElementById("nGcalBox");
+  const gBtn = document.getElementById("nGcal");
+  gBtn.addEventListener("click", () => {
+    gBox.hidden = !gBox.hidden;
+    gBtn.classList.toggle("on", !gBox.hidden);
+    if (!gBox.hidden && !gBox.dataset.on) {
+      gBox.dataset.on = "1";
+      const url = "https://calendar.google.com/calendar/embed?" +
+        "src=" + encodeURIComponent(GCAL) +
+        "&ctz=Asia%2FSeoul&mode=MONTH&wkst=1&showTitle=0&showPrint=0&showTabs=1" +
+        "&showCalendars=0&showTz=0&bgcolor=%23ffffff";
+      gBox.innerHTML =
+        '<p class="ngcal__note">구글 캘린더 <b>' + esc(GCAL) + '</b> 입니다. ' +
+        '이 브라우저가 그 계정으로 로그인돼 있어야 보입니다. ' +
+        '<a href="https://calendar.google.com/" target="_blank" rel="noopener">구글 캘린더 열기 →</a></p>' +
+        '<iframe src="' + url + '" title="구글 캘린더" loading="lazy"></iframe>';
+    }
+  });
+
   document.getElementById("nXls").addEventListener("click", () => {
     const l = shown();
     if (!l.length) { alert("내려받을 글이 없습니다."); return; }

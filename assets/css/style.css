@@ -2180,3 +2180,13 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   .ccell { min-height: 56px; }
   .cev { font-size: .6rem; }
 }
+
+/* 구글 캘린더 끼워넣기 */
+.ngcal { margin: 0 0 1.2rem; padding: 14px; background: #fff;
+  border: 1px solid var(--line); border-radius: var(--radius-md); }
+.ngcal__note { margin: 0 0 10px; font-size: .8rem; color: var(--mauve); line-height: 1.6; }
+.ngcal__note b { color: var(--ink); font-weight: 600; }
+.ngcal__note a { color: var(--teal-text); font-weight: 500; }
+.ngcal iframe { width: 100%; height: 640px; border: 1px solid var(--line);
+  border-radius: 9px; background: #fff; display: block; }
+@media (max-width: 680px) { .ngcal iframe { height: 460px; } }
