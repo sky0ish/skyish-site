@@ -10,14 +10,22 @@ export const CATS = [
   ["contacts", "연락망",   "#2a5fa8"],
   ["people",   "사람들",   "#8a6bb0"],
   ["minutes",  "회의록",   "#b3543b"],
+  ["daily",    "일상",     "#5c9e4a"],
+  ["etc",      "ETC",      "#7d7768"],
 ];
+
+/** 일반회원에게 열어 주는 갈래 — 「일상」만 봅니다 */
+export const MEMBER_CATS = ["daily"];
 export const CAT_NAME  = Object.fromEntries(CATS.map(([k, v]) => [k, v]));
+
+/** 주인 이메일 — 회원 정보 줄이 없어도 관리자로 봅니다 */
+export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 
 /** 끌어올 구글 캘린더 — 이 계정으로 크롬에 로그인돼 있어야 보입니다 */
 export const GCAL = "whlove@gmail.com";
 
 /** 회의록 말머리 — 회의록 갈래에서만 씁니다 */
-export const TAGS = ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "ETC"];
+export const TAGS = ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "일상", "ETC"];
 export const CAT_COLOR = Object.fromEntries(CATS.map(([k, , c]) => [k, c]));
 
 const esc = (s) => String(s == null ? "" : s)
@@ -101,16 +109,27 @@ export async function initNotes(mountId = "notesapp") {
 
   const user = await currentUser();
   const me = user ? await myProfile().catch(() => null) : null;
-  if (!me || !me.is_admin) {
+  const mail = ((user && user.email) || "").toLowerCase();
+  const isAdmin  = !!(me && me.is_admin) || OWNERS.indexOf(mail) >= 0;
+  const isMember = isAdmin || !!(me && me.analysis_access);
+
+  if (!user) {
     mount.innerHTML =
-      '<div class="nlocked">' +
-        "<h2>비공개 기록장입니다</h2>" +
-        "<p>이곳은 운영자만 볼 수 있습니다.</p>" +
-        (user ? '<p class="nlocked__sub">로그인은 되어 있지만 운영자 계정이 아닙니다.</p>'
-              : '<p class="nlocked__sub"><a href="auth/login.html?next=%2Fblog.html">로그인 →</a></p>') +
-      "</div>";
+      '<div class="nlocked"><h2>비공개 기록장입니다</h2>' +
+      "<p>로그인하신 뒤 보실 수 있습니다.</p>" +
+      '<p class="nlocked__sub"><a href="auth/login.html?next=%2Fblog.html">로그인 →</a></p></div>';
     return;
   }
+  if (!isMember) {
+    mount.innerHTML =
+      '<div class="nlocked"><h2>승인을 기다리고 있습니다</h2>' +
+      "<p>운영자가 승인하면 「일상」을 보실 수 있습니다.</p>" +
+      '<p class="nlocked__sub"><a href="auth/mypage.html">내 정보 →</a></p></div>';
+    return;
+  }
+
+  // 일반회원은 「일상」만 봅니다 (읽기만)
+  const VIEW = isAdmin ? CATS : CATS.filter(([k]) => MEMBER_CATS.indexOf(k) >= 0);
 
   mount.innerHTML =
     '<nav class="ntabs" id="nTabs" aria-label="기록 갈래"></nav>' +
@@ -155,6 +174,14 @@ export async function initNotes(mountId = "notesapp") {
         "</div>" +
       "</div>" +
     "</div>";
+
+  if (!isAdmin) {
+    cur = MEMBER_CATS[0];
+    ["nNew", "nXls", "nGcal"].forEach((id) => {
+      const b = document.getElementById(id);
+      if (b) b.remove();
+    });
+  }
 
   const tabs = document.getElementById("nTabs");
   const list = document.getElementById("nList");
@@ -204,7 +231,8 @@ export async function initNotes(mountId = "notesapp") {
       return `<button type="button" data-k="${k}"${k === cur ? ' class="on"' : ""}>` +
              `${esc(label)}<span class="n">${n}</span></button>`;
     };
-    tabs.innerHTML = mk("all", "전체") + CATS.map(([k, v]) => mk(k, v)).join("");
+    tabs.innerHTML = (isAdmin ? mk("all", "전체") : "") +
+      VIEW.map(([k, v]) => mk(k, v)).join("");
     tabs.querySelectorAll("button").forEach((b) =>
       b.addEventListener("click", () => { cur = b.dataset.k; draw(); }));
 
@@ -234,7 +262,7 @@ export async function initNotes(mountId = "notesapp") {
             (r.people ? ` · 👤 ${esc(r.people)}` : "") +
           `</p>` +
         `</div>` +
-        `<button class="nedit" data-id="${r.id}" title="고치기">✎</button>` +
+        (isAdmin ? `<button class="nedit" data-id="${r.id}" title="고치기">✎</button>` : "") +
       "</article>").join("");
     list.querySelectorAll(".nedit").forEach((b) =>
       b.addEventListener("click", () => open(rows.find((x) => x.id === b.dataset.id))));

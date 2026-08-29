@@ -105,7 +105,12 @@
           return m.myProfile().catch(function () { return null; }).then(function (me) {
             var name = (me && me.name)
               || (user.email || "").split("@")[0] || "회원";
-            var ok = !!(me && (me.analysis_access || me.is_admin));
+            // 주인 이메일이면 회원 정보 줄이 없어도 관리자로 봅니다
+            var OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
+            var mail = (user.email || "").toLowerCase();
+            var isOwner = OWNERS.indexOf(mail) >= 0;
+            var isAdmin = !!(me && me.is_admin) || isOwner;
+            var ok = !!(me && me.analysis_access) || isAdmin;
             box.innerHTML = "";
             var who = el("span", { class: "authwho" }, escapeHtml(name));
             if (!ok) { who.classList.add("is-pending"); who.title = "승인 대기 중입니다"; }
@@ -114,7 +119,7 @@
               class: "authadmin authadmin--my", href: url("auth/mypage.html"),
               title: "내 정보 (MyPage)"
             }, "MyPage"));
-            if (me && me.is_admin) {
+            if (isAdmin) {
               box.appendChild(el("a", {
                 class: "authadmin", href: url("admin/index.html"),
                 title: "운영 관리"

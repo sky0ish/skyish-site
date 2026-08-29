@@ -2,7 +2,7 @@
 --  BLOG — 나만 보는 기록장
 --
 --  갈래 : schedule(Schedule) · diary(Diary) · contacts(연락망)
---         people(사람들) · minutes(회의록)
+--         people(사람들) · minutes(회의록) · daily(일상) · etc(ETC)
 --  회의록 말머리 : GRI · 도시일반 · 건축일반 · 주거 · 균형발전 · 산업 · ETC
 --
 --  실행 : Supabase → SQL Editor → 전체 붙여넣기 → Run
@@ -49,7 +49,7 @@ create index if not exists notes_date_idx on public.notes (event_date);
 -- ── 2) 갈래 규칙 (갈래를 바꾸면 다시 실행하세요) ──
 alter table public.notes drop constraint if exists notes_cat_check;
 alter table public.notes add  constraint notes_cat_check
-  check (category in ('schedule','diary','contacts','people','minutes'));
+  check (category in ('schedule','diary','contacts','people','minutes','daily','etc'));
 
 
 -- ── 3) 권한 — 관리자만 ────────────────────────────────────────
