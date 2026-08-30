@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608310430";
-import * as GC from "./gcal.js?v=202608310430";
+import * as NF from "./notes-files.js?v=202608310500";
+import * as GC from "./gcal.js?v=202608310500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -42,6 +42,14 @@ const esc = (s) => String(s == null ? "" : s)
 const pad = (n) => String(n).padStart(2, "0");
 const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const ymd = (s) => (s || "").toString().slice(0, 10).replace(/-/g, ".");
+
+/** 일기 제목에 넣을 오늘 — 2026.08.31 (일) */
+const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
+export function todayTitle(d) {
+  const t = d || new Date();
+  return `${t.getFullYear()}.${pad(t.getMonth() + 1)}.${pad(t.getDate())}` +
+         ` (${WEEK[t.getDay()]})`;
+}
 
 /* ── 글에서 날짜 찾아내기 ────────────────────────────────────
    2026.09.14 · 2026-9-14 · 2026/9/14 · 26.9.14 · 9월 14일 · 9/14
@@ -354,9 +362,19 @@ export async function initNotes(mountId = "notesapp") {
     mTag.value = list.indexOf(keep) >= 0 ? keep : "";
   };
   // 말머리는 회의록에서만 씁니다
+  /* 일기는 그날의 글이라 제목이 늘 날짜로 시작합니다.
+     매번 손으로 적지 않도록 오늘로 채워 둡니다 (비어 있을 때만). */
+  function stampToday() {
+    const t = document.getElementById("nmT");
+    const d = document.getElementById("nmD");
+    if (!t.value.trim()) t.value = todayTitle();
+    if (!d.value.trim()) d.value = ymd(iso(new Date()));
+  }
+
   const syncTag = () => {
     fillTags(mCat.value);
     mTagBox.hidden = !tagsFor(mCat.value).length;
+    if (!editing && mCat.value === "diary") stampToday();
   };
   mCat.addEventListener("change", syncTag);
 
@@ -653,7 +671,11 @@ export async function initNotes(mountId = "notesapp") {
     drawFiles();
     msg.textContent = "";
     modal.classList.add("on");
-    document.getElementById("nmT").focus();
+    if (!row && mCat.value === "diary") stampToday();
+    const t = document.getElementById("nmT");
+    t.focus();
+    // 이어서 쓰기 좋게 커서를 끝에. 이 한 줄 때문에 창이 안 열리면 안 되므로 감쌉니다.
+    try { t.setSelectionRange(t.value.length, t.value.length); } catch (e) {}
   }
   /* 저장하는 동안에는 창이 닫히지 않게 잠급니다.
      고치던 글이 있는데 바깥을 잘못 눌러 창이 사라지면 적은 것이 날아갑니다. */
@@ -1010,7 +1032,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608310430");
+    const NFD = await import("./notes-folder.js?v=202608310500");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

@@ -39,6 +39,7 @@ function makeEl(id) {
     querySelector() { return makeEl(id + "-child"); },
     closest() { return makeEl(id + "-closest"); },
     appendChild() {}, remove() {}, focus() {}, click() {},
+    setSelectionRange() {}, select() {}, blur() {},
   };
   return el;
 }
