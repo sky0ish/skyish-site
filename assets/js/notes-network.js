@@ -3,7 +3,7 @@
 //  「사람들」 화면의 관계망 그림에 쓰는 셈입니다.
 //
 //    · 점 하나  = 사람.   크기는 만난 횟수.  글자는 안 답니다.
-//    · 글자 점  = 기관(주황) · 행사 주제(분홍).
+//    · 글자 점  = 기관(주황) · 행사 주제(분홍) · 연구 주제(빨강).
 //    · 선       = 함께 등장한 사이.  두께는 함께한 횟수.
 //        사람─사람  같은 자리에서 만난 횟수
 //        사람─기관  그 소속으로 적힌 만남 횟수
@@ -13,7 +13,7 @@
 //  그리기는 notes.js 가 캔버스에 합니다.
 //  그래서 node 로 곧바로 시험할 수 있습니다 (tools/test/network.mjs).
 
-import * as ST from "./notes-stats.js?v=202609051700";
+import * as ST from "./notes-stats.js?v=202608311930";
 
 /* ── 그래프 만들기 ───────────────────────────────────────── */
 
@@ -22,19 +22,23 @@ import * as ST from "./notes-stats.js?v=202609051700";
  * @param rows   글 목록
  * @param opts   { people, orgs, topics }  각각 몇 개까지 담을지
  * @returns { nodes:[{id,type,label,n,size}], edges:[{a,b,w}] }
- *          type: "who" | "org" | "topic"
+ *          type: "who" | "org" | "topic" | "theme" | "alma"
  */
 export function buildGraph(rows, opts) {
   /* 글자 점(기관·주제)이 많으면 이름끼리 뭉개집니다 — 12개씩만 */
-  const o = { people: 60, orgs: 12, topics: 12, ...(opts || {}) };
+  const o = { people: 60, orgs: 12, topics: 12, themes: 14, ...(opts || {}) };
 
   const ppl = ST.byPerson(rows).slice(0, o.people);
   const keep = new Set(ppl.map((p) => p.key));
 
   const orgs = ST.wordsOrg(rows, o.orgs);
+  /* 연구 주제 — 미리 정해 둔 낱말 사전으로 글 전체에서 찾습니다 */
+  const themes = ST.themeWords(rows, o.themes);
+
   const topics = ST.wordsEvent(rows, o.topics)
-    // 기관과 같은 말이 주제로도 잡히면 기관 쪽만 남깁니다
-    .filter((t) => !orgs.some((g) => g.word === t.word));
+    // 기관·연구 주제와 같은 말이 또 잡히면 그쪽만 남깁니다
+    .filter((t) => !orgs.some((g) => g.word === t.word))
+    .filter((t) => !themes.some((g) => g.word === t.word));
 
   const nodes = [];
   const idOf = new Map();                      // "who:이소라" → 번호
@@ -51,6 +55,7 @@ export function buildGraph(rows, opts) {
   ppl.forEach((p) => add("who", p.key, p.meets.length, p.org));
   orgs.forEach((g) => add("org", g.word, g.n));
   topics.forEach((t) => add("topic", t.word, t.n));
+  themes.forEach((t) => add("theme", t.word, t.n));
 
   /* 선 — 같은 글에 함께 나온 만큼 굵어집니다 */
   const wEdge = new Map();                     // "3|7" → 무게
@@ -85,6 +90,20 @@ export function buildGraph(rows, opts) {
       if (!hay.includes(t.word)) return;
       const tid = idOf.get("topic:" + t.word);
       ids.forEach((i) => tie(i, tid, 1));
+    });
+
+    /* 사람 ─ 연구 주제 : 글 어디에 적혔든 그 자리에 있던 사람과 잇습니다 */
+    ST.themesOf(r).forEach((w) => {
+      const tid = idOf.get("theme:" + w);
+      if (tid == null) return;
+      ids.forEach((i) => tie(i, tid, 1));
+      who.forEach((pp, i) => {
+        if (!pp.org) return;
+        pp.org.split(/\s*[,/·]\s*/).forEach((one) => {
+          const gg = idOf.get("org:" + one.trim());
+          if (gg != null) tie(gg, tid, 1);
+        });
+      });
     });
 
     // 기관 ─ 주제 : 행사 글에 함께 적힌 기관과 낱말
@@ -178,7 +197,8 @@ export function layout(graph, w, h, iters = 340) {
         let d2 = dx * dx + dy * dy;
         if (d2 < 0.01) { dx = rand() - 0.5; dy = rand() - 0.5; d2 = 0.5; }
         const d = Math.sqrt(d2);
-        /* 글자 달린 점(기관·주제)끼리는 더 세게 밉니다 — 이름이 포개지지 않게 */
+        /* 글자 달린 점(기관·주제)끼리는 더 세게 밉니다 — 이름이 포개지지 않게.
+           (사람 점 밀기를 키워도 자리는 스스로 고르게 되어 그대로 둡니다) */
         const both = a.type !== "who" && b.type !== "who";
         const push = (K * K) / d2 * (both ? 2.1 : 0.9);
         dx /= d; dy /= d;

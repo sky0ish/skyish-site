@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609051700";
-import * as GC from "./gcal.js?v=202609051700";
-import * as ST from "./notes-stats.js?v=202609051700";
-import * as NW from "./notes-network.js?v=202609051700";
-import { alumniNames } from "./addressbook.js?v=202609051700";
+import * as NF from "./notes-files.js?v=202608311930";
+import * as GC from "./gcal.js?v=202608311930";
+import * as ST from "./notes-stats.js?v=202608311930";
+import * as NW from "./notes-network.js?v=202608311930";
+import { alumniNames } from "./addressbook.js?v=202608311930";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -491,7 +491,19 @@ export async function initNotes(mountId = "notesapp") {
   let calAt = new Date(); calAt.setDate(1);
 
   const mCat = document.getElementById("nmCat");
-  mCat.innerHTML = WRITE_CATS.map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+  /* 갈래 고르개를 채웁니다. 「사람들」 처럼 손으로는 새로 못 쓰는 갈래라도,
+     그 갈래의 옛 글을 열었을 때는 한 칸을 내어 줍니다 — 안 그러면 고르개가
+     빈 값이 되고, 그 글을 저장하는 순간 갈래가 ETC 로 갈려 버립니다. */
+  function fillCats(extra) {
+    const list = WRITE_CATS.slice();
+    if (extra && !list.some(([k]) => k === extra)) {
+      const c = CATS.find(([k]) => k === extra);
+      if (c) list.unshift(c);
+    }
+    mCat.innerHTML = list.map(([k, v]) =>
+      `<option value="${k}">${esc(v)}</option>`).join("");
+  }
+  fillCats();
   const mTag = document.getElementById("nmTag");
   const mTagBox = document.getElementById("nmTagBox");
   /* 말머리는 갈래마다 다릅니다. 갈래를 바꾸면 목록을 다시 그리되,
@@ -516,7 +528,11 @@ export async function initNotes(mountId = "notesapp") {
     const day = on
       ? new Date(on.replace(/[.]/g, "-") + "T00:00:00")
       : new Date();
-    if (!t.value.trim()) t.value = todayTitle(isNaN(day) ? new Date() : day);
+    const want = todayTitle(isNaN(day) ? new Date() : day);
+    /* 비어 있으면 넣고, 「2026.08.31 (월)」 처럼 저절로 찍혔던 것뿐이면 갈아 끼웁니다.
+       손으로 적으신 제목은 건드리지 않습니다. */
+    if (!t.value.trim() || /^\d{4}\.\d{2}\.\d{2} \([일월화수목금토]\)$/.test(t.value.trim()))
+      t.value = want;
     if (!on) d.value = ymd(iso(new Date()));
   }
 
@@ -574,6 +590,11 @@ export async function initNotes(mountId = "notesapp") {
      한자리에 모아 이름으로 찾아보는 화면입니다.
      이름을 누르면 그 사람과의 만남이 펼쳐지고, 다시 누르면 그 글로 갑니다. */
   let openWho = "";                    // 지금 펼쳐 둔 사람
+
+  /* 글을 누르면 곧바로 본문(글 고치기)으로 갑니다 —
+     간추린 「자세히 보기」 한 단계를 건너뜁니다.
+     손댈 수 없는 분께는 예전처럼 읽기 창을 보여 드립니다. */
+  const openRow = (r) => { if (r) (isAdmin ? open : detail)(r); };
   /* 사람들 화면의 두 갈래 — 사람들(글) · 네트워크망(셈·그림) */
   let peopleTab = "list";
   let almaSet = null;                  // 동경대 동문 이름 — 처음 그릴 때 한 번만 읽습니다
@@ -584,6 +605,7 @@ export async function initNotes(mountId = "notesapp") {
   function peopleIndex() {
     const map = new Map();
     rows.forEach((r) => {
+      if (r.category === PEOPLE_CAT) return;     // 그 사람 글 자체는 「만남」이 아닙니다
       String(r.people || "").split(/\s*,\s*/).map((x) => x.trim()).filter(Boolean)
         .forEach((one) => {
           const k = bareName(one);
@@ -606,6 +628,17 @@ export async function initNotes(mountId = "notesapp") {
       const t = ST.whoTitle(name, notes);
       if (t) got.label = name + " " + t;
       map.set(name, got);
+    });
+
+    /* 사람들 게시판에 쌓아 둔 그 사람의 글을 붙입니다 —
+       카드에서 누르지 않아도 본문이 그대로 보이도록. */
+    rows.filter((r) => r.category === PEOPLE_CAT).forEach((r) => {
+      const k = String(r.title || "").trim().split(/\s+/)[0];
+      if (!k) return;
+      const got = map.get(k) || { key: k, label: r.title, meets: [] };
+      got.post = r;
+      if (String(r.title).length > String(got.label).length) got.label = r.title;
+      map.set(k, got);
     });
 
     return [...map.values()].sort((a, b) =>
@@ -649,11 +682,17 @@ export async function initNotes(mountId = "notesapp") {
     wirePeople();
   }
 
+  /* 셈과 그림에 넘길 글 — 사람들 글은 뺍니다.
+     저절로 만들어진 글이라 「만남」 이 아닌데, people 칸에 이름이 들어 있어
+     그냥 두면 한 사람을 두 번 만난 것으로 세어집니다. */
+  const statRows = () => rows.filter((r) => r.category !== PEOPLE_CAT);
+
   /* ── 셈판 ── 요약 · 달마다 · TOP 10 · 낱말 구름 ── */
   function statsHtml() {
-    const sm = ST.summary(rows);
-    const mm = ST.monthly(rows, 12);
-    const top = ST.topPeople(rows, 10);
+    const rs = statRows();
+    const sm = ST.summary(rs);
+    const mm = ST.monthly(rs, 12);
+    const top = ST.topPeople(rs, 10);
 
     /* ① 한눈 요약 */
     const card = (v, k) => `<div class="pstat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`;
@@ -711,14 +750,14 @@ export async function initNotes(mountId = "notesapp") {
     const clouds = '<section class="pbox"><h4>말로 본 한 해' +
       '<span class="phint">글자가 클수록 자주 나온 말입니다 · 눌러서 좁혀 보세요</span></h4>' +
       '<div class="pclouds">' +
-        cloud("① 사람", ST.wordsPeople(rows, 40), "who") +
-        cloud("② 기관", ST.wordsOrg(rows, 40), "org") +
-        cloud("③ 행사 낱말", ST.wordsEvent(rows, 40), "ev") +
+        cloud("① 사람", ST.wordsPeople(rs, 40), "who") +
+        cloud("② 기관", ST.wordsOrg(rs, 40), "org") +
+        cloud("③ 행사 낱말", ST.wordsEvent(rs, 40), "ev") +
       "</div></section>";
 
     /* 이 셈이 어느 자료를 다루는지 — 기간·건수·게시판을 밝혀 둡니다.
        기간이 안 적힌 그림은 읽는 사람이 「요즘 것」 으로 오해합니다. */
-    const sp = ST.span(rows);
+    const sp = ST.span(rs);
     const dot = (d) => (d || "").replace(/-/g, ".");
     const catBits = Object.entries(sp.byCat)
       .sort((a, b) => b[1] - a[1])
@@ -735,8 +774,9 @@ export async function initNotes(mountId = "notesapp") {
     /* ⑤ 관계망 — 점은 사람, 글자 점은 기관·주제, 선은 함께한 횟수 */
     const hasAlma = !!(almaSet && almaSet.size);
     const net = '<section class="pbox"><h4>관계망' +
-      '<span class="phint">점 = 사람 (크기·선 굵기 = 만난 횟수) · ' +
-      '글자 점 = <i class="plg plg--org"></i>기관 · <i class="plg plg--topic"></i>행사 주제' +
+      '<span class="phint">점 = 사람 (크기·선 굵기 = 만난 횟수, 이름은 잔글씨) · ' +
+      '글자 점 = <i class="plg plg--theme"></i>연구 주제 · ' +
+      '<i class="plg plg--org"></i>기관 · <i class="plg plg--topic"></i>행사 주제' +
       (hasAlma ? ' · <i class="plg plg--alma"></i>동경대 동문' : "") +
       ' · 점을 누르면 그 사람·그 말로 갑니다</span></h4>' +
       '<div class="pnet"><canvas id="pNet"></canvas>' +
@@ -775,12 +815,13 @@ export async function initNotes(mountId = "notesapp") {
         }
       }).catch(() => {});
     }
-    const g = NW.layout(NW.buildGraph(rows, { alumni: almaSet }), W, H);
+    const g = NW.layout(NW.buildGraph(statRows(), { alumni: almaSet }), W, H);
     const ctx = cv.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     /* alma 의 옅은 파랑은 동경대의 상징색입니다 */
-    const COL = { who: "#5c9e4a", org: "#d9822b", topic: "#c95fb0", alma: "#3d7dc0" };
+    const COL = { who: "#5c9e4a", org: "#d9822b", topic: "#c95fb0",
+                  theme: "#d1493f", alma: "#3d7dc0" };
     const maxW = Math.max(1, ...g.edges.map((e) => e.w));
 
     function paint(litId) {
@@ -812,8 +853,17 @@ export async function initNotes(mountId = "notesapp") {
           const tx = n.x + n.size + 5, ty = n.y;
           ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(255,255,255,.92)";
           ctx.strokeText(n.label, tx, ty);
-          ctx.fillStyle = "#3a362e";
+          ctx.fillStyle = n.type === "theme" ? COL.theme : "#3a362e";
           ctx.fillText(n.label, tx, ty);
+        } else {
+          /* 사람 점 — 이름을 작게 아래에 답니다 (기관은 빼고 이름만) */
+          ctx.font = "500 9.5px Pretendard, sans-serif";
+          ctx.textAlign = "center"; ctx.textBaseline = "top";
+          const nm = ST.justName(n.label), ty = n.y + n.size + 2.5;
+          ctx.lineWidth = 2.6; ctx.strokeStyle = "rgba(255,255,255,.9)";
+          ctx.strokeText(nm, n.x, ty);
+          ctx.fillStyle = "#4a4639";
+          ctx.fillText(nm, n.x, ty);
         }
       });
       ctx.globalAlpha = 1;
@@ -843,7 +893,8 @@ export async function initNotes(mountId = "notesapp") {
       tip.hidden = false;
       tip.textContent = n.type === "alma"
         ? "◎ 동경대 동문 — " + n.n + "명"
-        : (n.type === "who" ? "○ " : n.type === "org" ? "◈ " : "# ") +
+        : (n.type === "who" ? "○ " : n.type === "org" ? "◈ "
+           : n.type === "theme" ? "◆ " : "# ") +
           n.label + " — " + n.n + "번";
       tip.style.left = Math.min(mx + 14, W - 150) + "px";
       tip.style.top = (my + 14) + "px";
@@ -863,7 +914,7 @@ export async function initNotes(mountId = "notesapp") {
       let head = "", body = "", foot = "";
       if (n.type === "alma") {
         // 내가 만난 사람 가운데 동문 명부와 이름이 같은 분들
-        const hit = ST.byPerson(rows).filter((p) => almaSet.has(p.key));
+        const hit = ST.byPerson(statRows()).filter((p) => almaSet.has(p.key));
         head = '<b class="pnc__name">◎ 동경대 동문</b>';
         body = `<p class="pnc__n">만난 사람 가운데 ${hit.length}명이 명부와 이름이 같습니다</p>` +
           `<p class="pnc__who">${esc(hit.map((p) =>
@@ -872,7 +923,7 @@ export async function initNotes(mountId = "notesapp") {
         foot = "";
       } else if (n.type === "who") {
         // 이 사람과의 만남 — 요즘 것부터 석 줄
-        const meets = rows.filter((r) =>
+        const meets = statRows().filter((r) =>
           ST.peopleOf(r).some((one) => ST.splitPerson(one).name === n.label))
           .sort((a, b) => String(b.event_date || "").localeCompare(String(a.event_date || "")));
         head = `<b class="pnc__name">○ ${esc(n.label)}</b>` +
@@ -886,22 +937,32 @@ export async function initNotes(mountId = "notesapp") {
       } else {
         // 기관·주제 — 함께 나온 사람들
         const isOrg = n.type === "org";
-        const hit = rows.filter((r) => isOrg
+        const isTheme = n.type === "theme";
+        /* 연구 주제는 점을 만들 때와 똑같은 잣대로 뒤집니다 —
+           본문에만 「드론」 이 적힌 글도 이 카드에 나와야 합니다. */
+        const hit = statRows().filter((r) => isOrg
           ? (ST.peopleOf(r).some((one) => (ST.splitPerson(one).org || "").includes(n.label)) ||
              [r.event, r.title, r.place].filter(Boolean).join(" ").includes(n.label))
-          : [r.event, r.tag, r.title].filter(Boolean).join(" ").includes(n.label));
+          : isTheme
+            ? ST.themesOf(r).indexOf(n.label) >= 0
+            : [r.event, r.tag, r.title].filter(Boolean).join(" ").includes(n.label));
         const who = [...new Set(hit.flatMap((r) =>
           ST.peopleOf(r).map((one) => ST.splitPerson(one).name)))];
-        head = `<b class="pnc__name">${isOrg ? "◈" : "#"} ${esc(n.label)}</b>`;
+        head = `<b class="pnc__name">${isOrg ? "◈" : isTheme ? "◆" : "#"} ` +
+          `${esc(n.label)}</b>`;
         body = `<p class="pnc__n">${n.n}번 나왔습니다` +
           (who.length ? ` · 함께한 사람 ${who.length}명` : "") + "</p>" +
           (who.length
             ? `<p class="pnc__who">${esc(who.slice(0, 8).join(", "))}` +
               (who.length > 8 ? " …" : "") + "</p>"
             : "") +
-          hit.slice(0, 2).map(meetLine).join("");
-        foot = `<button type="button" class="nbtn nbtn--go pnc__go" data-q="${esc(n.label)}">` +
-          "이 말로 찾기 →</button>";
+          hit.slice(0, 3).map(meetLine).join("");
+        /* 연구 주제는 낱말 사전으로 찾은 것이라 「이 말로 찾기」 가 안 통합니다
+           (본문에 「K컬처」 가 아니라 「한류」 라고 적혀 있을 수 있으니까요).
+           그래서 주제 점에는 그 단추를 두지 않습니다. */
+        foot = isTheme ? ""
+          : `<button type="button" class="nbtn nbtn--go pnc__go" data-q="${esc(n.label)}">` +
+            "이 말로 찾기 →</button>";
       }
       card.innerHTML =
         '<button type="button" class="pnc__x" aria-label="닫기">✕</button>' +
@@ -916,7 +977,7 @@ export async function initNotes(mountId = "notesapp") {
       card.querySelector(".pnc__x").onclick = hideCard;
       card.querySelectorAll(".pnc__meet").forEach((b) =>
         b.addEventListener("click", () =>
-          detail(rows.find((x) => x.id === b.dataset.id))));
+          openRow(rows.find((x) => x.id === b.dataset.id))));
       const go = card.querySelector(".pnc__go");
       if (!go) return;
       go.onclick = () => {
@@ -936,64 +997,65 @@ export async function initNotes(mountId = "notesapp") {
     };
   }
 
-  /* ── 사람 알약들 ── */
+  /* ── 사람들 화면 ──
+     위에는 사람마다 쌓인 글 목록 (누르면 본문이 곧바로 열립니다),
+     아래에는 만난 사람을 이름만 적은 알약으로 늘어놓습니다. */
   function peopleHtml(hit, s) {
-    if (!hit.length) {
+    const posts = rows.filter((r) => r.category === PEOPLE_CAT).filter(match)
+      .sort((a, b) => String(a.title).localeCompare(String(b.title), "ko"));
+
+    if (!posts.length && !hit.length) {
       return '<p class="nempty" style="margin:1.4rem 0">그런 사람을 못 찾았습니다.</p>';
     }
-    return '<section class="pbox"><h4>' + (s ? "찾은 사람" : "만난 사람 모두") +
-      `<span class="phint">${hit.length}명 · 이름을 누르면 그동안의 만남이 펼쳐집니다</span></h4>` +
-      '<div class="npeople">' + hit.map((p) => {
-        const on = p.key === openWho;
-        return '<div class="nperson' + (on ? " on" : "") + '">' +
-          `<button type="button" class="nperson__name" data-k="${esc(p.key)}" ` +
-            `aria-expanded="${on}"><b>${esc(p.label)}</b>` +
-            `<span class="n">${p.meets.length}</span>` +
-            ((p.notes && p.notes.length)
-              ? `<span class="n n--note" title="이 사람에 대한 기록">✎${p.notes.length}</span>`
-              : "") + "</button>" +
-          (on
-            ? ((p.notes && p.notes.length)
-                ? '<div class="pnotes"><b class="pnotes__ttl">이 사람에 대한 기록 ' +
-                  p.notes.length + '건</b>' +
-                  p.notes.map((n) =>
-                    '<button type="button" class="pnote" data-id="' + n.row.id + '">' +
-                    '<span class="pnote__d">' +
-                    (n.row.event_date ? ymd(n.row.event_date) : "") + '</span>' +
-                    '<span class="pnote__t">' + esc(n.text) + '</span></button>').join("") +
-                  "</div>"
-                : "") +
-              '<div class="nperson__meets">' + p.meets.map((r) =>
-                `<button type="button" class="npmeet" data-id="${r.id}">` +
-                  `<span class="ncat" style="--c:${CAT_COLOR[r.category] || "#888"}">` +
-                    `${esc(CAT_NAME[r.category] || "")}</span>` +
-                  `<span class="npmeet__t"><b>${esc(r.title)}</b>` +
-                  (r.place ? `<small>⊙ ${esc(r.place)}</small>` : "") + "</span>" +
-                  `<span class="npmeet__d">${r.event_date ? ymd(r.event_date) : ""}</span>` +
-                "</button>").join("") + "</div>"
-            : "") +
-          "</div>";
-      }).join("") + "</div></section>";
+
+    let h = "";
+    if (posts.length) {
+      h += '<section class="pbox"><h4>' + (s ? "찾은 글" : "사람마다 적어 둔 글") +
+        `<span class="phint">${posts.length}건 · 누르면 본문이 열립니다</span></h4>` +
+        posts.map(rowHtml).join("") + "</section>";
+    }
+    if (hit.length) {
+      h += '<section class="pbox"><h4>' + (s ? "찾은 사람" : "만난 사람 모두") +
+        `<span class="phint">${hit.length}명 · 이름을 누르면 그 사람만 봅니다</span></h4>` +
+        '<div class="npeople">' + hit.map((p) =>
+          '<div class="nperson">' +
+            `<button type="button" class="nperson__name" data-k="${esc(p.key)}" ` +
+              `title="${esc(p.label)}"><b>${esc(ST.justName(p.label || p.key))}</b>` +
+              `<span class="n">${p.meets.length}</span>` +
+              ((p.notes && p.notes.length)
+                ? `<span class="n n--note" title="적어 둔 글">✎${p.notes.length}</span>`
+                : "") + "</button>" +
+          "</div>").join("") + "</div></section>";
+    }
+    return h;
   }
 
   /** 셈판과 알약에 손을 달아 줍니다 */
   function wirePeople() {
+    /* 이름을 누르면 그 사람만 남깁니다. 적어 둔 글은 이미 카드에 펼쳐져 있으니
+       한 번 더 누를 일이 없습니다. 다시 보려면 찾는 칸을 비우시면 됩니다. */
     const openPerson = (k) => {
-      openWho = (openWho === k) ? "" : k;
+      openWho = k;
+      if (peopleTab === "net") peopleTab = "list";   // 관계망에서 눌렀으면 사람들로
+      q.value = k;
       drawPeople();
-      const el = list.querySelector(".nperson.on");
-      if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" });
+      if (list.scrollIntoView) list.scrollIntoView({ block: "start", behavior: "smooth" });
     };
     if (peopleTab === "net") drawNet(openPerson);   // 관계망은 그 갈래에서만
     list.querySelectorAll(".nperson__name").forEach((b) =>
-      b.addEventListener("click", () => {
-        openWho = (openWho === b.dataset.k) ? "" : b.dataset.k;
-        drawPeople();
+      b.addEventListener("click", () => openPerson(b.dataset.k)));
+    /* 위쪽 글 목록도 여느 게시판처럼 눌러 열고 지울 수 있게 */
+    list.querySelectorAll(".nrow__open").forEach((b) =>
+      b.addEventListener("click", () => openRow(rows.find((x) => x.id === b.dataset.id))));
+    list.querySelectorAll(".nrow__del").forEach((b) =>
+      b.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        removePost(rows.find((x) => x.id === b.dataset.id), b);
       }));
     list.querySelectorAll(".ptop__go").forEach((b) =>
       b.addEventListener("click", () => openPerson(b.dataset.k)));
-    list.querySelectorAll(".npmeet, .pnote").forEach((b) =>
-      b.addEventListener("click", () => detail(rows.find((x) => x.id === b.dataset.id))));
+    list.querySelectorAll(".pnote").forEach((b) =>
+      b.addEventListener("click", () => openRow(rows.find((x) => x.id === b.dataset.id))));
     /* 낱말을 누르면 — 사람이면 그 사람을 펴고, 기관·행사면 그 말로 좁힙니다 */
     list.querySelectorAll(".pw").forEach((b) =>
       b.addEventListener("click", () => {
@@ -1001,6 +1063,32 @@ export async function initNotes(mountId = "notesapp") {
         q.value = b.dataset.w;
         drawPeople();
       }));
+  }
+
+  /* 목록의 한 줄. 사람들 화면에서도 같은 모습으로 씁니다.
+     단추 안에 단추를 넣을 수 없어, 줄은 상자로 두고
+     「펴 보기」와 「지우기」를 나란히 둡니다. */
+  function rowHtml(r) {
+    const nf = Array.isArray(r.files) ? r.files.length : 0;
+    const sub = [r.event ? "◇ " + esc(r.event) : "",
+                 r.place ? "⊙ " + esc(r.place) : "",
+                 r.people ? "○ " + esc(r.people) : "",
+                 nf ? "□ " + nf : ""].filter(Boolean).join("   ");
+    return `<div class="nrow">` +
+        `<button type="button" class="nrow__open" data-id="${r.id}">` +
+          `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
+            `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
+          `<span class="nrow__main">` +
+            `<b>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</b>` +
+            (sub ? `<small>${sub}</small>` : "") +
+          `</span>` +
+          `<span class="nrow__date">${r.event_date ? ymd(r.event_date) : ""}</span>` +
+        `</button>` +
+        (isAdmin
+          ? `<button type="button" class="nrow__del" data-id="${r.id}" ` +
+            `title="이 글 지우기" aria-label="${esc(r.title)} 지우기">✕</button>`
+          : "") +
+      `</div>`;
   }
 
   function draw() {
@@ -1061,33 +1149,10 @@ export async function initNotes(mountId = "notesapp") {
       return;
     }
     emptyEl.hidden = true;
-    list.innerHTML = l.map((r) => {
-      const nf = Array.isArray(r.files) ? r.files.length : 0;
-      const sub = [r.event ? "◇ " + esc(r.event) : "",
-                   r.place ? "⊙ " + esc(r.place) : "",
-                   r.people ? "○ " + esc(r.people) : "",
-                   nf ? "□ " + nf : ""].filter(Boolean).join("   ");
-      /* 단추 안에 단추를 넣을 수 없어, 줄은 상자로 두고
-         「펴 보기」와 「지우기」를 나란히 둡니다. */
-      return `<div class="nrow">` +
-        `<button type="button" class="nrow__open" data-id="${r.id}">` +
-          `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
-            `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
-          `<span class="nrow__main">` +
-            `<b>${r.tag ? `<span class="ntag">[${esc(r.tag)}]</span> ` : ""}${esc(r.title)}</b>` +
-            (sub ? `<small>${sub}</small>` : "") +
-          `</span>` +
-          `<span class="nrow__date">${r.event_date ? ymd(r.event_date) : ""}</span>` +
-        `</button>` +
-        (isAdmin
-          ? `<button type="button" class="nrow__del" data-id="${r.id}" ` +
-            `title="이 글 지우기" aria-label="${esc(r.title)} 지우기">✕</button>`
-          : "") +
-      `</div>`;
-    }).join("");
+    list.innerHTML = l.map(rowHtml).join("");
 
     list.querySelectorAll(".nrow__open").forEach((btn) =>
-      btn.addEventListener("click", () => detail(rows.find((x) => x.id === btn.dataset.id))));
+      btn.addEventListener("click", () => openRow(rows.find((x) => x.id === btn.dataset.id))));
     list.querySelectorAll(".nrow__del").forEach((btn) =>
       btn.addEventListener("click", (ev) => {
         ev.stopPropagation();
@@ -1236,7 +1301,7 @@ export async function initNotes(mountId = "notesapp") {
       const o = e2.target.closest("[data-open]");
       if (o) {
         const r = rows.find((x) => String(x.id) === o.dataset.open);
-        if (r) { dbox.classList.remove("on"); detail(r); }
+        if (r) { dbox.classList.remove("on"); openRow(r); }
         return;
       }
       const gb = e2.target.closest("[data-gi]");
@@ -1318,7 +1383,7 @@ export async function initNotes(mountId = "notesapp") {
     calBox.querySelectorAll("button[data-open]").forEach((b) =>
       b.addEventListener("click", () => {
         const r = rows.find((x) => String(x.id) === b.dataset.open);
-        if (r) detail(r);
+        if (r) openRow(r);
       }));
 
     /* 날짜 숫자를 누르면 그날 일기를 새로 씁니다 */
@@ -1343,17 +1408,10 @@ export async function initNotes(mountId = "notesapp") {
 
   /** 그날의 일기를 새로 씁니다 — 달력의 날짜 숫자에서 옵니다 */
   function newDiary(day) {
-    open(null);
+    open(null, day);
     mCat.value = "diary";
-    /* 날짜를 먼저 넣고 syncTag 를 부릅니다 —
-       거꾸로 하면 제목이 오늘로 찍힌 뒤에 날짜만 바뀌어 어긋납니다. */
-    document.getElementById("nmD").value = ymd(day);
-    syncTag();
+    syncTag();                       // 갈래를 바꿨으니 그날 제목으로 다시 찍습니다
     const t = document.getElementById("nmT");
-    if (!t.value.trim()) {
-      const d = new Date(day + "T00:00:00");
-      t.value = todayTitle(isNaN(d) ? new Date() : d);
-    }
     t.focus();
     try { t.setSelectionRange(t.value.length, t.value.length); } catch (e) {}
     msg.textContent = "";
@@ -1413,13 +1471,15 @@ export async function initNotes(mountId = "notesapp") {
   });
 
   /* ── 글 쓰기·고치기 ── */
-  function open(row) {
+  /** row 를 고칠 때는 그 글로, 새 글이면 day(2026-08-26)가 있으면 그날로 엽니다 */
+  function open(row, day) {
     editing = row || null;
     dirty = false;                       // 새로 여는 것이므로 고친 것이 없습니다
     document.getElementById("nDetail").classList.remove("on");   // 위에 덮인 창을 걷습니다
     document.getElementById("nmTitle").textContent = row ? "글 고치기" : "새 글";
     document.getElementById("nmDel").hidden = !row;
     document.getElementById("nmDelTop").hidden = !row;
+    fillCats(row ? row.category : "");     // 그 글의 갈래에 자리를 내어 줍니다
     mCat.value = row ? row.category
                      : ((cur === "all" || cur === PEOPLE_CAT) ? "schedule" : cur);
     if (!mCat.value) mCat.value = "etc";   // 없어진 갈래의 옛 글을 열었을 때
@@ -1431,7 +1491,9 @@ export async function initNotes(mountId = "notesapp") {
     const fm = row && row.body ? String(row.body).match(/^맛집:[ \t]*(.+)$/m) : null;
     document.getElementById("nmFood").value = fm ? fm[1].trim() : "";
     autoFill.people = ""; autoFill.place = "";
-    document.getElementById("nmD").value = row ? ymd(row.event_date) : "";
+    /* 날짜를 제목보다 먼저 넣습니다 — 거꾸로 하면 제목만 오늘로 찍혀 어긋납니다 */
+    document.getElementById("nmD").value =
+      row ? ymd(row.event_date) : (day ? ymd(day) : "");
     document.getElementById("nmTm").value = row ? row.event_time || "" : "";
     document.getElementById("nmC").value = row ? row.contact || "" : "";
     document.getElementById("nmP").value = row ? row.place || "" : "";
@@ -1792,7 +1854,10 @@ export async function initNotes(mountId = "notesapp") {
       : body.replace(FOOD_LINE, "").trim();
 
     const patch = {
-      category: mCat.value,
+      /* 고치던 글의 갈래는 손으로 바꾸지 않는 한 그대로 둡니다.
+         고르개에 없는 갈래(사람들)라도 딴 데로 옮겨지지 않게. */
+      category: (editing && !WRITE_CATS.some(([k]) => k === editing.category))
+        ? editing.category : mCat.value,
       title, body: bodyOut || null,
       event_date: dRaw ? findDate(dRaw) : findDate(title + "\n" + body),
       place:  document.getElementById("nmP").value.trim() || null,
@@ -1855,6 +1920,10 @@ export async function initNotes(mountId = "notesapp") {
       if (notes.length) {
         const people = ST.peopleOf({ people: patch.people });
         const 날 = (patch.event_date || "").slice(0, 10).replace(/-/g, ".");
+        /* 어디서 가져온 글인지 한 줄로 —  날짜_회의명_사람_장소 */
+        const 출처 = [날, (patch.event || title || "").trim(),
+                     (patch.people || "").trim(), (patch.place || "").trim()]
+                     .map((x) => String(x).trim()).filter(Boolean).join("_");
         const 몫 = new Map();                       // 이름 → [줄]
         notes.forEach((line) => {
           ST.noteOwners(line, people).forEach(({ name, text }) => {
@@ -1873,16 +1942,31 @@ export async function initNotes(mountId = "notesapp") {
           /* 제목은 「이석준 이천시청 군협력담당관」 꼴 —
              소속·직함을 알아내면 붙이고, 모르면 이름만 씁니다. */
           const 직함 = ST.whoTitle(name, lines.concat(
-            old ? ST.personNotes(old.body).concat([old.title]) : []));
+            old ? [old.title] : []));
           const title = 직함 ? name + " " + 직함 : name;
 
-          // 새로 담을 줄만 골라 냅니다 (이미 있는 줄은 건너뜁니다)
-          const had = old ? String(old.body || "") : "";
+          /* 본문 생김새
+                [이석준] 이천시청 군협력담당관        ← 맨 첫 줄
+                                                    (빈 줄)
+                2026.08.25_회의명_사람_장소           ← 어디서 가져왔는지
+                그날의 느낌…
+                                                    (빈 줄)
+                2026.09.02_…                         ← 다음에 적은 것
+                그날의 느낌…                                              */
+          const head = "[" + name + "]" + (직함 ? " " + 직함 : "");
+          // 맨 앞의 [이름] 줄은 직함이 바뀔 수 있으므로 새로 씁니다
+          let had = String((old && old.body) || "");
+          if (had.charAt(0) === "[")   // 옛 머리줄을 걷어 냅니다
+            had = had.slice((had.indexOf(NL) + 1) || had.length);
+          had = had.trim();
           const fresh = lines.filter((l) => had.indexOf(l) < 0);
-          if (old && !fresh.length && old.title === title) continue;
+          if (old && !fresh.length && old.title === title
+              && String(old.body || "").startsWith(head)) continue;
 
-          const block = (날 ? "· " + 날 + "  " : "· ") + fresh.join(NL + "  ");
-          const body = fresh.length ? (had ? had + NL + block : block) : had;
+          const block = fresh.length
+            ? ((출처 ? 출처 + NL : "") + fresh.join(NL)) : "";
+          const body = [head, [had, block].filter(Boolean).join(NL + NL)]
+            .filter(Boolean).join(NL + NL);
 
           const r2 = old
             ? await sb.from("notes").update({ title, body }).eq("id", old.id)
@@ -2090,7 +2174,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609051700");
+    const NFD = await import("./notes-folder.js?v=202608311930");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
@@ -2126,14 +2210,7 @@ export async function initNotes(mountId = "notesapp") {
     const qs = new URLSearchParams(location.search);
     const day = qs.get("new");
     if (day && isAdmin && /^\d{4}-\d{2}-\d{2}$/.test(day)) {
-      open(null);
-      document.getElementById("nmD").value = ymd(day);
-      syncTag();                                   // 날짜를 넣은 뒤 제목을 찍습니다
-      if (mCat.value === "diary") {
-        // 일기는 제목이 날짜로 시작합니다
-        const t2 = document.getElementById("nmT");
-        if (!t2.value.trim()) t2.value = todayTitle(new Date(day + "T00:00:00"));
-      }
+      open(null, day);            // 날짜를 안고 열면 제목도 그날로 찍힙니다
       const u = new URL(location.href);
       u.searchParams.delete("new");
       history.replaceState(null, "", u.pathname + (u.search || ""));
@@ -2143,7 +2220,7 @@ export async function initNotes(mountId = "notesapp") {
     if (!want) return;
     const r = rows.find((x) => String(x.id) === want);
     if (r) {
-      detail(r);
+      openRow(r);
       // 주소는 정리해 둡니다 — 새로고침할 때마다 다시 열리면 성가십니다
       const u = new URL(location.href);
       u.searchParams.delete("id");

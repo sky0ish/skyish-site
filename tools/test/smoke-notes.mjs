@@ -14,8 +14,13 @@ const listeners = new Map();          // id|event → [fn]
 const alerts = [], confirms = [];
 
 function makeEl(id) {
+  /* value 와 innerHTML 은 그냥 칸이 아니라 <select> 시늉까지 냅니다.
+     option 을 채워 둔 자리에 없는 값을 넣으면, 진짜 브라우저처럼 빈 값이 됩니다
+     (selectedIndex = -1). 사람들 글을 열면 갈래가 ETC 로 갈리던 일이
+     바로 이 때문이었습니다. */
+  let _val = "", _html = "", _opts = null;
   const el = {
-    id, value: "", textContent: "", innerHTML: "", hidden: false, disabled: false,
+    id, textContent: "", hidden: false, disabled: false,
     dataset: {}, files: [], style: {},
     classList: { _s: new Set(),
       add(c) { this._s.add(c); }, remove(c) { this._s.delete(c); },
@@ -30,8 +35,25 @@ function makeEl(id) {
     querySelectorAll(sel) {
       // 목록 줄과 지우기 단추는 innerHTML 로 그려지므로, 그 시늉을 냅니다
       if (id === "nList" && /nrow__open|nrow__del/.test(sel)) {
-        const b = makeEl(sel.replace(".", "") + "-r1");
-        b.dataset.id = "r1";
+        // 담긴 글마다 한 줄씩 — 같은 id 면 같은 단추를 돌려줍니다
+        return (globalThis.__rows || []).map((r) => {
+          const b = byId(sel.replace(".", "") + "-" + r.id);
+          b.dataset.id = r.id;
+          return b;
+        });
+      }
+      // 갈래 고르개 — Diary 를 눌러 놓은 상태를 만들 수 있게
+      if (id === "nTabs" && sel === "button") {
+        return ["all", "schedule", "diary"].map((k) => {
+          const b = byId("ntab-" + k);
+          b.dataset.k = k;
+          return b;
+        });
+      }
+      // 달력의 날짜 숫자 — 누르면 그날 일기를 씁니다
+      if (id === "nCalBox" && /data-new/.test(sel)) {
+        const b = makeEl("cday-20260826");
+        b.dataset.new = "2026-08-26";
         return [b];
       }
       return [];
@@ -41,6 +63,25 @@ function makeEl(id) {
     appendChild() {}, remove() {}, focus() {}, click() {},
     setSelectionRange() {}, select() {}, blur() {},
   };
+  Object.defineProperty(el, "innerHTML", {
+    get() { return _html; },
+    set(h) {
+      _html = String(h == null ? "" : h);
+      const got = [];
+      const re = /<option[^>]*\svalue="([^"]*)"/g;
+      let m;
+      while ((m = re.exec(_html))) got.push(m[1]);
+      if (got.length || /<option/.test(_html)) _opts = got;
+      if (_opts && _opts.length && _opts.indexOf(_val) < 0) _val = _opts[0];
+    },
+  });
+  Object.defineProperty(el, "value", {
+    get() { return _val; },
+    set(v) {
+      const t = v == null ? "" : String(v);
+      _val = (_opts && _opts.length && _opts.indexOf(t) < 0) ? "" : t;
+    },
+  });
   return el;
 }
 
@@ -61,7 +102,8 @@ globalThis.document = {
   querySelectorAll: () => [],
   body: makeEl("body"),
 };
-globalThis.location = { search: "", replace() {} };
+globalThis.location = { search: "", pathname: "/blog.html", replace() {} };
+globalThis.history = { replaceState() {} };
 globalThis.alert = (m) => alerts.push(String(m));
 globalThis.confirm = (m) => { confirms.push(String(m)); return true; };
 globalThis.URL = { createObjectURL: () => "blob:x", revokeObjectURL() {} };
@@ -76,6 +118,12 @@ globalThis.__rows = [{
   body: "시각: 14:00", event_date: "2026-08-28", event_time: "14:00",
   place: "대전철도청", contact: "박진우", people: "이상대 (용인시정연구원)",
   event: "2026 한국지방자치학회 하계국제학술대회", tag: "토론", files: [],
+}, {
+  /* 사람들 글 — 손으로는 새로 못 쓰는 갈래입니다.
+     이 글을 열어 저장해도 갈래가 딴 데로 가면 안 됩니다. */
+  id: "p1", category: "people", title: "이석준 이천시청 군협력담당관",
+  body: "[이석준] 이천시청 군협력담당관", event_date: null, people: "이석준",
+  files: [],
 }];
 const sbStub = `export const sb = {
   from: () => { const q = {
@@ -125,7 +173,7 @@ const M = await load("assets/js/notes.js");
 await M.initNotes("notesapp");
 
 const fire = async (id, ev, arg) => {
-  const fns = listeners.get(id + "|" + ev) || [];
+  const fns = [...(listeners.get(id + "|" + ev) || [])];   // 도는 사이에 늘어도 끝나게
   if (!fns.length) throw new Error(`${id} 의 ${ev} 를 아무도 듣고 있지 않습니다`);
   for (const fn of fns) await fn(arg || { target: byId(id), currentTarget: byId(id), preventDefault() {} });
 };
@@ -186,15 +234,14 @@ await check("엑셀 받기 단추가 살아 있다", () => fire("nXls", "click")
 await check("달력 단추가 살아 있다", () => fire("nCal", "click"));
 
 // ── 목록 → 자세히 보기 → 고치기 → 제목 누르기 ──
-await check("목록의 줄을 누르면 자세히 보기가 열린다", async () => {
+await check("목록의 줄을 누르면 본문이 바로 열린다", async () => {
   await fire("nrow__open-r1", "click");
-  if (!byId("nDetail").classList.contains("on")) throw new Error("안 열렸습니다");
-});
-
-await check("고치기를 누르면 글쓰기 창이 열린다", async () => {
-  await fire("ndEdit", "click");
-  if (!byId("nModal").classList.contains("on")) throw new Error("글쓰기 창이 안 열렸습니다");
-  if (byId("nDetail").classList.contains("on")) throw new Error("자세히 보기가 위에 남았습니다");
+  if (!byId("nModal").classList.contains("on"))
+    throw new Error("글 고치기 창이 안 열렸습니다 (자세히 보기에서 한 번 더 눌러야 합니까?)");
+  if (byId("nDetail").classList.contains("on"))
+    throw new Error("자세히 보기가 위에 남았습니다");
+  if (byId("nmTitle").textContent !== "글 고치기")
+    throw new Error("새 글 창이 열렸습니다 — " + byId("nmTitle").textContent);
 });
 
 await check("글쓰기 창은 어디를 눌러도 사라지지 않는다", async () => {
@@ -207,13 +254,14 @@ await check("글쓰기 창은 어디를 눌러도 사라지지 않는다", async
   }
 });
 
-await check("자세히 보기를 여러 번 열어도 듣는 이가 쌓이지 않는다", async () => {
+await check("글을 여러 번 열어도 창이 멀쩡하다", async () => {
   await fire("nmCancel", "click");
-  for (let i = 0; i < 5; i++) await fire("nrow__open-r1", "click");
-  const stacked = (listeners.get("nDetail|click") || []).length;
-  if (stacked) throw new Error("addEventListener 로 " + stacked + "개가 쌓였습니다");
-  if (typeof byId("nDetail").onclick !== "function")
-    throw new Error("바깥 누르면 닫기가 아예 없습니다");
+  for (let i = 0; i < 5; i++) {
+    await fire("nrow__open-r1", "click");
+    await fire("nmCancel", "click");
+  }
+  await fire("nrow__open-r1", "click");
+  if (!byId("nModal").classList.contains("on")) throw new Error("안 열렸습니다");
 });
 
 await check("창 위 저장 단추가 아래 저장을 부른다", async () => {
@@ -226,6 +274,83 @@ await check("창 위 저장 단추가 아래 저장을 부른다", async () => {
 
 await check("창 위 취소·지우기 단추가 살아 있다", () => {
   if (!byId("nmXTop") || !byId("nmDelTop")) throw new Error("단추가 없습니다");
+});
+
+// ── 달력에서 그날 일기 쓰기 ──
+await check("달력 날짜를 누르면 그날 일기 창이 열린다", async () => {
+  await fire("ntab-diary", "click");                 // Diary 갈래를 보고 있을 때
+  await fire("nCal", "click");                       // 달력을 펴 놓습니다
+  await fire("cday-20260826", "click");
+  if (byId("nmD").value !== "2026.08.26")
+    throw new Error("날짜 칸이 " + byId("nmD").value);
+  if (byId("nmCat").value !== "diary")
+    throw new Error("갈래가 " + byId("nmCat").value);
+  if (byId("nmT").value !== "2026.08.26 (수)")
+    throw new Error("제목이 " + byId("nmT").value + " (오늘로 찍혔습니다)");
+});
+
+await check("그냥 글쓰기는 오늘로 열린다", async () => {
+  await fire("nmCancel", "click");
+  await fire("nNew", "click");
+  byId("nmCat").value = "diary";
+  await fire("nmCat", "change");
+  const t = new Date();
+  const p2 = (n) => String(n).padStart(2, "0");
+  const want = t.getFullYear() + "." + p2(t.getMonth() + 1) + "." + p2(t.getDate());
+  if (!byId("nmT").value.startsWith(want))
+    throw new Error("제목이 " + byId("nmT").value + " · 오늘은 " + want);
+  if (byId("nmD").value !== want)
+    throw new Error("날짜 칸이 " + byId("nmD").value);
+});
+
+// ── (사람) 메모 → 사람들 게시판 ──
+await check("(사람) 메모가 사람들 글로 쌓인다", async () => {
+  const NL2 = String.fromCharCode(10);
+  await fire("nmCancel", "click");
+  await fire("nNew", "click");
+  byId("nmCat").value = "schedule";
+  await fire("nmCat", "change");
+  byId("nmT").value = "[자문회의] 이천시청_청미천 드론훈련장";
+  byId("nmB").value = "(사람) 이석준 이천시청 군협력담당관" + NL2 +
+                      "넘 감사드립니다. 참 따뜻한 분이시다.";
+  byId("nmD").value = "2026.08.25";
+  byId("nmE").value = "이천 드론교육원 자문회의";
+  byId("nmP").value = "청미천 드론훈련장";
+  byId("nmW").value = "이석준, 강한구";
+  byId("nmTm").value = ""; byId("nmC").value = "";
+  byId("nmMsg").textContent = "";
+  calls.length = 0;
+  await fire("nmSave", "click");
+  /* 그 사람의 글이 이미 있으면 이어 붙이고(update), 없으면 새로 만듭니다(insert) */
+  const put = calls.filter((c) =>
+    (c[0] === "insert" && c[1].category === "people") ||
+    (c[0] === "update" && /^\[이석준\]/.test(String(c[1].body || "")))).pop();
+  if (!put) throw new Error("사람들 글을 안 만들었습니다");
+  const b = String(put[1].body || "");
+  if (!b.startsWith("[이석준] "))
+    throw new Error("첫 줄이 「" + b.split(NL2)[0] + "」");
+  const src = "2026.08.25_이천 드론교육원 자문회의_이석준, 강한구_청미천 드론훈련장";
+  if (b.indexOf(src) < 0) throw new Error("출처 줄이 없습니다: " + JSON.stringify(b));
+  if (b.indexOf("따뜻한 분이시다") < 0) throw new Error("느낌이 안 담겼습니다");
+  if (b.split(NL2)[1] !== "") throw new Error("첫 줄 뒤에 빈 줄이 없습니다");
+});
+
+// ── 사람들 글은 갈래가 흔들리지 않아야 합니다 ──
+await check("사람들 글을 열어도 갈래가 ETC 로 갈리지 않는다", async () => {
+  await fire("nmCancel", "click");
+  await fire("nrow__open-p1", "click");
+  if (byId("nmCat").value !== "people")
+    throw new Error("갈래가 「" + byId("nmCat").value + "」 로 열렸습니다");
+});
+
+await check("사람들 글을 저장해도 사람들에 남는다", async () => {
+  calls.length = 0;
+  byId("nmMsg").textContent = "";
+  await fire("nmSave", "click");
+  const put = calls.filter((c) => c[0] === "update").pop();
+  if (!put) throw new Error("저장을 안 했습니다 — " + byId("nmMsg").textContent);
+  if (put[1].category !== "people")
+    throw new Error("갈래가 「" + put[1].category + "」 로 저장됐습니다");
 });
 
 console.log("─".repeat(60));

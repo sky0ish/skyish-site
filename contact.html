@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202609051700">
+  <link rel="stylesheet" href="assets/css/style.css?v=202608311930">
 </head>
 <body>
   <div id="site-header"></div>
@@ -27,9 +27,10 @@
         <h1 class="section-title" style="margin:.5rem 0 .8rem">Contact me</h1>
         <p class="lead" style="margin-bottom:1.6rem">Drop me a line — questions, ideas or just a hello. I like chatting and sharing.</p>
 
-        <!-- 세 갈래 — 주소록·Sites 는 관리자에게만 보입니다.
+        <!-- 네 갈래 — 주소록·Sites 는 관리자에게만, 활동기관은 누구나.
              격자 밖에 두어야 갈래를 옮겨도 단추가 남습니다. -->
         <nav class="ctabs" id="cTabs" aria-label="Contact 갈래">
+          <button type="button" data-p="orgs">활동기관</button>
           <button type="button" data-p="addr" hidden>주소록</button>
           <button type="button" data-p="sites" hidden>Sites</button>
           <button type="button" data-p="tome" class="on">To Me</button>
@@ -79,6 +80,20 @@
       </div>
     </section>
 
+    <!-- 활동기관 — 누구나 봅니다. 배너를 누르면 그 기관 홈페이지로 갑니다. -->
+    <section class="section cpane" id="orgsec" style="padding-top:0;margin-top:-1rem" hidden>
+      <div class="container container--wide">
+        <div class="section-head">
+          <span class="eyebrow">Affiliations</span>
+          <h2 class="section-title">활동기관</h2>
+          <p class="lead" style="margin-top:.8rem">
+            몸담고 있는 곳들입니다. 배너를 누르면 그 기관 홈페이지가 새 창으로 열립니다.
+          </p>
+        </div>
+        <div id="orgsapp"></div>
+      </div>
+    </section>
+
     <!-- 주소록 — 관리자에게만.
          내 컴퓨터의 엑셀을 브라우저가 직접 읽습니다. 서버로는 아무것도 안 갑니다. -->
     <section class="section cpane" id="addrsec" style="padding-top:0;margin-top:-1rem" hidden>
@@ -111,9 +126,9 @@
   </main>
 
   <div id="site-footer"></div>
-  <script src="assets/js/main.js?v=202609051700" defer></script>
+  <script src="assets/js/main.js?v=202608311930" defer></script>
   <script type="module">
-    import { initContactTabs } from "./assets/js/contact-tabs.js?v=202609051700";
+    import { initContactTabs } from "./assets/js/contact-tabs.js?v=202608311930";
     initContactTabs();
   </script>
 </body>

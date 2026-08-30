@@ -1,12 +1,14 @@
-// ─── Contact 의 세 갈래 ─────────────────────────────────────
+// ─── Contact 의 네 갈래 ─────────────────────────────────────
 //
 //   To Me    문의 보내기 — 누구나
+//   활동기관  몸담고 있는 곳 — 누구나
 //   주소록    내 컴퓨터의 명함첩·동문 명부 — 관리자만
 //   Sites    자주 드나드는 곳 — 관리자만
 //
 // 관리자가 아니면 뒤의 두 갈래는 단추째 사라집니다.
-import { initAddr } from "./addressbook.js?v=202609051700";
-import { initSites } from "./sites.js?v=202609051700";
+import { initAddr } from "./addressbook.js?v=202608311930";
+import { initSites } from "./sites.js?v=202608311930";
+import { initOrgs } from "./orgs.js?v=202608311930";
 
 export async function initContactTabs() {
   const tabs = document.getElementById("cTabs");
@@ -14,6 +16,7 @@ export async function initContactTabs() {
 
   const panes = {
     tome:  document.querySelector(".contact-grid"),
+    orgs:  document.getElementById("orgsec"),
     addr:  document.getElementById("addrsec"),
     sites: document.getElementById("sitesec"),
   };
@@ -35,6 +38,9 @@ export async function initContactTabs() {
   tabs.querySelectorAll("button").forEach((b) =>
     b.addEventListener("click", () => show(b.dataset.p)));
 
+  /* 활동기관은 누구나 봅니다 — 바깥을 부르지 않으므로 곧바로 그립니다 */
+  const okOrgs = initOrgs();
+
   /* 주소록·Sites 는 관리자에게만 열립니다.
      각 모듈이 스스로 판단해 아니면 자기 자리를 지웁니다. */
   const [okAddr, okSites] = await Promise.all([
@@ -43,6 +49,7 @@ export async function initContactTabs() {
   ]);
 
   const btn = (k) => tabs.querySelector(`button[data-p="${k}"]`);
+  if (!okOrgs) { const b = btn("orgs"); if (b) b.remove(); }
   if (okAddr)  btn("addr").hidden = false;  else btn("addr").remove();
   if (okSites) btn("sites").hidden = false; else btn("sites").remove();
 

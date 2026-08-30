@@ -29,8 +29,11 @@ const edge = (p, q) => g.edges.find((e) =>
 
 ok("사람 점이 있다", !!by("who", "이소라") && !!by("who", "김철수"));
 ok("기관 점이 있다", !!by("org", "국토연구원") && !!by("org", "경기연구원"));
-ok("주제 점이 있다", !!by("topic", "도시재생"),
+ok("행사 주제 점이 있다", !!by("topic", "토론회"),
    "주제: " + g.nodes.filter((n) => n.type === "topic").map((n) => n.label).join(", "));
+ok("연구 주제 점이 있다", !!by("theme", "도시재생"),
+   "연구 주제: " + g.nodes.filter((n) => n.type === "theme").map((n) => n.label).join(", "));
+ok("연구 주제로 잡힌 말은 행사 주제에서 뺀다", !by("topic", "도시재생"));
 ok("기관과 겹치는 주제는 뺀다", !by("topic", "국토연구원"));
 
 const 이 = by("who", "이소라"), 김 = by("who", "김철수"), 박 = by("who", "박진우");
@@ -38,12 +41,36 @@ ok("함께 두 번 만난 사이는 무게 2", edge(이, 김) && edge(이, 김).
    edge(이, 김) && "무게 " + edge(이, 김).w);
 ok("한 번 만난 사이는 무게 1", edge(박, 이) && edge(박, 이).w === 1);
 ok("사람─기관 선", !!edge(이, by("org", "국토연구원")));
-ok("사람─주제 선 (도시재생 자리에 두 번)",
-   edge(김, by("topic", "도시재생")) && edge(김, by("topic", "도시재생")).w === 2);
+ok("사람─연구 주제 선 (도시재생 자리에 두 번)",
+   edge(김, by("theme", "도시재생")) && edge(김, by("theme", "도시재생")).w === 2);
+ok("기관─연구 주제 선", !!edge(by("org", "국토연구원"), by("theme", "도시재생")));
 ok("만난 사람 없는 글은 흔적이 없다", g.nodes.every((n) => n.label !== "혼자"));
 ok("점 크기가 잦기를 따른다", by("who", "이소라").size > by("who", "최영희").size);
 ok("모든 선이 살아 있는 점을 가리킨다",
    g.edges.every((e) => g.nodes[e.a] && g.nodes[e.b]));
+
+console.log("[연구 주제 — 본문에 적어도 잡힙니다]");
+{
+  const gb = buildGraph([
+    { id: "x", event_date: "2026-08-25", title: "이천 방문",
+      body: "청미천에서 드론을 띄워 보았다. 빈집 정비 이야기도 나왔다.",
+      people: "이석준 (이천시청), 강한구" },
+    { id: "y", event_date: "2026-08-26", title: "회의",
+      body: "K-컬처 거점 조성과 방위산업 클러스터를 함께 논의.",
+      people: "이석준 (이천시청)" },
+  ]);
+  const t = (l) => gb.nodes.find((n) => n.type === "theme" && n.label === l);
+  ok("본문의 「드론」을 찾는다", !!t("드론"));
+  ok("본문의 「빈집」을 찾는다", !!t("빈집"));
+  ok("「K-컬처」를 K컬처로 모은다", !!t("K컬처"));
+  ok("「방위산업」을 방산으로 모은다", !!t("방산"));
+  ok("두 번 나온 사람과 주제가 이어진다",
+     !!gb.edges.find((e) => {
+       const a = gb.nodes[e.a], b = gb.nodes[e.b];
+       return (a.label === "이석준" && b.label === "드론") ||
+              (b.label === "이석준" && a.label === "드론");
+     }));
+}
 
 console.log("[동경대 동문]");
 {
