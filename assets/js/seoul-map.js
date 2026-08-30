@@ -173,6 +173,8 @@ const SHELL = `
           <span class="lytitle">레이어 선택</span>
           <span class="lyboxes" id="lyBoxes"></span>
           <button type="button" class="lyall" id="lyAll">전체 켜기 / 끄기</button>
+          <span class="lytitle lybase">맛집지도</span>
+          <span class="lyboxes" id="lyFood"></span>
           <span class="lytitle lybase">바탕지도 선택</span>
           <select class="lysel" id="lyBase"></select>
         </div>
@@ -364,6 +366,73 @@ export async function initMap(mountId = "mapapp") {
     });
     draw();
   });
+
+  /* ── 맛집지도 레이어 ────────────────────────────────────────
+     구글 마이맵에서 내보낸 KMZ 를 옮겨 담은 것입니다.
+     한식·양식·중식·일식·까페·BAR·셔핑·태국&기타 여덟 갈래를
+     하나씩 켜고 끌 수 있습니다. */
+  const foodBox = document.getElementById("lyFood");
+  let foodData = null, foodOn = {}, foodLayers = {};
+
+  async function foodLoad() {
+    if (foodData) return foodData;
+    const r = await fetch("assets/data/seoul-food.json", { cache: "force-cache" });
+    if (!r.ok) throw new Error("맛집 자료를 받지 못했습니다");
+    foodData = await r.json();
+    return foodData;
+  }
+
+  function foodDraw(L2) {
+    if (foodLayers[L2.key]) return foodLayers[L2.key];
+    const g = L.layerGroup();
+    L2.places.forEach((p) => {
+      L.marker([p.lat, p.lng], {
+        icon: L.divIcon({
+          className: "",
+          html: '<div class="cmark foodmark"><i style="background:' + L2.color + '"></i>' +
+                "<b>" + esc(p.n) + "</b></div>",
+          iconSize: [0, 0], iconAnchor: [0, 0],
+        }),
+      }).bindPopup(
+        '<div class="fpop"><b>' + esc(p.n) + "</b>" +
+        '<span class="fpcat" style="color:' + L2.color + '">' + esc(L2.name) + "</span>" +
+        (p.d ? "<p>" + esc(p.d) + "</p>" : "") +
+        '<a href="https://map.naver.com/p/search/' + encodeURIComponent(p.n) +
+        '" target="_blank" rel="noopener">네이버 지도에서 보기 →</a></div>').addTo(g);
+    });
+    foodLayers[L2.key] = g;
+    return g;
+  }
+
+  async function foodInit() {
+    let d;
+    try { d = await foodLoad(); }
+    catch (e) { foodBox.innerHTML = '<span class="lyerr">맛집 자료 없음</span>'; return; }
+
+    foodBox.innerHTML = d.layers.map((L2) =>
+      '<label class="ly off"><input type="checkbox" data-food="' + esc(L2.key) + '">' +
+      '<span class="lydot"><i style="background:' + L2.color + '"></i></span>' +
+      esc(L2.name) + '<em class="lyn">' + L2.places.length + "</em></label>").join("") +
+      '<button type="button" class="lyall lyfoodall" id="lyFoodAll">맛집 전체 켜기 / 끄기</button>';
+
+    foodBox.querySelectorAll("input[data-food]").forEach((c) =>
+      c.addEventListener("change", () => {
+        const L2 = d.layers.find((x) => x.key === c.dataset.food);
+        const g = foodDraw(L2);
+        foodOn[L2.key] = c.checked;
+        c.closest(".ly").classList.toggle("off", !c.checked);
+        if (c.checked) g.addTo(map); else map.removeLayer(g);
+      }));
+
+    document.getElementById("lyFoodAll").addEventListener("click", () => {
+      const anyOff = d.layers.some((L2) => !foodOn[L2.key]);
+      foodBox.querySelectorAll("input[data-food]").forEach((c) => {
+        c.checked = anyOff;
+        c.dispatchEvent(new Event("change"));
+      });
+    });
+  }
+  foodInit();
 
   /* ── 철도역 레이어 ────────────────────────────────────────
      assets/data/seoul-rail.json 의 역들을 초록 점으로 깝니다.

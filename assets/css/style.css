@@ -2319,12 +2319,15 @@ button.cev--g:hover { filter:brightness(.94);
   margin: -.4rem 0 1.6rem;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
-  height: clamp(200px, 30vw, 380px);
+  /* 높이를 못 박으면 위아래가 잘립니다. 원본 비율(3:2)을 그대로 두어
+     얼굴부터 책까지 다 보이게 하고, 화면을 다 먹지 않게 높이만 막습니다. */
+  aspect-ratio: 3 / 2;
+  max-height: 60vh;
 }
 .ndiary img {
   width: 100%; height: 100%;
   object-fit: cover;
-  object-position: center 32%;   /* 얼굴과 책이 가운데 오도록 */
+  object-position: center 58%;   /* 높이가 막혔을 때 아래쪽(책)이 남도록 */
   display: block;
 }
 /* 아래쪽 · 옆쪽을 바탕빛으로 부드럽게 지웁니다 */
@@ -2333,9 +2336,9 @@ button.cev--g:hover { filter:brightness(.94);
   background:
     linear-gradient(to bottom,
       rgba(246,244,241,0)    0%,
-      rgba(246,244,241,0)   42%,
-      rgba(246,244,241,.45) 66%,
-      rgba(246,244,241,.85) 86%,
+      rgba(246,244,241,0)   68%,
+      rgba(246,244,241,.28) 80%,
+      rgba(246,244,241,.70) 91%,
       var(--paper)         100%),
     linear-gradient(to right,
       rgba(246,244,241,.55) 0%,
@@ -2345,7 +2348,7 @@ button.cev--g:hover { filter:brightness(.94);
 }
 /* 그림 위에 얹는 글귀 */
 .ndiary__word {
-  position: absolute; left: 0; right: 0; bottom: 14%;
+  position: absolute; left: 0; right: 0; bottom: 4%;
   text-align: center; z-index: 2;
   font-family: var(--font-display, inherit);
   font-size: clamp(1.1rem, 2.6vw, 1.9rem);
@@ -2359,8 +2362,8 @@ button.cev--g:hover { filter:brightness(.94);
   color: #8a7a6c; font-weight: 400;
 }
 @media (max-width: 680px) {
-  .ndiary { height: clamp(160px, 46vw, 240px); }
-  .ndiary__word { bottom: 10%; }
+  .ndiary { max-height: 46vh; }
+  .ndiary__word { bottom: 3%; }
 }
 
 /* ── 주소록 ────────────────────────────────────────────────

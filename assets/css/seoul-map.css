@@ -385,3 +385,33 @@
   text-shadow:0 1px 1px rgba(0,0,0,.3);}
 .railmark{opacity:.92;}
 .railmark:hover{opacity:1;z-index:500;}
+
+/* ── 지도를 크게, 곁상자는 오른쪽 끝으로 ────────────────────
+   레이어 선택이 지도와 장소목록 사이에 끼어 있으면 눈이 두 번 옮겨갑니다.
+   맨 오른쪽으로 몰아 두면 「지도 — 목록 — 조작」 순서로 읽힙니다. */
+.maprow { height: clamp(460px, 74vh, 900px); }
+.maprow.tall .mapbox { height: clamp(460px, 74vh, 900px); }
+.mapside { flex-direction: row-reverse; }
+
+/* 맛집지도 레이어 */
+.lyn { margin-left: auto; font-style: normal; font-size: 9px; color: #b3ac99;
+  font-weight: 600; padding-left: 4px; }
+.ly { display: flex; align-items: center; }
+.lyfoodall { margin-top: 3px; }
+.lyerr { font-size: 10px; color: #b3543b; padding: 4px 0; }
+/* 맛집 표시는 작고 촘촘하게 — 142곳이 겹치므로 */
+.foodmark i { width: 9px; height: 9px; }
+.foodmark b { font-size: 10px; max-width: 8em; }
+/* 맛집 풍선 */
+.fpop b { display: block; font-size: .95rem; color: var(--ink, #1c1a19); }
+.fpop .fpcat { display: inline-block; margin-top: 3px; font-size: .74rem; font-weight: 700; }
+.fpop p { margin: .5rem 0 0; font-size: .82rem; line-height: 1.6; color: #4a463a; }
+.fpop a { display: inline-block; margin-top: .6rem; font-size: .8rem;
+  color: var(--teal-text, #2f6a62); font-weight: 600; }
+
+@media (max-width: 1100px) {
+  .mapside { flex-direction: column; width: 100%; }
+  .maprow { flex-direction: column; height: auto; }
+  .mapbox { height: clamp(360px, 56vh, 560px); }
+  .layers { width: 100%; }
+}
