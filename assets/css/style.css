@@ -2310,3 +2310,78 @@ button.cev--g:hover { filter:brightness(.94);
 
 /* 글쓰기 칸의 2단 배치 (연락처 · 만난 사람) */
 .nfrow--2 { grid-template-columns: repeat(2, 1fr); }
+
+/* ── Diary 머리그림 ──────────────────────────────────────────
+   Diary 갈래를 폈을 때만 나옵니다.
+   아래로 갈수록 바탕빛으로 스며들어, 그림과 게시판이 이어지게 합니다. */
+.ndiary {
+  position: relative;
+  margin: -.4rem 0 1.6rem;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  overflow: hidden;
+  height: clamp(200px, 30vw, 380px);
+}
+.ndiary img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 32%;   /* 얼굴과 책이 가운데 오도록 */
+  display: block;
+}
+/* 아래쪽 · 옆쪽을 바탕빛으로 부드럽게 지웁니다 */
+.ndiary::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to bottom,
+      rgba(246,244,241,0)    0%,
+      rgba(246,244,241,0)   42%,
+      rgba(246,244,241,.45) 66%,
+      rgba(246,244,241,.85) 86%,
+      var(--paper)         100%),
+    linear-gradient(to right,
+      rgba(246,244,241,.55) 0%,
+      rgba(246,244,241,0)  22%,
+      rgba(246,244,241,0)  78%,
+      rgba(246,244,241,.45) 100%);
+}
+/* 그림 위에 얹는 글귀 */
+.ndiary__word {
+  position: absolute; left: 0; right: 0; bottom: 14%;
+  text-align: center; z-index: 2;
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.1rem, 2.6vw, 1.9rem);
+  letter-spacing: .06em;
+  color: #6b5a4e;
+  text-shadow: 0 1px 10px rgba(255,255,255,.75);
+}
+.ndiary__word small {
+  display: block; margin-top: .45rem;
+  font-family: inherit; font-size: .68em; letter-spacing: .12em;
+  color: #8a7a6c; font-weight: 400;
+}
+@media (max-width: 680px) {
+  .ndiary { height: clamp(160px, 46vw, 240px); }
+  .ndiary__word { bottom: 10%; }
+}
+
+/* ── 주소록 ────────────────────────────────────────────────
+   자료는 내 컴퓨터에만 있습니다. 이 화면은 그리기만 합니다. */
+.abar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 1rem; }
+.afiles { cursor: pointer; display: inline-flex; align-items: center; }
+.ahint { font-size: .78rem; color: var(--mauve); line-height: 1.6; flex: 1; min-width: 200px; }
+.asel { padding: .5em 1em; font-family: inherit; cursor: pointer; }
+.asub { margin-top: 2px; font-size: .72rem; color: var(--mauve);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 22ch; }
+#abTbl tbody tr { cursor: pointer; }
+#abTbl tbody tr:hover { background: #faf8f5; }
+.amore { text-align: center; margin: 1rem 0 0; }
+/* 자세히 보기 안의 항목 줄 */
+.alist { margin: .4rem 0 0; }
+.arow { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line);
+  font-size: .88rem; align-items: flex-start; }
+.arow b { flex: none; width: 88px; color: var(--mauve); font-weight: 600; font-size: .8rem; }
+.arow span { flex: 1; color: var(--ink); word-break: break-all; }
+.ndet__box h3 small { font-size: .7em; color: var(--mauve); font-weight: 400; }
+@media (max-width: 680px) {
+  .arow b { width: 70px; }
+  .asub { max-width: 14ch; }
+}

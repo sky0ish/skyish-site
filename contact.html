@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202608310030">
+  <link rel="stylesheet" href="assets/css/style.css?v=202608310200">
 </head>
 <body>
   <div id="site-header"></div>
@@ -71,9 +71,29 @@
         </div>
       </div>
     </section>
+
+    <!-- 주소록 — 관리자에게만 보입니다.
+         내 컴퓨터의 엑셀을 브라우저가 직접 읽습니다. 서버로는 아무것도 안 갑니다. -->
+    <section class="section" id="addrsec" style="padding-top:0" hidden>
+      <div class="container container--wide">
+        <div class="section-head">
+          <span class="eyebrow">Private</span>
+          <h2 class="section-title">주소록</h2>
+          <p class="lead" style="margin-top:.8rem">
+            명함첩과 동문 명부를 한자리에서 찾습니다.
+            자료는 <b>내 컴퓨터에만</b> 있고, 이 화면에 그려질 뿐 어디로도 올라가지 않습니다.
+          </p>
+        </div>
+        <div id="addrapp"></div>
+      </div>
+    </section>
   </main>
 
   <div id="site-footer"></div>
-  <script src="assets/js/main.js?v=202608310030" defer></script>
+  <script src="assets/js/main.js?v=202608310200" defer></script>
+  <script type="module">
+    import { initAddr } from "./assets/js/addressbook.js?v=202608310200";
+    initAddr();
+  </script>
 </body>
 </html>

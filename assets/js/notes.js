@@ -3,11 +3,12 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608302330";
-import * as GC from "./gcal.js?v=202608302330";
+import * as NF from "./notes-files.js?v=202608310200";
+import * as GC from "./gcal.js?v=202608310200";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
+  ["diary",    "Diary",    "#c98a3f"],
   ["contacts", "연락망",   "#2a5fa8"],
   ["people",   "사람들",   "#8a6bb0"],
   ["minutes",  "회의록",   "#b3543b"],
@@ -18,7 +19,6 @@ export const CATS = [
 /** 일반회원에게 열어 주는 갈래 — 「일상」만 봅니다 */
 export const MEMBER_CATS = ["daily"];
 export const CAT_NAME  = Object.fromEntries(CATS.map(([k, v]) => [k, v]));
-CAT_NAME.diary = "Schedule";           // 예전 Diary 글도 Schedule 로 보입니다
 
 /** 주인 이메일 — 회원 정보 줄이 없어도 관리자로 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -31,12 +31,11 @@ export const TAGS = {
   schedule: ["발표", "토론", "자문회의", "자문참석", "위원회", "세미나참석", "GRI행사", "ETC"],
   minutes:  ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "일상", "ETC"],
 };
-TAGS.diary = TAGS.schedule;          // 예전 Diary 글도 Schedule 로 다룹니다
+// Diary 는 말머리를 쓰지 않습니다 — 일정이 아니라 그날 그날의 글이라서
 
 /** 그 갈래에서 쓸 수 있는 말머리 */
 export const tagsFor = (cat) => TAGS[cat] || [];
 export const CAT_COLOR = Object.fromEntries(CATS.map(([k, , c]) => [k, c]));
-CAT_COLOR.diary = CAT_COLOR.schedule;
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -251,6 +250,12 @@ export async function initNotes(mountId = "notesapp") {
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
+    /* Diary 를 폈을 때만 보이는 머리그림 */
+    '<figure class="ndiary" id="nDiaryBg" hidden>' +
+      '<img src="assets/img/diary-bg.jpg" alt="" loading="lazy" decoding="async">' +
+      '<figcaption class="ndiary__word">오늘의 한 쪽' +
+        "<small>DIARY</small></figcaption>" +
+    "</figure>" +
     '<div class="ngcal" id="nGcalBox" hidden></div>' +
     '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="nlist" id="nList"></div>' +
@@ -374,7 +379,7 @@ export async function initNotes(mountId = "notesapp") {
             (r.place || "") + " " + (r.people || "") + " " + (r.event || "")).toLowerCase().includes(s);
   };
   // 예전 Diary 글은 Schedule 에 함께 담습니다
-  const catOf = (r) => (r.category === "diary" ? "schedule" : r.category);
+  const catOf = (r) => r.category;   // Diary 는 이제 제 갈래로 섭니다
   const shown = () => rows.filter((r) => (cur === "all" || catOf(r) === cur)).filter(match);
 
   function draw() {
@@ -399,6 +404,10 @@ export async function initNotes(mountId = "notesapp") {
     countEl.textContent =
       `${cur === "all" ? "전체" : CAT_NAME[cur]} ${l.length}건` +
       (rows.length !== l.length ? ` · 모두 ${rows.length}건` : "");
+
+    // Diary 일 때만 머리그림을 폅니다
+    const dbg = document.getElementById("nDiaryBg");
+    if (dbg) dbg.hidden = (cur !== "diary");
 
     if (!calBox.hidden) drawCal();
 
@@ -627,7 +636,7 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nDetail").classList.remove("on");   // 위에 덮인 창을 걷습니다
     document.getElementById("nmTitle").textContent = row ? "글 고치기" : "새 글";
     document.getElementById("nmDel").hidden = !row;
-    mCat.value = row ? row.category : (cur === "all" ? "diary" : cur);
+    mCat.value = row ? row.category : (cur === "all" ? "schedule" : cur);
     document.getElementById("nmT").value = row ? row.title || "" : "";
     document.getElementById("nmB").value = row ? row.body || "" : "";
     document.getElementById("nmE").value = row ? row.event || "" : "";
@@ -1001,7 +1010,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608302330");
+    const NFD = await import("./notes-folder.js?v=202608310200");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
