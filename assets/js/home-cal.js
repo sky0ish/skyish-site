@@ -9,7 +9,8 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202608312200";
+import * as GC from "./gcal.js?v=202608312350";
+import { dropMirrors } from "./cal-merge.js?v=202608312350";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -84,13 +85,19 @@ export async function initHomeCal(id = "hocal") {
     const from = new Date(); from.setMonth(from.getMonth() - 3);
     const to = new Date(); to.setFullYear(to.getFullYear() + 1);
     const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    /* tag 와 gcal_id 도 받아 옵니다 — 구글로 넘어간 사본을 걷어 내려면
+       이 두 칸이 있어야 짝을 지을 수 있습니다.
+       gcal_id 칸이 아직 없는 자료 쪽이면 그것만 빼고 다시 받습니다. */
+    const ask = async (cols) => sb.from("notes")
+      .select(cols)
+      .in("category", ["schedule", "diary"])
+      .gte("event_date", ymd(from))
+      .lte("event_date", ymd(to))
+      .order("event_date", { ascending: true });
     try {
-      const r = await sb.from("notes")
-        .select("id,title,category,event_date")
-        .in("category", ["schedule", "diary"])
-        .gte("event_date", ymd(from))
-        .lte("event_date", ymd(to))
-        .order("event_date", { ascending: true });
+      let r = await ask("id,title,category,event_date,tag,gcal_id");
+      if (r.error) r = await ask("id,title,category,event_date,tag");
+      if (r.error) r = await ask("id,title,category,event_date");
       if (!r.error) notes = r.data || [];
     } catch (e) { /* 못 받아도 달력은 그립니다 */ }
   }
@@ -151,7 +158,9 @@ export async function initHomeCal(id = "hocal") {
         id: n.id, cat: n.category,   // 눌렀을 때 그 글로 갑니다
       });
     });
-    gEvents.forEach((e) => {
+    /* 내가 여기서 쓴 글이 구글로 넘어간 것은 걷어 냅니다 —
+       안 걷으면 한 건이 달력에 두 번 뜹니다. */
+    dropMirrors(notes, gEvents).forEach((e) => {
       (byDay[e.date] ||= []).push({ t: e.title, c: e.color || "#4285f4", g: 1, time: e.time });
     });
 

@@ -4,11 +4,12 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608312200";
-import * as GC from "./gcal.js?v=202608312200";
-import * as ST from "./notes-stats.js?v=202608312200";
-import * as NW from "./notes-network.js?v=202608312200";
-import { alumniNames } from "./addressbook.js?v=202608312200";
+import * as NF from "./notes-files.js?v=202608312350";
+import * as GC from "./gcal.js?v=202608312350";
+import { dropMirrors } from "./cal-merge.js?v=202608312350";
+import * as ST from "./notes-stats.js?v=202608312350";
+import * as NW from "./notes-network.js?v=202608312350";
+import { alumniNames } from "./addressbook.js?v=202608312350";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -487,6 +488,13 @@ export async function initNotes(mountId = "notesapp") {
   const wantCat = new URLSearchParams(location.search).get("cat");
   let rows = [], cur = isAdmin ? "all" : MEMBER_CATS[0], editing = null;
   let gEvents = [];   // 구글에서 받아 온 일정
+  /* 달력에 그릴 구글 일정 — 내가 여기서 쓴 글이 구글로 넘어간 것은 걷어 냅니다.
+     안 걷으면 글 하나가 달력에 두 번 그려집니다.
+
+     견줄 글 목록을 받습니다. 달력 칸에는 「지금 화면에 그리는 글」(shown())로
+     견줘야 합니다 — 모든 글로 견주면, 갈래를 Diary 로 좁혔을 때
+     화면에 없는 Schedule 글이 제 구글 사본을 걷어 내 그 칸이 텅 빕니다. */
+  const gShown = (list) => dropMirrors(list || rows, gEvents);
   if (wantCat && CATS.some(([k]) => k === wantCat)) cur = wantCat;
   let calAt = new Date(); calAt.setDate(1);
 
@@ -1251,7 +1259,7 @@ export async function initNotes(mountId = "notesapp") {
     const dbox = document.getElementById("nDay");
     const mine = rows.filter((r) => (r.event_date || "").slice(0, 10) === key)
       .sort((a, b) => String(a.event_time || "99:99").localeCompare(String(b.event_time || "99:99")));
-    const g = gEvents.filter((x) => x.date === key);
+    const g = gShown().filter((x) => x.date === key);
     const d = new Date(key + "T00:00:00");
 
     dbox.querySelector(".ndet__box").innerHTML =
@@ -1333,7 +1341,7 @@ export async function initNotes(mountId = "notesapp") {
     });
     // 구글에서 받아 온 일정도 같은 칸에 얹습니다
     const gByDay = {};
-    gEvents.forEach((e) => { (gByDay[e.date] ||= []).push(e); });
+    gShown(shown()).forEach((e) => { (gByDay[e.date] ||= []).push(e); });
     const todayIso = iso(new Date());
 
     let cells = "";
@@ -1395,7 +1403,7 @@ export async function initNotes(mountId = "notesapp") {
       calBox.querySelectorAll("button[data-g]").forEach((b) =>
         b.addEventListener("click", () => {
           const [day, gi] = b.dataset.g.split("|");
-          const e = (gEvents.filter((x) => x.date === day) || [])[+gi];
+          const e = (gShown(shown()).filter((x) => x.date === day) || [])[+gi];
           if (e) fromGoogle(e);
         }));
     }
@@ -1724,8 +1732,11 @@ export async function initNotes(mountId = "notesapp") {
      event · event_time · contact 는 auth/event_setup.sql 로 뒤늦게 생긴 칸입니다.
      아직 안 돌리셨으면 그 칸만 빼고 다시 넣어, 글을 통째로 잃지 않게 합니다.
      event 가 event_time 에도 들어 있으므로 긴 이름부터 봅니다. */
-  const LATE = ["event_time", "contact", "event"];
-  const LATE_NAME = { event_time: "시간", contact: "연락처", event: "행사명" };
+  const LATE = ["event_time", "contact", "event", "gcal_id"];
+  const LATE_NAME = { event_time: "시간", contact: "연락처", event: "행사명",
+                      gcal_id: "구글 일정 번호" };
+  /* 그 칸을 만들어 주는 SQL 이 서로 다릅니다 */
+  const LATE_SQL = { gcal_id: "auth/notes_gcal.sql" };
 
   async function putNote(patch, id) {
     const p = { ...patch };
@@ -1881,17 +1892,15 @@ export async function initNotes(mountId = "notesapp") {
       }
     }
     patch.files = attached.concat(up);
-    msg.textContent = "저장하는 중…";
 
-    const r = await putNote(patch, editing && editing.id);
-    if (r.error) { msg.textContent = friendly(r.error.message); return; }
-    if (r.dropped.length) {
-      alert("저장했습니다. 다만 " + r.dropped.map((c) => LATE_NAME[c]).join(" · ") +
-            " 칸이 아직 없어 그것만 빠졌습니다." + String.fromCharCode(10) +
-            "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
-    }
     /* ── 새 일정을 구글 캘린더에도 넣습니다 ──
-       고치기가 아니라 새 글일 때만 — 고칠 때마다 넣으면 겹겹이 쌓입니다. */
+       고치기가 아니라 새 글일 때만 — 고칠 때마다 넣으면 겹겹이 쌓입니다.
+
+       글을 저장하기 「전에」 넣습니다. 구글이 돌려주는 일정 번호를
+       글에 함께 담아 두려고요. 그 번호가 있으면 달력에서 내 글과
+       구글 사본을 확실히 짝지어 한 번만 그립니다.
+       (번호 없이 이름·시각으로 짐작하면, 구글에만 적어 둔 진짜 약속을
+        지워 버릴 수 있습니다.) */
     if (gcWant && patch.event_date) {
       msg.textContent = "구글 캘린더에 넣는 중…";
       try {
@@ -1899,17 +1908,28 @@ export async function initNotes(mountId = "notesapp") {
           const got = await gcLink;
           if (got instanceof Error) throw got;
         }
-        await GC.addEvent({
+        const gid = await GC.addEvent({
           date: patch.event_date,
           time: patch.event_time || "",
           title: (patch.tag ? "[" + patch.tag + "] " : "") + patch.title,
           place: patch.place || "",
         });
+        if (gid) patch.gcal_id = gid;
       } catch (err) {
-        // 구글이 막혀도 글은 이미 저장됐습니다 — 사정만 알립니다
-        alert("글은 저장됐지만 구글 캘린더에는 못 넣었습니다." +
+        // 구글이 막혀도 글은 그대로 저장합니다 — 사정만 알립니다
+        alert("구글 캘린더에는 못 넣었습니다. 글은 그대로 저장합니다." +
           String.fromCharCode(10) + (err && err.message || ""));
       }
+    }
+
+    msg.textContent = "저장하는 중…";
+    const r = await putNote(patch, editing && editing.id);
+    if (r.error) { msg.textContent = friendly(r.error.message); return; }
+    if (r.dropped.length) {
+      const sqls = [...new Set(r.dropped.map((c) => LATE_SQL[c] || "auth/event_setup.sql"))];
+      alert("저장했습니다. 다만 " + r.dropped.map((c) => LATE_NAME[c]).join(" · ") +
+            " 칸이 아직 없어 그것만 빠졌습니다." + String.fromCharCode(10) +
+            "Supabase SQL Editor 에서 " + sqls.join(" · ") + " 을 한 번 돌려 주세요.");
     }
 
     /* ── 「(사람)」 메모를 사람들 게시판에 쌓습니다 ──
@@ -2174,7 +2194,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608312200");
+    const NFD = await import("./notes-folder.js?v=202608312350");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

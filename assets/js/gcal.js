@@ -176,6 +176,8 @@ export async function month(year, mon0) {
         const day = s.date || (s.dateTime || "").slice(0, 10);
         return {
           date: day,
+          // 구글이 매긴 번호 — 내 글과 짝지어 겹침을 걷을 때 씁니다
+          gid: e.id || "",
           title: e.summary || "(제목 없음)",
           place: e.location || "",
           allDay: !!s.date,

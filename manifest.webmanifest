@@ -5,7 +5,7 @@
   "start_url": "/app.html?src=pwa",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#f6f4f1",
   "theme_color": "#4f9d92",
   "lang": "ko",
