@@ -100,7 +100,14 @@
   /* import() 에 넘길 주소.
      "auth/auth.js" 처럼 앞에 점이 없으면 브라우저가 꾸러미 이름으로 보고 거부합니다.
      첫 화면에서 머리글이 로그인중으로 안 바뀌던 것이 이 때문이었습니다. */
-  function modUrl(p) { var u = url(p); return u.charAt(0) === "." ? u : "./" + u; }
+  /* import() 는 「이 대본이 있는 곳」 을 기준으로 풉니다.
+     main.js 는 assets/js/ 에 살기 때문에 "./auth/auth.js" 라고 하면
+     assets/js/auth/auth.js 를 찾아 404 가 납니다.
+     화면(문서)을 기준으로 삼도록 통째 주소로 바꿉니다. */
+  function modUrl(p) {
+    try { return new URL(url(p), document.baseURI).href; }
+    catch (e) { var u = url(p); return u.charAt(0) === "." ? u : "./" + u; }
+  }
   function el(tag, attrs, html) {
     var n = document.createElement(tag);
     if (attrs) { for (var k in attrs) { if (attrs[k] != null) n.setAttribute(k, attrs[k]); } }

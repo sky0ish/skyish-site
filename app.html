@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My WAY">
 <link rel="icon" href="assets/img/app/icon-192.png">
-<link rel="stylesheet" href="assets/css/style.css?v=202609051500">
+<link rel="stylesheet" href="assets/css/style.css?v=202609051700">
 
 <style>
   /* 앱 화면만의 옷 — 폰에 맞춰 한 손 거리 안에 큼직하게 */
@@ -123,10 +123,10 @@
 </style>
   <!-- 달력이 쓸 것들을 미리 받아 둡니다 — 안 그러면 파일을 줄줄이 하나씩 받느라
        1초를 그냥 씁니다 (문서 → home-cal → auth → gcal → supabase 순서로 기다림) -->
-  <link rel="modulepreload" href="assets/js/home-cal.js?v=202609051500">
+  <link rel="modulepreload" href="assets/js/home-cal.js?v=202609051700">
   <link rel="modulepreload" href="auth/auth.js">
   <link rel="modulepreload" href="auth/config.js">
-  <link rel="modulepreload" href="assets/js/gcal.js?v=202609051500">
+  <link rel="modulepreload" href="assets/js/gcal.js?v=202609051700">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://qmdovjlxfvinknuizelw.supabase.co" crossorigin>
   <link rel="preconnect" href="https://accounts.google.com">
@@ -176,7 +176,7 @@
     `${t.getFullYear()}.${p(t.getMonth() + 1)}.${p(t.getDate())} (${W[t.getDay()]})`;
 
   // 구글 프로그램을 미리 데워 둡니다 — 단추를 누른 순간 창이 바로 뜨게
-  import("./assets/js/gcal.js?v=202609051500").then((m) => m.warm && m.warm()).catch(() => {});
+  import("./assets/js/gcal.js?v=202609051700").then((m) => m.warm && m.warm()).catch(() => {});
 
   // 구글 달력 잇기 — 눌러 허용하면 구글 일정이 달력에 얹히고,
   // 일정을 쓸 때 구글로도 보낼 수 있게 됩니다 (읽고 쓰기 권한).
@@ -184,7 +184,7 @@
     const b = e.currentTarget;
     b.disabled = true; b.textContent = "…";
     try {
-      const GC = await import("./assets/js/gcal.js?v=202609051500");
+      const GC = await import("./assets/js/gcal.js?v=202609051700");
       await GC.connect(true);            // 새 권한으로 다시 잇습니다
       b.textContent = "이었습니다 ✓";
       setTimeout(() => { location.href = location.pathname + "?r=" + Date.now(); }, 400);
@@ -205,7 +205,7 @@
   document.getElementById("goSched").href = "blog.html?cat=schedule&new=" + ymd + "&back=app";
 
   // 달력 — 첫 화면 것을 그대로. 관리자가 아니면 스스로 사라집니다.
-  import("./assets/js/home-cal.js?v=202609051500")
+  import("./assets/js/home-cal.js?v=202609051700")
     .then((m) => m.initHomeCal("hocal"))
     .catch(() => {});
 </script>
