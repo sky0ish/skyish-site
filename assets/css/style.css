@@ -2658,6 +2658,12 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hocal__more { display: block; margin-top: 8px; text-align: right;
   font-size: .72rem; color: #fff; opacity: .72; }
 .hocal__more:hover { opacity: 1; }
+.hocal__gc { display: block; width: 100%; margin-top: 10px; padding: 9px 12px;
+  border: 1px dashed rgba(255,255,255,.45); border-radius: 9px;
+  background: rgba(255,255,255,.10); color: #fff; font-family: inherit;
+  font-size: .76rem; cursor: pointer; transition: .15s var(--ease); }
+.hocal__gc:hover { background: rgba(255,255,255,.2); }
+.hocal__gc:disabled { opacity: .6; cursor: default; }
 
 /* 좁은 화면에서는 달력을 감춥니다 — 히어로 글이 우선입니다 */
 @media (max-width: 1280px) { .hocal { width: min(552px, 46vw); } }
