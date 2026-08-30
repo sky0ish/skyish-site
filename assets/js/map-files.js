@@ -81,6 +81,77 @@ export async function toGeoJson(file) {
   return { name: file.name.replace(/\.[^.]+$/, ""), geojson: gj, count };
 }
 
+/**
+ * 파일 하나를 「갈래별 여러 층」 으로 나눕니다.
+ *   · KML/KMZ 에 폴더(한식·양식…)가 여럿이면 폴더마다 한 층
+ *   · SHP 묶음(zip)에 도형 파일이 여럿이면 파일마다 한 층
+ *   · 나눌 것이 없으면 통째로 한 층
+ * @returns {Promise<Array<{name, geojson, count}>>}
+ */
+export async function toLayers(file) {
+  const k = kindOf(file.name);
+  const stem = file.name.replace(/\.[^.]+$/, "");
+
+  // ── KML·KMZ : 폴더마다 나눕니다 ──
+  if (k === "kml" || k === "kmz") {
+    let text;
+    if (k === "kml") text = await readText(file);
+    else {
+      const JSZip = (await import(/* @vite-ignore */ LIB.zip)).default;
+      const z = await JSZip.loadAsync(await file.arrayBuffer());
+      const entry = Object.keys(z.files).find((n) => /\.kml$/i.test(n));
+      if (!entry) throw new Error("KMZ 안에서 KML 을 찾지 못했습니다");
+      text = await z.files[entry].async("string");
+    }
+    const doc = new DOMParser().parseFromString(text, "text/xml");
+    if (doc.querySelector("parsererror")) throw new Error("KML 을 읽지 못했습니다");
+
+    const folders = [...doc.getElementsByTagName("Folder")]
+      .filter((f) => f.getElementsByTagName("Placemark").length);
+    if (folders.length >= 2) {
+      /* 폴더마다 — 문서의 스타일(색·표시)을 함께 싸서 제 몫의 KML 로 만듭니다.
+         스타일을 안 싸면 색이 다 빠집니다. */
+      const ser = new XMLSerializer();
+      const styles = [...doc.querySelectorAll("Style, StyleMap")]
+        .map((n) => ser.serializeToString(n)).join("");
+      const { kml } = await import(/* @vite-ignore */ LIB.togeo);
+      const out = [];
+      for (const f of folders) {
+        const nameEl = f.getElementsByTagName("name")[0];
+        const name = (nameEl && nameEl.textContent.trim()) || (stem + " " + (out.length + 1));
+        const one = new DOMParser().parseFromString(
+          '<kml xmlns="http://www.opengis.net/kml/2.2"><Document>' + styles +
+          ser.serializeToString(f) + "</Document></kml>", "text/xml");
+        const gj = kml(one);
+        const count = (gj.features || []).length;
+        if (count) out.push({ name, geojson: gj, count });
+      }
+      if (out.length) return out;
+    }
+    // 폴더가 없거나 하나뿐 — 통째로 한 층
+    const gj = await fromKmlText(text);
+    return [{ name: stem, geojson: gj, count: (gj.features || []).length || 1 }];
+  }
+
+  // ── SHP 묶음 : 도형 파일마다 나눕니다 ──
+  if (k === "shp") {
+    const shp = (await import(/* @vite-ignore */ LIB.shp)).default;
+    const got = await shp(await file.arrayBuffer());
+    const arr = Array.isArray(got) ? got : [got];
+    return arr
+      .filter((g) => g && (g.features || []).length)
+      .map((g, i) => ({
+        name: g.fileName || (arr.length > 1 ? stem + " " + (i + 1) : stem),
+        geojson: g,
+        count: g.features.length,
+      }));
+  }
+
+  // ── 그 밖(GeoJSON 등) : 지금처럼 한 층 ──
+  const r = await toGeoJson(file);
+  return [r];
+}
+
 /** 도형에 붙은 이름표를 찾아냅니다 */
 export function labelOf(props) {
   if (!props) return "";

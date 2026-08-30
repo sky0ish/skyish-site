@@ -576,7 +576,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609040100");
+        const G = await import("./gpkg.js?v=202609040300");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -648,28 +648,35 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609040100");
+    const MF = await import("./map-files.js?v=202609040300");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
       btn.firstChild.nodeValue = file.name + " 읽는 중…";
       try {
-        const r = await MF.toGeoJson(file);
-        const color = FCOLORS[myFiles.length % FCOLORS.length];
-        const layer = L.geoJSON(r.geojson, {
-          style: { color, weight: 2, opacity: .9, fillColor: color, fillOpacity: .18 },
-          pointToLayer: (ft, ll) => L.circleMarker(ll,
-            { radius: 5, color, weight: 2, fillColor: color, fillOpacity: .75 }),
-          onEachFeature: (ft, ly) => {
-            const t = MF.labelOf(ft.properties);
-            ly.bindPopup('<div class="fpop"><b>' + esc(t || r.name) + "</b>" +
-              MF.propTable(ft.properties) + "</div>");
-          },
-        });
-        layer.addTo(map);
-        myFiles.push({ name: r.name, layer, on: true, n: r.count, color });
+        /* 파일 「속」의 갈래(KML 폴더·SHP 묶음)를 나눠 층마다 체크박스를 답니다 */
+        const parts = await MF.toLayers(file);
+        let lastLayer = null;
+        for (const r of parts) {
+          const color = FCOLORS[myFiles.length % FCOLORS.length];
+          const layer = L.geoJSON(r.geojson, {
+            style: { color, weight: 2, opacity: .9, fillColor: color, fillOpacity: .18 },
+            pointToLayer: (ft, ll) => L.circleMarker(ll,
+              { radius: 5, color, weight: 2, fillColor: color, fillOpacity: .75 }),
+            onEachFeature: (ft, ly) => {
+              const t = MF.labelOf(ft.properties);
+              ly.bindPopup('<div class="fpop"><b>' + esc(t || r.name) + "</b>" +
+                MF.propTable(ft.properties) + "</div>");
+            },
+          });
+          layer.addTo(map);
+          myFiles.push({ name: r.name, layer, on: true, n: r.count, color });
+          lastLayer = layer;
+        }
         drawFileList();
-        try { map.fitBounds(layer.getBounds(), { padding: [40, 40] }); } catch (e) {}
+        if (lastLayer) {
+          try { map.fitBounds(lastLayer.getBounds(), { padding: [40, 40] }); } catch (e) {}
+        }
       } catch (e) {
         alert(file.name + " — " + (e && e.message ? e.message : e));
       } finally {
