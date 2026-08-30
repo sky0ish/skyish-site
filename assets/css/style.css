@@ -2595,12 +2595,29 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .scard:hover .scard__edit { opacity: 1; }
 .scard__edit:hover { color: var(--teal-text); background: #f3f7f6; }
 
-/* 주소록 찾는 칸 — 3,900명에서 고르는 자리라 넉넉하게 */
-.abbar { margin-bottom: 1.1rem; }
-.nsearch--big { flex: 1 1 420px; }
+/* 주소록 찾는 칸 — 3,900명에서 고르는 자리라 눈에 먼저 들어와야 합니다 */
+.abbar { margin-bottom: 1.3rem; align-items: center; }
+.nsearch--big { flex: 1 1 480px; }
 .nsearch--big input {
-  font-size: .95rem; padding: .85em 1.25em; border-radius: 100px;
+  font-size: 1.05rem; padding: .95em 1.1em .95em 3rem; border-radius: 100px;
+  border: 2px solid var(--teal); background: #fff;
+  box-shadow: 0 2px 14px rgba(79, 157, 146, .16);
+  /* 돋보기를 칸 안에 그려 넣습니다 — 그림 파일 없이 */
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f9d92' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.6-3.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 1.05rem center;
+  background-size: 1.15rem 1.15rem;
+  transition: .16s var(--ease);
 }
+.nsearch--big input::placeholder { color: #9a9384; }
+.nsearch--big input:focus {
+  border-color: var(--teal); box-shadow: 0 0 0 4px rgba(79, 157, 146, .17);
+}
+
+/* 아직 폴더를 안 읽었을 때의 안내 */
+.anot { flex: 1 1 100%; margin: .7rem 0 0; font-size: .84rem; line-height: 1.75;
+  color: var(--mauve); }
+.anot b { color: var(--teal-text); }
 
 /* 날짜를 누르면 뜨는 「그날 무엇을 쓸지」 고르개 */
 .hoc { position: relative; }

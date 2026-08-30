@@ -258,6 +258,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       '<span class="ahint" id="abHint">' +
         "고른 자료는 이 화면에만 그려집니다. 어디로도 올라가지 않습니다." +
       "</span>" +
+      /* 자료가 아직 없을 때 「사라진 게 아니라 아직 안 읽은 것」 임을 알려 줍니다 */
+      '<p class="anot" id="abNot">명함첩과 동문 명부는 <b>내 컴퓨터에만</b> 있습니다.<br>' +
+        "브라우저는 페이지를 열 때마다 폴더를 새로 읽어야 해서, " +
+        "위 단추를 한 번 누르시면 <b>명함_공무원 · 교수 · 공공기관 · 기타</b> 갈래와 " +
+        "찾는 칸이 그대로 돌아옵니다.</p>" +
     "</div>" +
     '<div id="abBody"></div>';
 
@@ -269,6 +274,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
 
   /* ── 화면 그리기 ── */
   function ui() {
+    const not = document.getElementById("abNot");
+    if (not) not.remove();          // 자료가 들어왔으니 안내는 치웁니다
+
     // 찾는 칸을 갈래 단추보다 위에 둡니다 — 먼저 찾고, 그다음 좁히는 차례라서.
     body.innerHTML =
       '<div class="nbar abbar">' +
@@ -464,8 +472,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     if (f.length) useFiles(f);
   });
 
-  /* 지난번에 고른 폴더가 있으면 「이어서 열기」를 보여 줍니다.
-     권한을 다시 얻는 창은 사람이 누른 순간에만 뜰 수 있습니다. */
+  /* 지난번에 고른 폴더를 되살립니다.
+       권한이 이미 있으면(granted)  → 누르지 않아도 바로 읽어 그립니다
+       권한을 다시 물어야 하면(prompt) → 창은 사람이 누른 순간에만 뜰 수 있어
+                                       「이어서 열기」 단추를 내놓습니다 */
   if (FSA) {
     const h = await getHandle();
     if (h) {
@@ -473,9 +483,12 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       const st = await h.queryPermission({ mode: "read" }).catch(() => "prompt");
       if (st === "granted") {
         btn.hidden = false;
-        btn.textContent = "📂 " + h.name + " 다시 열기";
+        btn.textContent = "🔄 " + h.name + " 다시 읽기";
         btn.addEventListener("click", () => fromDir(h));
-        say("지난번에 보시던 폴더가 있습니다 — 「" + h.name + " 다시 열기」");
+        say("「" + h.name + "」 을 여는 중…");
+        // 권한이 이미 있으니 곧바로 폅니다 — 새로고침할 때마다 안 누르셔도 됩니다
+        try { await fromDir(h); }
+        catch (e) { say("폴더를 읽지 못했습니다 — 「" + btn.textContent + "」 을 눌러 주세요."); }
       } else if (st === "prompt") {
         btn.hidden = false;
         btn.textContent = "📂 " + h.name + " 이어서 열기";
