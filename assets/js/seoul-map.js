@@ -576,7 +576,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609040300");
+        const G = await import("./gpkg.js?v=202609040500");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -618,9 +618,10 @@ export async function initMap(mountId = "mapapp") {
   });
 
   /* ── 내 파일 얹기 (KML · KMZ · GeoJSON · SHP) ────────────────
-     파일은 어디로도 올라가지 않습니다. 브라우저가 읽어 화면에만 그립니다. */
+     올리면 사이트에 심깁니다(map_files 표) — 새로고침해도, 다른 기기에서도
+     계속 보입니다. 갈래 화면에서 올리면 그 갈래에, 종합에서 올리면 종합에 붙습니다. */
   const fileBox = document.getElementById("lyFiles");
-  const myFiles = [];   // { name, layer, on, n }
+  const myFiles = [];   // { id(심긴 것), name, layer, on, n, color }
   const FCOLORS = ["#2a5fa8", "#d63a2f", "#0f9d58", "#8a6bb0", "#e65100", "#2b8f8f"];
 
   function drawFileList() {
@@ -638,17 +639,54 @@ export async function initMap(mountId = "mapapp") {
         if (f.on) f.layer.addTo(map); else map.removeLayer(f.layer);
       }));
     fileBox.querySelectorAll("button[data-x]").forEach((b) =>
-      b.addEventListener("click", (e) => {
+      b.addEventListener("click", async (e) => {
         e.preventDefault();
         const i = +b.dataset.x;
-        map.removeLayer(myFiles[i].layer);
+        const f = myFiles[i];
+        if (f.id) {                                  // 심긴 것 — 사이트에서도 뽑습니다
+          if (!confirm("「" + f.name + "」 을 사이트에서 아주 뺄까요?")) return;
+          const { error } = await sb.from("map_files").delete().eq("id", f.id);
+          if (error) { alert("빼지 못했습니다: " + error.message); return; }
+        }
+        map.removeLayer(f.layer);
         myFiles.splice(i, 1);
         drawFileList();
       }));
   }
 
+  /** 불러온 도형 한 층을 지도 층으로 */
+  function fileLayer(MF, name, geojson, color) {
+    return L.geoJSON(geojson, {
+      style: { color, weight: 2, opacity: .9, fillColor: color, fillOpacity: .18 },
+      pointToLayer: (ft, ll) => L.circleMarker(ll,
+        { radius: 5, color, weight: 2, fillColor: color, fillOpacity: .75 }),
+      onEachFeature: (ft, ly) => {
+        const t = MF.labelOf(ft.properties);
+        ly.bindPopup('<div class="fpop"><b>' + esc(t || name) + "</b>" +
+          MF.propTable(ft.properties) + "</div>");
+      },
+    });
+  }
+
+  /* 심어 둔 파일들을 폅니다 — 갈래 화면은 제 것만, 종합은 전부 */
+  (async () => {
+    let q = sb.from("map_files").select("*").order("created_at");
+    if (!MULTI) q = q.eq("grp", GRP);
+    const r = await q;
+    if (r.error || !r.data || !r.data.length) return;   // 표가 없어도 조용히
+    const MF = await import("./map-files.js?v=202609040500");
+    r.data.forEach((row) => {
+      const color = row.color || FCOLORS[myFiles.length % FCOLORS.length];
+      const layer = fileLayer(MF, row.name, row.geojson, color);
+      layer.addTo(map);
+      myFiles.push({ id: row.id, name: row.name, layer, on: true,
+                     n: row.count || (row.geojson.features || []).length, color });
+    });
+    drawFileList();
+  })();
+
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609040300");
+    const MF = await import("./map-files.js?v=202609040500");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
@@ -659,19 +697,29 @@ export async function initMap(mountId = "mapapp") {
         let lastLayer = null;
         for (const r of parts) {
           const color = FCOLORS[myFiles.length % FCOLORS.length];
-          const layer = L.geoJSON(r.geojson, {
-            style: { color, weight: 2, opacity: .9, fillColor: color, fillOpacity: .18 },
-            pointToLayer: (ft, ll) => L.circleMarker(ll,
-              { radius: 5, color, weight: 2, fillColor: color, fillOpacity: .75 }),
-            onEachFeature: (ft, ly) => {
-              const t = MF.labelOf(ft.properties);
-              ly.bindPopup('<div class="fpop"><b>' + esc(t || r.name) + "</b>" +
-                MF.propTable(ft.properties) + "</div>");
-            },
-          });
+          const layer = fileLayer(MF, r.name, r.geojson, color);
           layer.addTo(map);
-          myFiles.push({ name: r.name, layer, on: true, n: r.count, color });
+          const entry = { name: r.name, layer, on: true, n: r.count, color };
+          myFiles.push(entry);
           lastLayer = layer;
+
+          /* 사이트에 심습니다 — 실패해도 이번 화면에는 그려 둡니다 */
+          const big = JSON.stringify(r.geojson).length;
+          if (big > 4_000_000) {
+            alert(r.name + " — 4MB 를 넘어 사이트에는 못 심고 이번 화면에만 그립니다.");
+          } else {
+            const put = await sb.from("map_files").insert({
+              name: r.name, src_name: file.name, grp: MULTI ? "all" : GRP,
+              color, geojson: r.geojson, count: r.count,
+            }).select("id").single();
+            if (put.error) {
+              const m = put.error.message || "";
+              alert(r.name + " — 이번 화면에만 그립니다. " +
+                (/does not exist|schema cache|relation/i.test(m)
+                  ? "심는 표가 아직 없습니다: auth/map_files.sql 을 한 번 실행해주세요."
+                  : /row-level|policy/i.test(m) ? "심기는 관리자만 됩니다." : m));
+            } else entry.id = put.data.id;
+          }
         }
         drawFileList();
         if (lastLayer) {
