@@ -79,6 +79,9 @@ eq("흔한 말은 뺀다", ev.includes("회의"), false);
 eq("만난 사람 이름은 주제가 아니다",
    S.wordsEvent([{ title: "(박진우) 자치행정 토론회", people: "박진우, 이소라" }], 20)
      .some((x) => x.word === "박진우" || x.word === "이소라"), false);
+eq("이름에 직함·토씨가 붙어도 사람이다",
+   S.wordsEvent([{ title: "김진령주무관 남편이랑 위원회", people: "김진령, 남편" }], 20)
+     .map((x) => x.word), ["위원회"]);
 
 console.log("\n── 낱말 고르기 ──");
 eq("한 글자 뺀다", S.keepWord("가"), false);

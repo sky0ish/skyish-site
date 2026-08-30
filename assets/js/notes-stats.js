@@ -181,7 +181,10 @@ export function wordsEvent(rows, n = 40) {
       .replace(/\(\s*[월화수목금토일]\s*\)/g, " ")
       .split(/[\s,./·「」【】\[\]()（）:;•~"'!?_+=|\\]+/)
       .map((w) => w.replace(/^[제第]/, "").trim())
-      .filter((w) => keepWord(w) && !isName.has(w))
+      /* 이름 그대로만이 아니라 「김진령주무관」 「남편이랑」 처럼
+         이름으로 시작하는 낱말도 사람입니다 — 직함·토씨가 붙었을 뿐입니다. */
+      .filter((w) => keepWord(w) && !isName.has(w) &&
+        ![...isName].some((nm) => nm.length >= 2 && w.startsWith(nm)))
       .forEach((w) => bump(m, w, r));
   });
   return sorted(m, n);
