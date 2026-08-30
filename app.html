@@ -54,21 +54,31 @@
   .hocal--app[hidden] { display: none !important; }
   .hocal--app .hocal__nav { background: rgba(28, 25, 22, .08); color: var(--ink, #1c1a19); }
 
-  /* 다가오는 일정 목록에만 — 거의 투명한 연한 회색 판.
-     흰 글씨가 죽지 않게 글자에 옅은 그림자를 받쳐 줍니다. */
+  /* 달력 칸 속 일정 칩 — 흰 칩에 흰 글씨라 밝은 바탕에서 죽었습니다.
+     칩을 어두운 회색으로, 글자는 하얗고 두껍게. */
+  .hocal--app .hoc .hev, .hocal--app .hoc em {
+    background: rgba(95, 88, 80, .68); color: #fff; font-weight: 600; }
+  .hocal--app .hoc .hev:hover { background: rgba(95, 88, 80, .85); }
+  .hocal--app .hoc em.more { background: none; color: #5f5850; opacity: .85; }
+  .hocal--app .hoc.has { background: rgba(95, 88, 80, .10); }
+  .hocal--app .hoc.now { outline-color: rgba(95, 88, 80, .8); }
+
+  /* 다가오는 일정 목록 — 판은 더 어둡게, 글자는 하얗고 두껍게 */
   .hocal--app .hocal__soon {
     border-top: 0; margin-top: 10px; padding: 10px 12px;
-    background: rgba(120, 114, 106, .34);
+    background: rgba(95, 88, 80, .62);
     border-radius: 12px; }
   @supports (backdrop-filter: blur(1px)) {
-    .hocal--app .hocal__soon { background: rgba(120, 114, 106, .28); backdrop-filter: blur(8px); }
+    .hocal--app .hocal__soon { background: rgba(95, 88, 80, .55); backdrop-filter: blur(8px); }
   }
-  .hocal--app .hocal__soon a { text-shadow: 0 1px 5px rgba(60, 55, 48, .5); }
+  .hocal--app .hocal__soon a { color: #fff; font-weight: 600;
+    text-shadow: 0 1px 4px rgba(50, 45, 40, .55); }
   .hocal--app .hocal__none { border-top: 0; padding: 10px 12px;
-    background: rgba(120, 114, 106, .26); border-radius: 12px; color: #fff; opacity: 1; }
-  .hocal--app .hocal__more { color: var(--teal-text, #2f7d6f); opacity: 1; }
-  .hocal--app .hocal__gc { background: rgba(120, 114, 106, .3);
-    border-color: rgba(255, 255, 255, .55); text-shadow: 0 1px 4px rgba(60, 55, 48, .5); }
+    background: rgba(95, 88, 80, .5); border-radius: 12px; color: #fff; opacity: 1; }
+  .hocal--app .hocal__more { color: var(--teal-text, #2f7d6f); opacity: 1; font-weight: 600; }
+  .hocal--app .hocal__gc { background: rgba(95, 88, 80, .58);
+    border-color: rgba(255, 255, 255, .6); font-weight: 600;
+    text-shadow: 0 1px 4px rgba(50, 45, 40, .55); }
 
   /* 바로가기 — 처음의 흰 카드로 */
   .app__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
