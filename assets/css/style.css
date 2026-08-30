@@ -2436,7 +2436,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hero__text { flex: 1; min-width: 0; max-width: 680px; }
 
 .hocal {
-  flex: none; width: min(640px, 44vw); align-self: center;
+  flex: none; width: min(768px, 52vw); align-self: center;
   background: rgba(22, 20, 18, .70);
   border: 1px solid rgba(255,255,255,.24);
   border-radius: 16px; padding: 16px 16px 14px;
@@ -2496,7 +2496,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hocal__more:hover { opacity: 1; }
 
 /* 좁은 화면에서는 달력을 감춥니다 — 히어로 글이 우선입니다 */
-@media (max-width: 1280px) { .hocal { width: min(460px, 40vw); } }
+@media (max-width: 1280px) { .hocal { width: min(552px, 46vw); } }
 @media (max-width: 1080px) {
   .hero__inner { display: block; }
   .hocal { display: none; }
