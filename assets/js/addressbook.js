@@ -244,8 +244,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   const isAdmin = !!(me && me.is_admin) || OWNERS.indexOf(mail) >= 0;
 
   // 관리자가 아니면 이 자리는 아예 없는 것처럼 둡니다
-  if (!isAdmin) { if (section) section.remove(); else mount.remove(); return; }
-  if (section) section.hidden = false;
+  if (!isAdmin) { if (section) section.remove(); else mount.remove(); return false; }
 
   const FSA = typeof window.showDirectoryPicker === "function";
 
@@ -483,4 +482,6 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       }
     }
   }
+
+  return true;
 }

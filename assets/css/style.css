@@ -2461,3 +2461,36 @@ button.cev--g:hover { filter:brightness(.94);
 @media (max-width: 860px) {
   .contact-top { padding-top: 5.5rem; }
 }
+
+/* ── Contact 세 갈래 ────────────────────────────────────────
+   To Me · 주소록 · Sites. 뒤 둘은 관리자에게만 단추가 생깁니다. */
+.ctabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 2rem; }
+.ctabs button {
+  padding: .5em 1.15em; border-radius: 100px; border: 1px solid var(--line);
+  background: #fff; color: var(--mauve); font-family: inherit; font-size: .84rem;
+  font-weight: 600; cursor: pointer; transition: .16s var(--ease);
+}
+.ctabs button:hover { border-color: var(--teal); color: var(--teal-text); }
+.ctabs button.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+.ctabs button[hidden] { display: none; }
+
+/* ── Sites — 자주 드나드는 곳 ─────────────────────────────── */
+.sgrid { display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.scard { position: relative; background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radius-md); transition: .18s var(--ease); }
+.scard:hover { border-color: var(--teal); transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(28,26,25,.10); }
+.scard__go { display: block; padding: 16px 17px 15px; color: inherit; }
+.scard__go b { display: block; margin: .5rem 0 .2rem; font-size: .96rem;
+  font-weight: 600; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scard__host { display: block; font-size: .76rem; color: var(--teal-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scard__note { display: block; margin-top: .5rem; font-size: .78rem;
+  color: var(--mauve); line-height: 1.6; }
+.scard__edit { position: absolute; top: 10px; right: 10px; border: 0; background: none;
+  color: #cec7b8; cursor: pointer; font-size: .9rem; padding: 4px 6px;
+  border-radius: 7px; opacity: 0; transition: .15s var(--ease); }
+.scard:hover .scard__edit { opacity: 1; }
+.scard__edit:hover { color: var(--teal-text); background: #f3f7f6; }

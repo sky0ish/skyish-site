@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202608310600">
+  <link rel="stylesheet" href="assets/css/style.css?v=202608310700">
 </head>
 <body>
   <div id="site-header"></div>
@@ -26,7 +26,14 @@
           <div class="contact-info reveal">
             <span class="eyebrow">Contact</span>
             <h1 class="section-title" style="margin:.5rem 0 .8rem">Contact me</h1>
-            <p class="lead" style="margin-bottom:2.4rem">Drop me a line — questions, ideas or just a hello. I like chatting and sharing.</p>
+            <p class="lead" style="margin-bottom:1.6rem">Drop me a line — questions, ideas or just a hello. I like chatting and sharing.</p>
+
+            <!-- 세 갈래 — 주소록·Sites 는 관리자에게만 보입니다 -->
+            <nav class="ctabs" id="cTabs" aria-label="Contact 갈래">
+              <button type="button" data-p="tome" class="on">To Me</button>
+              <button type="button" data-p="addr" hidden>주소록</button>
+              <button type="button" data-p="sites" hidden>Sites</button>
+            </nav>
 
             <h2 style="font-family:var(--font-display);font-weight:400;text-transform:uppercase;font-size:1.8rem;letter-spacing:.03em;margin-bottom:.4rem">Jee-Hyun NAM</h2>
             <p style="color:var(--mauve);margin-bottom:1.4rem">Ph.D. · Senior Research Fellow</p>
@@ -68,9 +75,9 @@
       </div>
     </section>
 
-    <!-- 주소록 — 관리자에게만 보입니다.
+    <!-- 주소록 — 관리자에게만.
          내 컴퓨터의 엑셀을 브라우저가 직접 읽습니다. 서버로는 아무것도 안 갑니다. -->
-    <section class="section" id="addrsec" style="padding-top:0;margin-top:-2rem" hidden>
+    <section class="section cpane" id="addrsec" style="padding-top:0;margin-top:-1rem" hidden>
       <div class="container container--wide">
         <div class="section-head">
           <span class="eyebrow">Private</span>
@@ -83,13 +90,27 @@
         <div id="addrapp"></div>
       </div>
     </section>
+
+    <!-- Sites — 자주 가는 곳. 관리자에게만. -->
+    <section class="section cpane" id="sitesec" style="padding-top:0;margin-top:-1rem" hidden>
+      <div class="container container--wide">
+        <div class="section-head">
+          <span class="eyebrow">Private</span>
+          <h2 class="section-title">Sites</h2>
+          <p class="lead" style="margin-top:.8rem">
+            자주 드나드는 곳을 갈래로 묶어 둡니다.
+          </p>
+        </div>
+        <div id="sitesapp"><p class="nempty">확인 중…</p></div>
+      </div>
+    </section>
   </main>
 
   <div id="site-footer"></div>
-  <script src="assets/js/main.js?v=202608310600" defer></script>
+  <script src="assets/js/main.js?v=202608310700" defer></script>
   <script type="module">
-    import { initAddr } from "./assets/js/addressbook.js?v=202608310600";
-    initAddr();
+    import { initContactTabs } from "./assets/js/contact-tabs.js?v=202608310700";
+    initContactTabs();
   </script>
 </body>
 </html>
