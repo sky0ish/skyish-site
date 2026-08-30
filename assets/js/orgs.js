@@ -50,8 +50,8 @@ export const ORGS = [
   {
     key: "ggic", name: "경기도 산업단지계획심의위원회",
     en: "Gyeonggi Industrial Complex Planning Committee",
-    url: "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=1839135",
-    note: "심의위원 — 설치·운영 조례",
+    url: "https://www.law.go.kr/lsLawLinkInfo.do?lsJoLnkSeq=900381405&chrClsCd=010202",
+    note: "심의위원 — 산업단지 인·허가 특례법 제6조",
     color: "#6a5a9a", mark: "심의",
   },
 ];
