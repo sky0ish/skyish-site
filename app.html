@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My WAY">
 <link rel="icon" href="assets/img/app/icon-192.png">
-<link rel="stylesheet" href="assets/css/style.css?v=202609020500">
+<link rel="stylesheet" href="assets/css/style.css?v=202609020700">
 
 <style>
   /* 앱 화면만의 옷 — 폰에 맞춰 한 손 거리 안에 큼직하게 */
@@ -43,27 +43,40 @@
   .app__write .w-diary { background: #c98a3f; }
   .app__write .w-sched { background: #4f9d92; }
 
-  /* 달력 — 첫 화면의 옷(.hocal, 어두운 유리판)을 그대로 입되,
-     첫 화면용 「좁은 화면에서는 감춘다 · 폭 46vw」 규칙만 이겨 냅니다.
-     앱에서는 달력이 주인공이라 감추면 안 됩니다. */
+  /* 달력 — 앱에서는 어두운 유리판을 벗기고 바탕에 바로 얹습니다.
+     (첫 화면용 「좁은 화면에서는 감춘다 · 폭 46vw」 규칙만 이겨 냅니다) */
   .hocal--app { display: block !important; width: 100% !important;
-    margin: 0 0 14px; box-sizing: border-box; }
+    margin: 0 0 14px; box-sizing: border-box;
+    background: transparent !important; border: 0 !important;
+    box-shadow: none !important; backdrop-filter: none !important;
+    padding: 0 0 4px;
+    color: var(--ink, #1c1a19); }          /* 달수·요일·숫자는 짙은 글씨로 */
   .hocal--app[hidden] { display: none !important; }
+  .hocal--app .hocal__nav { background: rgba(28, 25, 22, .08); color: var(--ink, #1c1a19); }
 
-  /* 바로가기 — 달력과 같은 결의 어두운 유리 단추.
-     반투명한 진한 회색 판이 떠 있는 느낌, 글자는 흰색. */
+  /* 다가오는 일정 목록에만 — 거의 투명한 연한 회색 판.
+     흰 글씨가 죽지 않게 글자에 옅은 그림자를 받쳐 줍니다. */
+  .hocal--app .hocal__soon {
+    border-top: 0; margin-top: 10px; padding: 10px 12px;
+    background: rgba(120, 114, 106, .34);
+    border-radius: 12px; }
+  @supports (backdrop-filter: blur(1px)) {
+    .hocal--app .hocal__soon { background: rgba(120, 114, 106, .28); backdrop-filter: blur(8px); }
+  }
+  .hocal--app .hocal__soon a { text-shadow: 0 1px 5px rgba(60, 55, 48, .5); }
+  .hocal--app .hocal__none { border-top: 0; padding: 10px 12px;
+    background: rgba(120, 114, 106, .26); border-radius: 12px; color: #fff; opacity: 1; }
+  .hocal--app .hocal__more { color: var(--teal-text, #2f7d6f); opacity: 1; }
+  .hocal--app .hocal__gc { background: rgba(120, 114, 106, .3);
+    border-color: rgba(255, 255, 255, .55); text-shadow: 0 1px 4px rgba(60, 55, 48, .5); }
+
+  /* 바로가기 — 처음의 흰 카드로 */
   .app__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .app__grid a { display: flex; flex-direction: column; align-items: center; gap: 6px;
-    padding: 14px 6px 12px;
-    background: rgba(45, 42, 38, .78);
-    border: 1px solid rgba(255, 255, 255, .14);
-    border-radius: 14px; color: #fff; font-size: .82rem; font-weight: 600;
-    box-shadow: 0 6px 18px rgba(28, 26, 25, .28);
+    padding: 14px 6px 12px; background: #fff; border: 1px solid var(--line, #e5e0d6);
+    border-radius: 14px; color: var(--ink, #1c1a19); font-size: .82rem; font-weight: 600;
     transition: .15s ease; }
-  @supports (backdrop-filter: blur(1px)) {
-    .app__grid a { background: rgba(45, 42, 38, .64); backdrop-filter: blur(14px); }
-  }
-  .app__grid a:active { transform: translateY(1px); box-shadow: 0 3px 10px rgba(28, 26, 25, .3); }
+  .app__grid a:active { transform: translateY(1px); }
   .app__grid a i { font-style: normal; font-size: 1.35rem; line-height: 1; }
   .app__note { margin: 18px 0 0; font-size: .74rem; line-height: 1.7;
     color: var(--mauve, #8d8578); }
@@ -121,7 +134,7 @@
   document.getElementById("goSched").href = "blog.html?cat=schedule&new=" + ymd;
 
   // 달력 — 첫 화면 것을 그대로. 관리자가 아니면 스스로 사라집니다.
-  import("./assets/js/home-cal.js?v=202609020500")
+  import("./assets/js/home-cal.js?v=202609020700")
     .then((m) => m.initHomeCal("hocal"))
     .catch(() => {});
 </script>
