@@ -2574,7 +2574,8 @@ body.diary-on #notesapp > *:not(.ndiary) {
    자료는 내 컴퓨터에만 있습니다. 이 화면은 그리기만 합니다. */
 .abar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 1rem; }
 .afiles { cursor: pointer; display: inline-flex; align-items: center; }
-.ahint { font-size: .78rem; color: var(--mauve); line-height: 1.6; flex: 1; min-width: 200px; }
+/* 단추 옆 잔글 설명 — 있는 듯 없는 듯, 작고 연하게 */
+.ahint { font-size: .7rem; color: #b8b1a2; line-height: 1.6; flex: 1; min-width: 200px; }
 .asel { padding: .5em 1em; font-family: inherit; cursor: pointer; }
 .asub { margin-top: 2px; font-size: .72rem; color: var(--mauve);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 22ch; }
