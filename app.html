@@ -53,6 +53,10 @@
     color: var(--ink, #1c1a19); }          /* 달수·요일·숫자는 짙은 글씨로 */
   .hocal--app[hidden] { display: none !important; }
   .hocal--app .hocal__nav { background: rgba(28, 25, 22, .08); color: var(--ink, #1c1a19); }
+  /* 날짜 위 요일 줄(일 월 화 … 토)은 차분한 회색으로 */
+  .hocal--app .hocal__wd span,
+  .hocal--app .hocal__wd span.sun,
+  .hocal--app .hocal__wd span.sat { color: #9a9284; }
 
   /* 달력 칸 속 일정 칩 — 흰 칩에 흰 글씨라 밝은 바탕에서 죽었습니다.
      칩을 어두운 회색으로, 글자는 하얗고 두껍게. */
