@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609020900";
+import * as GC from "./gcal.js?v=202609021100";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -215,9 +215,24 @@ export async function initHomeCal(id = "hocal") {
 
     /* 날짜를 누르면 「그날 무엇을 쓸지」 고르개가 뜹니다 */
     const grid = box.querySelector(".hocal__grid");
+    /* 폰 앱(.hocal--app)에서는 좁은 표적 대신 칸을 위아래 두 구역으로 나눕니다.
+       손가락이 굵어도 어긋나지 않게 —
+         위 (숫자 쪽, 칸의 45%·최소 34px) → 그날 Diary
+         아래 (글자 쪽)                   → 그날 Schedule
+       일정 글줄도 구역을 따릅니다. 그 글을 열려면 아래 「다가오는 일정」에서. */
+    const appMode = box.classList.contains("hocal--app");
     if (grid) grid.addEventListener("click", (e) => {
-      if (e.target.closest(".hev")) return;          // 일정을 누른 것은 그 글로 갑니다
       const cell = e.target.closest(".hoc");
+      if (appMode) {
+        if (!cell || !cell.dataset.d) return;
+        e.preventDefault();                          // 일정 글줄의 제 길로 가지 않게
+        const r = cell.getBoundingClientRect();
+        const diary = e.clientY < r.top + Math.max(34, r.height * 0.45);
+        location.href = "blog.html?cat=" + (diary ? "diary" : "schedule") +
+                        "&new=" + cell.dataset.d;
+        return;
+      }
+      if (e.target.closest(".hev")) return;          // 일정을 누른 것은 그 글로 갑니다
       if (!cell || !cell.dataset.d) return;
       // 날짜 숫자를 누르면 곧바로 Diary 로 — 그날의 글을 적는 것이 가장 잦습니다
       if (e.target.closest("b")) {

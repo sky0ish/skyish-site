@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My WAY">
 <link rel="icon" href="assets/img/app/icon-192.png">
-<link rel="stylesheet" href="assets/css/style.css?v=202609020900">
+<link rel="stylesheet" href="assets/css/style.css?v=202609021100">
 
 <style>
   /* 앱 화면만의 옷 — 폰에 맞춰 한 손 거리 안에 큼직하게 */
@@ -70,6 +70,9 @@
   .hocal--app .hoc em.more { background: none; color: #8d8578; opacity: 1; }
   .hocal--app .hoc.has { background: rgba(95, 88, 80, .08); }
   .hocal--app .hoc.now { outline-color: rgba(95, 88, 80, .8); }
+  /* 칸을 세로로 넉넉하게 — 위(Diary)·아래(Schedule) 두 구역이 다 손가락만 해지게 */
+  .hocal--app .hoc { min-height: 72px; }
+  .hocal--app .hoc b { padding-top: 2px; padding-bottom: 6px; }
 
   /* 다가오는 일정 목록 — 판은 더 어둡게, 글자는 하얗고 두껍게 */
   .hocal--app .hocal__soon {
@@ -152,7 +155,7 @@
   document.getElementById("goSched").href = "blog.html?cat=schedule&new=" + ymd;
 
   // 달력 — 첫 화면 것을 그대로. 관리자가 아니면 스스로 사라집니다.
-  import("./assets/js/home-cal.js?v=202609020900")
+  import("./assets/js/home-cal.js?v=202609021100")
     .then((m) => m.initHomeCal("hocal"))
     .catch(() => {});
 </script>
