@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My WAY">
 <link rel="icon" href="assets/img/app/icon-192.png">
-<link rel="stylesheet" href="assets/css/style.css?v=202609020300">
+<link rel="stylesheet" href="assets/css/style.css?v=202609020500">
 
 <style>
   /* 앱 화면만의 옷 — 폰에 맞춰 한 손 거리 안에 큼직하게 */
@@ -26,6 +26,11 @@
   .app__head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
   .app__head h1 { font-size: 1.5rem; margin: 0; color: var(--ink, #1c1a19); }
   .app__head span { font-size: .82rem; color: var(--mauve, #8d8578); }
+  .app__reload { margin-left: auto; width: 40px; height: 40px; border: 0;
+    border-radius: 50%; background: rgba(45, 42, 38, .72); color: #fff;
+    font-size: 1.15rem; line-height: 1; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(28, 26, 25, .25); transition: .15s ease; }
+  .app__reload:active { transform: rotate(180deg); }
   .app__today { margin: 0 0 14px; font-size: .86rem; color: var(--mauve, #8d8578); }
 
   /* 큰 단추 둘 — 가장 잦은 일부터 */
@@ -66,7 +71,10 @@
 </head>
 <body>
 <main class="app">
-  <div class="app__head"><h1>My WAY…</h1><span>skyish.kr</span></div>
+  <div class="app__head"><h1>My WAY…</h1><span>skyish.kr</span>
+    <!-- 앱으로 열면 주소창이 없어 새로고침할 길이 없습니다 — 단추로 대신합니다 -->
+    <button type="button" class="app__reload" id="apReload" aria-label="새로고침">⟳</button>
+  </div>
   <p class="app__today" id="apToday"></p>
 
   <div class="app__write">
@@ -103,12 +111,17 @@
   document.getElementById("apToday").textContent =
     `${t.getFullYear()}.${p(t.getMonth() + 1)}.${p(t.getDate())} (${W[t.getDay()]})`;
 
+  // 새로고침 — 시각을 붙여 부르므로 저장돼 있던 옛 화면을 지나칩니다
+  document.getElementById("apReload").addEventListener("click", () => {
+    location.href = location.pathname + "?r=" + Date.now();
+  });
+
   // 쓰기 단추에 오늘을 실어 줍니다 — 게시판이 받아서 새 글을 엽니다
   document.getElementById("goDiary").href = "blog.html?cat=diary&new=" + ymd;
   document.getElementById("goSched").href = "blog.html?cat=schedule&new=" + ymd;
 
   // 달력 — 첫 화면 것을 그대로. 관리자가 아니면 스스로 사라집니다.
-  import("./assets/js/home-cal.js?v=202609020300")
+  import("./assets/js/home-cal.js?v=202609020500")
     .then((m) => m.initHomeCal("hocal"))
     .catch(() => {});
 </script>

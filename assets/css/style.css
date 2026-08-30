@@ -2644,8 +2644,16 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hoc .hev span, .hoc em span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hoc em.more { justify-content: center; background: none; opacity: .6; font-size: .55rem; }
 
-.hocal__soon { margin-top: 12px; padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 1px; }
+.hocal__soon { margin-top: 12px; padding: 10px 11px;
+  display: flex; flex-direction: column; gap: 1px;
+  /* 그 자체로 반투명한 진한 회색 판 — 어디에 얹혀도 흰 글씨가 삽니다 */
+  background: rgba(45, 42, 38, .68);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 12px; color: #fff;
+  box-shadow: 0 5px 16px rgba(28, 26, 25, .25); }
+@supports (backdrop-filter: blur(1px)) {
+  .hocal__soon { background: rgba(45, 42, 38, .56); backdrop-filter: blur(12px); }
+}
 .hocal__soon a { display: flex; align-items: center; gap: 7px; padding: 5px 4px;
   border-radius: 7px; color: #fff; font-size: .76rem; transition: .15s var(--ease, ease); }
 .hocal__soon a:hover { background: rgba(255,255,255,.14); }
@@ -2653,8 +2661,8 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hocal__soon .d { flex: none; opacity: .8; font-variant-numeric: tabular-nums; }
 .hocal__soon .t { flex: 1; min-width: 0; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
-.hocal__none { margin: 12px 0 0; padding-top: 10px; font-size: .74rem; opacity: .6;
-  border-top: 1px solid rgba(255,255,255,.16); }
+.hocal__none { margin: 12px 0 0; padding: 10px 12px; font-size: .74rem;
+  background: rgba(45, 42, 38, .5); border-radius: 12px; color: rgba(255,255,255,.75); }
 .hocal__more { display: block; margin-top: 8px; text-align: right;
   font-size: .72rem; color: #fff; opacity: .72; }
 .hocal__more:hover { opacity: 1; }
