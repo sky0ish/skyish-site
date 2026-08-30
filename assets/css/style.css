@@ -2348,6 +2348,38 @@ button.cev--g:hover { filter:brightness(.94);
   .ptop__go { min-width: 88px; }
 }
 
+/* 관계망 */
+.pnet { position: relative; background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radius-md); overflow: hidden; }
+.pnet canvas { display: block; width: 100%; }
+.pnet__tip { position: absolute; z-index: 5; padding: 5px 10px; pointer-events: none;
+  background: rgba(28,25,22,.92); color: #fff; font-size: .76rem; font-weight: 600;
+  border-radius: 7px; white-space: nowrap; }
+.plg { display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  margin-right: 3px; vertical-align: baseline; }
+.plg--org { background: #d9822b; }
+.pnet__card { position: absolute; z-index: 6; padding: 14px 16px 13px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(28,26,25,.16); font-size: .82rem; }
+.pnc__x { position: absolute; top: 8px; right: 9px; border: 0; background: none;
+  color: var(--mauve); cursor: pointer; font-size: .8rem; padding: 3px; }
+.pnc__x:hover { color: var(--ink); }
+.pnc__name { display: block; font-size: .98rem; font-weight: 700; color: var(--ink);
+  padding-right: 20px; }
+.pnc__org { display: block; margin-top: 2px; font-size: .78rem; color: #b06a1f; }
+.pnc__n { margin: .45rem 0 .4rem; color: var(--mauve); font-size: .76rem; }
+.pnc__who { margin: 0 0 .5rem; color: #3a362e; font-size: .78rem; line-height: 1.6; }
+.pnc__meet { display: flex; gap: 8px; align-items: baseline; width: 100%;
+  border: 0; background: none; padding: 4px 0; font-family: inherit;
+  text-align: left; cursor: pointer; color: inherit; }
+.pnc__meet span { flex: none; font-size: .72rem; color: var(--mauve); }
+.pnc__meet b { flex: 1; min-width: 0; font-size: .8rem; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pnc__meet:hover b { color: var(--teal-text); text-decoration: underline; }
+.pnc__foot { margin-top: .6rem; display: flex; justify-content: flex-end; }
+.pnc__go { font-size: .76rem !important; padding: .45em 1em !important; }
+.plg--topic { background: #c95fb0; }
+
 /* ── 사람들 — 모든 게시판의 「만난 사람」 모아 보기 ──
    이름은 알약처럼 늘어놓고, 누르면 그 사람과의 만남이 한 줄로 펼쳐집니다. */
 .npeople { display:flex; flex-wrap:wrap; gap:8px; }

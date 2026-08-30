@@ -4,9 +4,10 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609011700";
-import * as GC from "./gcal.js?v=202609011700";
-import * as ST from "./notes-stats.js?v=202609011700";
+import * as NF from "./notes-files.js?v=202609011900";
+import * as GC from "./gcal.js?v=202609011900";
+import * as ST from "./notes-stats.js?v=202609011900";
+import * as NW from "./notes-network.js?v=202609011900";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -655,7 +656,174 @@ export async function initNotes(mountId = "notesapp") {
         cloud("③ 행사 낱말", ST.wordsEvent(rows, 40), "ev") +
       "</div></section>";
 
-    return head + bars + rank + clouds;
+    /* ⑤ 관계망 — 점은 사람, 글자 점은 기관·주제, 선은 함께한 횟수 */
+    const net = '<section class="pbox"><h4>관계망' +
+      '<span class="phint">점 = 사람 (크기·선 굵기 = 만난 횟수) · ' +
+      '글자 점 = <i class="plg plg--org"></i>기관 · <i class="plg plg--topic"></i>행사 주제 · ' +
+      '점을 누르면 그 사람·그 말로 갑니다</span></h4>' +
+      '<div class="pnet"><canvas id="pNet"></canvas>' +
+      '<div class="pnet__tip" id="pNetTip" hidden></div>' +
+      '<div class="pnet__card" id="pNetCard" hidden></div></div></section>';
+
+    return head + net + bars + rank + clouds;
+  }
+
+  /* ── 관계망 그리기 ──
+     셈(그래프·자리)은 notes-network.js 가 하고, 여기서는 붓질만 합니다. */
+  function drawNet(openPerson) {
+    const cv = document.getElementById("pNet");
+    if (!cv || typeof cv.getContext !== "function") return;   // 시험 틀에서는 조용히
+    const box = cv.parentElement;
+    const W = Math.max(340, box.clientWidth || 900);
+    const H = Math.round(Math.min(560, Math.max(380, W * 0.48)));
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.height = H + "px";
+
+    const g = NW.layout(NW.buildGraph(rows), W, H);
+    const ctx = cv.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const COL = { who: "#5c9e4a", org: "#d9822b", topic: "#c95fb0" };
+    const maxW = Math.max(1, ...g.edges.map((e) => e.w));
+
+    function paint(litId) {
+      ctx.clearRect(0, 0, W, H);
+      /* 선 — 끝점 가운데 글자 점 쪽 빛깔을 따릅니다. 사람끼리면 초록. */
+      g.edges.forEach((e) => {
+        const a = g.nodes[e.a], b = g.nodes[e.b];
+        const lit = litId != null && (e.a === litId || e.b === litId);
+        const c = COL[a.type !== "who" ? a.type : b.type];
+        ctx.strokeStyle = c;
+        ctx.globalAlpha = litId == null
+          ? 0.13 + 0.35 * (e.w / maxW)
+          : (lit ? 0.75 : 0.05);
+        ctx.lineWidth = 0.6 + 2.8 * (e.w / maxW) + (lit ? 0.6 : 0);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+      /* 점 */
+      g.nodes.forEach((n) => {
+        const dim = litId != null && n.id !== litId &&
+          !g.edges.some((e) => (e.a === litId && e.b === n.id) || (e.b === litId && e.a === n.id));
+        ctx.globalAlpha = dim ? 0.25 : 1;
+        ctx.fillStyle = COL[n.type];
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.size, 0, Math.PI * 2); ctx.fill();
+        if (n.type !== "who") {
+          /* 글자 점 — 흰 테를 둘러 선 위에서도 읽히게 */
+          ctx.font = "600 " + Math.round(11 + n.size * 0.45) + "px Pretendard, sans-serif";
+          ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          const tx = n.x + n.size + 5, ty = n.y;
+          ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(255,255,255,.92)";
+          ctx.strokeText(n.label, tx, ty);
+          ctx.fillStyle = "#3a362e";
+          ctx.fillText(n.label, tx, ty);
+        }
+      });
+      ctx.globalAlpha = 1;
+    }
+    paint(null);
+
+    /* 어루만지기 — 가까운 점을 찾아 밝히고, 이름을 알려 줍니다 */
+    const tip = document.getElementById("pNetTip");
+    const near = (mx, my) => {
+      let best = null, bd = 1e9;
+      g.nodes.forEach((n) => {
+        const d = Math.hypot(n.x - mx, n.y - my) - n.size;
+        if (d < bd) { bd = d; best = n; }
+      });
+      return bd <= 8 ? best : null;
+    };
+    const at = (ev) => {
+      const r = cv.getBoundingClientRect();
+      return [ev.clientX - r.left, ev.clientY - r.top];
+    };
+    cv.onmousemove = (ev) => {
+      const [mx, my] = at(ev);
+      const n = near(mx, my);
+      paint(n ? n.id : null);
+      cv.style.cursor = n ? "pointer" : "";
+      if (!n) { tip.hidden = true; return; }
+      tip.hidden = false;
+      tip.textContent = (n.type === "who" ? "○ " : n.type === "org" ? "◈ " : "# ") +
+        n.label + " — " + n.n + "번";
+      tip.style.left = Math.min(mx + 14, W - 150) + "px";
+      tip.style.top = (my + 14) + "px";
+    };
+    cv.onmouseleave = () => { paint(null); tip.hidden = true; };
+    /* ── 점을 누르면 뜨는 작은 카드 ── */
+    const card = document.getElementById("pNetCard");
+    const hideCard = () => { card.hidden = true; };
+
+    function meetLine(r) {
+      return `<button type="button" class="pnc__meet" data-id="${r.id}">` +
+        `<span>${r.event_date ? ymd(r.event_date) : ""}</span>` +
+        `<b>${esc(r.title)}</b></button>`;
+    }
+
+    function showCard(n, mx, my) {
+      let head = "", body = "", foot = "";
+      if (n.type === "who") {
+        // 이 사람과의 만남 — 요즘 것부터 석 줄
+        const meets = rows.filter((r) =>
+          ST.peopleOf(r).some((one) => ST.splitPerson(one).name === n.label))
+          .sort((a, b) => String(b.event_date || "").localeCompare(String(a.event_date || "")));
+        head = `<b class="pnc__name">○ ${esc(n.label)}</b>` +
+          (n.org ? `<span class="pnc__org">◈ ${esc(n.org)}</span>` : "");
+        body = `<p class="pnc__n">${meets.length}번 만났습니다</p>` +
+          meets.slice(0, 3).map(meetLine).join("");
+        foot = `<button type="button" class="nbtn nbtn--go pnc__go" data-who="${esc(n.label)}">` +
+          "만남 모두 보기 →</button>";
+      } else {
+        // 기관·주제 — 함께 나온 사람들
+        const isOrg = n.type === "org";
+        const hit = rows.filter((r) => isOrg
+          ? (ST.peopleOf(r).some((one) => (ST.splitPerson(one).org || "").includes(n.label)) ||
+             [r.event, r.title, r.place].filter(Boolean).join(" ").includes(n.label))
+          : [r.event, r.tag, r.title].filter(Boolean).join(" ").includes(n.label));
+        const who = [...new Set(hit.flatMap((r) =>
+          ST.peopleOf(r).map((one) => ST.splitPerson(one).name)))];
+        head = `<b class="pnc__name">${isOrg ? "◈" : "#"} ${esc(n.label)}</b>`;
+        body = `<p class="pnc__n">${n.n}번 나왔습니다` +
+          (who.length ? ` · 함께한 사람 ${who.length}명` : "") + "</p>" +
+          (who.length
+            ? `<p class="pnc__who">${esc(who.slice(0, 8).join(", "))}` +
+              (who.length > 8 ? " …" : "") + "</p>"
+            : "") +
+          hit.slice(0, 2).map(meetLine).join("");
+        foot = `<button type="button" class="nbtn nbtn--go pnc__go" data-q="${esc(n.label)}">` +
+          "이 말로 찾기 →</button>";
+      }
+      card.innerHTML =
+        '<button type="button" class="pnc__x" aria-label="닫기">✕</button>' +
+        head + body + `<div class="pnc__foot">${foot}</div>`;
+      card.hidden = false;
+      // 틀 밖으로 나가지 않게 자리를 잡습니다
+      const cw = Math.min(300, W - 24);
+      card.style.width = cw + "px";
+      card.style.left = Math.max(8, Math.min(mx + 12, W - cw - 8)) + "px";
+      card.style.top = Math.max(8, Math.min(my + 12, H - 60)) + "px";
+
+      card.querySelector(".pnc__x").onclick = hideCard;
+      card.querySelectorAll(".pnc__meet").forEach((b) =>
+        b.addEventListener("click", () =>
+          detail(rows.find((x) => x.id === b.dataset.id))));
+      const go = card.querySelector(".pnc__go");
+      go.onclick = () => {
+        hideCard();
+        if (go.dataset.who) { openPerson(go.dataset.who); return; }
+        q.value = go.dataset.q;
+        drawPeople();
+      };
+    }
+
+    cv.onclick = (ev) => {
+      const [mx, my] = at(ev);
+      const n = near(mx, my);
+      if (!n) { hideCard(); return; }
+      paint(n.id);
+      showCard(n, mx, my);
+    };
   }
 
   /* ── 사람 알약들 ── */
@@ -693,6 +861,7 @@ export async function initNotes(mountId = "notesapp") {
       const el = list.querySelector(".nperson.on");
       if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" });
     };
+    drawNet(openPerson);                    // 관계망 (검색 중에는 칸 자체가 없습니다)
     list.querySelectorAll(".nperson__name").forEach((b) =>
       b.addEventListener("click", () => {
         openWho = (openWho === b.dataset.k) ? "" : b.dataset.k;
@@ -1464,7 +1633,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609011700");
+    const NFD = await import("./notes-folder.js?v=202609011900");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
