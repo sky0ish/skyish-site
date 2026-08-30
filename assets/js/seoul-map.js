@@ -576,7 +576,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609040500");
+        const G = await import("./gpkg.js?v=202609040700");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -674,7 +674,7 @@ export async function initMap(mountId = "mapapp") {
     if (!MULTI) q = q.eq("grp", GRP);
     const r = await q;
     if (r.error || !r.data || !r.data.length) return;   // 표가 없어도 조용히
-    const MF = await import("./map-files.js?v=202609040500");
+    const MF = await import("./map-files.js?v=202609040700");
     r.data.forEach((row) => {
       const color = row.color || FCOLORS[myFiles.length % FCOLORS.length];
       const layer = fileLayer(MF, row.name, row.geojson, color);
@@ -686,7 +686,7 @@ export async function initMap(mountId = "mapapp") {
   })();
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609040500");
+    const MF = await import("./map-files.js?v=202609040700");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
@@ -864,21 +864,36 @@ export async function initMap(mountId = "mapapp") {
     }
   }
 
+  /* 등록할 곳 — 화면과 별개로 고릅니다. 처음엔 지금 화면을 따릅니다.
+     (tabHtml 밖에 두어야 눌러 고른 것이 다시 그릴 때 지워지지 않습니다) */
+  let regGrp = ["hot", "urban", "estate", "food", "trip"].indexOf(GRP) >= 0 ? GRP : "hot";
+  let regCat = (GRP_LEG[regGrp] || ["hot"]).indexOf(cur) >= 0 ? cur : (GRP_LEG[regGrp] || ["hot"])[0];
+
   function tabHtml() {
     const pick = document.getElementById("apCats");
     /* 등록 단추도 그 화면의 분류만 폅니다 — 열아홉 개가 다 나오면 정신없습니다.
        종합에서만 전체를 보여 줍니다. (레이어 판과 같은 규칙, LEG) */
-    pick.innerHTML = LEG.map(([k, v]) =>
-      `<button type="button" class="apcat c-${k}${k === cur ? " on" : ""}" data-c="${k}">` +
-      `<span class="apdot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</button>`).join("");
-    pick.querySelectorAll(".apcat").forEach(b => b.addEventListener("click", () => {
-      cur = b.dataset.c;
-      // 갈래(g)는 그대로 두고 분류(cat)만 바꿉니다 — 주소를 통째로 바꾸면
-      // ?g= 가 사라져 새로고침·공유했을 때 엉뚱한 갈래로 열립니다.
-      const q = new URLSearchParams(location.search);
-      q.set("g", GRP); q.set("cat", cur);
-      history.replaceState(null, "", "?" + q.toString());
-      tabHtml(); draw();
+    /* 등록은 두 단 — 어느 화면에 있든 아무 게시판으로나 올릴 수 있습니다.
+         윗줄  [게시판]   핫플 · 도시건축 · 부동산 · 맛집 · 여행
+         아랫줄 [서브메뉴] 그 게시판의 하부 갈래들 */
+    const REG_GRPS = ["hot", "urban", "estate", "food", "trip"];
+    pick.innerHTML =
+      '<div class="apgrps">' + REG_GRPS.map((g) =>
+        `<button type="button" class="apgrp${g === regGrp ? " on" : ""}" data-g="${g}">` +
+        `${esc(GROUPS[g].name)}</button>`).join("") + "</div>" +
+      '<div class="apsubs">' + (GRP_LEG[regGrp] || ["hot"]).map((k) =>
+        `<button type="button" class="apcat c-${k}${k === regCat ? " on" : ""}" data-c="${k}">` +
+        `<span class="apdot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>` +
+        `${esc(CAT_NAME[k] || k)}</button>`).join("") + "</div>";
+
+    pick.querySelectorAll(".apgrp").forEach((b) => b.addEventListener("click", () => {
+      regGrp = b.dataset.g;
+      regCat = (GRP_LEG[regGrp] || ["hot"])[0];
+      tabHtml();
+    }));
+    pick.querySelectorAll(".apcat").forEach((b) => b.addEventListener("click", () => {
+      regCat = b.dataset.c;
+      tabHtml();
     }));
   }
 
@@ -1671,8 +1686,8 @@ export async function initMap(mountId = "mapapp") {
       image_url = sb.storage.from("map").getPublicUrl(storage_path).data.publicUrl;
     }
     const { error } = await sb.from("map_places").insert({
-      grp: GRP,
-      category: cur, name, address: addr, note: note || null,
+      grp: regGrp,
+      category: regCat, name, address: addr, note: note || null,
       memory: memo || null, image_url, storage_path,
       lat: parseFloat(hit.lat), lng: parseFloat(hit.lon),
       owner_name: (me && me.is_admin) ? "" : ((me && me.name) || ""),

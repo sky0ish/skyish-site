@@ -503,3 +503,12 @@
 .fprops th { text-align: left; padding: 3px 8px 3px 0; color: #8a8378; font-weight: 600;
   white-space: nowrap; vertical-align: top; }
 .fprops td { padding: 3px 0; color: #3a362e; word-break: break-all; }
+
+/* 등록 두 단 — 윗줄 게시판, 아랫줄 서브메뉴 */
+.apgrps { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.apgrp { padding: 6px 14px; border: 1px solid #e2dccf; border-radius: 999px;
+  background: #fff; font-family: inherit; font-size: 12.5px; font-weight: 700;
+  color: #6f6a5e; cursor: pointer; transition: .14s ease; }
+.apgrp:hover { border-color: #4f9d92; color: #2f7d6f; }
+.apgrp.on { background: #4f9d92; border-color: #4f9d92; color: #fff; }
+.apsubs { display: flex; flex-wrap: wrap; gap: 6px; }
