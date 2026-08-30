@@ -27,7 +27,15 @@ function makeEl(id) {
       listeners.get(k).push(fn);
     },
     removeEventListener() {},
-    querySelectorAll() { return []; },
+    querySelectorAll(sel) {
+      // 목록 줄과 지우기 단추는 innerHTML 로 그려지므로, 그 시늉을 냅니다
+      if (id === "nList" && /nrow__open|nrow__del/.test(sel)) {
+        const b = makeEl(sel.replace(".", "") + "-r1");
+        b.dataset.id = "r1";
+        return [b];
+      }
+      return [];
+    },
     querySelector() { return makeEl(id + "-child"); },
     closest() { return makeEl(id + "-closest"); },
     appendChild() {}, remove() {}, focus() {}, click() {},
@@ -62,13 +70,19 @@ globalThis.File = class { constructor(p, n) { this.name = n; this.size = 1; } };
 // ── Supabase 시늉 ──
 const calls = [];
 globalThis.__calls = calls;      // 시늉 모듈 안에서도 닿게 전역으로 둡니다
+globalThis.__rows = [{
+  id: "r1", category: "schedule", title: "20260828_[토론] (박진우) 자치행정학회",
+  body: "시각: 14:00", event_date: "2026-08-28", event_time: "14:00",
+  place: "대전철도청", contact: "박진우", people: "이상대 (용인시정연구원)",
+  event: "2026 한국지방자치학회 하계국제학술대회", tag: "토론", files: [],
+}];
 const sbStub = `export const sb = {
   from: () => { const q = {
     select: () => q, order: () => q, eq: () => q,
     insert: (v) => { globalThis.__calls.push(["insert", v]); return q; },
     update: (v) => { globalThis.__calls.push(["update", v]); return q; },
     delete: () => { globalThis.__calls.push(["delete"]); return q; },
-    then: (res) => Promise.resolve({ data: [], error: null, count: 0 }).then(res),
+    then: (res) => Promise.resolve({ data: globalThis.__rows, error: null, count: 0 }).then(res),
   }; return q; },
   rpc: async () => ({ data: true, error: null }),
   storage: { from: () => ({ upload: async () => ({ error: null }),
@@ -156,6 +170,37 @@ await check("붙임 파일 다시 읽기 단추가 살아 있다", () => fire("n
 await check("요약 채우기 단추가 살아 있다", () => fire("nFill", "click"));
 await check("엑셀 받기 단추가 살아 있다", () => fire("nXls", "click"));
 await check("달력 단추가 살아 있다", () => fire("nCal", "click"));
+
+// ── 목록 → 자세히 보기 → 고치기 → 제목 누르기 ──
+await check("목록의 줄을 누르면 자세히 보기가 열린다", async () => {
+  await fire("nrow__open-r1", "click");
+  if (!byId("nDetail").classList.contains("on")) throw new Error("안 열렸습니다");
+});
+
+await check("고치기를 누르면 글쓰기 창이 열린다", async () => {
+  await fire("ndEdit", "click");
+  if (!byId("nModal").classList.contains("on")) throw new Error("글쓰기 창이 안 열렸습니다");
+  if (byId("nDetail").classList.contains("on")) throw new Error("자세히 보기가 위에 남았습니다");
+});
+
+await check("글쓰기 창은 어디를 눌러도 사라지지 않는다", async () => {
+  // 창 안이든 바깥 회색 바탕이든, 눌러서 닫히는 길이 아예 없어야 합니다
+  const fns = listeners.get("nModal|click") || [];
+  for (const t of [byId("nmT"), byId("nModal"), byId("nmB")]) {
+    for (const fn of fns) await fn({ target: t, preventDefault() {} });
+    if (!byId("nModal").classList.contains("on"))
+      throw new Error(t.id + " 를 눌렀더니 창이 사라졌습니다");
+  }
+});
+
+await check("자세히 보기를 여러 번 열어도 듣는 이가 쌓이지 않는다", async () => {
+  await fire("nmCancel", "click");
+  for (let i = 0; i < 5; i++) await fire("nrow__open-r1", "click");
+  const stacked = (listeners.get("nDetail|click") || []).length;
+  if (stacked) throw new Error("addEventListener 로 " + stacked + "개가 쌓였습니다");
+  if (typeof byId("nDetail").onclick !== "function")
+    throw new Error("바깥 누르면 닫기가 아예 없습니다");
+});
 
 console.log("─".repeat(60));
 console.log(bad ? bad + "개 어긋났습니다" : "모두 지나갔습니다");

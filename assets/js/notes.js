@@ -512,7 +512,8 @@ export async function initNotes(mountId = "notesapp") {
     const shut = () => box.classList.remove("on");
     document.getElementById("ndX").addEventListener("click", shut);
     document.getElementById("ndClose").addEventListener("click", shut);
-    box.addEventListener("click", (e) => { if (e.target === box) shut(); });
+    // onclick 으로 두어야 볼 때마다 새로 갈립니다 (addEventListener 는 쌓입니다)
+    box.onclick = (e) => { if (e.target === box) shut(); };
     const ed = document.getElementById("ndEdit");
     if (ed) ed.addEventListener("click", () => { shut(); open(r); });
 
@@ -622,6 +623,8 @@ export async function initNotes(mountId = "notesapp") {
   /* ── 글 쓰기·고치기 ── */
   function open(row) {
     editing = row || null;
+    dirty = false;                       // 새로 여는 것이므로 고친 것이 없습니다
+    document.getElementById("nDetail").classList.remove("on");   // 위에 덮인 창을 걷습니다
     document.getElementById("nmTitle").textContent = row ? "글 고치기" : "새 글";
     document.getElementById("nmDel").hidden = !row;
     mCat.value = row ? row.category : (cur === "all" ? "diary" : cur);
@@ -662,7 +665,9 @@ export async function initNotes(mountId = "notesapp") {
   const nNewBtn = document.getElementById("nNew");
   if (nNewBtn) nNewBtn.addEventListener("click", () => open(null));
   document.getElementById("nmCancel").addEventListener("click", tryClose);
-  modal.addEventListener("click", (e) => { if (e.target === modal) tryClose(); });
+  /* 바깥을 눌러도 닫지 않습니다.
+     글을 적는 창이라, 칸 옆 빈 곳을 잘못 눌렀다고 적던 것이 사라지면 안 됩니다.
+     닫으실 때는 「취소」나 Esc 를 쓰십시오. */
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && modal.classList.contains("on")) tryClose();
   });
