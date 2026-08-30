@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609050300";
-import * as GC from "./gcal.js?v=202609050300";
-import * as ST from "./notes-stats.js?v=202609050300";
-import * as NW from "./notes-network.js?v=202609050300";
-import { alumniNames } from "./addressbook.js?v=202609050300";
+import * as NF from "./notes-files.js?v=202609050500";
+import * as GC from "./gcal.js?v=202609050500";
+import * as ST from "./notes-stats.js?v=202609050500";
+import * as NW from "./notes-network.js?v=202609050500";
+import { alumniNames } from "./addressbook.js?v=202609050500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -505,7 +505,9 @@ export async function initNotes(mountId = "notesapp") {
   const syncTag = () => {
     fillTags(mCat.value);
     mTagBox.hidden = !tagsFor(mCat.value).length;
-    document.getElementById("nmFoodBox").hidden = (mCat.value !== "diary");
+    // 맛집 칸 — 일기와 일정 둘 다에서 씁니다 (자문회의 뒤 들른 곳도 담을 수 있게)
+    document.getElementById("nmFoodBox").hidden =
+      (mCat.value !== "diary" && mCat.value !== "schedule");
     // 구글로 보내기는 「일정 새 글」 에서만 말이 됩니다
     document.getElementById("nmGcalBox").hidden =
       !(mCat.value === "schedule" && !editing && GC.ready());
@@ -1948,7 +1950,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609050300");
+    const NFD = await import("./notes-folder.js?v=202609050500");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
