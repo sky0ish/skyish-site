@@ -20,19 +20,59 @@ const KEY = "skyish-gcal-token";
 
 let token = null;
 
+/* 열쇠는 localStorage 에 둡니다.
+   전에는 sessionStorage 라 탭을 닫으면 사라져, 열 때마다 다시 이어야 했습니다.
+   이 브라우저 안에만 있고 어디로도 나가지 않습니다. */
 function saved() {
   try {
-    const v = JSON.parse(sessionStorage.getItem(KEY) || "null");
+    const v = JSON.parse(localStorage.getItem(KEY) || "null");
     if (v && v.exp > Date.now()) return v.token;
   } catch (e) {}
   return null;
 }
 function keep(t, sec) {
   try {
-    sessionStorage.setItem(KEY, JSON.stringify({
+    localStorage.setItem(KEY, JSON.stringify({
       token: t, exp: Date.now() + (sec - 60) * 1000,
     }));
+    // 한 번 이어 두었음을 기억합니다 — 열쇠가 만료돼도 조용히 다시 잇습니다
+    localStorage.setItem(KEY + "-ok", "1");
   } catch (e) {}
+}
+
+/** 전에 이어 둔 적이 있는가 (열쇠가 만료됐어도) */
+export const everLinked = () => {
+  try { return localStorage.getItem(KEY + "-ok") === "1"; } catch (e) { return false; }
+};
+
+/** 창을 띄우지 않고 조용히 열쇠만 다시 받아 옵니다.
+    구글에 이미 로그인돼 있고 전에 허락하셨다면 됩니다. */
+export async function silent() {
+  const t = saved();
+  if (t) { token = t; return t; }
+  if (!GCAL_CLIENT_ID || !everLinked()) return null;
+  await loadGis();
+  return new Promise((ok) => {
+    let done = false;
+    const fin = (v) => { if (!done) { done = true; ok(v); } };
+    try {
+      const cli = google.accounts.oauth2.initTokenClient({
+        client_id: GCAL_CLIENT_ID,
+        scope: SCOPE,
+        prompt: "none",                 // 창을 띄우지 않습니다
+        callback: (r) => {
+          if (r && r.access_token) {
+            token = r.access_token;
+            keep(token, r.expires_in || 3600);
+            fin(token);
+          } else fin(null);
+        },
+        error_callback: () => fin(null),
+      });
+      cli.requestAccessToken();
+      setTimeout(() => fin(null), 4000);   // 오래 걸리면 포기하고 넘어갑니다
+    } catch (e) { fin(null); }
+  });
 }
 
 /** 구글 로그인 조각을 한 번만 불러옵니다 */
