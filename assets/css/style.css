@@ -2593,3 +2593,6 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .cday.cdaybtn { border: 0; background: none; font-family: inherit; cursor: pointer;
   border-radius: 5px; padding: 0 4px; margin-left: -4px; transition: .13s var(--ease); }
 .cday.cdaybtn:hover { background: var(--paper-2); color: var(--teal-text); }
+
+/* 칸 이름 옆의 잔글씨 */
+.nlab { font-weight: 400; color: var(--mauve); font-size: .82em; }

@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609010600";
-import * as GC from "./gcal.js?v=202609010600";
+import * as NF from "./notes-files.js?v=202609010700";
+import * as GC from "./gcal.js?v=202609010700";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -119,6 +119,52 @@ export function fromDiaryTitle(title) {
   if (m2) return { people: "", place: m2[1].trim() };
 
   return { people: "", place: "" };
+}
+
+/* ── 맛집 적은 것 읽기 ──
+   「옥동식 (한식, 서울 마포구 양화로7길 44)」 꼴로 적으시면
+   이름 · 갈래 · 주소로 나눕니다. 여럿이면 세미콜론(;) 으로 잇습니다. */
+export function foodCat(s) {
+  const t = String(s || "");
+  if (/한식|한정식|국밥|고기|백반|칼국수|냉면|족발|삼겹/.test(t)) return "kfood";
+  if (/일식|스시|초밥|라멘|우동|돈카츠|돈까스|이자카야|사시미/.test(t)) return "jfood";
+  if (/중식|중국|짜장|짬뽕|마라|훠궈|딤섬/.test(t)) return "cfood";
+  if (/카페|까페|커피|디저트|베이커리|빵|브런치|찻집/.test(t)) return "cafe";
+  return "efood";                    // 양식·아시아·분식·그 밖은 기타로
+}
+
+export function parseFood(text) {
+  const out = [];
+  String(text || "").split(/\s*[;\n]\s*/).map((x) => x.trim()).filter(Boolean)
+    .forEach((one) => {
+      let name = one, cat = "", addr = "";
+      const m = one.match(/^(.+?)\s*[(（]\s*(.+?)\s*[)）]\s*$/);
+      if (m) {
+        name = m[1].trim();
+        const p = m[2].split(/\s*,\s*/).map((x) => x.trim()).filter(Boolean);
+        if (p.length >= 2) { cat = p[0]; addr = p.slice(1).join(", "); }
+        else { addr = p[0] || ""; }
+      } else {
+        const p = one.split(/\s*,\s*/).map((x) => x.trim()).filter(Boolean);
+        if (p.length >= 3) { name = p[0]; cat = p[1]; addr = p.slice(2).join(", "); }
+        else if (p.length === 2) { name = p[0]; addr = p[1]; }
+      }
+      if (name) out.push({ name, cat: foodCat(cat), catText: cat, addr });
+    });
+  return out;
+}
+
+/** 주소를 좌표로 — OpenStreetMap 에 물어봅니다 */
+export async function geoOf(addr) {
+  if (!addr) return null;
+  const u = "https://nominatim.openstreetmap.org/search?format=json&limit=1" +
+            "&countrycodes=kr&q=" + encodeURIComponent(addr);
+  try {
+    const r = await fetch(u, { headers: { "Accept-Language": "ko" } });
+    const j = await r.json();
+    if (j && j[0]) return { lat: +j[0].lat, lng: +j[0].lon };
+  } catch (e) {}
+  return null;
 }
 
 /* ── 파일에서 뽑은 덩이를 본문에 얹기 ──
@@ -334,6 +380,11 @@ export async function initNotes(mountId = "notesapp") {
           '<div><label for="nmW">만난 사람</label>' +
             '<input type="text" id="nmW" maxlength="200"></div>' +
         "</div>" +
+        '<div id="nmFoodBox" hidden>' +
+          '<label for="nmFood">맛집 <span class="nlab">— 적으면 지도에 저절로 올라갑니다</span></label>' +
+          '<input type="text" id="nmFood" maxlength="300" ' +
+            'placeholder="옥동식 (한식, 서울 마포구 양화로7길 44)   ·  여럿이면 ; 로 잇습니다">' +
+        "</div>" +
         '<label>붙임 파일</label>' +
         '<label class="ndrop" id="nmDrop">' +
           '<b>파일 고르기 · 끌어다 놓기 · 붙여넣기(Ctrl+V)</b>' +
@@ -410,6 +461,7 @@ export async function initNotes(mountId = "notesapp") {
   const syncTag = () => {
     fillTags(mCat.value);
     mTagBox.hidden = !tagsFor(mCat.value).length;
+    document.getElementById("nmFoodBox").hidden = (mCat.value !== "diary");
     if (!editing && mCat.value === "diary") stampToday();
   };
   mCat.addEventListener("change", syncTag);
@@ -727,6 +779,8 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmT").value = row ? row.title || "" : "";
     document.getElementById("nmB").value = row ? row.body || "" : "";
     document.getElementById("nmE").value = row ? row.event || "" : "";
+    document.getElementById("nmFood").value = "";
+    autoFill.people = ""; autoFill.place = "";
     document.getElementById("nmD").value = row ? ymd(row.event_date) : "";
     document.getElementById("nmTm").value = row ? row.event_time || "" : "";
     document.getElementById("nmC").value = row ? row.contact || "" : "";
@@ -888,6 +942,10 @@ export async function initNotes(mountId = "notesapp") {
   });
 
   /* 제목·내용을 적으면 날짜·장소·사람을 저절로 채웁니다 (비어 있을 때만) */
+  /* 제목에서 저절로 넣은 값을 적어 둡니다.
+     그 값 그대로면 계속 고쳐 쓰고, 손대신 뒤에는 그냥 둡니다. */
+  const autoFill = { people: "", place: "" };
+
   function autofill() {
     const text = document.getElementById("nmT").value + "\n" + document.getElementById("nmB").value;
     const dEl = document.getElementById("nmD");
@@ -904,11 +962,17 @@ export async function initNotes(mountId = "notesapp") {
     if (w) wEl.value = w;
 
     /* 일기는 제목이 「날짜 (요일) 누구와 어디」 꼴입니다.
-       본문에 「장소:」 「사람:」 을 따로 안 적으셨을 때만 제목에서 읽어냅니다. */
+       제목을 고칠 때마다 다시 읽어 채웁니다 —
+       「비었을 때만」 채우면 한글을 치는 도중의 「ㄱ」 같은 조각이 굳어 버립니다.
+       손으로 고치신 값은 건드리지 않습니다. */
     if (mCat.value === "diary") {
       const g = fromDiaryTitle(document.getElementById("nmT").value);
-      if (g.people && !wEl.value.trim()) wEl.value = g.people;
-      if (g.place && !pEl.value.trim()) pEl.value = g.place;
+      if (g.people && (!wEl.value.trim() || wEl.value === autoFill.people)) {
+        wEl.value = g.people; autoFill.people = g.people;
+      }
+      if (g.place && (!pEl.value.trim() || pEl.value === autoFill.place)) {
+        pEl.value = g.place; autoFill.place = g.place;
+      }
     }
   }
   document.getElementById("nmT").addEventListener("input", autofill);
@@ -944,9 +1008,15 @@ export async function initNotes(mountId = "notesapp") {
     if (!title) { msg.textContent = "제목을 적어주세요."; return; }
     const body = document.getElementById("nmB").value.trim();
     const dRaw = document.getElementById("nmD").value.trim();
+    /* 맛집은 본문에도 한 줄 남깁니다 — 나중에 글만 봐도 알 수 있게 */
+    const foodLine = (document.getElementById("nmFood").value || "").trim();
+    const bodyOut = foodLine && body.indexOf("맛집:") < 0
+      ? (body ? body + String.fromCharCode(10) : "") + "맛집: " + foodLine
+      : body;
+
     const patch = {
       category: mCat.value,
-      title, body: body || null,
+      title, body: bodyOut || null,
       event_date: dRaw ? findDate(dRaw) : findDate(title + "\n" + body),
       place:  document.getElementById("nmP").value.trim() || null,
       people: document.getElementById("nmW").value.trim() || null,
@@ -978,6 +1048,38 @@ export async function initNotes(mountId = "notesapp") {
             " 칸이 아직 없어 그것만 빠졌습니다." + String.fromCharCode(10) +
             "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
     }
+    /* ── 맛집을 지도에 올립니다 ──
+       비어 있으면 아무것도 하지 않습니다. 주소를 못 찾으면 건너뛰고 알려 드립니다. */
+    const foodEl = document.getElementById("nmFood");
+    const foodText = (foodEl.value || "").trim();
+    if (foodText) {
+      const list = parseFood(foodText);
+      const done = [], skip = [];
+      for (let i = 0; i < list.length; i++) {
+        const f = list[i];
+        msg.textContent = `맛집을 지도에 올리는 중… (${i + 1}/${list.length}) ${f.name}`;
+        if (!f.addr) { skip.push(f.name + " — 주소가 없습니다"); continue; }
+        // OpenStreetMap 에 잇달아 물으면 막힙니다. 사이를 둡니다.
+        if (i) await new Promise((r) => setTimeout(r, 1100));
+        const g = await geoOf(f.addr);
+        if (!g) { skip.push(f.name + " — 주소를 못 찾았습니다"); continue; }
+        const put = await sb.from("map_places").insert({
+          grp: "food", category: f.cat, name: f.name, address: f.addr,
+          lat: g.lat, lng: g.lng, owner_admin: true, created_by: user.id,
+        });
+        if (put.error) {
+          skip.push(f.name + " — " + (/category/.test(put.error.message || "")
+            ? "지도 분류가 아직 안 열렸습니다 (auth/map_cats.sql)"
+            : put.error.message));
+        } else done.push(f.name);
+      }
+      if (done.length || skip.length) {
+        alert((done.length ? "지도에 올렸습니다 — " + done.join(", ") : "") +
+          (done.length && skip.length ? String.fromCharCode(10) : "") +
+          (skip.length ? "못 올린 것:" + String.fromCharCode(10) + skip.join(String.fromCharCode(10)) : ""));
+      }
+    }
+
     msg.textContent = "";      // 「저장하는 중…」을 지워 둡니다
     close();
     await load();
@@ -1109,7 +1211,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609010600");
+    const NFD = await import("./notes-folder.js?v=202609010700");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
