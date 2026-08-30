@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609051100";
-import * as GC from "./gcal.js?v=202609051100";
-import * as ST from "./notes-stats.js?v=202609051100";
-import * as NW from "./notes-network.js?v=202609051100";
-import { alumniNames } from "./addressbook.js?v=202609051100";
+import * as NF from "./notes-files.js?v=202609051300";
+import * as GC from "./gcal.js?v=202609051300";
+import * as ST from "./notes-stats.js?v=202609051300";
+import * as NW from "./notes-network.js?v=202609051300";
+import { alumniNames } from "./addressbook.js?v=202609051300";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1844,6 +1844,54 @@ export async function initNotes(mountId = "notesapp") {
       }
     }
 
+    /* ── 「(사람)」 메모를 사람들 게시판에 쌓습니다 ──
+       한 사람에 글 하나. 여기저기서 적은 것이 그 글에 이어 붙습니다.
+       이미 담긴 줄은 다시 넣지 않으므로 몇 번을 저장해도 안전합니다. */
+    try {
+      const notes = ST.personNotes(bodyOut);
+      if (notes.length) {
+        const people = ST.peopleOf({ people: patch.people });
+        const 날 = (patch.event_date || "").slice(0, 10).replace(/-/g, ".");
+        const 몫 = new Map();                       // 이름 → [줄]
+        notes.forEach((line) => {
+          ST.noteOwners(line, people).forEach(({ name, text }) => {
+            const arr = 몫.get(name) || [];
+            if (arr.indexOf(text) < 0) arr.push(text);
+            몫.set(name, arr);
+          });
+        });
+
+        for (const [name, lines] of 몫) {
+          // 그 사람의 글을 찾습니다 — 제목이 이름으로 시작하는 사람들 글
+          const mine = rows.filter((r) => r.category === PEOPLE_CAT &&
+            (r.title === name || String(r.title).startsWith(name + " ")));
+          const old = mine[0] || null;
+
+          /* 제목은 「이석준 이천시청 군협력담당관」 꼴 —
+             소속·직함을 알아내면 붙이고, 모르면 이름만 씁니다. */
+          const 직함 = ST.whoTitle(name, lines.concat(
+            old ? ST.personNotes(old.body).concat([old.title]) : []));
+          const title = 직함 ? name + " " + 직함 : name;
+
+          // 새로 담을 줄만 골라 냅니다 (이미 있는 줄은 건너뜁니다)
+          const had = old ? String(old.body || "") : "";
+          const fresh = lines.filter((l) => had.indexOf(l) < 0);
+          if (old && !fresh.length && old.title === title) continue;
+
+          const block = (날 ? "· " + 날 + "  " : "· ") + fresh.join(NL + "  ");
+          const body = fresh.length ? (had ? had + NL + block : block) : had;
+
+          const r2 = old
+            ? await sb.from("notes").update({ title, body }).eq("id", old.id)
+            : await sb.from("notes").insert({
+                category: PEOPLE_CAT, title, body,
+                people: name, created_by: user.id,
+              });
+          if (r2.error) console.warn("사람들 글:", r2.error.message);
+        }
+      }
+    } catch (err) { console.warn("사람들 글 쌓기:", err && err.message); }
+
     /* ── 맛집을 지도에 올립니다 ──
        비어 있으면 아무것도 하지 않습니다.
        같은 가게가 이미 지도에 있으면 두 번 올리지 않습니다. */
@@ -2039,7 +2087,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609051100");
+    const NFD = await import("./notes-folder.js?v=202609051300");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

@@ -62,31 +62,44 @@ export function topPeople(rows, n = 10) {
 }
 
 /* ── 사람에 대한 메모 ────────────────────────────────────────
-   본문에 「(사람) 이석준 군협력담당관님께 넘 감사드립니다.」 처럼
-   말머리를 붙여 적으면, 그 줄을 그 사람의 기록으로 모읍니다.
-   말머리는 (사람)·[사람]·(인물)·(person) 을 받습니다. */
-const NOTE_HEAD = /^\s*[(\[（]\s*(?:사람|인물|person|People|PEOPLE)\s*[)\]）]\s*/;
+   본문에 「(사람)」 으로 시작하는 단락을 적으면 그 사람의 기록이 됩니다.
 
-/** 본문에서 「(사람)」 줄만 뽑아냅니다 — 말머리는 떼어 냅니다 */
+     (사람) 이석준 군협력담당관님께 넘 감사드립니다.
+     참 따뜻한 사람이시다.
+     커피까지 풀코스로 쏘셨다...
+
+   위아래 빈 줄로 띄운 한 단락을 통째로 담습니다.
+   말머리는 (사람)·[사람]·<사람>·(인물)·(person) 을 받습니다. */
+const NOTE_HEAD = /^\s*[(\[<（]\s*(?:사람|인물|person|People|PEOPLE)\s*[)\]>）]\s*/;
+
+/** 본문에서 「(사람)」 단락을 통째로 뽑아냅니다 — 말머리는 떼어 냅니다 */
 export function personNotes(body) {
-  return String(body || "").split(/\r?\n/)
-    .filter((l) => NOTE_HEAD.test(l))
-    .map((l) => l.replace(NOTE_HEAD, "").trim())
-    .filter(Boolean);
+  const out = [];
+  // 빈 줄로 나뉜 단락 단위로 봅니다
+  String(body || "").split(/\r?\n\s*\r?\n/).forEach((para) => {
+    const lines = para.split(/\r?\n/);
+    let started = -1;
+    lines.forEach((l, k) => { if (started < 0 && NOTE_HEAD.test(l)) started = k; });
+    if (started < 0) return;
+    const block = lines.slice(started).join("\n").replace(NOTE_HEAD, "").trim();
+    if (block) out.push(block);
+  });
+  return out;
 }
 
 /**
- * 그 줄이 누구 이야기인지 가립니다.
- *   · 글의 「만난 사람」 에 적힌 이름이 줄 안에 있으면 그 사람
- *   · 없으면 줄 맨 앞의 두세 글자 한글 이름을 그 사람으로 봅니다
+ * 그 단락이 누구 이야기인지 가립니다.
+ *   · 글의 「만난 사람」 에 적힌 이름이 단락 안에 있으면 그 사람
+ *   · 없으면 첫 줄 맨 앞의 두세 글자 한글 이름을 그 사람으로 봅니다
  * @returns [{ name, text }]
  */
-export function noteOwners(line, people) {
+export function noteOwners(block, people) {
   const who = (people || []).map((p) => splitPerson(p).name).filter(Boolean);
-  const hit = who.filter((n) => n.length >= 2 && line.includes(n));
-  if (hit.length) return hit.map((name) => ({ name, text: line }));
-  const m = line.match(/^([가-힣]{2,4})(?:\s|님|씨|은|는|이|가|을|를|께|과|와|,|$)/);
-  return m ? [{ name: m[1], text: line }] : [];
+  const hit = who.filter((n) => n.length >= 2 && block.includes(n));
+  if (hit.length) return hit.map((name) => ({ name, text: block }));
+  const first = String(block).split(/\r?\n/)[0] || "";
+  const m = first.match(/^([가-힣]{2,4})(?:\s|님|씨|은|는|이|가|을|를|께|과|와|,|$)/);
+  return m ? [{ name: m[1], text: block }] : [];
 }
 
 /**
@@ -97,8 +110,8 @@ export function notesByPerson(rows) {
   const map = new Map();
   (rows || []).forEach((r) => {
     const people = peopleOf(r);
-    personNotes(r.body).forEach((line) => {
-      noteOwners(line, people).forEach(({ name, text }) => {
+    personNotes(r.body).forEach((block) => {
+      noteOwners(block, people).forEach(({ name, text }) => {
         const arr = map.get(name) || [];
         if (!arr.some((x) => x.text === text && x.row === r)) arr.push({ text, row: r });
         map.set(name, arr);

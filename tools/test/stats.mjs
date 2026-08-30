@@ -116,26 +116,33 @@ eq("가장 자주", sm.most.key, "이소라");
 console.log("\n" + "─".repeat(60));
 console.log("[사람 메모]");
 {
-  const B = ["부발역근처, 하이닉스정문",
-             "(사람) 이석준 군협력담당관님께 넘 감사드립니다.",
-             "참 따뜻한 사람이시다.",
-             "[사람] 강한구 박사님은 방산 쪽에 해박하시다"].join("\n");
+  const B = [
+    "이천시청부터 이천의 주요 사이트",
+    "부발역근처, 하이닉스정문",
+    "",
+    "(사람) 이석준 군협력담당관님께 넘 감사드립니다.",
+    "참 따뜻한 사람이시다.",
+    "커피까지 풀코스로 쏘셨다...",
+    "",
+    "<사람> 강한구 박사님은 방산 쪽에 해박하시다",
+  ].join(String.fromCharCode(10));
   const r = { body: B, people: "이석준, 강한구" };
-  eq("(사람) 줄만 뽑는다", S.personNotes(B).length, 2);
-  eq("말머리를 뗀다", S.personNotes(B)[0], "이석준 군협력담당관님께 넘 감사드립니다.");
-  eq("[사람] 도 받는다", S.personNotes(B)[1].startsWith("강한구"), true);
+
+  const ns = S.personNotes(B);
+  eq("단락 둘을 뽑는다", ns.length, 2);
+  eq("단락을 통째로 담는다", ns[0].split(String.fromCharCode(10)).length, 3);
+  eq("말머리를 뗀다", ns[0].startsWith("이석준 군협력담당관님께"), true);
+  eq("<사람> 도 받는다", ns[1].startsWith("강한구"), true);
+  eq("말머리 없는 단락은 안 담는다", ns.some((x) => x.includes("부발역")), false);
 
   const m = S.notesByPerson([r]);
   eq("사람별로 모은다", [...m.keys()].sort(), ["강한구", "이석준"]);
-  eq("이석준 메모 1건", m.get("이석준").length, 1);
+  eq("이석준 단락에 커피 이야기까지", m.get("이석준")[0].text.includes("커피까지"), true);
 
-  // 만난 사람에 없는 이름도 줄 맨 앞이면 잡습니다
   const m2 = S.notesByPerson([{ body: "(사람) 김병규 교수님 소개로 만남", people: "" }]);
   eq("만난 사람 칸이 비어도 이름을 잡는다", [...m2.keys()], ["김병규"]);
-  // 말머리 없는 줄은 안 셉니다
-  eq("말머리 없는 줄은 무시", S.notesByPerson([{ body: "이석준 좋았다", people: "이석준" }]).size, 0);
+  eq("말머리 없으면 무시", S.notesByPerson([{ body: "이석준 좋았다", people: "이석준" }]).size, 0);
 }
-
 
 console.log("[이름표]");
 {
