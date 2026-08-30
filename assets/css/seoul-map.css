@@ -474,3 +474,14 @@
 .apcats .c-myhome.on  { background:#dceefb; border-color:#5aa9e6; color:#1f5f8f; }
 .apcats .c-remodel.on { background:#e4e0f7; border-color:#6b5bc4; color:#443a86; }
 .apcats .c-intr.on    { background:#fbe0ec; border-color:#d96b9a; color:#96395f; }
+
+/* 내 파일 얹기 (KML · SHP) */
+.lyfile { cursor: pointer; display: block; text-align: center; }
+.ly .lyx { margin-left: 3px; border: 0; background: none; color: #cec7b8;
+  cursor: pointer; font-size: 10px; padding: 0 2px; line-height: 1; }
+.ly .lyx:hover { color: #b3453b; }
+/* 파일 도형을 누르면 뜨는 속성표 */
+.fprops { margin-top: 6px; border-collapse: collapse; font-size: .74rem; width: 100%; }
+.fprops th { text-align: left; padding: 3px 8px 3px 0; color: #8a8378; font-weight: 600;
+  white-space: nowrap; vertical-align: top; }
+.fprops td { padding: 3px 0; color: #3a362e; word-break: break-all; }

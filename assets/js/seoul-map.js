@@ -236,6 +236,10 @@ const SHELL = `
           <label class="ly lyfav" id="lyFavBox" hidden><input type="checkbox" id="lyFav"><span class="lydot"><i style="background:#e8a33d"></i></span>My Favorite 만</label>
           <button type="button" class="lyall" id="lyFit">◎ 올린 곳 전체 보기</button>
           <button type="button" class="lyall lygpkg" id="lyGpkg" hidden>⤓ GPKG 로 받기</button>
+          <span class="lytitle lybase">내 파일</span>
+          <label class="lyall lyfile" id="lyFileBtn">＋ KML · SHP 불러오기
+            <input type="file" id="lyFile" accept=".kml,.kmz,.geojson,.json,.zip,.shp" multiple hidden></label>
+          <span class="lyboxes" id="lyFiles"></span>
           <span class="lytitle lybase">맛집지도</span>
           <span class="lyboxes" id="lyFood"></span>
           <span class="lytitle lybase">바탕지도 선택</span>
@@ -489,7 +493,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202608311800");
+        const G = await import("./gpkg.js?v=202608311900");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -528,6 +532,72 @@ export async function initMap(mountId = "mapapp") {
       on ? shown.add(c.dataset.c) : shown.delete(c.dataset.c);
     });
     draw();
+  });
+
+  /* ── 내 파일 얹기 (KML · KMZ · GeoJSON · SHP) ────────────────
+     파일은 어디로도 올라가지 않습니다. 브라우저가 읽어 화면에만 그립니다. */
+  const fileBox = document.getElementById("lyFiles");
+  const myFiles = [];   // { name, layer, on, n }
+  const FCOLORS = ["#2a5fa8", "#d63a2f", "#0f9d58", "#8a6bb0", "#e65100", "#2b8f8f"];
+
+  function drawFileList() {
+    fileBox.innerHTML = myFiles.map((f, i) =>
+      `<label class="ly${f.on ? "" : " off"}"><input type="checkbox" data-f="${i}"${f.on ? " checked" : ""}>` +
+      `<span class="lydot"><i style="background:${f.color}"></i></span>` +
+      `${esc(f.name)}<em class="lyn">${f.n}</em>` +
+      `<button type="button" class="lyx" data-x="${i}" title="빼기">✕</button></label>`).join("");
+
+    fileBox.querySelectorAll("input[data-f]").forEach((c) =>
+      c.addEventListener("change", () => {
+        const f = myFiles[+c.dataset.f];
+        f.on = c.checked;
+        c.closest(".ly").classList.toggle("off", !c.checked);
+        if (f.on) f.layer.addTo(map); else map.removeLayer(f.layer);
+      }));
+    fileBox.querySelectorAll("button[data-x]").forEach((b) =>
+      b.addEventListener("click", (e) => {
+        e.preventDefault();
+        const i = +b.dataset.x;
+        map.removeLayer(myFiles[i].layer);
+        myFiles.splice(i, 1);
+        drawFileList();
+      }));
+  }
+
+  async function addFiles(list) {
+    const MF = await import("./map-files.js?v=202608311900");
+    for (const file of [...list]) {
+      const btn = document.getElementById("lyFileBtn");
+      const was = btn.firstChild.nodeValue;
+      btn.firstChild.nodeValue = file.name + " 읽는 중…";
+      try {
+        const r = await MF.toGeoJson(file);
+        const color = FCOLORS[myFiles.length % FCOLORS.length];
+        const layer = L.geoJSON(r.geojson, {
+          style: { color, weight: 2, opacity: .9, fillColor: color, fillOpacity: .18 },
+          pointToLayer: (ft, ll) => L.circleMarker(ll,
+            { radius: 5, color, weight: 2, fillColor: color, fillOpacity: .75 }),
+          onEachFeature: (ft, ly) => {
+            const t = MF.labelOf(ft.properties);
+            ly.bindPopup('<div class="fpop"><b>' + esc(t || r.name) + "</b>" +
+              MF.propTable(ft.properties) + "</div>");
+          },
+        });
+        layer.addTo(map);
+        myFiles.push({ name: r.name, layer, on: true, n: r.count, color });
+        drawFileList();
+        try { map.fitBounds(layer.getBounds(), { padding: [40, 40] }); } catch (e) {}
+      } catch (e) {
+        alert(file.name + " — " + (e && e.message ? e.message : e));
+      } finally {
+        btn.firstChild.nodeValue = was;
+      }
+    }
+  }
+
+  document.getElementById("lyFile").addEventListener("change", (e) => {
+    const f = e.target.files; e.target.value = "";
+    if (f && f.length) addFiles(f);
   });
 
   /* ── 맛집지도 레이어 ────────────────────────────────────────
