@@ -2570,3 +2570,8 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hopick a { display: block; padding: 5px 8px; border-radius: 6px; color: #fff;
   font-size: .68rem; transition: .13s var(--ease, ease); }
 .hopick a:hover { background: rgba(255,255,255,.2); }
+
+/* 날짜 숫자를 누르면 그날 일기로 — 누를 수 있음을 보입니다 */
+.hoc[data-d]:not(.out) b { cursor: pointer; border-radius: 4px; padding: 0 3px; margin: 0 -3px;
+  transition: .13s var(--ease, ease); }
+.hoc[data-d]:not(.out) b:hover { background: rgba(255,255,255,.28); }

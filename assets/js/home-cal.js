@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609010000";
+import * as GC from "./gcal.js?v=202609010100";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -18,7 +18,7 @@ const CAT_COLOR = { schedule: "#4f9d92", diary: "#c98a3f" };
 /* 날짜를 눌렀을 때 고를 수 있는 게시판.
    notes.js 와 같은 값입니다 — 그 쪽을 불러오면 첫 화면이 무거워져 따로 적어 둡니다. */
 const WRITE_CATS = [
-  ["schedule", "Schedule"], ["diary", "Diary"], ["minutes", "회의록"],
+  ["diary", "Diary"], ["schedule", "Schedule"], ["minutes", "회의록"],
   ["people", "사람들"], ["daily", "일상"], ["etc", "ETC"],
 ];
 
@@ -199,6 +199,12 @@ export async function initHomeCal(id = "hocal") {
       if (e.target.closest(".hev")) return;          // 일정을 누른 것은 그 글로 갑니다
       const cell = e.target.closest(".hoc");
       if (!cell || !cell.dataset.d) return;
+      // 날짜 숫자를 누르면 곧바로 Diary 로 — 그날의 글을 적는 것이 가장 잦습니다
+      if (e.target.closest("b")) {
+        location.href = "blog.html?cat=diary&new=" + cell.dataset.d;
+        return;
+      }
+      // 칸의 빈 곳을 누르면 다른 게시판도 고를 수 있습니다
       pick(cell, cell.dataset.d);
     });
 
