@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608310800";
-import * as GC from "./gcal.js?v=202608310800";
+import * as NF from "./notes-files.js?v=202608310900";
+import * as GC from "./gcal.js?v=202608310900";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -261,8 +261,10 @@ export async function initNotes(mountId = "notesapp") {
     /* Diary 를 폈을 때만 보이는 머리그림 */
     '<figure class="ndiary" id="nDiaryBg" hidden>' +
       '<img src="assets/img/diary-bg.jpg" alt="" loading="lazy" decoding="async">' +
-      '<figcaption class="ndiary__word">오늘의 한 쪽' +
-        "<small>DIARY</small></figcaption>" +
+      '<figcaption class="ndiary__word">' +
+        '<span class="ndiary__the">The</span>' +
+        '<span class="ndiary__big">Diary</span>' +
+        "<small>오늘의 한 쪽</small></figcaption>" +
     "</figure>" +
     '<div class="ngcal" id="nGcalBox" hidden></div>' +
     '<div class="ncal" id="nCalBox" hidden></div>' +
@@ -1032,7 +1034,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608310800");
+    const NFD = await import("./notes-folder.js?v=202608310900");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

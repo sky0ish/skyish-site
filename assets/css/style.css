@@ -230,12 +230,15 @@ ul { list-style: none; padding: 0; }
 .brand small { display: block; font-family: var(--font-body); font-weight: 500;
   font-size: .58rem; letter-spacing: .32em; opacity: .8; margin-top: 2px; }
 
-.nav { display: flex; align-items: center; gap: clamp(.7rem, 1.7vw, 1.5rem); }
+/* 차림표 글자 — 넓은 화면에서만 커집니다.
+   1000px 언저리에서는 지금 크기 그대로 두어야 넘치지 않습니다.
+   대신 사이 간격을 줄여 좁은 화면에서는 오히려 여유가 생깁니다. */
+.nav { display: flex; align-items: center; gap: clamp(.4rem, .95vw, .9rem); }
 .nav a {
   position: relative;
-  font-weight: 500;
-  font-size: .95rem;
-  letter-spacing: .02em;
+  font-weight: 600;
+  font-size: clamp(.95rem, 1.05vw, 1.14rem);
+  letter-spacing: 0;
   color: #fff;
   opacity: .92;
   padding: .3em 0;
@@ -2345,20 +2348,33 @@ button.cev--g:hover { filter:brightness(.94);
       rgba(246,244,241,0)  86%,
       rgba(246,244,241,.30) 100%);
 }
-/* 그림 위에 얹는 글귀 */
+/* 그림 위에 얹는 글귀 — 「The Diary」 책표지처럼 */
 .ndiary__word {
-  position: absolute; left: 0; right: 0; bottom: 4%;
+  position: absolute; left: 0; right: 0; bottom: 5%;
   text-align: center; z-index: 2;
-  font-family: var(--font-display, inherit);
-  font-size: clamp(1.1rem, 2.6vw, 1.9rem);
-  letter-spacing: .06em;
-  color: #6b5a4e;
-  text-shadow: 0 1px 10px rgba(255,255,255,.75);
+  color: #4a3b30;
+  text-shadow: 0 1px 12px rgba(255,255,255,.8), 0 0 30px rgba(255,255,255,.5);
+}
+.ndiary__the {
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(.7rem, 1.3vw, 1.05rem);
+  font-weight: 400; letter-spacing: .42em; text-transform: uppercase;
+  text-indent: .42em;                 /* 자간 탓에 왼쪽으로 쏠리는 것을 되돌립니다 */
+  opacity: .82; margin-bottom: -.1em;
+}
+.ndiary__big {
+  display: block;
+  font-family: "Great Vibes", "Cormorant Garamond", cursive;
+  font-size: clamp(2.6rem, 6.4vw, 5.2rem);
+  font-weight: 400; line-height: 1.02; letter-spacing: .01em;
 }
 .ndiary__word small {
-  display: block; margin-top: .45rem;
-  font-family: inherit; font-size: .68em; letter-spacing: .12em;
-  color: #8a7a6c; font-weight: 400;
+  display: block; margin-top: .5rem;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(.72rem, 1.25vw, 1rem);
+  letter-spacing: .3em; text-indent: .3em;
+  color: #6b5a4e; font-weight: 400;
 }
 @media (max-width: 680px) {
   .ndiary { max-height: 40vh; }
