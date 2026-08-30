@@ -434,6 +434,15 @@
 .ly.c-dessert .lydot i, .lydot.c-dessert i { background: #e07f56; }
 .ly.c-tea .lydot i, .lydot.c-tea i { background: #4e7a3f; }
 .ly.c-ucafe .lydot i, .lydot.c-ucafe i { background: #b0468f; }
+/* 핫플 아래 여덟 갈래 — 서울 맛집지도(KMZ) 레이어와 같은 빛깔 */
+.ly.c-hkor .lydot i, .lydot.c-hkor i, .cmark.c-hkor i, .cdmark.c-hkor i { background: #4E342E; }
+.ly.c-hwest .lydot i, .lydot.c-hwest i, .cmark.c-hwest i, .cdmark.c-hwest i { background: #0288D1; }
+.ly.c-hasia .lydot i, .lydot.c-hasia i, .cmark.c-hasia i, .cdmark.c-hasia i { background: #A52714; }
+.ly.c-hchn .lydot i, .lydot.c-hchn i, .cmark.c-hchn i, .cdmark.c-hchn i { background: #E65100; }
+.ly.c-hjpn .lydot i, .lydot.c-hjpn i, .cmark.c-hjpn i, .cdmark.c-hjpn i { background: #0F9D58; }
+.ly.c-hcafe .lydot i, .lydot.c-hcafe i, .cmark.c-hcafe i, .cdmark.c-hcafe i { background: #FFD600; }
+.ly.c-hbar .lydot i, .lydot.c-hbar i, .cmark.c-hbar i, .cdmark.c-hbar i { background: #303F9F; }
+.ly.c-hshop .lydot i, .lydot.c-hshop i, .cmark.c-hshop i, .cdmark.c-hshop i { background: #8a6bb0; }
 .cmark.c-kfood i, .cdmark.c-kfood i { background: #d63a2f; }
 .cmark.c-jfood i, .cdmark.c-jfood i { background: #0f9d58; }
 .cmark.c-cfood i, .cdmark.c-cfood i { background: #e65100; }

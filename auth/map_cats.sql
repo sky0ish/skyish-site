@@ -34,7 +34,7 @@ alter table public.map_places add  constraint map_places_category_check
     'food','kfood','jfood','cfood','efood','cafe','dessert','tea','ucafe',
     'apt','myhome','remodel','intr',
     'arch','farch','udev','urgn','tod','harch',
-    'hot'));
+    'hot','hkor','hwest','hasia','hchn','hjpn','hcafe','hbar','hshop'));
 
 comment on column public.map_places.category is
   '분류 : 맛집 food/kfood/jfood/cfood/efood/cafe · 부동산 apt/myhome/remodel/intr · 도시건축 arch/farch/udev/urgn/tod/harch · hot';
