@@ -31,7 +31,7 @@ alter table public.map_places add  constraint map_places_grp_check
 alter table public.map_places drop constraint if exists map_places_category_check;
 alter table public.map_places add  constraint map_places_category_check
   check (category in (
-    'food','kfood','jfood','cfood','efood','cafe',
+    'food','kfood','jfood','cfood','efood','cafe','dessert','tea','ucafe',
     'apt','myhome','remodel','intr',
     'arch','farch','udev','urgn','tod','harch',
     'hot'));

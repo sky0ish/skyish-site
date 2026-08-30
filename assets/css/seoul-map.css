@@ -430,10 +430,18 @@
 .ly.c-jfood .lydot i, .lydot.c-jfood i { background: #0f9d58; }
 .ly.c-cfood .lydot i, .lydot.c-cfood i { background: #e65100; }
 .ly.c-efood .lydot i, .lydot.c-efood i { background: #8a6bb0; }
+.ly.c-cafe .lydot i, .lydot.c-cafe i { background: #e0a70a; }
+.ly.c-dessert .lydot i, .lydot.c-dessert i { background: #e07f56; }
+.ly.c-tea .lydot i, .lydot.c-tea i { background: #4e7a3f; }
+.ly.c-ucafe .lydot i, .lydot.c-ucafe i { background: #b0468f; }
 .cmark.c-kfood i, .cdmark.c-kfood i { background: #d63a2f; }
 .cmark.c-jfood i, .cdmark.c-jfood i { background: #0f9d58; }
 .cmark.c-cfood i, .cdmark.c-cfood i { background: #e65100; }
 .cmark.c-efood i, .cdmark.c-efood i { background: #8a6bb0; }
+.cmark.c-cafe i, .cdmark.c-cafe i { background: #e0a70a; }
+.cmark.c-dessert i, .cdmark.c-dessert i { background: #e07f56; }
+.cmark.c-tea i, .cdmark.c-tea i { background: #4e7a3f; }
+.cmark.c-ucafe i, .cdmark.c-ucafe i { background: #b0468f; }
 .mtabs a.c-kfood.on { background:#fbdcd8; border-color:#d63a2f; color:#8e281f; }
 .mtabs a.c-jfood.on { background:#d8f0e2; border-color:#0f9d58; color:#0a6b3c; }
 .mtabs a.c-cfood.on { background:#fce3cd; border-color:#e65100; color:#9a4e05; }

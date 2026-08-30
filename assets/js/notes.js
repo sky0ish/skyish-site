@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609021300";
-import * as GC from "./gcal.js?v=202609021300";
-import * as ST from "./notes-stats.js?v=202609021300";
-import * as NW from "./notes-network.js?v=202609021300";
-import { alumniNames } from "./addressbook.js?v=202609021300";
+import * as NF from "./notes-files.js?v=202609021500";
+import * as GC from "./gcal.js?v=202609021500";
+import * as ST from "./notes-stats.js?v=202609021500";
+import * as NW from "./notes-network.js?v=202609021500";
+import { alumniNames } from "./addressbook.js?v=202609021500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -136,7 +136,10 @@ export function foodCat(s) {
   if (/한식|한정식|국밥|고기|백반|칼국수|냉면|족발|삼겹/.test(t)) return "kfood";
   if (/일식|스시|초밥|라멘|우동|돈카츠|돈까스|이자카야|사시미/.test(t)) return "jfood";
   if (/중식|중국|짜장|짬뽕|마라|훠궈|딤섬/.test(t)) return "cfood";
-  if (/카페|까페|커피|디저트|베이커리|빵|브런치|찻집/.test(t)) return "cafe";
+  if (/디저트|베이커리|빵|케이크|마카롱/.test(t)) return "dessert";
+  if (/찻집|전통차|다원|다도/.test(t)) return "tea";
+  if (/이색|테마/.test(t)) return "ucafe";
+  if (/카페|까페|커피|브런치/.test(t)) return "cafe";
   return "efood";                    // 양식·아시아·분식·그 밖은 기타로
 }
 
@@ -1685,7 +1688,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609021300");
+    const NFD = await import("./notes-folder.js?v=202609021500");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

@@ -66,14 +66,18 @@ function applyGroupChrome(key) {
 }
 
 /* 분류 — 세 번째 값이 있으면 그 분류의 아래 갈래입니다.
-   맛집 아래로 한식·일식·중식·기타·카페를 둡니다. */
+   맛집과 카페는 같은 위계입니다 — 맛집 아래 한식·일식·중식·기타,
+   카페 아래 디저트가게·전통찻집·이색카페. */
 export const CATS = [
   ["food",  "맛집"],
   ["kfood", "한식",   "food"],
   ["jfood", "일식",   "food"],
   ["cfood", "중식",   "food"],
   ["efood", "기타",   "food"],
-  ["cafe",  "카페",   "food"],
+  ["cafe",  "카페"],
+  ["dessert", "디저트가게", "cafe"],
+  ["tea",     "전통찻집",   "cafe"],
+  ["ucafe",   "이색카페",   "cafe"],
   ["apt",     "APT"],
   ["myhome",  "My Home",    "apt"],
   ["remodel", "Remodeling", "apt"],
@@ -106,7 +110,13 @@ export const CAT_INFO = {
   efood: { shape: "star", mark: "보라 별",
     desc: "<b>그 밖의 맛집</b> — 양식·아시아·분식처럼 위에 없는 곳입니다." },
   cafe: { shape: "star", mark: "노란 별",
-    desc: "일하기 좋은 곳, 이야기 나누기 좋은 곳 — <b>서울의 카페</b>를 모았습니다." },
+    desc: "일하기 좋은 곳, 이야기 나누기 좋은 곳 — <b>카페</b>를 모았습니다." },
+  dessert: { shape: "star", mark: "살구빛 별",
+    desc: "<b>디저트가게</b> — 케이크·빵·달콤한 것이 맛있는 집입니다." },
+  tea: { shape: "star", mark: "녹빛 별",
+    desc: "<b>전통찻집</b> — 차 한 잔이 좋은 조용한 집입니다." },
+  ucafe: { shape: "star", mark: "자줏빛 별",
+    desc: "<b>이색카페</b> — 공간·주제가 남다른 곳입니다." },
   apt:  { shape: "dot",  mark: "파란 동그라미",
     desc: "눈여겨본 <b>아파트·주거단지</b>입니다. 배치와 외관, 주변 환경을 함께 적어두면 좋습니다." },
   myhome:  { shape: "dot", mark: "하늘색 동그라미",
@@ -440,7 +450,16 @@ export async function initMap(mountId = "mapapp") {
   }
 
   const boxes = document.getElementById("lyBoxes");
-  const LEG = CATS.slice();
+  /* 화면마다 제 분류만 폅니다 — 전체 나무는 종합에서만.
+     맛집 화면에는 맛집·카페 두 뿌리가 같은 위계로 나란히 섭니다. */
+  const GRP_LEG = {
+    food:   ["food", "kfood", "jfood", "cfood", "efood", "cafe", "dessert", "tea", "ucafe"],
+    estate: ["apt", "myhome", "remodel", "intr"],
+    urban:  ["arch", "farch", "udev", "urgn", "tod", "harch"],
+    hot: ["hot"], trip: ["hot"], etc: ["hot"],
+  };
+  const LEG = MULTI ? CATS.slice()
+    : CATS.filter(([k]) => (GRP_LEG[GRP] || ["hot"]).indexOf(k) >= 0);
   boxes.innerHTML = LEG.map(([k, v, parent]) =>
     `<label class="ly c-${k}${parent ? " lykid" : ""}"><input type="checkbox" data-c="${k}" checked>` +
     `<span class="lydot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</label>`).join("")
@@ -454,8 +473,12 @@ export async function initMap(mountId = "mapapp") {
       on ? shown.add(key) : shown.delete(key);
     };
     set(c.dataset.c, c.checked);
-    // 「맛집」을 끄면 그 아래 한식·일식·… 도 함께 접습니다
-    kidsOf(c.dataset.c).forEach((kid) => set(kid, c.checked));
+    /* 아래 갈래를 끝까지 따라 끕니다.
+       종합에서 「맛집」 하나만 꺼도 한식…기타에 카페·디저트·찻집·이색까지
+       한꺼번에 접히도록, 맛집은 카페 나무도 제 아래로 칩니다. */
+    const walk = (k) => kidsOf(k).forEach((kid) => { set(kid, c.checked); walk(kid); });
+    walk(c.dataset.c);
+    if (c.dataset.c === "food") { set("cafe", c.checked); walk("cafe"); }
     draw();
   }));
   /* 종합 갈래에서만 — My Favorite 만 골라 봅니다 */
@@ -493,7 +516,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609021300");
+        const G = await import("./gpkg.js?v=202609021500");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -565,7 +588,7 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609021300");
+    const MF = await import("./map-files.js?v=202609021500");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;

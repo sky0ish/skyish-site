@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My WAY">
 <link rel="icon" href="assets/img/app/icon-192.png">
-<link rel="stylesheet" href="assets/css/style.css?v=202609021300">
+<link rel="stylesheet" href="assets/css/style.css?v=202609021500">
 
 <style>
   /* 앱 화면만의 옷 — 폰에 맞춰 한 손 거리 안에 큼직하게 */
@@ -35,10 +35,10 @@
 
   /* 큰 단추 둘 — 가장 잦은 일부터 */
   .app__write { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
-  .app__write a { display: block; padding: 18px 14px; border-radius: 14px;
-    text-align: center; font-weight: 700; font-size: 1.02rem; color: #fff;
+  .app__write a { display: block; padding: 10px 14px 9px; border-radius: 13px;
+    text-align: center; font-weight: 700; font-size: .98rem; color: #fff;
     box-shadow: 0 4px 14px rgba(28, 26, 25, .12); }
-  .app__write a small { display: block; margin-top: 4px; font-size: .72rem;
+  .app__write a small { display: block; margin-top: 1px; font-size: .68rem;
     font-weight: 400; opacity: .85; }
   .app__write .w-diary { background: #c98a3f; }
   .app__write .w-sched { background: #4f9d92; }
@@ -166,7 +166,7 @@
   document.getElementById("goSched").href = "blog.html?cat=schedule&new=" + ymd;
 
   // 달력 — 첫 화면 것을 그대로. 관리자가 아니면 스스로 사라집니다.
-  import("./assets/js/home-cal.js?v=202609021300")
+  import("./assets/js/home-cal.js?v=202609021500")
     .then((m) => m.initHomeCal("hocal"))
     .catch(() => {});
 </script>
