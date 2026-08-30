@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609030900";
-import * as GC from "./gcal.js?v=202609030900";
-import * as ST from "./notes-stats.js?v=202609030900";
-import * as NW from "./notes-network.js?v=202609030900";
-import { alumniNames } from "./addressbook.js?v=202609030900";
+import * as NF from "./notes-files.js?v=202609031100";
+import * as GC from "./gcal.js?v=202609031100";
+import * as ST from "./notes-stats.js?v=202609031100";
+import * as NW from "./notes-network.js?v=202609031100";
+import { alumniNames } from "./addressbook.js?v=202609031100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -383,6 +383,7 @@ export async function initNotes(mountId = "notesapp") {
       '<label class="nbtn nfolder" id="nFolderBtn" ' +
         'title="0_schedule 폴더를 고르면 행사마다 글을 만들어 드립니다">📁 폴더에서 가져오기' +
         '<input type="file" id="nFolder" webkitdirectory directory multiple hidden></label>' +
+      '<button type="button" class="nbtn" id="nRec" title="1.Record/글로바꾼것 폴더를 고르세요">🎙 회의록 붙이기</button>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
@@ -1551,6 +1552,80 @@ export async function initNotes(mountId = "notesapp") {
     return { error: null, dropped };
   }
 
+  /* ── 회의록 붙이기 ──
+     1.Record/받아쓰기.py 가 만든 txt(글로바꾼것 폴더)를 골라
+     그날 Schedule 글에 합칩니다 — 요약은 본문에, 전문 txt 는 붙임으로.
+     그날 글이 없으면 새로 만듭니다. 같은 이름이 이미 붙어 있으면 건너뜁니다. */
+  document.getElementById("nRec").addEventListener("click", async () => {
+    if (typeof window.showDirectoryPicker !== "function") {
+      alert("컴퓨터에서 쓰는 기능입니다 — 받아쓰기 도구가 컴퓨터에서 돌기 때문입니다.");
+      return;
+    }
+    let dir;
+    try {
+      dir = await window.showDirectoryPicker({ id: "skyish-rec", mode: "read" });
+    } catch (err) { return; }               // 고르다 닫으신 것
+
+    // txt 를 모읍니다 — 「글로바꾼것」 이 한 겹 안에 있어도 찾아 들어갑니다
+    const txts = [];
+    async function walk(d, depth) {
+      for await (const e of d.values()) {
+        if (e.kind === "file" && /\.txt$/i.test(e.name)) txts.push(await e.getFile());
+        else if (e.kind === "directory" && depth < 1) await walk(e, depth + 1);
+      }
+    }
+    await walk(dir, 0);
+    const jobs = txts
+      .map((f) => ({ f, day: findDate(f.name) }))
+      .filter((x) => x.day);
+    if (!jobs.length) {
+      alert("날짜로 시작하는 txt 를 못 찾았습니다." + String.fromCharCode(10) +
+        "1.Record 에서 python 받아쓰기.py 를 먼저 돌리고, 「글로바꾼것」 폴더를 골라 주세요.");
+      return;
+    }
+    if (!confirm(`회의록 ${jobs.length}건을 그날 Schedule 글에 붙입니다.` +
+      String.fromCharCode(10) + "그날 글이 없으면 새로 만듭니다. 계속할까요?")) return;
+
+    const done = [], skip = [];
+    for (const { f, day } of jobs) {
+      try {
+        const text = await f.text();
+        // 본문에는 요약까지만 — 전문은 붙임 txt 로 보면 됩니다
+        const cut = text.indexOf("■ 전문");
+        const gist = (cut > 0 ? text.slice(0, cut) : text.slice(0, 1500)).trim();
+
+        const row = rows.find((r) =>
+          r.category === "schedule" && (r.event_date || "").slice(0, 10) === day);
+        if (row && (row.files || []).some((x) => x.name === f.name)) {
+          skip.push(f.name + " — 이미 붙어 있습니다"); continue;
+        }
+        const up = await NF.upload(f);
+        if (row) {
+          const body = mergeBlock(row.body || "", f.name, gist);
+          const files = (row.files || []).concat([up]);
+          const r2 = await sb.from("notes").update({ body, files }).eq("id", row.id);
+          if (r2.error) throw r2.error;
+          done.push(day + " → 「" + row.title + "」 에 붙였습니다");
+        } else {
+          const title = f.name.replace(/\.txt$/i, "");
+          const r2 = await sb.from("notes").insert({
+            category: "schedule", title,
+            body: mergeBlock("", f.name, gist),
+            event_date: day, files: [up], created_by: user.id,
+          });
+          if (r2.error) throw r2.error;
+          done.push(day + " → 새 글 「" + title + "」");
+        }
+      } catch (err) {
+        skip.push(f.name + " — " + (err && err.message || "실패"));
+      }
+    }
+    await load();
+    alert((done.length ? "붙였습니다:" + String.fromCharCode(10) + done.join(String.fromCharCode(10)) : "") +
+      (done.length && skip.length ? String.fromCharCode(10) + String.fromCharCode(10) : "") +
+      (skip.length ? "건너뜀:" + String.fromCharCode(10) + skip.join(String.fromCharCode(10)) : ""));
+  });
+
   document.getElementById("nmSave").addEventListener("click", async (e) => {
     const title = document.getElementById("nmT").value.trim();
     if (!title) { msg.textContent = "제목을 적어주세요."; return; }
@@ -1827,7 +1902,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609030900");
+    const NFD = await import("./notes-folder.js?v=202609031100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

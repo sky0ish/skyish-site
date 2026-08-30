@@ -72,3 +72,4 @@ assets/data/flood/
 # 지도 원본 (구글 마이맵에서 내보낸 KMZ) — assets/data/*.json 으로 옮겨 담아 씁니다
 /1_MAP/
 /000.APP/
+/1.Record/
