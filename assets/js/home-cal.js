@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202608312200";
+import * as GC from "./gcal.js?v=202608312300";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -99,6 +99,13 @@ export async function initHomeCal(id = "hocal") {
     sessionStorage.setItem(CACHE, JSON.stringify({ notes, g: gEvents }));
   } catch (e) { /* 저장소가 꽉 차도 그냥 갑니다 */ }
 
+  /* 일정 하나가 어디로 이어질지 —
+     내가 쓴 글이면 그 글로, 구글에서 온 것이면 일정 게시판으로. */
+  function linkTo(x) {
+    if (x.id) return `blog.html?cat=${x.cat === "diary" ? "diary" : "schedule"}&id=${x.id}`;
+    return "blog.html?cat=schedule";
+  }
+
   /* ── 그리기 ── */
   function draw() {
     const y = at.getFullYear(), m = at.getMonth();
@@ -110,7 +117,10 @@ export async function initHomeCal(id = "hocal") {
     const byDay = {};
     notes.forEach((n) => {
       const k = (n.event_date || "").slice(0, 10);
-      if (k) (byDay[k] ||= []).push({ t: n.title, c: CAT_COLOR[n.category] || "#4f9d92" });
+      if (k) (byDay[k] ||= []).push({
+        t: n.title, c: CAT_COLOR[n.category] || "#4f9d92",
+        id: n.id, cat: n.category,   // 눌렀을 때 그 글로 갑니다
+      });
     });
     gEvents.forEach((e) => {
       (byDay[e.date] ||= []).push({ t: e.title, c: e.color || "#4285f4", g: 1, time: e.time });
@@ -124,8 +134,9 @@ export async function initHomeCal(id = "hocal") {
       const list = byDay[k] || [];
       // 두 건까지는 이름을 보여 주고, 더 있으면 「+n」 으로 줄입니다
       const items = list.slice(0, 2).map((x) =>
-        `<em title="${esc(x.t)}"><i style="background:${esc(x.c)}"></i>` +
-        `<span>${esc(x.t)}</span></em>`).join("") +
+        `<a class="hev" href="${esc(linkTo(x))}" title="${esc(x.t)}">` +
+        `<i style="background:${esc(x.c)}"></i>` +
+        `<span>${esc(x.t)}</span></a>`).join("") +
         (list.length > 2 ? `<em class="more">+${list.length - 2}</em>` : "");
       cells += `<span class="hoc${out ? " out" : ""}${k === today ? " now" : ""}` +
         `${list.length ? " has" : ""}"${list.length ? ` title="${esc(list.map((x) => x.t).join(" · "))}"` : ""}>` +
@@ -149,7 +160,7 @@ export async function initHomeCal(id = "hocal") {
       '<div class="hocal__grid">' + cells + "</div>" +
       (soon.length
         ? '<div class="hocal__soon">' + soon.map((s) =>
-            `<a href="blog.html?cat=schedule"><i style="background:${esc(s.c)}"></i>` +
+            `<a href="${esc(linkTo(s))}"><i style="background:${esc(s.c)}"></i>` +
             `<span class="d">${esc(s.k.slice(5).replace("-", "."))}</span>` +
             `<span class="t">${esc(s.t)}</span></a>`).join("") + "</div>"
         : '<p class="hocal__none">앞으로 잡힌 일정이 없습니다.</p>') +
