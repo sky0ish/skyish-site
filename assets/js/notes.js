@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609010100";
-import * as GC from "./gcal.js?v=202609010100";
+import * as NF from "./notes-files.js?v=202609010200";
+import * as GC from "./gcal.js?v=202609010200";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -620,8 +620,9 @@ export async function initNotes(mountId = "notesapp") {
       const key = iso(d);
       const out = d.getMonth() !== m;
       const items = (byDay[key] || []).map((r) =>
-        `<span class="cev" style="--c:${CAT_COLOR[catOf(r)] || CAT_COLOR.schedule}" title="${esc(r.title)}">` +
-        `${esc(r.title)}</span>`).join("")
+        `<button type="button" class="cev" data-open="${r.id}" ` +
+        `style="--c:${CAT_COLOR[catOf(r)] || CAT_COLOR.schedule}" title="${esc(r.title)}">` +
+        `${esc(r.title)}</button>`).join("")
         + (gByDay[key] || []).map((e, gi) =>
         `<${isAdmin ? "button type=\"button\"" : "span"} class="cev cev--g" ` +
         `style="--c:${esc(e.color || "#4285f4")}" ` +
@@ -631,7 +632,10 @@ export async function initNotes(mountId = "notesapp") {
         `${e.time ? esc(e.time) + " " : ""}${esc(e.title)}` +
         `</${isAdmin ? "button" : "span"}>`).join("");
       cells += `<div class="ccell${out ? " out" : ""}${key === todayIso ? " today" : ""}">` +
-        `<span class="cday${d.getDay() === 0 ? " sun" : d.getDay() === 6 ? " sat" : ""}">${d.getDate()}</span>` +
+        (isAdmin
+          ? `<button type="button" class="cday cdaybtn${d.getDay() === 0 ? " sun" : d.getDay() === 6 ? " sat" : ""}" ` +
+            `data-new="${key}" title="이 날 일기 쓰기">${d.getDate()}</button>`
+          : `<span class="cday${d.getDay() === 0 ? " sun" : d.getDay() === 6 ? " sat" : ""}">${d.getDate()}</span>`) +
         items + "</div>";
     }
     calBox.innerHTML =
@@ -653,6 +657,17 @@ export async function initNotes(mountId = "notesapp") {
       }
       drawCal();
     };
+    /* 내 글 일정을 누르면 그 글이 열립니다 */
+    calBox.querySelectorAll("button[data-open]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const r = rows.find((x) => String(x.id) === b.dataset.open);
+        if (r) detail(r);
+      }));
+
+    /* 날짜 숫자를 누르면 그날 일기를 새로 씁니다 */
+    calBox.querySelectorAll("button[data-new]").forEach((b) =>
+      b.addEventListener("click", () => newDiary(b.dataset.new)));
+
     // 구글 일정을 누르면 그 내용으로 새 글을 씁니다
     if (isAdmin) {
       calBox.querySelectorAll("button[data-g]").forEach((b) =>
@@ -667,6 +682,22 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("cToday").addEventListener("click", () => {
       calAt = new Date(); calAt.setDate(1); drawCal();
     });
+  }
+
+  /** 그날의 일기를 새로 씁니다 — 달력의 날짜 숫자에서 옵니다 */
+  function newDiary(day) {
+    open(null);
+    mCat.value = "diary";
+    syncTag();
+    document.getElementById("nmD").value = ymd(day);
+    const t = document.getElementById("nmT");
+    if (!t.value.trim()) {
+      const d = new Date(day + "T00:00:00");
+      t.value = todayTitle(isNaN(d) ? new Date() : d);
+    }
+    t.focus();
+    try { t.setSelectionRange(t.value.length, t.value.length); } catch (e) {}
+    msg.textContent = "";
   }
 
   /* 구글 일정을 새 글로 옮깁니다 — Schedule 갈래로, 날짜·장소를 채워서 */
@@ -1078,7 +1109,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609010100");
+    const NFD = await import("./notes-folder.js?v=202609010200");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
