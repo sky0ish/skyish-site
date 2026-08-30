@@ -71,7 +71,11 @@
         { label: "일상",     file: "blog.html?cat=daily"    },
         { label: "ETC",      file: "blog.html?cat=etc"      }
       ] },
-      { label: "CONTACT",  file: "contact.html"  }
+      { label: "CONTACT",  file: "contact.html", sub: [
+        { label: "To Me",   file: "contact.html"          },
+        { label: "주소록",   file: "contact.html?p=addr",  own: true },
+        { label: "Sites",   file: "contact.html?p=sites", own: true }
+      ] }
     ],
     email: "whlove@gmail.com",
     org:   "Gyeonggi Research Institute"
@@ -187,6 +191,21 @@
   /* -----------------------------------------------------------
      3. Header
      ----------------------------------------------------------- */
+  /* own: true 인 하위 항목은 주인에게만 보입니다.
+     상단 차림표는 로그인 여부와 상관없이 그려지므로 여기서 걸러 냅니다.
+     (막는 것은 화면 쪽 코드와 자료 쪽 규칙이 따로 합니다 — 이건 눈에 안 띄게 하는 것뿐) */
+  function visibleNav() {
+    var sess = storedSession();
+    var mail = ((sess && sess.email) || "").toLowerCase();
+    var owner = OWNERS.indexOf(mail) >= 0;
+    return SITE.nav.map(function (item) {
+      if (!item.sub) return item;
+      var sub = item.sub.filter(function (x) { return !x.own || owner; });
+      if (sub.length <= 1) { var c = {}; for (var k in item) c[k] = item[k]; delete c.sub; return c; }
+      var c2 = {}; for (var k2 in item) c2[k2] = item[k2]; c2.sub = sub; return c2;
+    });
+  }
+
   function buildHeader() {
     var mount = document.getElementById("site-header");
     if (!mount) return;
@@ -200,7 +219,7 @@
     brand.innerHTML = SITE.brand + "<small>" + SITE.tagline + "</small>";
 
     var nav = el("nav", { class: "nav", "aria-label": "Main" });
-    SITE.nav.forEach(function (item, idx) {
+    visibleNav().forEach(function (item, idx) {
       /* 지금 이 화면 자체인가 / 이 메뉴에 딸린 다른 화면인가를 나눕니다.
          aria-current="page" 는 '이 링크가 지금 문서'일 때만 붙여야 하므로,
          딸린 화면일 때는 밑줄만 켜는 표시(is-here)를 씁니다. */
