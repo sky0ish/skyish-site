@@ -2354,6 +2354,17 @@ button.cev--g:hover { filter:brightness(.94);
   .ptop__go { min-width: 88px; }
 }
 
+/* 글쓰기 창 머리 — 제목과 오른쪽 단추 줄 */
+.nmodal__head { display: flex; align-items: center; gap: 12px;
+  position: sticky; top: -28px; z-index: 3; margin: -4px -4px 6px;
+  padding: 10px 4px 10px; background: #fff; }
+.nmodal__head h3 { flex: 1; min-width: 0; margin: 0; }
+.nmodal__acts { display: flex; align-items: center; gap: 6px; flex: none; }
+.nbtn.nmini { padding: .42em .95em; font-size: .78rem; }
+.nmodal__x { border: 0; background: none; color: var(--mauve); cursor: pointer;
+  font-size: .95rem; padding: 6px 8px; border-radius: 8px; line-height: 1; }
+.nmodal__x:hover { color: var(--ink); background: #f3f0ea; }
+
 /* 사람들 화면의 두 갈래 단추 */
 .ptabs { display: flex; gap: 8px; margin: 0 0 1.2rem; }
 .ptab { padding: 8px 18px; border: 1px solid var(--line); border-radius: 999px;

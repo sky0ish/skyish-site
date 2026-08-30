@@ -216,6 +216,18 @@ await check("자세히 보기를 여러 번 열어도 듣는 이가 쌓이지 �
     throw new Error("바깥 누르면 닫기가 아예 없습니다");
 });
 
+await check("창 위 저장 단추가 아래 저장을 부른다", async () => {
+  fire("nNew", "click");
+  byId("nmT").value = "위 단추 시험";
+  const before = globalThis.__calls.length;
+  await fire("nmSaveTop", "click");
+  if (globalThis.__calls.length <= before) throw new Error("저장이 안 불렸습니다");
+});
+
+await check("창 위 취소·지우기 단추가 살아 있다", () => {
+  if (!byId("nmXTop") || !byId("nmDelTop")) throw new Error("단추가 없습니다");
+});
+
 console.log("─".repeat(60));
 console.log(bad ? bad + "개 어긋났습니다" : "모두 지나갔습니다");
 process.exit(bad ? 1 : 0);

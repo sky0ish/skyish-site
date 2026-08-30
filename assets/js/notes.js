@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609050900";
-import * as GC from "./gcal.js?v=202609050900";
-import * as ST from "./notes-stats.js?v=202609050900";
-import * as NW from "./notes-network.js?v=202609050900";
-import { alumniNames } from "./addressbook.js?v=202609050900";
+import * as NF from "./notes-files.js?v=202609051100";
+import * as GC from "./gcal.js?v=202609051100";
+import * as ST from "./notes-stats.js?v=202609051100";
+import * as NW from "./notes-network.js?v=202609051100";
+import { alumniNames } from "./addressbook.js?v=202609051100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -395,7 +395,16 @@ export async function initNotes(mountId = "notesapp") {
     '<div class="nimp" id="nImp"></div>' +
     '<div class="nmodal" id="nModal" role="dialog" aria-modal="true" aria-label="글 쓰기">' +
       '<div class="nmodal__box">' +
-        '<h3 id="nmTitle">새 글</h3>' +
+        /* 창 오른쪽 위 단추 — 긴 글을 쓰다가 아래까지 내려가지 않아도 되게.
+           아래 단추와 같은 일을 합니다(누르면 아래 단추를 대신 누릅니다). */
+        '<div class="nmodal__head">' +
+          '<h3 id="nmTitle">새 글</h3>' +
+          '<div class="nmodal__acts">' +
+            '<button type="button" class="nbtn nbtn--del nmini" id="nmDelTop" hidden>지우기</button>' +
+            '<button type="button" class="nbtn nbtn--go nmini" id="nmSaveTop">저장</button>' +
+            '<button type="button" class="nbtn nmini" id="nmXTop">취소</button>' +
+          "</div>" +
+        "</div>" +
         '<label for="nmCat">갈래</label><select id="nmCat"></select>' +
         '<div id="nmTagBox" hidden><label for="nmTag">말머리</label>' +
           '<select id="nmTag"></select></div>' +
@@ -447,7 +456,7 @@ export async function initNotes(mountId = "notesapp") {
         '<div class="nmodal__foot">' +
           '<button type="button" class="nbtn nbtn--del" id="nmDel" hidden>지우기</button>' +
           '<span style="flex:1"></span>' +
-          '<button type="button" class="nbtn" id="nmCancel">취소</button>' +
+          '<button type="button" class="nbtn" id="nmCancel" hidden>취소</button>' +
           '<button type="button" class="nbtn nbtn--go" id="nmSave">저장</button>' +
         "</div>" +
       "</div>" +
@@ -1407,6 +1416,7 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nDetail").classList.remove("on");   // 위에 덮인 창을 걷습니다
     document.getElementById("nmTitle").textContent = row ? "글 고치기" : "새 글";
     document.getElementById("nmDel").hidden = !row;
+    document.getElementById("nmDelTop").hidden = !row;
     mCat.value = row ? row.category
                      : ((cur === "all" || cur === PEOPLE_CAT) ? "schedule" : cur);
     if (!mCat.value) mCat.value = "etc";   // 없어진 갈래의 옛 글을 열었을 때
@@ -1456,6 +1466,36 @@ export async function initNotes(mountId = "notesapp") {
   const nNewBtn = document.getElementById("nNew");
   if (nNewBtn) nNewBtn.addEventListener("click", () => open(null));
   document.getElementById("nmCancel").addEventListener("click", tryClose);
+  /* 위 단추는 아래 단추와 같은 일을 합니다 —
+     저장·지우기 규칙이 두 곳으로 갈라지지 않게, 아래 단추에 듣는 이를 겹쳐 답니다.
+     (click() 을 대신 부르는 방식은 시늉 화면에서 통하지 않았습니다) */
+  const alsoOn = (topId, bottomId) => {
+    const top = document.getElementById(topId);
+    const bottom = document.getElementById(bottomId);
+    if (!top || !bottom) return;
+    top.addEventListener("click", (e) => {
+      e.preventDefault();
+      // 아래 단추가 받는 것과 같은 꼴로 넘겨 줍니다
+      const ev = { target: bottom, currentTarget: bottom, preventDefault() {} };
+      (bottom.__handlers || []).forEach((fn) => fn(ev));
+      if (bottom.click) bottom.click();
+    });
+  };
+  /* 아래 단추에 달리는 손을 기억해 두었다가 위에서도 부릅니다 */
+  ["nmSave", "nmDel"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el || el.__wrapped) return;
+    el.__wrapped = true;
+    el.__handlers = [];
+    const orig = el.addEventListener.bind(el);
+    el.addEventListener = (type, fn, opt) => {
+      if (type === "click") el.__handlers.push(fn);
+      orig(type, fn, opt);
+    };
+  });
+  alsoOn("nmSaveTop", "nmSave");
+  alsoOn("nmDelTop", "nmDel");
+  document.getElementById("nmXTop").addEventListener("click", tryClose);
   /* 바깥을 눌러도 닫지 않습니다.
      글을 적는 창이라, 칸 옆 빈 곳을 잘못 눌렀다고 적던 것이 사라지면 안 됩니다.
      닫으실 때는 「취소」나 Esc 를 쓰십시오. */
@@ -1999,7 +2039,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609050900");
+    const NFD = await import("./notes-folder.js?v=202609051100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
