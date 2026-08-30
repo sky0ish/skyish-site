@@ -4,8 +4,9 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609011500";
-import * as GC from "./gcal.js?v=202609011500";
+import * as NF from "./notes-files.js?v=202609011700";
+import * as GC from "./gcal.js?v=202609011700";
+import * as ST from "./notes-stats.js?v=202609011700";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -574,42 +575,140 @@ export async function initNotes(mountId = "notesapp") {
     countEl.textContent = `사람 ${hit.length}명 · 만남 ${meets}번` +
       (all.length !== hit.length ? ` · 모두 ${all.length}명` : "");
 
-    if (!hit.length) {
+    if (!all.length) {
       list.innerHTML = "";
       emptyEl.hidden = false;
-      emptyEl.textContent = all.length
-        ? "그런 사람을 못 찾았습니다."
-        : "글의 「만난 사람」 칸을 채우시면 여기에 모입니다.";
+      emptyEl.textContent = "글의 「만난 사람」 칸을 채우시면 여기에 모입니다.";
       return;
     }
     emptyEl.hidden = true;
 
-    list.innerHTML = '<div class="npeople">' + hit.map((p) => {
-      const on = p.key === openWho;
-      return '<div class="nperson' + (on ? " on" : "") + '">' +
-        `<button type="button" class="nperson__name" data-k="${esc(p.key)}" ` +
-          `aria-expanded="${on}"><b>${esc(p.label)}</b>` +
-          `<span class="n">${p.meets.length}</span></button>` +
-        (on
-          ? '<div class="nperson__meets">' + p.meets.map((r) =>
-              `<button type="button" class="npmeet" data-id="${r.id}">` +
-                `<span class="ncat" style="--c:${CAT_COLOR[r.category] || "#888"}">` +
-                  `${esc(CAT_NAME[r.category] || "")}</span>` +
-                `<span class="npmeet__t"><b>${esc(r.title)}</b>` +
-                (r.place ? `<small>⊙ ${esc(r.place)}</small>` : "") + "</span>" +
-                `<span class="npmeet__d">${r.event_date ? ymd(r.event_date) : ""}</span>` +
-              "</button>").join("") + "</div>"
-          : "") +
-        "</div>";
-    }).join("") + "</div>";
+    /* 찾는 중일 때는 셈판을 접습니다 — 찾은 사람에 눈이 가야 하니까 */
+    list.innerHTML = (s ? "" : statsHtml()) + peopleHtml(hit, s);
+    wirePeople();
+  }
 
+  /* ── 셈판 ── 요약 · 달마다 · TOP 10 · 낱말 구름 ── */
+  function statsHtml() {
+    const sm = ST.summary(rows);
+    const mm = ST.monthly(rows, 12);
+    const top = ST.topPeople(rows, 10);
+
+    /* ① 한눈 요약 */
+    const card = (v, k) => `<div class="pstat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`;
+    const head = '<div class="pstats">' +
+      card(sm.people + "명", "만난 사람") +
+      card(sm.meets + "번", "만난 자리") +
+      card(sm.thisMonth + "명", "이번 달") +
+      card(sm.most ? sm.most.label.replace(/\s*\(.*$/, "") : "—", "가장 자주") +
+      "</div>";
+
+    /* ② 달마다 — 지난 열두 달 */
+    /* 잣대는 두 값 가운데 큰 쪽 — 같은 분을 다섯 번 만나면
+       자리(5)가 사람(1)보다 커져, 사람만 잣대로 삼으면 막대가 넘칩니다 */
+    const hi = Math.max(1, ...mm.map((x) => Math.max(x.people, x.meets)));
+    const bars = '<section class="pbox"><h4>지난 열두 달' +
+      '<span class="pleg"><i class="a"></i>만난 사람<i class="b"></i>만난 자리</span></h4>' +
+      '<div class="pbars">' + mm.map((x) =>
+        `<div class="pbar" title="${esc(x.ym)} — 사람 ${x.people}명 · 자리 ${x.meets}번">` +
+          '<span class="pbar__v">' + (x.people || "") + "</span>" +
+          '<span class="pbar__stack">' +
+            `<i class="pbar__a" style="height:${Math.round(x.people / hi * 100)}%"></i>` +
+            `<i class="pbar__b" style="height:${Math.round(x.meets / hi * 100)}%"></i>` +
+          "</span>" +
+          `<small>${esc(x.label)}</small>` +
+        "</div>").join("") + "</div></section>";
+
+    /* ③ TOP 10 */
+    const thi = Math.max(1, top.length ? top[0].meets.length : 1);
+    const rank = '<section class="pbox"><h4>가장 자주 만난 열 분</h4>' +
+      '<ol class="ptop">' + top.map((p, i) => {
+        const n = p.meets.length;
+        return `<li><em>${i + 1}</em>` +
+          `<button type="button" class="ptop__go" data-k="${esc(p.key)}">` +
+            `<b>${esc(p.key)}</b>` +
+            (p.org ? `<span class="ptop__org">${esc(p.org)}</span>` : "") +
+          "</button>" +
+          `<span class="ptop__bar"><i style="width:${Math.round(n / thi * 100)}%"></i></span>` +
+          `<span class="ptop__n">${n}번</span></li>`;
+      }).join("") + "</ol></section>";
+
+    /* ④ 낱말 구름 — 사람 · 기관 · 행사 */
+    const cloud = (title, arr, kind) => {
+      const sc = ST.scale(arr);
+      return '<div class="pcloud"><h5>' + esc(title) + "</h5>" +
+        (sc.length
+          ? '<div class="pcloud__in">' + sc.map((w) =>
+              `<button type="button" class="pw" data-kind="${kind}" ` +
+                `data-w="${esc(w.word)}" title="${esc(w.word)} — ${w.n}번" ` +
+                `style="font-size:${(0.78 + w.t * 1.15).toFixed(2)}rem;` +
+                `opacity:${(0.55 + w.t * 0.45).toFixed(2)}">` +
+              esc(w.word) + "</button>").join("") + "</div>"
+          : '<p class="pcloud__no">아직 모인 말이 없습니다.</p>') +
+        "</div>";
+    };
+    const clouds = '<section class="pbox"><h4>말로 본 한 해' +
+      '<span class="phint">글자가 클수록 자주 나온 말입니다 · 눌러서 좁혀 보세요</span></h4>' +
+      '<div class="pclouds">' +
+        cloud("① 사람", ST.wordsPeople(rows, 40), "who") +
+        cloud("② 기관", ST.wordsOrg(rows, 40), "org") +
+        cloud("③ 행사 낱말", ST.wordsEvent(rows, 40), "ev") +
+      "</div></section>";
+
+    return head + bars + rank + clouds;
+  }
+
+  /* ── 사람 알약들 ── */
+  function peopleHtml(hit, s) {
+    if (!hit.length) {
+      return '<p class="nempty" style="margin:1.4rem 0">그런 사람을 못 찾았습니다.</p>';
+    }
+    return '<section class="pbox"><h4>' + (s ? "찾은 사람" : "만난 사람 모두") +
+      `<span class="phint">${hit.length}명 · 이름을 누르면 그동안의 만남이 펼쳐집니다</span></h4>` +
+      '<div class="npeople">' + hit.map((p) => {
+        const on = p.key === openWho;
+        return '<div class="nperson' + (on ? " on" : "") + '">' +
+          `<button type="button" class="nperson__name" data-k="${esc(p.key)}" ` +
+            `aria-expanded="${on}"><b>${esc(p.label)}</b>` +
+            `<span class="n">${p.meets.length}</span></button>` +
+          (on
+            ? '<div class="nperson__meets">' + p.meets.map((r) =>
+                `<button type="button" class="npmeet" data-id="${r.id}">` +
+                  `<span class="ncat" style="--c:${CAT_COLOR[r.category] || "#888"}">` +
+                    `${esc(CAT_NAME[r.category] || "")}</span>` +
+                  `<span class="npmeet__t"><b>${esc(r.title)}</b>` +
+                  (r.place ? `<small>⊙ ${esc(r.place)}</small>` : "") + "</span>" +
+                  `<span class="npmeet__d">${r.event_date ? ymd(r.event_date) : ""}</span>` +
+                "</button>").join("") + "</div>"
+            : "") +
+          "</div>";
+      }).join("") + "</div></section>";
+  }
+
+  /** 셈판과 알약에 손을 달아 줍니다 */
+  function wirePeople() {
+    const openPerson = (k) => {
+      openWho = (openWho === k) ? "" : k;
+      drawPeople();
+      const el = list.querySelector(".nperson.on");
+      if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" });
+    };
     list.querySelectorAll(".nperson__name").forEach((b) =>
       b.addEventListener("click", () => {
         openWho = (openWho === b.dataset.k) ? "" : b.dataset.k;
         drawPeople();
       }));
+    list.querySelectorAll(".ptop__go").forEach((b) =>
+      b.addEventListener("click", () => openPerson(b.dataset.k)));
     list.querySelectorAll(".npmeet").forEach((b) =>
       b.addEventListener("click", () => detail(rows.find((x) => x.id === b.dataset.id))));
+    /* 낱말을 누르면 — 사람이면 그 사람을 펴고, 기관·행사면 그 말로 좁힙니다 */
+    list.querySelectorAll(".pw").forEach((b) =>
+      b.addEventListener("click", () => {
+        if (b.dataset.kind === "who") { openPerson(b.dataset.w); return; }
+        q.value = b.dataset.w;
+        drawPeople();
+      }));
   }
 
   function draw() {
@@ -1365,7 +1464,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609011500");
+    const NFD = await import("./notes-folder.js?v=202609011700");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

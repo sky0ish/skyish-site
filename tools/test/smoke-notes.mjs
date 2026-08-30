@@ -102,6 +102,13 @@ const load = (p, extra = (s) => s) => {
     ' extract: async () => ({ total: 0, mine: [], head: [], people: [], event: "" }),' +
     ' asText: () => "", filesFrom: () => [], upload: async () => ({}),' +
     ' signedUrl: async () => "x", remove: async () => {}, fileFromStore: async () => ({}) };');
+  /* 셈 모듈은 시늉이 아니라 진짜를 씁니다 (셈 자체는 tools/test/stats.mjs 가 봅니다).
+     data: 꼴 안에서는 상대 경로가 풀리지 않아, 소스를 그대로 심어 넣습니다.
+     notes-stats.js 는 아무것도 들여오지 않아 이렇게 해도 됩니다. */
+  const statsUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-stats.js", "utf8")).toString("base64");
+  s = s.replace(/^import \* as ST from "\.\/notes-stats\.js[^"]*";$/m,
+    "const ST = await import(" + JSON.stringify(statsUrl) + ");");
   s = s.replace(/^import \* as GC from "\.\/gcal\.js[^"]*";$/m,
     'const GC = { ready: () => false, connected: () => false, month: async () => [],' +
     ' connect: async () => {}, disconnect() {} };');
