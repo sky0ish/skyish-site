@@ -2790,5 +2790,10 @@ body.diary-on #notesapp > *:not(.ndiary) {
   border-radius: 5px; padding: 0 4px; margin-left: -4px; transition: .13s var(--ease); }
 .cday.cdaybtn:hover { background: var(--paper-2); color: var(--teal-text); }
 
+/* 글쓰기 창의 「구글 캘린더에도」 체크 줄 */
+.ngc { display: flex; align-items: center; gap: 7px; margin: 10px 0 2px;
+  font-size: .84rem; color: var(--ink); cursor: pointer; }
+.ngc input { width: 15px; height: 15px; accent-color: var(--teal); }
+
 /* 칸 이름 옆의 잔글씨 */
 .nlab { font-weight: 400; color: var(--mauve); font-size: .82em; }

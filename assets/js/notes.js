@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609021500";
-import * as GC from "./gcal.js?v=202609021500";
-import * as ST from "./notes-stats.js?v=202609021500";
-import * as NW from "./notes-network.js?v=202609021500";
-import { alumniNames } from "./addressbook.js?v=202609021500";
+import * as NF from "./notes-files.js?v=202609021700";
+import * as GC from "./gcal.js?v=202609021700";
+import * as ST from "./notes-stats.js?v=202609021700";
+import * as NW from "./notes-network.js?v=202609021700";
+import { alumniNames } from "./addressbook.js?v=202609021700";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -418,6 +418,9 @@ export async function initNotes(mountId = "notesapp") {
           '<div><label for="nmW">만난 사람</label>' +
             '<input type="text" id="nmW" maxlength="200"></div>' +
         "</div>" +
+        '<label id="nmGcalBox" class="ngc" hidden>' +
+          '<input type="checkbox" id="nmGcal" checked> 구글 캘린더에도 넣기' +
+          '<span class="nlab">— 새 일정일 때만 · 내 캘린더(primary)로</span></label>' +
         '<div id="nmFoodBox" hidden>' +
           '<label for="nmFood">맛집 <span class="nlab">— 적으면 지도에 저절로 올라갑니다</span></label>' +
           '<input type="text" id="nmFood" maxlength="300" ' +
@@ -500,6 +503,9 @@ export async function initNotes(mountId = "notesapp") {
     fillTags(mCat.value);
     mTagBox.hidden = !tagsFor(mCat.value).length;
     document.getElementById("nmFoodBox").hidden = (mCat.value !== "diary");
+    // 구글로 보내기는 「일정 새 글」 에서만 말이 됩니다
+    document.getElementById("nmGcalBox").hidden =
+      !(mCat.value === "schedule" && !editing && GC.ready());
     if (!editing && mCat.value === "diary") stampToday();
   };
   mCat.addEventListener("change", syncTag);
@@ -1508,6 +1514,26 @@ export async function initNotes(mountId = "notesapp") {
             " 칸이 아직 없어 그것만 빠졌습니다." + String.fromCharCode(10) +
             "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
     }
+    /* ── 새 일정을 구글 캘린더에도 넣습니다 ──
+       고치기가 아니라 새 글일 때만 — 고칠 때마다 넣으면 겹겹이 쌓입니다. */
+    const gcBox = document.getElementById("nmGcal");
+    if (!editing && patch.category === "schedule" && patch.event_date &&
+        gcBox && gcBox.checked && GC.ready()) {
+      msg.textContent = "구글 캘린더에 넣는 중…";
+      try {
+        await GC.addEvent({
+          date: patch.event_date,
+          time: patch.event_time || "",
+          title: (patch.tag ? "[" + patch.tag + "] " : "") + patch.title,
+          place: patch.place || "",
+        });
+      } catch (err) {
+        // 구글이 막혀도 글은 이미 저장됐습니다 — 사정만 알립니다
+        alert("글은 저장됐지만 구글 캘린더에는 못 넣었습니다." +
+          String.fromCharCode(10) + (err && err.message || ""));
+      }
+    }
+
     /* ── 맛집을 지도에 올립니다 ──
        비어 있으면 아무것도 하지 않습니다.
        같은 가게가 이미 지도에 있으면 두 번 올리지 않습니다. */
@@ -1688,7 +1714,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609021500");
+    const NFD = await import("./notes-folder.js?v=202609021700");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

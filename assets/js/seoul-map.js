@@ -516,7 +516,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609021500");
+        const G = await import("./gpkg.js?v=202609021700");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -588,7 +588,7 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609021500");
+    const MF = await import("./map-files.js?v=202609021700");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;

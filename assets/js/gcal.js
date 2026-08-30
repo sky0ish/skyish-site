@@ -12,7 +12,10 @@
 //   5. 나온 클라이언트 ID 를 auth/config.js 의 GCAL_CLIENT_ID 에 적습니다
 import { GCAL_CLIENT_ID } from "../../auth/config.js";
 
-const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+/* calendar.events — 일정을 읽고 「쓸 수도」 있는 권한입니다.
+   전에는 readonly 였는데, 게시판에서 쓴 일정을 구글로도 넣으려면 이게 필요합니다.
+   권한을 넓혔으니 이미 이어 두셨던 분은 한 번 다시 이어 주셔야 합니다. */
+const SCOPE = "https://www.googleapis.com/auth/calendar.events";
 const KEY = "skyish-gcal-token";
 
 let token = null;
@@ -146,4 +149,41 @@ export async function month(year, mon0) {
     if (seen.has(k)) return false;
     seen.add(k); return true;
   }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+}
+
+
+/* ── 일정 하나를 구글 「내 캘린더(primary)」 에 넣습니다 ──
+   @param {date:"2026-09-02", time:"14:00"|"" , title, place}
+   시각이 있으면 그때부터 한 시간, 없으면 종일로 넣습니다. */
+export async function addEvent(ev) {
+  const t = token || saved() || await connect();
+  const body = { summary: String(ev.title || "").slice(0, 200) };
+  if (ev.place) body.location = String(ev.place).slice(0, 200);
+  if (ev.time) {
+    const beg = ev.date + "T" + ev.time + ":00";
+    const [h, m] = ev.time.split(":").map(Number);
+    const endH = String(Math.min(23, h + 1)).padStart(2, "0");
+    body.start = { dateTime: beg, timeZone: "Asia/Seoul" };
+    body.end   = { dateTime: ev.date + "T" + endH + ":" + String(m).padStart(2, "0") + ":00",
+                   timeZone: "Asia/Seoul" };
+  } else {
+    // 종일 일정 — 구글은 끝을 「다음 날」 로 받습니다
+    const d = new Date(ev.date + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    const next = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+                 "-" + String(d.getDate()).padStart(2, "0");
+    body.start = { date: ev.date };
+    body.end   = { date: next };
+  }
+  const r = await fetch(
+    "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+    { method: "POST",
+      headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
+      body: JSON.stringify(body) });
+  if (!r.ok) {
+    if (r.status === 403 || r.status === 401)
+      throw new Error("구글이 쓰기를 막았습니다 — 「구글 달력 잇기」 를 다시 눌러 새 권한으로 이어 주세요.");
+    throw new Error("구글에 넣지 못했습니다 (" + r.status + ")");
+  }
+  return (await r.json()).id || "";
 }

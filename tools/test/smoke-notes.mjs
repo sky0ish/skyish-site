@@ -117,7 +117,7 @@ const load = (p, extra = (s) => s) => {
     "const NW = { buildGraph: () => ({ nodes: [], edges: [] }), layout: (g) => g };");
   s = s.replace(/^import \* as GC from "\.\/gcal\.js[^"]*";$/m,
     'const GC = { ready: () => false, connected: () => false, month: async () => [],' +
-    ' connect: async () => {}, disconnect() {} };');
+    ' connect: async () => {}, disconnect() {}, addEvent: async () => "" };');
   return import("data:text/javascript;base64," + Buffer.from(extra(s)).toString("base64"));
 };
 
