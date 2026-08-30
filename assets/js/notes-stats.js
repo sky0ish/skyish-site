@@ -61,6 +61,120 @@ export function topPeople(rows, n = 10) {
   return byPerson(rows).slice(0, n);
 }
 
+/* ── 사람에 대한 메모 ────────────────────────────────────────
+   본문에 「(사람) 이석준 군협력담당관님께 넘 감사드립니다.」 처럼
+   말머리를 붙여 적으면, 그 줄을 그 사람의 기록으로 모읍니다.
+   말머리는 (사람)·[사람]·(인물)·(person) 을 받습니다. */
+const NOTE_HEAD = /^\s*[(\[（]\s*(?:사람|인물|person|People|PEOPLE)\s*[)\]）]\s*/;
+
+/** 본문에서 「(사람)」 줄만 뽑아냅니다 — 말머리는 떼어 냅니다 */
+export function personNotes(body) {
+  return String(body || "").split(/\r?\n/)
+    .filter((l) => NOTE_HEAD.test(l))
+    .map((l) => l.replace(NOTE_HEAD, "").trim())
+    .filter(Boolean);
+}
+
+/**
+ * 그 줄이 누구 이야기인지 가립니다.
+ *   · 글의 「만난 사람」 에 적힌 이름이 줄 안에 있으면 그 사람
+ *   · 없으면 줄 맨 앞의 두세 글자 한글 이름을 그 사람으로 봅니다
+ * @returns [{ name, text }]
+ */
+export function noteOwners(line, people) {
+  const who = (people || []).map((p) => splitPerson(p).name).filter(Boolean);
+  const hit = who.filter((n) => n.length >= 2 && line.includes(n));
+  if (hit.length) return hit.map((name) => ({ name, text: line }));
+  const m = line.match(/^([가-힣]{2,4})(?:\s|님|씨|은|는|이|가|을|를|께|과|와|,|$)/);
+  return m ? [{ name: m[1], text: line }] : [];
+}
+
+/**
+ * 모든 글에서 사람별 메모를 모읍니다.
+ * @returns Map: 이름 → [{ text, row }]
+ */
+export function notesByPerson(rows) {
+  const map = new Map();
+  (rows || []).forEach((r) => {
+    const people = peopleOf(r);
+    personNotes(r.body).forEach((line) => {
+      noteOwners(line, people).forEach(({ name, text }) => {
+        const arr = map.get(name) || [];
+        if (!arr.some((x) => x.text === text && x.row === r)) arr.push({ text, row: r });
+        map.set(name, arr);
+      });
+    });
+  });
+  return map;
+}
+
+
+/** 직함으로 볼 만한 꼬리말 */
+const TITLE_TAIL =
+  "담당관|주무관|사무관|서기관|과장|팀장|부장|국장|실장|본부장|센터장|단장|" +
+  "소장|원장|처장|차장|대표|이사|사장|회장|교수|박사|연구위원|연구원|" +
+  "선임연구위원|책임연구원|위원장|위원|의원|시장|군수|지사|장관|차관|" +
+  "대령|중령|소령|대위|준장|소장급|사령관|참모|팀원|매니저|기사|소방관|경위";
+/* 직함은 「낱말 통째로」 잡습니다.
+   꼬리말만 보면 「군협력담당관」 이 「담당관」 으로 잘리고,
+   「국방연구원 책임연구위원」 은 「연구원」 만 남습니다. */
+const TAIL_RE = new RegExp("(?:" + TITLE_TAIL + ")$");
+const 토씨 = /(님|씨|은|는|이|가|을|를|와|과|도|만|의|께|에게|한테)$/;
+
+function 낱말들(text) {
+  return String(text || "").split(/[\s,·]+/).filter(Boolean);
+}
+
+/** 낱말 하나가 직함인가 — 뒤에 붙은 토씨는 떼고 봅니다 */
+/* 「연구원」 은 직함이면서 기관 이름이기도 합니다.
+   「국방연구원」 처럼 앞에 다른 말이 붙으면 기관으로 봅니다. */
+const 기관꼴 = /(연구원|연구소|대학교|대학|학회|협회|재단|공사|공단|진흥원|위원회|센터|본부|청|부)$/;
+function 기관인가(w) {
+  return 기관꼴.test(w) && w.length >= 4 &&
+    !/^(선임|책임|수석|전임)/.test(w);
+}
+
+function 직함(word) {
+  let w = word.replace(/[.,!?)]+$/, "");
+  if (기관인가(w)) return "";
+  for (let k = 0; k < 3; k++) {                 // 「담당관님께」 처럼 겹친 토씨
+    if (TAIL_RE.test(w)) return w;
+    const cut = w.replace(토씨, "");
+    if (cut === w) break;
+    w = cut;
+  }
+  return TAIL_RE.test(w) ? w : "";
+}
+
+/**
+ * 그 사람의 메모에서 「소속 직함」 을 찾아냅니다.
+ *   「이석준 군협력담당관님께 넘 감사드립니다」 → 군협력담당관
+ *   「이석준 이천시청 군협력담당관」          → 이천시청 군협력담당관
+ * 여러 줄이 있으면 가장 자세한 것을 씁니다. 못 찾으면 빈 글입니다.
+ */
+export function whoTitle(name, notes) {
+  let best = "";
+  for (const n of (notes || [])) {
+    const line = typeof n === "string" ? n : (n && n.text) || "";
+    // 이름 뒤쪽만 봅니다 — 앞의 다른 말이 섞이지 않게
+    const at = line.indexOf(name);
+    const ws = 낱말들(at >= 0 ? line.slice(at + name.length) : line);
+
+    for (let k = 0; k < ws.length; k++) {
+      const t = 직함(ws[k]);
+      if (!t) continue;
+      // 바로 앞 낱말이 소속처럼 보이면 함께 씁니다
+      const prev = k > 0 ? ws[k - 1].replace(/[.,!?)]+$/, "") : "";
+      const org = (prev && !토씨.test(prev) && !직함(prev) && prev.length >= 2) ? prev : "";
+      const got = (org ? org + " " : "") + t;
+      if (got.length > best.length) best = got;
+      break;                                     // 한 줄에서 첫 직함만
+    }
+  }
+  return best;
+}
+
+
 /* ── 달마다 ──────────────────────────────────────────────── */
 
 /**

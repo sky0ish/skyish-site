@@ -114,5 +114,39 @@ eq("이번 달 만난 사람", sm.thisMonth, 4);
 eq("가장 자주", sm.most.key, "이소라");
 
 console.log("\n" + "─".repeat(60));
-console.log(bad ? `${bad}개가 어긋납니다` : "모두 지나갔습니다");
+console.log("[사람 메모]");
+{
+  const B = ["부발역근처, 하이닉스정문",
+             "(사람) 이석준 군협력담당관님께 넘 감사드립니다.",
+             "참 따뜻한 사람이시다.",
+             "[사람] 강한구 박사님은 방산 쪽에 해박하시다"].join("\n");
+  const r = { body: B, people: "이석준, 강한구" };
+  eq("(사람) 줄만 뽑는다", S.personNotes(B).length, 2);
+  eq("말머리를 뗀다", S.personNotes(B)[0], "이석준 군협력담당관님께 넘 감사드립니다.");
+  eq("[사람] 도 받는다", S.personNotes(B)[1].startsWith("강한구"), true);
+
+  const m = S.notesByPerson([r]);
+  eq("사람별로 모은다", [...m.keys()].sort(), ["강한구", "이석준"]);
+  eq("이석준 메모 1건", m.get("이석준").length, 1);
+
+  // 만난 사람에 없는 이름도 줄 맨 앞이면 잡습니다
+  const m2 = S.notesByPerson([{ body: "(사람) 김병규 교수님 소개로 만남", people: "" }]);
+  eq("만난 사람 칸이 비어도 이름을 잡는다", [...m2.keys()], ["김병규"]);
+  // 말머리 없는 줄은 안 셉니다
+  eq("말머리 없는 줄은 무시", S.notesByPerson([{ body: "이석준 좋았다", people: "이석준" }]).size, 0);
+}
+
+
+console.log("[이름표]");
+{
+  eq("직함만 있을 때", S.whoTitle("이석준", ["이석준 군협력담당관님께 넘 감사드립니다."]), "군협력담당관");
+  eq("소속+직함", S.whoTitle("이석준", ["이석준 이천시청 군협력담당관"]), "이천시청 군협력담당관");
+  eq("교수", S.whoTitle("김병규", ["김병규 성균관대학교 교수님 소개"]), "성균관대학교 교수");
+  eq("못 찾으면 빈 글", S.whoTitle("남편", ["남편이랑 강남 갔다"]), "");
+  eq("메모 여러 줄 중에서", S.whoTitle("강한구",
+     ["강한구 좋았다", "강한구 국방연구원 책임연구위원"]), "국방연구원 책임연구위원");
+}
+
+console.log("\n" + "─".repeat(60));
+console.log(bad ? bad + "개가 어긋납니다" : "모두 지나갔습니다");
 process.exit(bad ? 1 : 0);

@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609050500";
-import * as GC from "./gcal.js?v=202609050500";
-import * as ST from "./notes-stats.js?v=202609050500";
-import * as NW from "./notes-network.js?v=202609050500";
-import { alumniNames } from "./addressbook.js?v=202609050500";
+import * as NF from "./notes-files.js?v=202609050700";
+import * as GC from "./gcal.js?v=202609050700";
+import * as ST from "./notes-stats.js?v=202609050700";
+import * as NW from "./notes-network.js?v=202609050700";
+import { alumniNames } from "./addressbook.js?v=202609050700";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -556,6 +556,8 @@ export async function initNotes(mountId = "notesapp") {
      한자리에 모아 이름으로 찾아보는 화면입니다.
      이름을 누르면 그 사람과의 만남이 펼쳐지고, 다시 누르면 그 글로 갑니다. */
   let openWho = "";                    // 지금 펼쳐 둔 사람
+  /* 사람들 화면의 두 갈래 — 사람들(글) · 네트워크망(셈·그림) */
+  let peopleTab = "list";
   let almaSet = null;                  // 동경대 동문 이름 — 처음 그릴 때 한 번만 읽습니다
 
   /** 「홍길동 (경기연구원)」 에서 이름만 떼어 냅니다 — 같은 사람으로 묶으려고 */
@@ -575,6 +577,19 @@ export async function initNotes(mountId = "notesapp") {
           map.set(k, got);
         });
     });
+    /* 본문의 「(사람) …」 메모를 그 사람 자리에 붙입니다.
+       여기저기 흩어 적어도 한 사람의 기록으로 모입니다.
+       메모만 있고 만난 적이 없는 분도 자리를 만듭니다. */
+    ST.notesByPerson(rows).forEach((notes, name) => {
+      const got = map.get(name) || { key: name, label: name, meets: [] };
+      got.notes = notes;
+      /* 이름표를 「이석준 이천시청 군협력담당관」 꼴로 —
+         메모에서 소속·직함을 찾아 이름 뒤에 붙입니다. */
+      const t = ST.whoTitle(name, notes);
+      if (t) got.label = name + " " + t;
+      map.set(name, got);
+    });
+
     return [...map.values()].sort((a, b) =>
       b.meets.length - a.meets.length || a.key.localeCompare(b.key, "ko"));
   }
@@ -600,8 +615,20 @@ export async function initNotes(mountId = "notesapp") {
     }
     emptyEl.hidden = true;
 
+    /* 두 갈래 단추 — 사람들(글) · 네트워크망(셈·그림) */
+    const tab = (k, label) =>
+      `<button type="button" class="ptab${k === peopleTab ? " on" : ""}" ` +
+      `data-t="${k}">${label}</button>`;
+    const bar = '<div class="ptabs">' + tab("list", "사람들") +
+                tab("net", "네트워크망") + "</div>";
+
     /* 찾는 중일 때는 셈판을 접습니다 — 찾은 사람에 눈이 가야 하니까 */
-    list.innerHTML = (s ? "" : statsHtml()) + peopleHtml(hit, s);
+    list.innerHTML = bar + (peopleTab === "net"
+      ? (s ? "" : statsHtml())
+      : peopleHtml(hit, s));
+
+    list.querySelectorAll(".ptab").forEach((b) =>
+      b.addEventListener("click", () => { peopleTab = b.dataset.t; drawPeople(); }));
     wirePeople();
   }
 
@@ -904,9 +931,22 @@ export async function initNotes(mountId = "notesapp") {
         return '<div class="nperson' + (on ? " on" : "") + '">' +
           `<button type="button" class="nperson__name" data-k="${esc(p.key)}" ` +
             `aria-expanded="${on}"><b>${esc(p.label)}</b>` +
-            `<span class="n">${p.meets.length}</span></button>` +
+            `<span class="n">${p.meets.length}</span>` +
+            ((p.notes && p.notes.length)
+              ? `<span class="n n--note" title="이 사람에 대한 기록">✎${p.notes.length}</span>`
+              : "") + "</button>" +
           (on
-            ? '<div class="nperson__meets">' + p.meets.map((r) =>
+            ? ((p.notes && p.notes.length)
+                ? '<div class="pnotes"><b class="pnotes__ttl">이 사람에 대한 기록 ' +
+                  p.notes.length + '건</b>' +
+                  p.notes.map((n) =>
+                    '<button type="button" class="pnote" data-id="' + n.row.id + '">' +
+                    '<span class="pnote__d">' +
+                    (n.row.event_date ? ymd(n.row.event_date) : "") + '</span>' +
+                    '<span class="pnote__t">' + esc(n.text) + '</span></button>').join("") +
+                  "</div>"
+                : "") +
+              '<div class="nperson__meets">' + p.meets.map((r) =>
                 `<button type="button" class="npmeet" data-id="${r.id}">` +
                   `<span class="ncat" style="--c:${CAT_COLOR[r.category] || "#888"}">` +
                     `${esc(CAT_NAME[r.category] || "")}</span>` +
@@ -927,7 +967,7 @@ export async function initNotes(mountId = "notesapp") {
       const el = list.querySelector(".nperson.on");
       if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" });
     };
-    drawNet(openPerson);                    // 관계망 (검색 중에는 칸 자체가 없습니다)
+    if (peopleTab === "net") drawNet(openPerson);   // 관계망은 그 갈래에서만
     list.querySelectorAll(".nperson__name").forEach((b) =>
       b.addEventListener("click", () => {
         openWho = (openWho === b.dataset.k) ? "" : b.dataset.k;
@@ -935,7 +975,7 @@ export async function initNotes(mountId = "notesapp") {
       }));
     list.querySelectorAll(".ptop__go").forEach((b) =>
       b.addEventListener("click", () => openPerson(b.dataset.k)));
-    list.querySelectorAll(".npmeet").forEach((b) =>
+    list.querySelectorAll(".npmeet, .pnote").forEach((b) =>
       b.addEventListener("click", () => detail(rows.find((x) => x.id === b.dataset.id))));
     /* 낱말을 누르면 — 사람이면 그 사람을 펴고, 기관·행사면 그 말로 좁힙니다 */
     list.querySelectorAll(".pw").forEach((b) =>
@@ -1950,7 +1990,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609050500");
+    const NFD = await import("./notes-folder.js?v=202609050700");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

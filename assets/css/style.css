@@ -2354,6 +2354,27 @@ button.cev--g:hover { filter:brightness(.94);
   .ptop__go { min-width: 88px; }
 }
 
+/* 사람들 화면의 두 갈래 단추 */
+.ptabs { display: flex; gap: 8px; margin: 0 0 1.2rem; }
+.ptab { padding: 8px 18px; border: 1px solid var(--line); border-radius: 999px;
+  background: #fff; font-family: inherit; font-size: .86rem; font-weight: 600;
+  color: var(--mauve); cursor: pointer; transition: .15s var(--ease); }
+.ptab:hover { border-color: var(--teal); color: var(--teal-text); }
+.ptab.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+/* 사람에 대한 기록 — 본문의 「(사람) …」 줄을 모은 것 */
+.pnotes { margin: 10px 0 6px; padding: 11px 14px; background: #fbf7ef;
+  border: 1px solid #ece0c9; border-radius: 12px; }
+.pnotes__ttl { display: block; margin-bottom: 6px; font-size: .78rem; color: #a07d3a; }
+.pnote { display: flex; gap: 10px; align-items: baseline; width: 100%;
+  border: 0; background: none; padding: 5px 0; font-family: inherit;
+  text-align: left; color: inherit; cursor: pointer; border-radius: 6px; }
+.pnote:hover { background: rgba(160, 125, 58, .09); }
+.pnote__d { flex: none; font-size: .72rem; color: var(--mauve);
+  font-variant-numeric: tabular-nums; }
+.pnote__t { flex: 1; min-width: 0; font-size: .84rem; color: #3a362e; line-height: 1.6; }
+.n--note { background: #f0e2c6 !important; color: #a07d3a !important; margin-left: 4px; }
+
 /* 관계망 */
 .pnet { position: relative; background: #fff; border: 1px solid var(--line);
   border-radius: var(--radius-md); overflow: hidden; }
