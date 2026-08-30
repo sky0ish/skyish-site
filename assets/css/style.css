@@ -2387,3 +2387,77 @@ button.cev--g:hover { filter:brightness(.94);
   .arow b { width: 70px; }
   .asub { max-width: 14ch; }
 }
+
+/* ── 첫 화면 오른쪽 달력 (관리자만) ─────────────────────────
+   히어로 글은 왼쪽, 달력은 오른쪽. 사진 위에 얹으므로
+   유리처럼 비치게 두어 뒤 그림이 죽지 않게 합니다. */
+.hero__inner { display: flex; align-items: center; gap: clamp(24px, 4vw, 64px); }
+.hero__text { flex: 1; min-width: 0; max-width: 680px; }
+
+.hocal {
+  flex: none; width: 320px; align-self: center;
+  background: rgba(28, 26, 25, .38);
+  border: 1px solid rgba(255,255,255,.20);
+  border-radius: 16px; padding: 16px 16px 14px;
+  color: #fff; font-size: .82rem;
+  box-shadow: 0 10px 34px rgba(0,0,0,.28);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .hocal { background: rgba(255,255,255,.10); backdrop-filter: blur(16px) saturate(1.1); }
+}
+.hocal__wait { margin: 0; opacity: .7; font-size: .8rem; text-align: center; padding: 20px 0; }
+
+.hocal__head { display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; }
+.hocal__head b { font-family: var(--font-display, inherit); font-size: 1.02rem;
+  letter-spacing: .04em; }
+.hocal__nav { border: 0; background: rgba(255,255,255,.12); color: #fff; cursor: pointer;
+  width: 26px; height: 26px; border-radius: 8px; font-size: 1rem; line-height: 1;
+  transition: .15s var(--ease, ease); }
+.hocal__nav:hover { background: rgba(255,255,255,.26); }
+
+.hocal__wd { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  font-size: .66rem; opacity: .62; text-align: center; margin-bottom: 3px; }
+.hocal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.hoc { position: relative; aspect-ratio: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px; border-radius: 7px;
+  font-size: .72rem; }
+.hoc.out { opacity: .28; }
+.hoc.has { background: rgba(255,255,255,.10); }
+.hoc.now { outline: 1.5px solid rgba(255,255,255,.75); font-weight: 700; }
+.hoc b { font-weight: 500; }
+.hoc .sun { color: #ff9f9f; }
+.hoc .sat { color: #a9c8ff; }
+.hoc em { display: flex; gap: 2px; }
+.hoc em i { width: 4px; height: 4px; border-radius: 50%; display: block; }
+
+.hocal__soon { margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 1px; }
+.hocal__soon a { display: flex; align-items: center; gap: 7px; padding: 5px 4px;
+  border-radius: 7px; color: #fff; font-size: .76rem; transition: .15s var(--ease, ease); }
+.hocal__soon a:hover { background: rgba(255,255,255,.14); }
+.hocal__soon i { flex: none; width: 5px; height: 5px; border-radius: 50%; }
+.hocal__soon .d { flex: none; opacity: .66; font-variant-numeric: tabular-nums; }
+.hocal__soon .t { flex: 1; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.hocal__none { margin: 12px 0 0; padding-top: 10px; font-size: .74rem; opacity: .6;
+  border-top: 1px solid rgba(255,255,255,.16); }
+.hocal__more { display: block; margin-top: 8px; text-align: right;
+  font-size: .72rem; color: #fff; opacity: .72; }
+.hocal__more:hover { opacity: 1; }
+
+/* 좁은 화면에서는 달력을 감춥니다 — 히어로 글이 우선입니다 */
+@media (max-width: 1080px) {
+  .hero__inner { display: block; }
+  .hocal { display: none; }
+}
+
+/* ── Contact — 머리글과 문의 상자를 같은 줄에서 ────────────
+   머리글 칸이 따로 있으면 오른쪽 상자가 한참 아래에서 시작해
+   가운데가 비고 아래 주소록이 화면 밖으로 밀립니다. */
+.contact-top { padding-top: 7rem; padding-bottom: 2.5rem; }
+.contact-top .contact-grid { align-items: start; }
+.contact-top .contact-info .section-title { font-size: clamp(2.4rem, 6vw, 4rem); }
+@media (max-width: 860px) {
+  .contact-top { padding-top: 5.5rem; }
+}
