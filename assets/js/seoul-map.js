@@ -489,8 +489,12 @@ export async function initMap(mountId = "mapapp") {
   boxes.innerHTML = LEG.map(([k, v, parent]) =>
     `<label class="ly c-${k}${parent ? " lykid" : ""}"><input type="checkbox" data-c="${k}" checked>` +
     `<span class="lydot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</label>`).join("")
-    + `<label class="ly c-rail off"><input type="checkbox" data-rail="1">` +
-      `<span class="lydot rail c-rail"><i></i></span>철도역</label>`;
+    /* 철도역은 핫플의 짝(맛집 갈 때 타는 것)이라 핫플과 종합에서만 폅니다.
+       다른 갈래에서 남의 것까지 늘어놓으면 판이 어수선합니다. */
+    + (GRP === "hot" || MULTI
+      ? `<label class="ly c-rail off"><input type="checkbox" data-rail="1">` +
+        `<span class="lydot rail c-rail"><i></i></span>철도역</label>`
+      : "");
 
   /* 올린 장소 줄을 이 분류 줄로 끌어다 놓아도 그 갈래로 옮겨집니다.
      (목록 안 분류 머리줄에 놓는 것과 같은 일 — 손이 가는 곳에 다 열어 둡니다) */
@@ -572,7 +576,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609032100");
+        const G = await import("./gpkg.js?v=202609032300");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -644,7 +648,7 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609032100");
+    const MF = await import("./map-files.js?v=202609032300");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
@@ -717,6 +721,14 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function foodInit() {
+    /* 서울 맛집지도(KMZ)도 핫플의 것 — 핫플과 종합에서만 폅니다.
+       도시건축·부동산 화면에는 제 하부 갈래만 남습니다. */
+    if (GRP !== "hot" && !MULTI) {
+      const ttl = foodBox.previousElementSibling;      // 「맛집지도」 제목 줄
+      if (ttl && ttl.classList.contains("lytitle")) ttl.hidden = true;
+      foodBox.hidden = true;
+      return;
+    }
     let d;
     try { d = await foodLoad(); }
     catch (e) { foodBox.innerHTML = '<span class="lyerr">맛집 자료 없음</span>'; return; }
