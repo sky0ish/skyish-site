@@ -516,7 +516,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609030700");
+        const G = await import("./gpkg.js?v=202609030900");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -588,7 +588,7 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609030700");
+    const MF = await import("./map-files.js?v=202609030900");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
@@ -739,7 +739,9 @@ export async function initMap(mountId = "mapapp") {
 
   function tabHtml() {
     const pick = document.getElementById("apCats");
-    pick.innerHTML = CATS.map(([k, v]) =>
+    /* 등록 단추도 그 화면의 분류만 폅니다 — 열아홉 개가 다 나오면 정신없습니다.
+       종합에서만 전체를 보여 줍니다. (레이어 판과 같은 규칙, LEG) */
+    pick.innerHTML = LEG.map(([k, v]) =>
       `<button type="button" class="apcat c-${k}${k === cur ? " on" : ""}" data-c="${k}">` +
       `<span class="apdot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</button>`).join("");
     pick.querySelectorAll(".apcat").forEach(b => b.addEventListener("click", () => {
