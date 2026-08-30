@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608311100";
-import * as GC from "./gcal.js?v=202608311100";
+import * as NF from "./notes-files.js?v=202608311200";
+import * as GC from "./gcal.js?v=202608311200";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -87,6 +87,38 @@ export function findField(text, keys) {
     if (m) return m[1].trim().slice(0, 200);
   }
   return "";
+}
+
+/* ── 일기 제목에서 사람·장소 읽어내기 ──
+   「2026.08.30 (일) 남편과 강남역」 처럼 적으시면
+   사람 = 남편, 장소 = 강남역 으로 나눕니다.
+   「치과」「학과」처럼 낱말 끝이 우연히 「과」인 것은 사람으로 보지 않습니다. */
+const NOT_WHO =
+  /^(치|내|외|안|산|한|약|학|공|이비인후|정형외|성형외|피부|신경외|소아|가정의학)$/;
+
+export function fromDiaryTitle(title) {
+  // 앞머리의 날짜·요일을 떼어 냅니다
+  let t = String(title || "")
+    .replace(/^\s*\d{2,4}\s*[.\-\/]\s*\d{1,2}\s*[.\-\/]\s*\d{1,2}\s*/, "")
+    .replace(/^\s*\([일월화수목금토]\)\s*/, "")
+    .trim();
+  if (!t) return { people: "", place: "" };
+
+  // 「A와/과/랑/이랑 B」 — 앞이 사람, 뒤가 장소
+  const m = t.match(/^(.{2,30}?)(?:이랑|과|와|랑)\s+(.{1,40})$/);
+  if (m) {
+    const who = m[1].trim();
+    if (!NOT_WHO.test(who)) {
+      const where = m[2].trim().replace(/(에서|에|으로|로)$/, "").trim();
+      return { people: who, place: where };
+    }
+  }
+
+  // 「B에서 …」 — 장소만
+  const m2 = t.match(/^(.{1,30}?)에서(?:\s|$)/);
+  if (m2) return { people: "", place: m2[1].trim() };
+
+  return { people: "", place: "" };
 }
 
 /* ── 파일에서 뽑은 덩이를 본문에 얹기 ──
@@ -835,6 +867,14 @@ export async function initNotes(mountId = "notesapp") {
     if (p) pEl.value = p;
     const w = findField(text, ["만난 사람", "참석자", "사람", "만난", "people", "참석"]);
     if (w) wEl.value = w;
+
+    /* 일기는 제목이 「날짜 (요일) 누구와 어디」 꼴입니다.
+       본문에 「장소:」 「사람:」 을 따로 안 적으셨을 때만 제목에서 읽어냅니다. */
+    if (mCat.value === "diary") {
+      const g = fromDiaryTitle(document.getElementById("nmT").value);
+      if (g.people && !wEl.value.trim()) wEl.value = g.people;
+      if (g.place && !pEl.value.trim()) pEl.value = g.place;
+    }
   }
   document.getElementById("nmT").addEventListener("input", autofill);
   document.getElementById("nmB").addEventListener("input", autofill);
@@ -1034,7 +1074,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608311100");
+    const NFD = await import("./notes-folder.js?v=202608311200");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
