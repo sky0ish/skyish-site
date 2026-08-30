@@ -244,18 +244,20 @@ export async function loadFromFiles(files, say) {
     if (say) say(n + " 읽는 중…");
     const wb = await readWorkbook(f, XLSX);
 
-    if (/명함/.test(n)) {
+    /* 어느 엑셀인지는 파일 이름이 아니라 「속」을 보고 가립니다.
+       폰으로 내려받다 이름이 바뀌어도 (「문서 (1).xlsx」 처럼) 읽힙니다. */
+    const isCard = /명함/.test(n) || wb.SheetNames.some((sn) => /remember/i.test(sn));
+    const alumSheet = wb.SheetNames.find((sn) => /전체주소록/.test(sn) && !/사본/.test(sn));
+    if (isCard) {
       const { rows } = sheetRows(XLSX, wb, /remember/i);
       out = out.concat(fromRemember(rows));
-    } else if (/주소록|동문|동경대/.test(n)) {
-      // 「의 사본」 시트는 옛 스냅샷이라 건너뜁니다
-      const pick = wb.SheetNames.find((s) => /전체주소록/.test(s) && !/사본/.test(s));
-      if (pick) {
-        const ws = wb.Sheets[pick];
-        const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
-        const headers = (XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || []).map(txt);
-        out = out.concat(fromUtokyo(rows, headers));
-      }
+    } else if (alumSheet) {
+      const ws = wb.Sheets[alumSheet];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      const headers = (XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || []).map(txt);
+      out = out.concat(fromUtokyo(rows, headers));
+    } else if (say) {
+      say(n + " — 명함첩(remember)도 동문 명부(전체주소록)도 아닌 것 같아 건너뜁니다.");
     }
   }
   return out;
