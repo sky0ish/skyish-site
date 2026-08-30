@@ -76,6 +76,11 @@ export const CATS = [
   ["cafe",  "카페",   "food"],
   ["apt",   "아파트"],
   ["arch",  "건축물"],
+  ["farch", "유명건축",   "arch"],
+  ["udev",  "도시개발",   "arch"],
+  ["urgn",  "도시재생",   "arch"],
+  ["tod",   "역세권개발", "arch"],
+  ["harch", "역사건축",   "arch"],
   ["hot",   "핫플"],
 ];
 /** 그 분류의 아래 갈래들 */
@@ -103,6 +108,16 @@ export const CAT_INFO = {
     desc: "눈여겨본 <b>아파트·주거단지</b>입니다. 배치와 외관, 주변 환경을 함께 적어두면 좋습니다." },
   arch: { shape: "dot",  mark: "주황 동그라미",
     desc: "<b>가 볼 만한 건축물</b>입니다. 설계자와 특징을 함께 적어주시면 좋습니다." },
+  farch: { shape: "dot", mark: "짙은 주황 동그라미",
+    desc: "<b>이름난 건축물</b> — 설계자와 지어진 해, 눈여겨본 대목을 적어 둡니다." },
+  udev:  { shape: "dot", mark: "남색 동그라미",
+    desc: "<b>도시개발</b> — 택지·신도시·복합개발처럼 새로 짓는 곳입니다." },
+  urgn:  { shape: "dot", mark: "초록 동그라미",
+    desc: "<b>도시재생</b> — 있던 것을 고쳐 쓰는 곳입니다." },
+  tod:   { shape: "dot", mark: "청록 동그라미",
+    desc: "<b>역세권개발</b> — 역을 낀 복합개발·고밀개발입니다." },
+  harch: { shape: "dot", mark: "고동색 동그라미",
+    desc: "<b>역사건축</b> — 근대건축·문화재처럼 오래된 것입니다." },
   hot:  { shape: "dot",  mark: "핫핑크 동그라미",
     desc: "요즘 사람들이 모이는 <b>핫플레이스</b> — 거리, 상권, 새로 생긴 공간을 기록합니다." },
 };
@@ -209,6 +224,7 @@ const SHELL = `
           <span class="lytitle">레이어 선택</span>
           <span class="lyboxes" id="lyBoxes"></span>
           <button type="button" class="lyall" id="lyAll">전체 켜기 / 끄기</button>
+          <label class="ly lyfav" id="lyFavBox" hidden><input type="checkbox" id="lyFav"><span class="lydot"><i style="background:#e8a33d"></i></span>My Favorite 만</label>
           <button type="button" class="lyall" id="lyFit">◎ 올린 곳 전체 보기</button>
           <button type="button" class="lyall lygpkg" id="lyGpkg" hidden>⤓ GPKG 로 받기</button>
           <span class="lytitle lybase">맛집지도</span>
@@ -306,6 +322,7 @@ const SHELL = `
         <a class="pbtn" id="pMap" href="#" target="_blank" rel="noopener">구글 지도에서 보기</a>
         <a class="pbtn line" id="pDir" href="#" target="_blank" rel="noopener">길찾기 →</a>
         <a class="pbtn line" id="pPost" href="#" style="display:none;">관련 글 보기</a>
+        <button class="pbtn fav" id="pFav" style="display:none;">☆ My Favorite</button>
         <button class="pbtn edit" id="pEditBtn" style="display:none;">✎ 내용 고치기</button>
         <button class="pbtn move" id="pMove" style="display:none;">📍 위치 옮기기</button>
         <button class="pbtn del" id="pDel" style="display:none;">이 장소 지우기</button>
@@ -428,6 +445,17 @@ export async function initMap(mountId = "mapapp") {
     kidsOf(c.dataset.c).forEach((kid) => set(kid, c.checked));
     draw();
   }));
+  /* 종합 갈래에서만 — My Favorite 만 골라 봅니다 */
+  let favOnly = false;
+  if (MULTI) {
+    document.getElementById("lyFavBox").hidden = false;
+    document.getElementById("lyFav").addEventListener("change", (e) => {
+      favOnly = e.target.checked;
+      e.target.closest(".ly").classList.toggle("off", !favOnly);
+      draw();
+    });
+  }
+
   /* 올린 곳을 모두 담아 보여 줍니다 (전국으로 퍼져 있어도) */
   document.getElementById("lyFit").addEventListener("click", () => {
     const pts = places.filter((p) => p.lat && p.lng).map((p) => [p.lat, p.lng]);
@@ -452,7 +480,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202608311600");
+        const G = await import("./gpkg.js?v=202608311700");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -636,12 +664,16 @@ export async function initMap(mountId = "mapapp") {
                    .in("category", list)
                    .order("created_at", { ascending: false });
         qy = MULTI ? qy.in("grp", [...shownGrp]) : qy.eq("grp", GRP);
+        // fav 칸이 아직 없는 DB 라면 이 조건에서 오류가 납니다 — 아래에서 알려 줍니다
+        if (favOnly) qy = qy.eq("fav", true);
         const r = await qy;
         // supabase 는 조회 실패를 예외로 던지지 않고 error 로 돌려줍니다.
         // 이걸 안 보면 표가 없어도 "장소 0곳" 으로만 보여 원인을 알 수 없습니다.
         if (r.error) {
           const m = r.error.message || "";
-          loadError = /schema cache|does not exist|relation/i.test(m)
+          loadError = /fav/.test(m) && /column|schema cache/i.test(m)
+            ? "My Favorite 칸이 아직 없습니다 — auth/map_fav.sql 을 한 번 실행해주세요."
+            : /schema cache|does not exist|relation/i.test(m)
             ? "지도 자료칸이 아직 준비되지 않았습니다 — auth/map_setup.sql 을 한 번 실행해주세요."
             : "장소를 불러오지 못했습니다: " + m;
           rows = [];
@@ -862,6 +894,33 @@ export async function initMap(mountId = "mapapp") {
       : p.owner_admin ? `<b>관리자</b>${when ? " · " + when : ""} 가 올린 장소입니다`
       : p.owner_name ? `<b>공유자(${esc(p.owner_name)})</b>${when ? " · " + when : ""} 가 올린 장소입니다`
       : (when ? when + " 에 올라온 장소입니다" : "");
+    /* ── My Favorite ──
+       올린 사람이나 관리자만 켜고 끕니다.
+       종합 갈래에서 「My Favorite 만」 으로 골라 볼 수 있습니다. */
+    const fav = document.getElementById("pFav");
+    const canFav = !p.builtin && ((user && p.created_by === user.id) || isAdmin);
+    fav.style.display = canFav ? "" : (p.fav ? "" : "none");
+    fav.classList.toggle("on", !!p.fav);
+    fav.textContent = (p.fav ? "★" : "☆") + " My Favorite";
+    fav.disabled = !canFav;
+    fav.onclick = async () => {
+      if (!canFav) return;
+      const next = !p.fav;
+      fav.disabled = true;
+      const { error } = await sb.from("map_places").update({ fav: next }).eq("id", p.id);
+      fav.disabled = false;
+      if (error) {
+        alert(/column|schema cache/i.test(error.message || "")
+          ? "My Favorite 칸이 아직 없습니다 — auth/map_fav.sql 을 한 번 돌려 주세요."
+          : "바꾸지 못했습니다: " + error.message);
+        return;
+      }
+      p.fav = next;
+      fav.classList.toggle("on", next);
+      fav.textContent = (next ? "★" : "☆") + " My Favorite";
+      draw();
+    };
+
     // 분류 바꾸기 — 바꾸면 지도 표시도 그 분류의 기호로 바뀝니다
     const sel = document.getElementById("pCatSel");
     const canCat = !p.builtin && ((user && p.created_by === user.id) || isAdmin);

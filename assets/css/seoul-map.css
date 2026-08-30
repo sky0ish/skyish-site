@@ -442,3 +442,21 @@
 .apcats .c-jfood.on { background:#d8f0e2; border-color:#0f9d58; color:#0a6b3c; }
 .apcats .c-cfood.on { background:#fce3cd; border-color:#e65100; color:#9a4e05; }
 .apcats .c-efood.on { background:#ece4f5; border-color:#8a6bb0; color:#5c4478; }
+
+/* 도시건축 아래 갈래 빛깔 */
+.ly.c-farch .lydot i, .lydot.c-farch i { background: #c85a12; }
+.ly.c-udev  .lydot i, .lydot.c-udev  i { background: #1f3f7a; }
+.ly.c-urgn  .lydot i, .lydot.c-urgn  i { background: #3f8b4a; }
+.ly.c-tod   .lydot i, .lydot.c-tod   i { background: #2b8f8f; }
+.ly.c-harch .lydot i, .lydot.c-harch i { background: #7a5230; }
+.cmark.c-farch i, .cdmark.c-farch i { background: #c85a12; }
+.cmark.c-udev  i, .cdmark.c-udev  i { background: #1f3f7a; }
+.cmark.c-urgn  i, .cdmark.c-urgn  i { background: #3f8b4a; }
+.cmark.c-tod   i, .cdmark.c-tod   i { background: #2b8f8f; }
+.cmark.c-harch i, .cdmark.c-harch i { background: #7a5230; }
+
+/* My Favorite */
+.lyfav { margin-top: 4px; padding-top: 5px; border-top: 1px solid #f2ede1; }
+.pbtn.fav { border-color: #e8cf9a; color: #9a7420; }
+.pbtn.fav:hover { background: #fdf6e6; border-color: #e0b95f; }
+.pbtn.fav.on { background: #fdf1d6; border-color: #e0b95f; color: #8a6410; font-weight: 700; }
