@@ -421,3 +421,24 @@
 .lygpkg { margin-top: 3px; background: #f3f7f6; border-color: #cfe3df; color: #2f6a62; }
 .lygpkg:hover { background: #e6f1ee; }
 .lygpkg:disabled { opacity: .55; cursor: default; }
+
+/* 맛집 아래 갈래 — 들여쓰고 글자를 조금 작게 */
+.ly.lykid { padding-left: 13px; font-size: 10.5px; }
+.ly.lykid .lydot { transform: scale(.88); }
+/* 갈래마다 빛깔 */
+.ly.c-kfood .lydot i, .lydot.c-kfood i { background: #d63a2f; }
+.ly.c-jfood .lydot i, .lydot.c-jfood i { background: #0f9d58; }
+.ly.c-cfood .lydot i, .lydot.c-cfood i { background: #e65100; }
+.ly.c-efood .lydot i, .lydot.c-efood i { background: #8a6bb0; }
+.cmark.c-kfood i, .cdmark.c-kfood i { background: #d63a2f; }
+.cmark.c-jfood i, .cdmark.c-jfood i { background: #0f9d58; }
+.cmark.c-cfood i, .cdmark.c-cfood i { background: #e65100; }
+.cmark.c-efood i, .cdmark.c-efood i { background: #8a6bb0; }
+.mtabs a.c-kfood.on { background:#fbdcd8; border-color:#d63a2f; color:#8e281f; }
+.mtabs a.c-jfood.on { background:#d8f0e2; border-color:#0f9d58; color:#0a6b3c; }
+.mtabs a.c-cfood.on { background:#fce3cd; border-color:#e65100; color:#9a4e05; }
+.mtabs a.c-efood.on { background:#ece4f5; border-color:#8a6bb0; color:#5c4478; }
+.apcats .c-kfood.on { background:#fbdcd8; border-color:#d63a2f; color:#8e281f; }
+.apcats .c-jfood.on { background:#d8f0e2; border-color:#0f9d58; color:#0a6b3c; }
+.apcats .c-cfood.on { background:#fce3cd; border-color:#e65100; color:#9a4e05; }
+.apcats .c-efood.on { background:#ece4f5; border-color:#8a6bb0; color:#5c4478; }

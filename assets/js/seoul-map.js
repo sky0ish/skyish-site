@@ -65,13 +65,21 @@ function applyGroupChrome(key) {
   }
 }
 
+/* 분류 — 세 번째 값이 있으면 그 분류의 아래 갈래입니다.
+   맛집 아래로 한식·일식·중식·기타·카페를 둡니다. */
 export const CATS = [
-  ["food", "맛집"],
-  ["cafe", "카페"],
-  ["apt",  "아파트"],
-  ["arch", "건축물"],
-  ["hot",  "핫플"],
+  ["food",  "맛집"],
+  ["kfood", "한식",   "food"],
+  ["jfood", "일식",   "food"],
+  ["cfood", "중식",   "food"],
+  ["efood", "기타",   "food"],
+  ["cafe",  "카페",   "food"],
+  ["apt",   "아파트"],
+  ["arch",  "건축물"],
+  ["hot",   "핫플"],
 ];
+/** 그 분류의 아래 갈래들 */
+export const kidsOf = (k) => CATS.filter(([, , p]) => p === k).map(([c]) => c);
 export const CAT_NAME = Object.fromEntries(CATS);
 
 /** 철도역 자료 — 서울과 그 언저리 440곳 (OpenStreetMap 에서 받아 정리) */
@@ -81,6 +89,14 @@ const RAIL_URL = "assets/data/seoul-rail.json";
 export const CAT_INFO = {
   food: { shape: "star", mark: "빨간 별",
     desc: "다시 찾고 싶은 <b>서울의 맛집</b>입니다. 표시를 누르면 주소와 그곳의 특징, 얽힌 기억이 열립니다." },
+  kfood: { shape: "star", mark: "빨간 별",
+    desc: "<b>한식</b> — 밥집·고깃집·국숫집처럼 다시 갈 만한 곳입니다." },
+  jfood: { shape: "star", mark: "초록 별",
+    desc: "<b>일식</b> — 초밥·라멘·이자카야 같은 곳입니다." },
+  cfood: { shape: "star", mark: "주황 별",
+    desc: "<b>중식</b> — 중국집과 중화요리 집입니다." },
+  efood: { shape: "star", mark: "보라 별",
+    desc: "<b>그 밖의 맛집</b> — 양식·아시아·분식처럼 위에 없는 곳입니다." },
   cafe: { shape: "star", mark: "노란 별",
     desc: "일하기 좋은 곳, 이야기 나누기 좋은 곳 — <b>서울의 카페</b>를 모았습니다." },
   apt:  { shape: "dot",  mark: "파란 동그라미",
@@ -395,15 +411,21 @@ export async function initMap(mountId = "mapapp") {
 
   const boxes = document.getElementById("lyBoxes");
   const LEG = CATS.slice();
-  boxes.innerHTML = LEG.map(([k, v]) =>
-    `<label class="ly c-${k}"><input type="checkbox" data-c="${k}" checked>` +
+  boxes.innerHTML = LEG.map(([k, v, parent]) =>
+    `<label class="ly c-${k}${parent ? " lykid" : ""}"><input type="checkbox" data-c="${k}" checked>` +
     `<span class="lydot ${(CAT_INFO[k] || {}).shape || "dot"}"><i></i></span>${v}</label>`).join("")
     + `<label class="ly c-rail off"><input type="checkbox" data-rail="1">` +
       `<span class="lydot rail c-rail"><i></i></span>철도역</label>`;
 
   boxes.querySelectorAll("input[data-c]").forEach(c => c.addEventListener("change", () => {
-    c.checked ? shown.add(c.dataset.c) : shown.delete(c.dataset.c);
-    c.closest(".ly").classList.toggle("off", !c.checked);
+    const set = (key, on) => {
+      const box = boxes.querySelector(`input[data-c="${key}"]`);
+      if (box) { box.checked = on; box.closest(".ly").classList.toggle("off", !on); }
+      on ? shown.add(key) : shown.delete(key);
+    };
+    set(c.dataset.c, c.checked);
+    // 「맛집」을 끄면 그 아래 한식·일식·… 도 함께 접습니다
+    kidsOf(c.dataset.c).forEach((kid) => set(kid, c.checked));
     draw();
   }));
   /* 올린 곳을 모두 담아 보여 줍니다 (전국으로 퍼져 있어도) */
@@ -430,7 +452,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202608311500");
+        const G = await import("./gpkg.js?v=202608311600");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
