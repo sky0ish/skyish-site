@@ -2324,17 +2324,25 @@ button.cev--g:hover { filter:brightness(.94);
 .ndiary {
   position: relative;
   margin: 0 0 1.6rem;
+  margin-inline: auto;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
-  /* 원본 비율(2:1) 그대로 둡니다. 좌우가 넓은 그림이라
-     자르지 않아도 첼로부터 시계까지 다 들어옵니다. */
-  aspect-ratio: 1773 / 887;
-  max-height: 64vh;
+  /* 좌우는 언제나 끝까지 채웁니다. */
+  width: 100%;
+  /* 높이만 직접 정합니다.
+     ※ aspect-ratio 와 max-height 를 같이 쓰면 안 됩니다 —
+        높이가 잘릴 때 너비까지 같은 비율로 줄어들어 그림이 왼쪽에 붙습니다.
+     · 100vw/2 = 원본 비율(2:1) 그대로일 때의 높이 — 이때는 하나도 안 잘립니다
+     · 78vh   = 화면이 낮을 때의 한도 — 그림이 화면을 다 먹지 않게 */
+  height: min(calc(100vw / 1.999), 78vh);
+  min-height: 200px;
 }
 .ndiary img {
   width: 100%; height: 100%;
   object-fit: cover;
-  object-position: center center;
+  /* 잘릴 때는 위쪽(창틀)을 먼저 덜어 냅니다.
+     아래쪽의 책·첼로 밑동은 남겨 둡니다. */
+  object-position: center 72%;
   display: block;
 }
 /* 아래쪽 · 옆쪽을 바탕빛으로 부드럽게 지웁니다 */
@@ -2413,7 +2421,8 @@ body.diary-on #notesapp > *:not(.ndiary) {
   color: #6b5a4e; font-weight: 400;
 }
 @media (max-width: 680px) {
-  .ndiary { max-height: 40vh; }
+  /* 손전화에서도 같은 규칙 — max-height 를 쓰면 또 왼쪽으로 쏠립니다 */
+  .ndiary { height: min(calc(100vw / 1.999), 46vh); min-height: 150px; }
   .ndiary__word { bottom: 4%; }
 }
 

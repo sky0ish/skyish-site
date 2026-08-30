@@ -590,7 +590,7 @@ create index if not exists map_places_grp_cat_idx
 
 alter table public.map_places drop constraint if exists map_places_grp_check;
 alter table public.map_places add  constraint map_places_grp_check
-  check (grp in ('hot','urban','estate','trip','daily','etc'));
+  check (grp in ('hot','urban','estate','trip','food','daily','etc'));
 
 alter table public.map_places drop constraint if exists map_places_category_check;
 alter table public.map_places add  constraint map_places_category_check

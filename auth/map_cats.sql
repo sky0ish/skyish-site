@@ -20,6 +20,14 @@
 --    핫플 hot
 -- ═══════════════════════════════════════════════════════════
 
+-- ── 갈래(grp) 에 「맛집」 을 넣습니다 ──
+--    이게 없으면 Diary 에 적은 맛집이 지도로 올라가지 못합니다.
+alter table public.map_places drop constraint if exists map_places_grp_check;
+alter table public.map_places add  constraint map_places_grp_check
+  check (grp in ('hot','urban','estate','trip','food','daily','etc'));
+
+
+-- ── 분류(category) 를 잘게 나눕니다 ──
 alter table public.map_places drop constraint if exists map_places_category_check;
 alter table public.map_places add  constraint map_places_category_check
   check (category in (

@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609010700";
-import * as GC from "./gcal.js?v=202609010700";
+import * as NF from "./notes-files.js?v=202609010900";
+import * as GC from "./gcal.js?v=202609010900";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -154,11 +154,10 @@ export function parseFood(text) {
   return out;
 }
 
-/** 주소를 좌표로 — OpenStreetMap 에 물어봅니다 */
-export async function geoOf(addr) {
-  if (!addr) return null;
+/** 주소 하나를 OpenStreetMap 에 물어봅니다 */
+async function ask(q) {
   const u = "https://nominatim.openstreetmap.org/search?format=json&limit=1" +
-            "&countrycodes=kr&q=" + encodeURIComponent(addr);
+            "&countrycodes=kr&q=" + encodeURIComponent(q);
   try {
     const r = await fetch(u, { headers: { "Accept-Language": "ko" } });
     const j = await r.json();
@@ -166,6 +165,33 @@ export async function geoOf(addr) {
   } catch (e) {}
   return null;
 }
+
+/** 주소를 좌표로.
+    한 번에 안 되면 뒤쪽 잔가지(건물이름·층·호)를 덜어 내며 다시 물어봅니다. */
+export async function geoOf(addr) {
+  const a = String(addr || "").trim();
+  if (!a) return null;
+
+  const tries = [a];
+  // ① 도로명 + 건물번호 까지만 — 「… 강남대로 359 대우도씨에빛2 1층 112, 113호」 → 「… 강남대로 359」
+  const road = a.match(/^(.*?(?:로|길)\s*\d+(?:-\d+)?)(?:\s|,|$)/);
+  if (road && road[1] !== a) tries.push(road[1].trim());
+  // ② 지번 주소 — 「… 동 123-4」 까지만
+  const jibun = a.match(/^(.*?[동읍면리]\s*\d+(?:-\d+)?)(?:\s|,|$)/);
+  if (jibun && tries.indexOf(jibun[1].trim()) < 0) tries.push(jibun[1].trim());
+  // ③ 시·도 이름을 떼어 냅니다 — 가끔 이게 걸림돌이 됩니다
+  const last = tries[tries.length - 1];
+  const noCity = last.replace(/^(서울특별시|서울|부산광역시|부산|대구광역시|대구|인천광역시|인천|광주광역시|광주|대전광역시|대전|울산광역시|울산|세종특별자치시|세종|경기도|강원(?:특별자치)?도|충청북도|충북|충청남도|충남|전라북도|전북|전(?:라남|남)도|전남|경상북도|경북|경상남도|경남|제주(?:특별자치)?도|제주)\s*/, "");
+  if (noCity !== last) tries.push(noCity);
+
+  for (let i = 0; i < tries.length; i++) {
+    if (i) await new Promise((r) => setTimeout(r, 1100));   // 잇달아 물으면 막힙니다
+    const hit = await ask(tries[i]);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 
 /* ── 파일에서 뽑은 덩이를 본문에 얹기 ──
    덩이는 「━ 파일이름」 줄로 시작합니다. 같은 파일을 다시 읽으면
@@ -779,7 +805,10 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmT").value = row ? row.title || "" : "";
     document.getElementById("nmB").value = row ? row.body || "" : "";
     document.getElementById("nmE").value = row ? row.event || "" : "";
-    document.getElementById("nmFood").value = "";
+    /* 본문에 남아 있는 「맛집: …」 을 칸으로 되돌립니다.
+       그래야 예전 글을 열어 저장만 해도 지도에 올라갑니다. */
+    const fm = row && row.body ? String(row.body).match(/^맛집:[ \t]*(.+)$/m) : null;
+    document.getElementById("nmFood").value = fm ? fm[1].trim() : "";
     autoFill.people = ""; autoFill.place = "";
     document.getElementById("nmD").value = row ? ymd(row.event_date) : "";
     document.getElementById("nmTm").value = row ? row.event_time || "" : "";
@@ -1008,11 +1037,15 @@ export async function initNotes(mountId = "notesapp") {
     if (!title) { msg.textContent = "제목을 적어주세요."; return; }
     const body = document.getElementById("nmB").value.trim();
     const dRaw = document.getElementById("nmD").value.trim();
-    /* 맛집은 본문에도 한 줄 남깁니다 — 나중에 글만 봐도 알 수 있게 */
+    /* 맛집은 본문에도 한 줄 남깁니다 — 나중에 글만 봐도 알 수 있게.
+       이미 있으면 덧붙이지 않고 갈아 끼웁니다. */
+    const FOOD_LINE = /^맛집:.*$/m;
     const foodLine = (document.getElementById("nmFood").value || "").trim();
-    const bodyOut = foodLine && body.indexOf("맛집:") < 0
-      ? (body ? body + String.fromCharCode(10) : "") + "맛집: " + foodLine
-      : body;
+    const NL = String.fromCharCode(10);
+    const bodyOut = foodLine
+      ? (FOOD_LINE.test(body) ? body.replace(FOOD_LINE, "맛집: " + foodLine)
+                              : (body ? body + NL : "") + "맛집: " + foodLine)
+      : body.replace(FOOD_LINE, "").trim();
 
     const patch = {
       category: mCat.value,
@@ -1049,35 +1082,52 @@ export async function initNotes(mountId = "notesapp") {
             "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
     }
     /* ── 맛집을 지도에 올립니다 ──
-       비어 있으면 아무것도 하지 않습니다. 주소를 못 찾으면 건너뛰고 알려 드립니다. */
-    const foodEl = document.getElementById("nmFood");
-    const foodText = (foodEl.value || "").trim();
+       비어 있으면 아무것도 하지 않습니다.
+       같은 가게가 이미 지도에 있으면 두 번 올리지 않습니다. */
+    const foodText = (document.getElementById("nmFood").value || "").trim();
     if (foodText) {
       const list = parseFood(foodText);
-      const done = [], skip = [];
+      const done = [], same = [], skip = [];
+      let needSql = "";
       for (let i = 0; i < list.length; i++) {
         const f = list[i];
-        msg.textContent = `맛집을 지도에 올리는 중… (${i + 1}/${list.length}) ${f.name}`;
-        if (!f.addr) { skip.push(f.name + " — 주소가 없습니다"); continue; }
-        // OpenStreetMap 에 잇달아 물으면 막힙니다. 사이를 둡니다.
-        if (i) await new Promise((r) => setTimeout(r, 1100));
+        msg.textContent = "맛집을 지도에 올리는 중… (" + (i + 1) + "/" + list.length + ") " + f.name;
+        if (!f.addr) { skip.push(f.name + " — 주소를 안 적으셨습니다"); continue; }
+
+        // 이미 올라가 있으면 건너뜁니다
+        const dup = await sb.from("map_places").select("id").eq("name", f.name).limit(1);
+        if (!dup.error && dup.data && dup.data.length) { same.push(f.name); continue; }
+
+        if (i) await new Promise((r) => setTimeout(r, 1100));   // OSM 은 잇달아 물으면 막습니다
         const g = await geoOf(f.addr);
-        if (!g) { skip.push(f.name + " — 주소를 못 찾았습니다"); continue; }
+        if (!g) { skip.push(f.name + " — 주소를 못 찾았습니다: " + f.addr); continue; }
+
         const put = await sb.from("map_places").insert({
           grp: "food", category: f.cat, name: f.name, address: f.addr,
+          note: f.catText || null,
           lat: g.lat, lng: g.lng, owner_admin: true, created_by: user.id,
         });
-        if (put.error) {
-          skip.push(f.name + " — " + (/category/.test(put.error.message || "")
-            ? "지도 분류가 아직 안 열렸습니다 (auth/map_cats.sql)"
-            : put.error.message));
-        } else done.push(f.name);
+        if (!put.error) { done.push(f.name); continue; }
+
+        const m = put.error.message || "";
+        if (/map_places_grp_check|map_places_category_check|violates check/.test(m)) {
+          needSql = "지도 표가 아직 「맛집」 갈래를 받아들이지 못합니다." + NL +
+                    "Supabase → SQL Editor 에서 auth/map_cats.sql 을 한 번 실행해주세요.";
+          skip.push(f.name);
+        } else if (/schema cache|does not exist|relation/i.test(m)) {
+          needSql = "지도 표가 아직 없습니다 — auth/_ALL_setup.sql 을 한 번 실행해주세요.";
+          skip.push(f.name);
+        } else if (/row-level security|policy/i.test(m)) {
+          needSql = "지도에 올릴 권한이 없습니다 — auth/roles_setup 부분을 실행해주세요.";
+          skip.push(f.name);
+        } else skip.push(f.name + " — " + m);
       }
-      if (done.length || skip.length) {
-        alert((done.length ? "지도에 올렸습니다 — " + done.join(", ") : "") +
-          (done.length && skip.length ? String.fromCharCode(10) : "") +
-          (skip.length ? "못 올린 것:" + String.fromCharCode(10) + skip.join(String.fromCharCode(10)) : ""));
-      }
+      const say = [];
+      if (done.length) say.push("지도에 올렸습니다 — " + done.join(", "));
+      if (same.length) say.push("이미 지도에 있습니다 — " + same.join(", "));
+      if (needSql)     say.push(needSql);
+      if (skip.length) say.push("못 올린 것:" + NL + skip.join(NL));
+      if (say.length) alert(say.join(NL + NL));
     }
 
     msg.textContent = "";      // 「저장하는 중…」을 지워 둡니다
@@ -1211,7 +1261,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609010700");
+    const NFD = await import("./notes-folder.js?v=202609010900");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
