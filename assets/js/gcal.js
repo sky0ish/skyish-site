@@ -50,6 +50,13 @@ function loadGis() {
 
 export const ready = () => !!GCAL_CLIENT_ID;
 
+/* 구글 프로그램(GIS)을 미리 내려받아 둡니다.
+   단추를 누른 「뒤」 에 내려받기 시작하면, 받는 동안
+   「사람이 눌렀다」 는 효력이 만료돼 브라우저가 창을 막습니다
+   (Failed to open popup window 의 진짜 원인). 화면이 열릴 때 미리 데워 두면
+   누른 순간 바로 창이 뜹니다. */
+export const warm = () => { if (GCAL_CLIENT_ID) loadGis().catch(() => {}); };
+
 /** 권한 받기 — 처음 한 번은 구글 창이 뜹니다 */
 export async function connect(force) {
   if (!GCAL_CLIENT_ID) throw new Error("먼저 auth/config.js 에 GCAL_CLIENT_ID 를 적어주세요.");

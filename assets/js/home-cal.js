@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609022300";
+import * as GC from "./gcal.js?v=202609030100";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -201,6 +201,7 @@ export async function initHomeCal(id = "hocal") {
       '<a class="hocal__more" href="blog.html?cat=schedule">일정 전체 보기 →</a>';
 
     const gcBtn = document.getElementById("hocalGc");
+    if (gcBtn && GC.warm) GC.warm();        // 누르기 전에 미리 데워 둡니다
     if (gcBtn) gcBtn.addEventListener("click", async () => {
       gcBtn.disabled = true;
       gcBtn.textContent = "구글에 묻는 중…";
@@ -243,6 +244,8 @@ export async function initHomeCal(id = "hocal") {
        일정 글줄도 구역을 따릅니다. 그 글을 열려면 아래 「다가오는 일정」에서. */
     const appMode = box.classList.contains("hocal--app");
     if (grid) grid.addEventListener("click", (e) => {
+      // +n 으로 펼친 창 안의 항목은 제 길(그 글)로 갑니다 — 구역 나누기가 가로채면 안 됩니다
+      if (e.target.closest(".hopick")) return;
       const cell = e.target.closest(".hoc");
       // +n 은 어느 화면에서든 「그날 다 보기」 가 먼저입니다
       const more = e.target.closest(".more");

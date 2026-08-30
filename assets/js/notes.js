@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609022300";
-import * as GC from "./gcal.js?v=202609022300";
-import * as ST from "./notes-stats.js?v=202609022300";
-import * as NW from "./notes-network.js?v=202609022300";
-import { alumniNames } from "./addressbook.js?v=202609022300";
+import * as NF from "./notes-files.js?v=202609030100";
+import * as GC from "./gcal.js?v=202609030100";
+import * as ST from "./notes-stats.js?v=202609030100";
+import * as NW from "./notes-network.js?v=202609030100";
+import { alumniNames } from "./addressbook.js?v=202609030100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1719,6 +1719,8 @@ export async function initNotes(mountId = "notesapp") {
   });
   /* 구글 일정 — 읽기 권한을 받아 달력에 함께 얹습니다 */
   const gBox = document.getElementById("nGcalBox");
+  if (GC.ready() && GC.warm) GC.warm();     // 단추를 누르기 전에 미리 데워 둡니다
+
   async function pullGoogle(force, quiet) {
     if (!GC.ready()) {
       if (quiet) return;
@@ -1754,7 +1756,12 @@ export async function initNotes(mountId = "notesapp") {
       drawCal();
     } catch (e) {
       gBox.hidden = false;
-      gBox.innerHTML = '<p class="ngcal__note">' + esc(e.message) + "</p>";
+      const friendly = /popup/i.test(e.message || "")
+        ? "구글 창이 미처 뜨기 전에 브라우저가 막았습니다. 이제 준비해 두었으니 한 번만 다시 눌러 주세요."
+        : esc(e.message);
+      gBox.innerHTML = '<p class="ngcal__note">' + friendly +
+        ' <button type="button" class="nlink" id="gRetry">구글 달력 다시 잇기</button></p>';
+      document.getElementById("gRetry").addEventListener("click", () => pullGoogle(false));
     } finally {
       calBtn.disabled = false;
       calBtn.textContent = was;
@@ -1820,7 +1827,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609022300");
+    const NFD = await import("./notes-folder.js?v=202609030100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
