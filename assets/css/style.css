@@ -2357,15 +2357,14 @@ button.cev--g:hover { filter:brightness(.94);
   margin-inline: auto;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
-  /* 좌우는 언제나 끝까지 채웁니다. */
-  width: 100%;
-  /* 높이만 직접 정합니다.
-     ※ aspect-ratio 와 max-height 를 같이 쓰면 안 됩니다 —
-        높이가 잘릴 때 너비까지 같은 비율로 줄어들어 그림이 왼쪽에 붙습니다.
-     · 100vw/2 = 원본 비율(2:1) 그대로일 때의 높이 — 이때는 하나도 안 잘립니다
-     · 78vh   = 화면이 낮을 때의 한도 — 그림이 화면을 다 먹지 않게 */
-  height: min(calc(100vw / 1.999), 78vh);
-  min-height: 200px;
+  /* 높이를 먼저 정하고, 너비는 원본 비율(2:1) 로 따라오게 합니다.
+     그래서 좌우에 여백이 생기고 — 가운데 margin auto 로 놓입니다.
+     ※ width:100% 를 주면 안 됩니다. 그러면 높이 대신 그림이 잘립니다.
+     ※ aspect-ratio + max-height 조합도 안 됩니다. 너비까지 줄면서 왼쪽에 붙습니다. */
+  aspect-ratio: 1773 / 887;
+  height: min(46vh, 430px, calc(100vw / 1.999));
+  width: auto;
+  max-width: 100%;
 }
 .ndiary img {
   width: 100%; height: 100%;
@@ -2452,7 +2451,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
 }
 @media (max-width: 680px) {
   /* 손전화에서도 같은 규칙 — max-height 를 쓰면 또 왼쪽으로 쏠립니다 */
-  .ndiary { height: min(calc(100vw / 1.999), 46vh); min-height: 150px; }
+  .ndiary { height: min(30vh, calc(100vw / 1.999)); }
   .ndiary__word { bottom: 4%; }
 }
 
@@ -2589,6 +2588,20 @@ body.diary-on #notesapp > *:not(.ndiary) {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .scard__note { display: block; margin-top: .5rem; font-size: .78rem;
   color: var(--mauve); line-height: 1.6; }
+/* 마크가 있는 카드 — 왼쪽에 마크, 오른쪽에 글.
+   마크는 44px 로 작게 둡니다. 커지면 글보다 먼저 눈에 띄어 어수선합니다. */
+.scard__txt { display: block; }
+.scard--logo .scard__go { display: flex; align-items: center; gap: 14px; }
+.scard--logo .scard__txt { flex: 1; min-width: 0; }
+.scard--logo .scard__txt b { margin: .35rem 0 .2rem; }
+.scard__mark { flex: none; width: 44px; height: 44px; object-fit: contain;
+  border-radius: 10px; background: #fff; }
+
+/* 표 쪽에 문제가 있을 때 붙는 한 줄 — 화면은 그대로 두고 사정만 알립니다 */
+.snote { grid-column: 1 / -1; margin: 0 0 .2rem; padding: 11px 15px;
+  background: #fdf6ee; border: 1px solid #e8dcc9; border-radius: 10px;
+  font-size: .8rem; color: #8a7a5f; line-height: 1.65; }
+
 .scard__edit { position: absolute; top: 10px; right: 10px; border: 0; background: none;
   color: #cec7b8; cursor: pointer; font-size: .9rem; padding: 4px 6px;
   border-radius: 7px; opacity: 0; transition: .15s var(--ease); }

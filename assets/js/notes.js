@@ -4,8 +4,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609011300";
-import * as GC from "./gcal.js?v=202609011300";
+import * as NF from "./notes-files.js?v=202609011500";
+import * as GC from "./gcal.js?v=202609011500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -361,6 +361,10 @@ export async function initNotes(mountId = "notesapp") {
         "<small>오늘의 한 쪽</small></figcaption>" +
     "</figure>" +
     '<nav class="ntabs" id="nTabs" aria-label="기록 갈래"></nav>' +
+    /* 달력을 갈래 단추 바로 밑에 둡니다 — 먼저 달을 훑고,
+       그다음 찾거나 새로 쓰는 차례라서. */
+    '<div class="ngcal" id="nGcalBox" hidden></div>' +
+    '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="nbar">' +
       '<label class="nsearch"><span class="sr-only">찾기</span>' +
         '<input type="search" id="nQ" placeholder="제목 · 내용 · 장소 · 사람으로 찾기" autocomplete="off"></label>' +
@@ -376,8 +380,6 @@ export async function initNotes(mountId = "notesapp") {
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
-    '<div class="ngcal" id="nGcalBox" hidden></div>' +
-    '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="nlist" id="nList"></div>' +
     '<p class="nempty" id="nEmpty" hidden></p>' +
     '<div class="ndet" id="nDetail"></div>' +
@@ -1363,7 +1365,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609011300");
+    const NFD = await import("./notes-folder.js?v=202609011500");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

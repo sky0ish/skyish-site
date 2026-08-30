@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609011300";
+import * as GC from "./gcal.js?v=202609011500";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];

@@ -72,9 +72,9 @@
         { label: "ETC",      file: "blog.html?cat=etc"      }
       ] },
       { label: "CONTACT",  file: "contact.html", sub: [
-        { label: "To Me",   file: "contact.html"          },
         { label: "주소록",   file: "contact.html?p=addr",  own: true },
-        { label: "Sites",   file: "contact.html?p=sites", own: true }
+        { label: "Sites",   file: "contact.html?p=sites", own: true },
+        { label: "To Me",   file: "contact.html"          }
       ] }
     ],
     email: "whlove@gmail.com",

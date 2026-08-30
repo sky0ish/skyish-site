@@ -9,6 +9,7 @@ export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 
 /** 갈래 — 브라우저 즐겨찾기의 폴더처럼 씁니다 */
 export const SITE_CATS = [
+  ["learn",  "학습",     "#2f7d6f"],
   ["work",   "업무",     "#4f9d92"],
   ["data",   "자료·통계", "#2a5fa8"],
   ["edu",    "교육",     "#8a6bb0"],
@@ -20,6 +21,29 @@ export const SITE_CATS = [
 export const SC_NAME  = Object.fromEntries(SITE_CATS.map(([k, v]) => [k, v]));
 export const SC_COLOR = Object.fromEntries(SITE_CATS.map(([k, , c]) => [k, c]));
 
+/* ── 붙박이 ──
+   SQL(auth/sites_setup.sql) 을 아직 안 돌리셨어도 이것만은 늘 보입니다.
+   같은 주소가 표에 들어오면 그쪽을 씁니다 — 그래야 고치고 지울 수 있습니다. */
+export const BUILTIN = [
+  { title: "한솔아카데미", url: "https://bim.inup.co.kr/mypage/index.jsp?t=mypage",
+    category: "learn", note: "건축 · BIM — 내 강의실" },
+  { title: "패스트캠퍼스", url: "https://fastcampus.co.kr/me/course",
+    category: "learn", note: "수강 중인 강의" },
+  { title: "클래스101",   url: "https://class101.net/ko/my-classes",
+    category: "learn", note: "내 클래스" },
+  { title: "인프런",      url: "https://www.inflearn.com/my/courses",
+    category: "learn", note: "내 학습" },
+];
+
+/* 각 사이트에서 받아 둔 마크 — 그때그때 바깥에 부르지 않고 여기 담아 씁니다.
+   그래야 빠르고, 어디에 들렀는지 그 사이트에 알려지지도 않습니다. */
+const LOGO = {
+  "bim.inup.co.kr":   "hansol.png",
+  "fastcampus.co.kr": "fastcampus.png",
+  "class101.net":     "class101.png",
+  "inflearn.com":     "inflearn.png",
+};
+
 const esc = (s) => String(s == null ? "" : s)
   .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -28,6 +52,12 @@ export function host(u) {
   try { return new URL(u).hostname.replace(/^www\./, ""); }
   catch (e) { return String(u || "").replace(/^https?:\/\//, "").split("/")[0]; }
 }
+/** 그 사이트의 마크가 있으면 그 자리 */
+export function logoOf(u) {
+  const f = LOGO[host(u)];
+  return f ? "assets/img/sites/" + f : "";
+}
+
 /** 붙여넣은 주소에 http 가 없으면 붙여 줍니다 */
 export function fixUrl(u) {
   const t = String(u || "").trim();
@@ -107,15 +137,27 @@ export async function initSites(mountId = "sitesapp", sectionId = "sitesec") {
   };
   const shown = () => rows.filter((r) => cur === "all" || r.category === cur).filter(match);
 
+  let dbNote = "";        // 표 쪽에 문제가 있을 때 적어 두는 한 줄
+
   async function load() {
     const r = await sb.from("sites").select("*")
       .order("category", { ascending: true })
       .order("title", { ascending: true });
-    if (r.error) {
-      mount.innerHTML = '<p class="nempty">' + esc(friendly(r.error.message)) + "</p>";
-      return;
-    }
-    rows = r.data || [];
+    /* 표가 아직 없어도 화면을 지우지 않습니다.
+       붙박이(학습 사이트)는 그대로 보이고, 사정만 한 줄 적어 둡니다. */
+    dbNote = r.error ? friendly(r.error.message) : "";
+    const db = r.error ? [] : (r.data || []);
+
+    // 같은 주소가 표에 있으면 붙박이는 비켜 줍니다
+    const trim = (u) => String(u || "").replace(/\/+$/, "");
+    const have = new Set(db.map((x) => trim(x.url)));
+    const extra = BUILTIN.filter((b) => !have.has(trim(b.url)))
+      .map((b, i) => ({ ...b, id: "builtin-" + i, builtin: true }));
+
+    const order = SITE_CATS.map(([k]) => k);
+    rows = extra.concat(db).sort((a, b) =>
+      order.indexOf(a.category) - order.indexOf(b.category) ||
+      String(a.title).localeCompare(String(b.title), "ko"));
     draw();
   }
 
@@ -142,17 +184,28 @@ export async function initSites(mountId = "sitesapp", sectionId = "sitesec") {
       return;
     }
 
-    list.innerHTML = l.map((r) =>
-      '<div class="scard" data-id="' + r.id + '">' +
+    list.innerHTML = (dbNote ? `<p class="snote">${esc(dbNote)}</p>` : "") +
+      l.map((r) => {
+      const logo = logoOf(r.url);
+      return '<div class="scard' + (logo ? " scard--logo" : "") + '" data-id="' + r.id + '">' +
         `<a class="scard__go" href="${esc(r.url)}" target="_blank" rel="noopener">` +
-          `<span class="ncat" style="--c:${SC_COLOR[r.category] || "#888"}">` +
-            `${esc(SC_NAME[r.category] || r.category)}</span>` +
-          `<b>${esc(r.title)}</b>` +
-          `<span class="scard__host">${esc(host(r.url))}</span>` +
-          (r.note ? `<span class="scard__note">${esc(r.note)}</span>` : "") +
+          (logo
+            ? `<img class="scard__mark" src="${esc(logo)}" alt="" width="44" height="44" ` +
+              `loading="lazy" decoding="async">`
+            : "") +
+          '<span class="scard__txt">' +
+            `<span class="ncat" style="--c:${SC_COLOR[r.category] || "#888"}">` +
+              `${esc(SC_NAME[r.category] || r.category)}</span>` +
+            `<b>${esc(r.title)}</b>` +
+            `<span class="scard__host">${esc(host(r.url))}</span>` +
+            (r.note ? `<span class="scard__note">${esc(r.note)}</span>` : "") +
+          "</span>" +
         "</a>" +
-        '<button type="button" class="scard__edit" title="고치기" aria-label="고치기">✎</button>' +
-      "</div>").join("");
+        // 붙박이는 표에 없는 줄이라 고칠 수 없습니다
+        (r.builtin ? ""
+          : '<button type="button" class="scard__edit" title="고치기" aria-label="고치기">✎</button>') +
+      "</div>";
+    }).join("");
 
     list.querySelectorAll(".scard__edit").forEach((b) =>
       b.addEventListener("click", (e) => {

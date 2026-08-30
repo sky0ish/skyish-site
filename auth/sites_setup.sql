@@ -21,13 +21,28 @@ create table if not exists public.sites (
 );
 
 comment on table  public.sites          is '자주 드나드는 곳 (CONTACT → Sites)';
-comment on column public.sites.category is '업무 work · 자료 data · 교육 edu · GRI gri · 학회 assoc · 생활 life · ETC etc';
+comment on column public.sites.category is '학습 learn · 업무 work · 자료 data · 교육 edu · GRI gri · 학회 assoc · 생활 life · ETC etc';
 
 alter table public.sites drop constraint if exists sites_cat_check;
 alter table public.sites add  constraint sites_cat_check
-  check (category in ('work','data','edu','gri','assoc','life','etc'));
+  check (category in ('learn','work','data','edu','gri','assoc','life','etc'));
 
 create index if not exists sites_cat_idx on public.sites (category, title);
+
+
+-- ── 배우러 다니는 곳 심기 ──
+--    이미 같은 주소가 있으면 건너뜁니다. 여러 번 실행해도 겹치지 않습니다.
+--    (홈페이지에는 이 표가 없어도 붙박이로 보입니다. 여기 담기면
+--     그때부터 이름·메모를 고치고 지울 수 있게 됩니다.)
+insert into public.sites (title, url, category, note)
+select v.title, v.url, v.category, v.note
+  from (values
+    ('한솔아카데미', 'https://bim.inup.co.kr/mypage/index.jsp?t=mypage', 'learn', '건축 · BIM — 내 강의실'),
+    ('패스트캠퍼스', 'https://fastcampus.co.kr/me/course',               'learn', '수강 중인 강의'),
+    ('클래스101',   'https://class101.net/ko/my-classes',              'learn', '내 클래스'),
+    ('인프런',      'https://www.inflearn.com/my/courses',             'learn', '내 학습')
+  ) as v(title, url, category, note)
+ where not exists (select 1 from public.sites s where s.url = v.url);
 
 
 -- ── 관리자만 보고 씁니다 ──
@@ -59,4 +74,5 @@ select
      where table_schema='public' and table_name='sites')          as 표,
   (select count(*) from pg_policies
      where schemaname='public' and tablename='sites')             as 규칙,
-  (select count(*) from public.sites)                             as 담긴_곳;
+  (select count(*) from public.sites)                             as 담긴_곳,
+  (select count(*) from public.sites where category = 'learn')    as 학습;
