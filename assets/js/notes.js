@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609021900";
-import * as GC from "./gcal.js?v=202609021900";
-import * as ST from "./notes-stats.js?v=202609021900";
-import * as NW from "./notes-network.js?v=202609021900";
-import { alumniNames } from "./addressbook.js?v=202609021900";
+import * as NF from "./notes-files.js?v=202609022100";
+import * as GC from "./gcal.js?v=202609022100";
+import * as ST from "./notes-stats.js?v=202609022100";
+import * as NW from "./notes-network.js?v=202609022100";
+import { alumniNames } from "./addressbook.js?v=202609022100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -389,6 +389,8 @@ export async function initNotes(mountId = "notesapp") {
     '<div class="nlist" id="nList"></div>' +
     '<p class="nempty" id="nEmpty" hidden></p>' +
     '<div class="ndet" id="nDetail"></div>' +
+    '<div class="ndet" id="nDay" role="dialog" aria-modal="true" aria-label="그날 일정">' +
+      '<div class="ndet__box"></div></div>' +
     '<div class="nimp" id="nImp"></div>' +
     '<div class="nmodal" id="nModal" role="dialog" aria-modal="true" aria-label="글 쓰기">' +
       '<div class="nmodal__box">' +
@@ -1109,6 +1111,90 @@ export async function initNotes(mountId = "notesapp") {
   }
 
   /* ── 달력 ── */
+  /* 달력 칸의 빈 곳(항목·숫자 말고)을 누르면 그날을 모아 봅니다.
+     calBox 는 안(innerHTML)만 갈리는 그릇이라 여기 한 번만 겁니다. */
+  calBox.addEventListener("click", (e) => {
+    if (e.target.closest("button")) return;     // 일정·숫자·이동 단추는 제 일을 합니다
+    const cell = e.target.closest(".ccell");
+    if (cell && cell.dataset.day) dayView(cell.dataset.day);
+  });
+
+  /** 그날의 모든 일정을 한 창에 — 내 글과 구글 일정을 함께 폅니다 */
+  function dayView(key) {
+    const dbox = document.getElementById("nDay");
+    const mine = rows.filter((r) => (r.event_date || "").slice(0, 10) === key)
+      .sort((a, b) => String(a.event_time || "99:99").localeCompare(String(b.event_time || "99:99")));
+    const g = gEvents.filter((x) => x.date === key);
+    const d = new Date(key + "T00:00:00");
+
+    dbox.querySelector(".ndet__box").innerHTML =
+      '<button type="button" class="ndet__x" aria-label="닫기">✕</button>' +
+      `<h3>${key.replace(/-/g, ".")} (${WEEK[d.getDay()]})</h3>` +
+      `<p class="ndet__meta">내 글 ${mine.length}건` +
+        (g.length ? ` · 구글 일정 ${g.length}건` : "") + "</p>" +
+      '<div class="nperson__meets">' +
+      mine.map((r) =>
+        `<button type="button" class="npmeet" data-open="${r.id}">` +
+          `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
+            `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
+          `<span class="npmeet__t"><b>${esc(r.title)}</b>` +
+            ((r.place || r.people)
+              ? `<small>${r.place ? "⊙ " + esc(r.place) : ""}` +
+                `${r.place && r.people ? "   " : ""}` +
+                `${r.people ? "○ " + esc(r.people) : ""}</small>` : "") +
+          "</span>" +
+          `<span class="npmeet__d">${r.event_time ? esc(r.event_time) : ""}</span>` +
+        "</button>").join("") +
+      g.map((x, gi) =>
+        `<button type="button" class="npmeet" data-gi="${gi}">` +
+          `<span class="ncat" style="--c:${esc(x.color || "#4285f4")}">구글</span>` +
+          `<span class="npmeet__t"><b>${esc(x.title)}</b>` +
+            ((x.place || x.cal)
+              ? `<small>${x.place ? "⊙ " + esc(x.place) : ""}` +
+                `${x.place && x.cal ? "   " : ""}${x.cal ? esc(x.cal) : ""}</small>` : "") +
+          "</span>" +
+          `<span class="npmeet__d">${x.time ? esc(x.time) : ""}</span>` +
+        "</button>").join("") +
+      ((!mine.length && !g.length)
+        ? '<p class="nempty" style="margin:.6rem 0">이날은 잡힌 일정이 없습니다.</p>' : "") +
+      "</div>" +
+      (isAdmin
+        ? '<div class="ndet__foot">' +
+          '<button type="button" class="nbtn" data-write="diary">✎ 이날 일기</button>' +
+          '<button type="button" class="nbtn nbtn--go" data-write="schedule">📅 이날 일정 쓰기</button>' +
+          "</div>"
+        : "");
+
+    dbox.classList.add("on");
+    /* 듣는 이가 쌓이지 않게 onclick 하나로 받습니다 (자세히 보기와 같은 까닭) */
+    dbox.onclick = (e2) => {
+      if (e2.target === dbox || e2.target.closest(".ndet__x")) {
+        dbox.classList.remove("on"); return;
+      }
+      const o = e2.target.closest("[data-open]");
+      if (o) {
+        const r = rows.find((x) => String(x.id) === o.dataset.open);
+        if (r) { dbox.classList.remove("on"); detail(r); }
+        return;
+      }
+      const gb = e2.target.closest("[data-gi]");
+      if (gb && isAdmin) {
+        const x = g[+gb.dataset.gi];
+        if (x) { dbox.classList.remove("on"); fromGoogle(x); }
+        return;
+      }
+      const w = e2.target.closest("[data-write]");
+      if (w) {
+        dbox.classList.remove("on");
+        if (w.dataset.write === "diary") { newDiary(key); return; }
+        open(null);
+        mCat.value = "schedule";
+        syncTag();
+        document.getElementById("nmD").value = ymd(key);
+      }
+    };
+  }
+
   function drawCal() {
     const y = calAt.getFullYear(), m = calAt.getMonth();
     const first = new Date(y, m, 1);
@@ -1140,7 +1226,7 @@ export async function initNotes(mountId = "notesapp") {
         `${e.cal ? " · " + esc(e.cal) : ""}${isAdmin ? " — 누르면 글로 옮깁니다" : ""}">` +
         `${e.time ? esc(e.time) + " " : ""}${esc(e.title)}` +
         `</${isAdmin ? "button" : "span"}>`).join("");
-      cells += `<div class="ccell${out ? " out" : ""}${key === todayIso ? " today" : ""}">` +
+      cells += `<div class="ccell${out ? " out" : ""}${key === todayIso ? " today" : ""}" data-day="${key}">` +
         (isAdmin
           ? `<button type="button" class="cday cdaybtn${d.getDay() === 0 ? " sun" : d.getDay() === 6 ? " sat" : ""}" ` +
             `data-new="${key}" title="이 날 일기 쓰기">${d.getDate()}</button>`
@@ -1468,6 +1554,16 @@ export async function initNotes(mountId = "notesapp") {
   document.getElementById("nmSave").addEventListener("click", async (e) => {
     const title = document.getElementById("nmT").value.trim();
     if (!title) { msg.textContent = "제목을 적어주세요."; return; }
+
+    /* 구글로 보낼 참인데 아직 안 이어져 있으면, 사람이 누른 「지금」 창을 띄웁니다.
+       저장이 다 끝난 뒤에 띄우려 하면 브라우저가 막습니다
+       — 게시판에 떴던 「Failed to open popup window」 가 바로 그것입니다. */
+    const gcWant = !editing && mCat.value === "schedule" && GC.ready() &&
+      !document.getElementById("nmGcalBox").hidden &&
+      document.getElementById("nmGcal").checked;
+    const gcLink = (gcWant && !GC.connected())
+      ? GC.connect().catch((err) => err)      // 창은 여기서 뜨고, 결과는 나중에 봅니다
+      : null;
     const body = document.getElementById("nmB").value.trim();
     const dRaw = document.getElementById("nmD").value.trim();
     /* 맛집은 본문에도 한 줄 남깁니다 — 나중에 글만 봐도 알 수 있게.
@@ -1516,11 +1612,13 @@ export async function initNotes(mountId = "notesapp") {
     }
     /* ── 새 일정을 구글 캘린더에도 넣습니다 ──
        고치기가 아니라 새 글일 때만 — 고칠 때마다 넣으면 겹겹이 쌓입니다. */
-    const gcBox = document.getElementById("nmGcal");
-    if (!editing && patch.category === "schedule" && patch.event_date &&
-        gcBox && gcBox.checked && GC.ready()) {
+    if (gcWant && patch.event_date) {
       msg.textContent = "구글 캘린더에 넣는 중…";
       try {
+        if (gcLink) {                       // 아까 띄워 둔 창의 결과를 기다립니다
+          const got = await gcLink;
+          if (got instanceof Error) throw got;
+        }
         await GC.addEvent({
           date: patch.event_date,
           time: patch.event_time || "",
@@ -1722,7 +1820,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609021900");
+    const NFD = await import("./notes-folder.js?v=202609022100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
