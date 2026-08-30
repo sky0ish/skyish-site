@@ -2379,7 +2379,11 @@ body.diary-on #notesapp > *:not(.ndiary) {
   z-index: 3; text-align: left;
   font-family: var(--font-display, inherit);
   font-size: clamp(1.8rem, 4.2vw, 3.6rem);
-  color: #fff; letter-spacing: .02em; line-height: 1;
+  color: #fff; letter-spacing: .02em;
+  /* line-height 1 이면 y 의 아래 꼬리가 잘립니다. 여유를 둡니다. */
+  line-height: 1.2; padding: .04em .14em .16em;
+  max-width: calc(100% - 2 * clamp(18px, 3.5vw, 58px));
+  white-space: nowrap;
   /* 커튼이 밝아 흰 글씨가 묻히므로 그림자를 진하게 깝니다 */
   text-shadow: 0 2px 10px rgba(60,44,32,.75), 0 0 34px rgba(60,44,32,.6),
                0 0 70px rgba(60,44,32,.45);
