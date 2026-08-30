@@ -2365,13 +2365,19 @@ button.cev--g:hover { filter:brightness(.94);
   font-size: .95rem; padding: 6px 8px; border-radius: 8px; line-height: 1; }
 .nmodal__x:hover { color: var(--ink); background: #f3f0ea; }
 
-/* 사람들 화면의 두 갈래 단추 */
-.ptabs { display: flex; gap: 8px; margin: 0 0 1.2rem; }
-.ptab { padding: 8px 18px; border: 1px solid var(--line); border-radius: 999px;
-  background: #fff; font-family: inherit; font-size: .86rem; font-weight: 600;
-  color: var(--mauve); cursor: pointer; transition: .15s var(--ease); }
-.ptab:hover { border-color: var(--teal); color: var(--teal-text); }
-.ptab.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+/* 사람들 화면의 두 갈래 단추 — 찾는 칸 줄에 큼직하게 */
+.pswitch { display: flex; gap: 8px; flex: none; }
+.ptab { padding: 11px 24px; border: 2px solid #d9b25f; border-radius: 999px;
+  background: #fff; font-family: inherit; font-size: .96rem; font-weight: 700;
+  color: #a07d3a; cursor: pointer; transition: .15s var(--ease);
+  box-shadow: 0 2px 8px rgba(160, 125, 58, .12); }
+.ptab:hover { background: #fdf7ea; transform: translateY(-1px); }
+.ptab.on { background: #c8973c; border-color: #c8973c; color: #fff;
+  box-shadow: 0 4px 12px rgba(160, 125, 58, .3); }
+@media (max-width: 720px) {
+  .pswitch { width: 100%; }
+  .ptab { flex: 1; padding: 10px 12px; font-size: .88rem; }
+}
 
 /* 사람에 대한 기록 — 본문의 「(사람) …」 줄을 모은 것 */
 .pnotes { margin: 10px 0 6px; padding: 11px 14px; background: #fbf7ef;

@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609051300";
-import * as GC from "./gcal.js?v=202609051300";
-import * as ST from "./notes-stats.js?v=202609051300";
-import * as NW from "./notes-network.js?v=202609051300";
-import { alumniNames } from "./addressbook.js?v=202609051300";
+import * as NF from "./notes-files.js?v=202609051500";
+import * as GC from "./gcal.js?v=202609051500";
+import * as ST from "./notes-stats.js?v=202609051500";
+import * as NW from "./notes-network.js?v=202609051500";
+import { alumniNames } from "./addressbook.js?v=202609051500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -372,6 +372,8 @@ export async function initNotes(mountId = "notesapp") {
     '<div class="ngcal" id="nGcalBox" hidden></div>' +
     '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="nbar">' +
+      /* 사람들 화면의 두 갈래 — 찾는 칸 줄에 큼직하게 둡니다 */
+      '<div class="pswitch" id="nPeopleSw" hidden></div>' +
       '<label class="nsearch"><span class="sr-only">찾기</span>' +
         '<input type="search" id="nQ" placeholder="제목 · 내용 · 장소 · 사람으로 찾기" autocomplete="off"></label>' +
       '<button type="button" class="nbtn" id="nGo">🔍 검색</button>' +
@@ -631,20 +633,19 @@ export async function initNotes(mountId = "notesapp") {
     }
     emptyEl.hidden = true;
 
-    /* 두 갈래 단추 — 사람들(글) · 네트워크망(셈·그림) */
-    const tab = (k, label) =>
+    /* 두 갈래 단추는 갈래 줄 오른쪽에 있습니다 (여기서 채워 넣습니다) */
+    const sw = document.getElementById("nPeopleSw");
+    sw.hidden = false;
+    sw.innerHTML = [["list", "사람들"], ["net", "네트워크망"]].map(([k, label]) =>
       `<button type="button" class="ptab${k === peopleTab ? " on" : ""}" ` +
-      `data-t="${k}">${label}</button>`;
-    const bar = '<div class="ptabs">' + tab("list", "사람들") +
-                tab("net", "네트워크망") + "</div>";
+      `data-t="${k}">${label}</button>`).join("");
+    sw.querySelectorAll(".ptab").forEach((b) =>
+      b.addEventListener("click", () => { peopleTab = b.dataset.t; drawPeople(); }));
 
     /* 찾는 중일 때는 셈판을 접습니다 — 찾은 사람에 눈이 가야 하니까 */
-    list.innerHTML = bar + (peopleTab === "net"
+    list.innerHTML = (peopleTab === "net"
       ? (s ? "" : statsHtml())
       : peopleHtml(hit, s));
-
-    list.querySelectorAll(".ptab").forEach((b) =>
-      b.addEventListener("click", () => { peopleTab = b.dataset.t; drawPeople(); }));
     wirePeople();
   }
 
@@ -1035,6 +1036,8 @@ export async function initNotes(mountId = "notesapp") {
     if (!calBox.hidden) drawCal();
 
     // 「사람들」 은 글 목록이 아니라 찾아보기 화면입니다
+    const sw0 = document.getElementById("nPeopleSw");
+    if (sw0) sw0.hidden = (cur !== PEOPLE_CAT);
     if (cur === PEOPLE_CAT) { drawPeople(); return; }
 
     if (!l.length) {
@@ -2087,7 +2090,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609051300");
+    const NFD = await import("./notes-folder.js?v=202609051500");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
