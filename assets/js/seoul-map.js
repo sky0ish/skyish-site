@@ -576,7 +576,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609040700");
+        const G = await import("./gpkg.js?v=202609040900");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -601,8 +601,9 @@ export async function initMap(mountId = "mapapp") {
     });
   }
 
+  /* 철도역 줄은 핫플·종합에만 있습니다 — 없는 화면에서 만지면 통째로 죽습니다 */
   const railBox = boxes.querySelector("input[data-rail]");
-  railBox.addEventListener("change", () => {
+  if (railBox) railBox.addEventListener("change", () => {
     railBox.closest(".ly").classList.toggle("off", !railBox.checked);
     setRail(railBox.checked);
   });
@@ -674,7 +675,7 @@ export async function initMap(mountId = "mapapp") {
     if (!MULTI) q = q.eq("grp", GRP);
     const r = await q;
     if (r.error || !r.data || !r.data.length) return;   // 표가 없어도 조용히
-    const MF = await import("./map-files.js?v=202609040700");
+    const MF = await import("./map-files.js?v=202609040900");
     r.data.forEach((row) => {
       const color = row.color || FCOLORS[myFiles.length % FCOLORS.length];
       const layer = fileLayer(MF, row.name, row.geojson, color);
@@ -686,7 +687,7 @@ export async function initMap(mountId = "mapapp") {
   })();
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609040700");
+    const MF = await import("./map-files.js?v=202609040900");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
