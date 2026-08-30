@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609032300";
-import * as GC from "./gcal.js?v=202609032300";
-import * as ST from "./notes-stats.js?v=202609032300";
-import * as NW from "./notes-network.js?v=202609032300";
-import { alumniNames } from "./addressbook.js?v=202609032300";
+import * as NF from "./notes-files.js?v=202609040100";
+import * as GC from "./gcal.js?v=202609040100";
+import * as ST from "./notes-stats.js?v=202609040100";
+import * as NW from "./notes-network.js?v=202609040100";
+import { alumniNames } from "./addressbook.js?v=202609040100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1911,7 +1911,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609032300");
+    const NFD = await import("./notes-folder.js?v=202609040100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

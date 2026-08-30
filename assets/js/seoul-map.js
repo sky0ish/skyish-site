@@ -267,7 +267,7 @@ const SHELL = `
           <button type="button" class="lyall" id="lyFit">◎ 올린 곳 전체 보기</button>
           <button type="button" class="lyall lygpkg" id="lyGpkg" hidden>⤓ GPKG 로 받기</button>
           <span class="lytitle lybase">내 파일</span>
-          <label class="lyall lyfile" id="lyFileBtn">＋ KML · SHP 불러오기
+          <label class="lyall lyfile" id="lyFileBtn">＋ KML · KMZ · SHP 불러오기
             <input type="file" id="lyFile" accept=".kml,.kmz,.geojson,.json,.zip,.shp" multiple hidden></label>
           <span class="lyboxes" id="lyFiles"></span>
           <span class="lytitle lybase">맛집지도</span>
@@ -576,7 +576,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609032300");
+        const G = await import("./gpkg.js?v=202609040100");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -648,7 +648,7 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609032300");
+    const MF = await import("./map-files.js?v=202609040100");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
@@ -725,8 +725,12 @@ export async function initMap(mountId = "mapapp") {
        도시건축·부동산 화면에는 제 하부 갈래만 남습니다. */
     if (GRP !== "hot" && !MULTI) {
       const ttl = foodBox.previousElementSibling;      // 「맛집지도」 제목 줄
-      if (ttl && ttl.classList.contains("lytitle")) ttl.hidden = true;
+      if (ttl && ttl.classList.contains("lytitle")) {
+        ttl.hidden = true;
+        ttl.style.display = "none";      // hidden 이 다른 display 에 밀릴 때 대비
+      }
       foodBox.hidden = true;
+      foodBox.style.display = "none";
       return;
     }
     let d;
