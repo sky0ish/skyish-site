@@ -60,6 +60,7 @@
   width:2.5px;height:6px;border:solid #3f3a2e;border-width:0 1.6px 1.6px 0;transform:rotate(45deg);}
 .ly.off{color:#b5afa0;}
 .ly.off .lydot i{opacity:.28;}
+.ly.over{background:#eef5f4;border-radius:6px;outline:1.5px dashed #4f9d92;}
 .lydot{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;flex:none;}
 .lydot i{display:block;width:11px;height:11px;border-radius:50%;border:none;
   box-shadow:inset 0 1px 2px rgba(255,255,255,.5), inset 0 -2px 3px rgba(0,0,0,.25),

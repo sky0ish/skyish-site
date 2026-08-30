@@ -167,19 +167,19 @@ export const BASEMAPS = [
   /* CARTO 는 2026년부터 열쇠 없이 쓰면 타일에 「API KEY REQUIRED」 를 찍어 보냅니다.
      막힌 것이 아니라 글자가 박혀 오는 것이라 더 나쁩니다 — Esri 로 갈아탔습니다.
      Esri 는 {s} 를 쓰지 않고 칸 순서가 {z}/{y}/{x} 입니다. */
-  { k: "street", n: "부드러운 컬러", sub: "Esri Street",
+  { k: "street", n: "부드러운 컬러", sub: "Esri Street", native: 18,
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
     sd: false, att: 'Tiles &copy; Esri' },
-  { k: "positron", n: "밝은 회색", sub: "Esri Light Gray",
+  { k: "positron", n: "밝은 회색", sub: "Esri Light Gray", native: 16,
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
     sd: false, att: 'Tiles &copy; Esri' },
-  { k: "dark", n: "어두운", sub: "Esri Dark Gray",
+  { k: "dark", n: "어두운", sub: "Esri Dark Gray", native: 16,
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
     sd: false, att: 'Tiles &copy; Esri' },
   { k: "topo", n: "지형", sub: "OpenTopoMap",
-    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", maxZoom: 17,
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", native: 17,
     att: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)' },
-  { k: "sat", n: "위성사진", sub: "Esri World Imagery",
+  { k: "sat", n: "위성사진", sub: "Esri World Imagery", native: 19,
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     sd: false, att: 'Tiles &copy; Esri' },
 ];
@@ -395,8 +395,13 @@ export async function initMap(mountId = "mapapp") {
   function setBase(k) {
     const b = BASEMAPS.find(x => x.k === k) || BASEMAPS[0];
     if (baseLayer) map.removeLayer(baseLayer);
+    /* 바탕마다 타일이 실제로 있는 확대 한계(native)가 다릅니다.
+       밝은 회색(Esri Light Gray)은 16까지뿐이라, 그 너머로 확대하면
+       Esri 가 「Map data not yet available」 판을 보냅니다 — 열쇠 문제가 아닙니다.
+       maxNativeZoom 을 정해 주면 한계 너머에서는 있는 타일을 늘려 보여 줍니다. */
     baseLayer = L.tileLayer(b.url, {
-      maxZoom: b.maxZoom || 19,
+      maxZoom: 19,
+      maxNativeZoom: b.native || b.maxZoom || 19,
       subdomains: b.sd === false ? [] : ["a", "b", "c"],
       attribution: b.att,
     }).addTo(map);
@@ -485,6 +490,36 @@ export async function initMap(mountId = "mapapp") {
     + `<label class="ly c-rail off"><input type="checkbox" data-rail="1">` +
       `<span class="lydot rail c-rail"><i></i></span>철도역</label>`;
 
+  /* 올린 장소 줄을 이 분류 줄로 끌어다 놓아도 그 갈래로 옮겨집니다.
+     (목록 안 분류 머리줄에 놓는 것과 같은 일 — 손이 가는 곳에 다 열어 둡니다) */
+  boxes.querySelectorAll(".ly").forEach((row) => {
+    const inp = row.querySelector("input[data-c]");
+    if (!inp) return;                                  // 철도역 줄은 분류가 아닙니다
+    row.addEventListener("dragover", (e) => {
+      e.preventDefault(); e.dataTransfer.dropEffect = "move";
+      row.classList.add("over");
+    });
+    row.addEventListener("dragleave", () => row.classList.remove("over"));
+    row.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      row.classList.remove("over");
+      const i = +(e.dataTransfer.getData("text/plain") || -1);
+      const p = places[i];
+      const to = inp.dataset.c;
+      if (!p || p.builtin || !to || p.category === to) return;
+      const { error } = await sb.from("map_places").update({ category: to }).eq("id", p.id);
+      if (error) {
+        alert("옮기기 실패: " + (/violates check/.test(error.message)
+          ? "이 분류가 아직 DB에 안 열렸습니다 — auth/map_cats.sql 을 한 번 더 실행해주세요."
+          : error.message));
+        return;
+      }
+      p.category = to;
+      if (!shown.has(to)) { shown.add(to); inp.checked = true; row.classList.remove("off"); }
+      draw();
+    });
+  });
+
   boxes.querySelectorAll("input[data-c]").forEach(c => c.addEventListener("change", () => {
     const set = (key, on) => {
       const box = boxes.querySelector(`input[data-c="${key}"]`);
@@ -535,7 +570,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609031500");
+        const G = await import("./gpkg.js?v=202609031700");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -607,7 +642,7 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609031500");
+    const MF = await import("./map-files.js?v=202609031700");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
