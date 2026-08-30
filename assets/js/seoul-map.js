@@ -576,7 +576,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609040900");
+        const G = await import("./gpkg.js?v=202609041100");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -675,7 +675,7 @@ export async function initMap(mountId = "mapapp") {
     if (!MULTI) q = q.eq("grp", GRP);
     const r = await q;
     if (r.error || !r.data || !r.data.length) return;   // 표가 없어도 조용히
-    const MF = await import("./map-files.js?v=202609040900");
+    const MF = await import("./map-files.js?v=202609041100");
     r.data.forEach((row) => {
       const color = row.color || FCOLORS[myFiles.length % FCOLORS.length];
       const layer = fileLayer(MF, row.name, row.geojson, color);
@@ -687,7 +687,7 @@ export async function initMap(mountId = "mapapp") {
   })();
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609040900");
+    const MF = await import("./map-files.js?v=202609041100");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
@@ -748,7 +748,7 @@ export async function initMap(mountId = "mapapp") {
 
   async function foodLoad() {
     if (foodData) return foodData;
-    const r = await fetch("assets/data/seoul-food.json", { cache: "force-cache" });
+    const r = await fetch("assets/data/embed-maps.json", { cache: "force-cache" });
     if (!r.ok) throw new Error("맛집 자료를 받지 못했습니다");
     foodData = await r.json();
     return foodData;
@@ -777,10 +777,15 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function foodInit() {
-    /* 서울 맛집지도(KMZ)도 핫플의 것 — 핫플과 종합에서만 폅니다.
-       도시건축·부동산 화면에는 제 하부 갈래만 남습니다. */
-    if (GRP !== "hot" && !MULTI) {
-      const ttl = foodBox.previousElementSibling;      // 「맛집지도」 제목 줄
+    /* 심긴 지도(1_MAP 에서 구운 embed-maps.json)를 갈래별로 폅니다.
+         핫플   → 맛집·까페·쇼핑 층      도시건축 → 답사지·가볼만한곳 층
+         여행   → 출장·여행 층           종합     → 전부
+       그 밖의 화면(부동산·맛집)에는 판 자체를 접습니다. */
+    const EMBED_TTL = { hot: "맛집지도", urban: "답사·건축지도", trip: "여행지도" };
+    const ttl = foodBox.previousElementSibling;
+    const wantGrps = MULTI ? ["hot", "urban", "trip"]
+      : (EMBED_TTL[GRP] ? [GRP] : null);
+    if (!wantGrps) {
       if (ttl && ttl.classList.contains("lytitle")) {
         ttl.hidden = true;
         ttl.style.display = "none";      // hidden 이 다른 display 에 밀릴 때 대비
@@ -789,10 +794,15 @@ export async function initMap(mountId = "mapapp") {
       foodBox.style.display = "none";
       return;
     }
+    if (ttl && ttl.classList.contains("lytitle")) {
+      ttl.textContent = MULTI ? "심긴 지도" : EMBED_TTL[GRP];
+    }
     let d;
     try { d = await foodLoad(); }
     catch (e) { foodBox.innerHTML = '<span class="lyerr">맛집 자료 없음</span>'; return; }
 
+    d = { ...d, layers: d.layers.filter((L2) => wantGrps.indexOf(L2.grp || "hot") >= 0) };
+    if (!d.layers.length) { foodBox.hidden = true; if (ttl) ttl.hidden = true; return; }
     foodBox.innerHTML = d.layers.map((L2) =>
       '<label class="ly off"><input type="checkbox" data-food="' + esc(L2.key) + '">' +
       '<span class="lydot"><i style="background:' + L2.color + '"></i></span>' +
