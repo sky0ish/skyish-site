@@ -8,14 +8,16 @@
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 
 export const GROUPS = {
-  hkor:  { shape: "dot", mark: "밤빛 동그라미",  desc: "<b>한식</b> 핫플입니다." },
-  hwest: { shape: "dot", mark: "물빛 동그라미",  desc: "<b>양식</b> 핫플입니다." },
-  hasia: { shape: "dot", mark: "붉은 동그라미",  desc: "<b>태국·아시아·그 밖</b> 핫플입니다." },
-  hchn:  { shape: "dot", mark: "주황 동그라미",  desc: "<b>중식</b> 핫플입니다." },
-  hjpn:  { shape: "dot", mark: "초록 동그라미",  desc: "<b>일식</b> 핫플입니다." },
-  hcafe: { shape: "dot", mark: "노란 동그라미",  desc: "<b>까페</b> 핫플입니다." },
-  hbar:  { shape: "dot", mark: "쪽빛 동그라미",  desc: "<b>BAR</b> 핫플입니다." },
-  hshop: { shape: "dot", mark: "보라 동그라미",  desc: "<b>쇼핑</b> 핫플입니다." },
+  /* 빛깔은 맛집지도(KMZ) 레이어와 같게, 모양은 「별」 —
+     같은 검은 한식이라도 별이면 내가 올린 것임을 한눈에 압니다. */
+  hkor:  { shape: "star", mark: "밤빛 별",  desc: "<b>한식</b> 핫플 — 내가 올린 곳입니다." },
+  hwest: { shape: "star", mark: "물빛 별",  desc: "<b>양식</b> 핫플 — 내가 올린 곳입니다." },
+  hasia: { shape: "star", mark: "붉은 별",  desc: "<b>태국·아시아·그 밖</b> 핫플 — 내가 올린 곳입니다." },
+  hchn:  { shape: "star", mark: "주황 별",  desc: "<b>중식</b> 핫플 — 내가 올린 곳입니다." },
+  hjpn:  { shape: "star", mark: "초록 별",  desc: "<b>일식</b> 핫플 — 내가 올린 곳입니다." },
+  hcafe: { shape: "star", mark: "노란 별",  desc: "<b>까페</b> 핫플 — 내가 올린 곳입니다." },
+  hbar:  { shape: "star", mark: "쪽빛 별",  desc: "<b>BAR</b> 핫플 — 내가 올린 곳입니다." },
+  hshop: { shape: "star", mark: "보라 별",  desc: "<b>쇼핑</b> 핫플 — 내가 올린 곳입니다." },
   hot:    { name: "핫플",     en: "Hot Places",     first: "hot",
             lead: "요즘 사람들이 모이는 곳 — 맛집 · 카페 · 거리 · 새로 생긴 공간을 모았습니다." },
   urban:  { name: "도시건축", en: "Urban & Architecture", first: "arch",
@@ -570,7 +572,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202609031700");
+        const G = await import("./gpkg.js?v=202609031900");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -642,7 +644,7 @@ export async function initMap(mountId = "mapapp") {
   }
 
   async function addFiles(list) {
-    const MF = await import("./map-files.js?v=202609031700");
+    const MF = await import("./map-files.js?v=202609031900");
     for (const file of [...list]) {
       const btn = document.getElementById("lyFileBtn");
       const was = btn.firstChild.nodeValue;
