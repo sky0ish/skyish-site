@@ -2275,6 +2275,36 @@ button.cev--g:hover { filter:brightness(.94);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .nrow__date { flex:none; font-size:.8rem; color:var(--mauve); font-weight:500; }
 
+/* ── 사람들 — 모든 게시판의 「만난 사람」 모아 보기 ──
+   이름은 알약처럼 늘어놓고, 누르면 그 사람과의 만남이 한 줄로 펼쳐집니다. */
+.npeople { display:flex; flex-wrap:wrap; gap:8px; }
+.nperson { flex:0 0 auto; }
+.nperson.on { flex:1 1 100%; }        /* 펼치면 한 줄을 다 씁니다 */
+.nperson__name { display:inline-flex; align-items:center; gap:8px;
+  padding:9px 15px; background:#fff; border:1px solid var(--line);
+  border-radius:999px; font-family:inherit; font-size:.9rem; color:var(--ink);
+  cursor:pointer; transition:.15s var(--ease); }
+.nperson__name:hover { border-color:var(--teal); transform:translateY(-1px);
+  box-shadow:0 3px 12px rgba(28,26,25,.08); }
+.nperson__name b { font-weight:600; }
+.nperson__name .n { display:inline-flex; align-items:center; justify-content:center;
+  min-width:20px; height:20px; padding:0 6px; border-radius:999px;
+  background:#efece6; color:var(--mauve); font-size:.72rem; font-weight:600; }
+.nperson.on .nperson__name { background:var(--teal); border-color:var(--teal); color:#fff; }
+.nperson.on .nperson__name .n { background:rgba(255,255,255,.3); color:#fff; }
+.nperson__meets { display:flex; flex-direction:column; gap:6px; margin:10px 0 4px; }
+.npmeet { display:flex; align-items:center; gap:12px; width:100%;
+  padding:11px 16px; background:#fff; border:1px solid var(--line);
+  border-radius:var(--radius-md); font-family:inherit; text-align:left;
+  color:inherit; cursor:pointer; transition:.15s var(--ease); }
+.npmeet:hover { border-color:var(--teal); box-shadow:0 3px 12px rgba(28,26,25,.08);
+  transform:translateY(-1px); }
+.npmeet__t { flex:1; min-width:0; }
+.npmeet__t b { display:block; font-size:.9rem; font-weight:600; color:var(--ink);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.npmeet__t small { display:block; margin-top:3px; font-size:.75rem; color:var(--mauve); }
+.npmeet__d { flex:none; font-size:.78rem; color:var(--mauve); font-weight:500; }
+
 /* 글 자세히 보기 */
 .ndet { position:fixed; inset:0; background:rgba(20,18,17,.6); display:none;
   z-index:820; align-items:center; justify-content:center; padding:24px; }

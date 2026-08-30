@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609010900";
+import * as GC from "./gcal.js?v=202609011100";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -19,7 +19,7 @@ const CAT_COLOR = { schedule: "#4f9d92", diary: "#c98a3f" };
    notes.js 와 같은 값입니다 — 그 쪽을 불러오면 첫 화면이 무거워져 따로 적어 둡니다. */
 const WRITE_CATS = [
   ["diary", "Diary"], ["schedule", "Schedule"], ["minutes", "회의록"],
-  ["people", "사람들"], ["daily", "일상"], ["etc", "ETC"],
+  ["daily", "일상"], ["etc", "ETC"],
 ];
 
 const pad = (n) => String(n).padStart(2, "0");

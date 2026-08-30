@@ -1,15 +1,15 @@
 // ─── BLOG — My Road… (나만 보는 기록) ────────────────────
-// Schedule · Diary · 연락망 · 사람들 · 회의록 다섯 갈래.
+// Schedule · Diary · 사람들 · 회의록 · 일상 · ETC.
+// 「사람들」 만은 게시판이 아니라, Schedule·Diary 에서 만난 사람을 모아 보는 화면입니다.
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609010900";
-import * as GC from "./gcal.js?v=202609010900";
+import * as NF from "./notes-files.js?v=202609011100";
+import * as GC from "./gcal.js?v=202609011100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
   ["diary",    "Diary",    "#c98a3f"],
-  ["contacts", "연락망",   "#2a5fa8"],
   ["people",   "사람들",   "#8a6bb0"],
   ["minutes",  "회의록",   "#b3543b"],
   ["daily",    "일상",     "#5c9e4a"],
@@ -19,6 +19,10 @@ export const CATS = [
 /** 일반회원에게 열어 주는 갈래 — 「일상」만 봅니다 */
 export const MEMBER_CATS = ["daily"];
 export const CAT_NAME  = Object.fromEntries(CATS.map(([k, v]) => [k, v]));
+
+/** 글을 쓸 수 있는 갈래 — 「사람들」 은 찾아보기 화면이라 뺍니다 */
+export const PEOPLE_CAT = "people";
+export const WRITE_CATS = CATS.filter(([k]) => k !== PEOPLE_CAT);
 
 /** 주인 이메일 — 회원 정보 줄이 없어도 관리자로 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -462,7 +466,7 @@ export async function initNotes(mountId = "notesapp") {
   let calAt = new Date(); calAt.setDate(1);
 
   const mCat = document.getElementById("nmCat");
-  mCat.innerHTML = CATS.map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+  mCat.innerHTML = WRITE_CATS.map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
   const mTag = document.getElementById("nmTag");
   const mTagBox = document.getElementById("nmTagBox");
   /* 말머리는 갈래마다 다릅니다. 갈래를 바꾸면 목록을 다시 그리되,
@@ -504,15 +508,107 @@ export async function initNotes(mountId = "notesapp") {
     draw();
   }
 
+  const catOf = (r) => r.category;   // Diary 는 이제 제 갈래로 섭니다
+
+  /** 찾을 거리를 한 줄로 — 만난 사람도 그대로 들어갑니다.
+      「김철수, 이소라」 처럼 여럿이어도 그중 한 사람만 치면 걸립니다. */
+  const hayOf = (r) => [
+    r.title, r.body, r.tag, r.place, r.people, r.event, r.contact,
+    CAT_NAME[catOf(r)],
+  ].filter(Boolean).join(" ").toLowerCase();
+
   const match = (r) => {
     const s = q.value.trim().toLowerCase();
     if (!s) return true;
-    return ((r.title || "") + " " + (r.body || "") + " " + (r.tag || "") + " " +
-            (r.place || "") + " " + (r.people || "") + " " + (r.event || "")).toLowerCase().includes(s);
+    const hay = hayOf(r);
+    // 낱말을 여럿 치면 모두 들어 있어야 합니다 — 「이소라 강남」
+    return s.split(/\s+/).every((w) => hay.includes(w));
   };
-  // 예전 Diary 글은 Schedule 에 함께 담습니다
-  const catOf = (r) => r.category;   // Diary 는 이제 제 갈래로 섭니다
-  const shown = () => rows.filter((r) => (cur === "all" || catOf(r) === cur)).filter(match);
+
+  /** 찾는 중인가 — 찾을 때는 지금 보고 있는 갈래를 가리지 않고
+      모든 게시판을 뒤집니다. Diary 를 보고 있어도 Schedule 의 글이 나옵니다. */
+  const searching = () => q.value.trim().length > 0;
+  const shown = () => rows
+    .filter((r) => searching() || cur === "all" || catOf(r) === cur)
+    .filter(match);
+
+  /* ── 사람들 ──────────────────────────────────────────────
+     게시판이 아닙니다. 모든 게시판의 「만난 사람」 칸을
+     한자리에 모아 이름으로 찾아보는 화면입니다.
+     이름을 누르면 그 사람과의 만남이 펼쳐지고, 다시 누르면 그 글로 갑니다. */
+  let openWho = "";                    // 지금 펼쳐 둔 사람
+
+  /** 「홍길동 (경기연구원)」 에서 이름만 떼어 냅니다 — 같은 사람으로 묶으려고 */
+  const bareName = (s) => String(s).replace(/\s*[(（].*$/, "").trim();
+
+  function peopleIndex() {
+    const map = new Map();
+    rows.forEach((r) => {
+      String(r.people || "").split(/\s*,\s*/).map((x) => x.trim()).filter(Boolean)
+        .forEach((one) => {
+          const k = bareName(one);
+          if (!k) return;
+          const got = map.get(k) || { key: k, label: one, meets: [] };
+          // 소속까지 적힌 쪽을 이름표로 씁니다
+          if (one.length > got.label.length) got.label = one;
+          if (got.meets.indexOf(r) < 0) got.meets.push(r);
+          map.set(k, got);
+        });
+    });
+    return [...map.values()].sort((a, b) =>
+      b.meets.length - a.meets.length || a.key.localeCompare(b.key, "ko"));
+  }
+
+  function drawPeople() {
+    const s = q.value.trim().toLowerCase();
+    const all = peopleIndex();
+    /* 이름으로도, 그 사람과 얽힌 글(제목·장소·행사)로도 찾습니다.
+       「강남」 을 치면 강남에서 만난 사람들이 나옵니다. */
+    const hit = all.filter((p) => !s ||
+      p.label.toLowerCase().includes(s) ||
+      p.meets.some((r) => s.split(/\s+/).every((w) => hayOf(r).includes(w))));
+
+    const meets = hit.reduce((n, p) => n + p.meets.length, 0);
+    countEl.textContent = `사람 ${hit.length}명 · 만남 ${meets}번` +
+      (all.length !== hit.length ? ` · 모두 ${all.length}명` : "");
+
+    if (!hit.length) {
+      list.innerHTML = "";
+      emptyEl.hidden = false;
+      emptyEl.textContent = all.length
+        ? "그런 사람을 못 찾았습니다."
+        : "글의 「만난 사람」 칸을 채우시면 여기에 모입니다.";
+      return;
+    }
+    emptyEl.hidden = true;
+
+    list.innerHTML = '<div class="npeople">' + hit.map((p) => {
+      const on = p.key === openWho;
+      return '<div class="nperson' + (on ? " on" : "") + '">' +
+        `<button type="button" class="nperson__name" data-k="${esc(p.key)}" ` +
+          `aria-expanded="${on}"><b>${esc(p.label)}</b>` +
+          `<span class="n">${p.meets.length}</span></button>` +
+        (on
+          ? '<div class="nperson__meets">' + p.meets.map((r) =>
+              `<button type="button" class="npmeet" data-id="${r.id}">` +
+                `<span class="ncat" style="--c:${CAT_COLOR[r.category] || "#888"}">` +
+                  `${esc(CAT_NAME[r.category] || "")}</span>` +
+                `<span class="npmeet__t"><b>${esc(r.title)}</b>` +
+                (r.place ? `<small>⊙ ${esc(r.place)}</small>` : "") + "</span>" +
+                `<span class="npmeet__d">${r.event_date ? ymd(r.event_date) : ""}</span>` +
+              "</button>").join("") + "</div>"
+          : "") +
+        "</div>";
+    }).join("") + "</div>";
+
+    list.querySelectorAll(".nperson__name").forEach((b) =>
+      b.addEventListener("click", () => {
+        openWho = (openWho === b.dataset.k) ? "" : b.dataset.k;
+        drawPeople();
+      }));
+    list.querySelectorAll(".npmeet").forEach((b) =>
+      b.addEventListener("click", () => detail(rows.find((x) => x.id === b.dataset.id))));
+  }
 
   function draw() {
     const mk = (k, label) => {
@@ -533,9 +629,10 @@ export async function initNotes(mountId = "notesapp") {
       }));
 
     const l = shown();
-    countEl.textContent =
-      `${cur === "all" ? "전체" : CAT_NAME[cur]} ${l.length}건` +
-      (rows.length !== l.length ? ` · 모두 ${rows.length}건` : "");
+    countEl.textContent = searching()
+      ? `「${q.value.trim()}」 — 모든 게시판에서 ${l.length}건`
+      : `${cur === "all" ? "전체" : CAT_NAME[cur] || ""} ${l.length}건` +
+        (rows.length !== l.length ? ` · 모두 ${rows.length}건` : "");
 
     // Diary 일 때만 머리그림을 폅니다. 그때는 위 머리 칸을 접어 자리를 내줍니다.
     const dbg = document.getElementById("nDiaryBg");
@@ -544,6 +641,9 @@ export async function initNotes(mountId = "notesapp") {
     document.body.classList.toggle("diary-on", isDiary);
 
     if (!calBox.hidden) drawCal();
+
+    // 「사람들」 은 글 목록이 아니라 찾아보기 화면입니다
+    if (cur === PEOPLE_CAT) { drawPeople(); return; }
 
     if (!l.length) {
       list.innerHTML = "";
@@ -801,7 +901,9 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nDetail").classList.remove("on");   // 위에 덮인 창을 걷습니다
     document.getElementById("nmTitle").textContent = row ? "글 고치기" : "새 글";
     document.getElementById("nmDel").hidden = !row;
-    mCat.value = row ? row.category : (cur === "all" ? "schedule" : cur);
+    mCat.value = row ? row.category
+                     : ((cur === "all" || cur === PEOPLE_CAT) ? "schedule" : cur);
+    if (!mCat.value) mCat.value = "etc";   // 없어진 갈래의 옛 글을 열었을 때
     document.getElementById("nmT").value = row ? row.title || "" : "";
     document.getElementById("nmB").value = row ? row.body || "" : "";
     document.getElementById("nmE").value = row ? row.event || "" : "";
@@ -1261,7 +1363,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609010900");
+    const NFD = await import("./notes-folder.js?v=202609011100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
