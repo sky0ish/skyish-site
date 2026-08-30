@@ -2437,14 +2437,15 @@ body.diary-on #notesapp > *:not(.ndiary) {
 
 .hocal {
   flex: none; width: min(640px, 44vw); align-self: center;
-  background: rgba(28, 26, 25, .38);
-  border: 1px solid rgba(255,255,255,.20);
+  background: rgba(24, 22, 20, .56);
+  border: 1px solid rgba(255,255,255,.24);
   border-radius: 16px; padding: 16px 16px 14px;
   color: #fff; font-size: .82rem;
   box-shadow: 0 10px 34px rgba(0,0,0,.28);
 }
 @supports (backdrop-filter: blur(1px)) {
-  .hocal { background: rgba(255,255,255,.10); backdrop-filter: blur(16px) saturate(1.1); }
+  /* 뒤를 흐리되 바탕은 어둡게 — 밝은 사진 위에서도 흰 글씨가 또렷하도록 */
+  .hocal { background: rgba(24, 22, 20, .46); backdrop-filter: blur(18px) saturate(1.15); }
 }
 .hocal__wait { margin: 0; opacity: .7; font-size: .8rem; text-align: center; padding: 20px 0; }
 
@@ -2458,21 +2459,21 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hocal__nav:hover { background: rgba(255,255,255,.26); }
 
 .hocal__wd { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
-  font-size: .66rem; opacity: .62; text-align: center; margin-bottom: 3px; }
+  font-size: .66rem; opacity: .78; text-align: center; margin-bottom: 3px; }
 .hocal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 /* 칸을 넓게 두고 일정 이름이 들어가게 합니다 */
 .hoc { position: relative; min-height: 52px; display: flex; flex-direction: column;
   align-items: stretch; gap: 2px; border-radius: 7px; padding: 3px 3px 4px;
   font-size: .72rem; overflow: hidden; }
 .hoc.out { opacity: .28; }
-.hoc.has { background: rgba(255,255,255,.10); }
+.hoc.has { background: rgba(255,255,255,.13); }
 .hoc.now { outline: 1.5px solid rgba(255,255,255,.75); font-weight: 700; }
 .hoc b { font-weight: 500; text-align: left; padding-left: 2px; flex: none; }
 .hoc .sun { color: #ff9f9f; }
 .hoc .sat { color: #a9c8ff; }
 .hoc em { display: flex; align-items: center; gap: 3px; font-style: normal;
   font-size: .58rem; line-height: 1.35; padding: 1px 3px; border-radius: 3px;
-  background: rgba(255,255,255,.17); min-width: 0; }
+  background: rgba(255,255,255,.24); min-width: 0; }
 .hoc em i { flex: none; width: 4px; height: 4px; border-radius: 50%; display: block; }
 .hoc em span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hoc em.more { justify-content: center; background: none; opacity: .6; font-size: .55rem; }
@@ -2483,7 +2484,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
   border-radius: 7px; color: #fff; font-size: .76rem; transition: .15s var(--ease, ease); }
 .hocal__soon a:hover { background: rgba(255,255,255,.14); }
 .hocal__soon i { flex: none; width: 5px; height: 5px; border-radius: 50%; }
-.hocal__soon .d { flex: none; opacity: .66; font-variant-numeric: tabular-nums; }
+.hocal__soon .d { flex: none; opacity: .8; font-variant-numeric: tabular-nums; }
 .hocal__soon .t { flex: 1; min-width: 0; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
 .hocal__none { margin: 12px 0 0; padding-top: 10px; font-size: .74rem; opacity: .6;

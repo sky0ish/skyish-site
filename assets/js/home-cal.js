@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202608312000";
+import * as GC from "./gcal.js?v=202608312100";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -21,43 +21,83 @@ const esc = (s) => String(s == null ? "" : s)
   .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 
+/* 브라우저에 남아 있는 로그인 흔적만 보고 곧바로 판단합니다.
+   Supabase 에 물어보면 왕복이 한 번 더 생겨 첫 그림이 늦습니다. */
+function storedMail() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!/skyish-auth|^sb-.*-auth-token$/.test(k)) continue;
+      const v = JSON.parse(localStorage.getItem(k) || "null");
+      const u = v && (v.user || (v.currentSession && v.currentSession.user));
+      if (u && u.email) return String(u.email).toLowerCase();
+    }
+  } catch (e) {}
+  return "";
+}
+
+const CACHE = "skyish-homecal";
+
 export async function initHomeCal(id = "hocal") {
   const box = document.getElementById(id);
   if (!box) return;
 
-  let user = null, me = null;
-  try {
-    user = await currentUser();
-    me = user ? await myProfile().catch(() => null) : null;
-  } catch (e) { /* 로그인 꾸러미가 안 열려도 첫 화면은 멀쩡해야 합니다 */ }
-
-  const mail = ((user && user.email) || "").toLowerCase();
-  const isAdmin = !!(me && me.is_admin) || OWNERS.indexOf(mail) >= 0;
-  if (!isAdmin) { box.remove(); return; }
+  /* ① 저장소만 보고 먼저 가릅니다 — 네트워크를 기다리지 않습니다 */
+  const mail = storedMail();
+  if (!mail) { box.remove(); return; }
+  if (OWNERS.indexOf(mail) < 0) {
+    // 주인 메일이 아니면 그때 가서 제대로 확인합니다 (드문 길)
+    let me = null;
+    try { me = await myProfile().catch(() => null); } catch (e) {}
+    if (!(me && me.is_admin)) { box.remove(); return; }
+  }
 
   let at = new Date(); at.setDate(1);          // 지금 보고 있는 달
   let notes = [], gEvents = [];
 
   box.hidden = false;
-  box.innerHTML = '<p class="hocal__wait">달력을 여는 중…</p>';
 
-  /* ── 내 글 가져오기 ── */
+  /* ② 지난번에 받아 둔 것이 있으면 그것으로 곧바로 그립니다.
+     자료가 새로 오면 조용히 갈아 끼웁니다. */
+  let painted = false;
   try {
-    const r = await sb.from("notes")
-      .select("id,title,category,event_date,event_time,place")
-      .in("category", ["schedule", "diary"])
-      .not("event_date", "is", null)
-      .order("event_date", { ascending: true });
-    if (!r.error) notes = r.data || [];
-  } catch (e) { /* 못 받아도 달력은 그립니다 */ }
+    const c = JSON.parse(sessionStorage.getItem(CACHE) || "null");
+    if (c && Array.isArray(c.notes)) {
+      notes = c.notes;
+      gEvents = Array.isArray(c.g) ? c.g : [];
+      draw();
+      painted = true;
+    }
+  } catch (e) {}
+  if (!painted) box.innerHTML = '<p class="hocal__wait">달력을 여는 중…</p>';
 
-  /* ── 구글 달력 — 이미 이어져 있을 때만 ── */
+  /* ③ 새 자료는 한꺼번에 (줄줄이 기다리지 않습니다) */
+  async function loadNotes() {
+    // 지난 석 달부터 앞으로 한 해까지만 봅니다 — 전부 끌어오면 느립니다
+    const from = new Date(); from.setMonth(from.getMonth() - 3);
+    const to = new Date(); to.setFullYear(to.getFullYear() + 1);
+    const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    try {
+      const r = await sb.from("notes")
+        .select("id,title,category,event_date")
+        .in("category", ["schedule", "diary"])
+        .gte("event_date", ymd(from))
+        .lte("event_date", ymd(to))
+        .order("event_date", { ascending: true });
+      if (!r.error) notes = r.data || [];
+    } catch (e) { /* 못 받아도 달력은 그립니다 */ }
+  }
+
   async function pullG() {
     if (!GC.ready() || !GC.connected()) return;
     try { gEvents = await GC.month(at.getFullYear(), at.getMonth()) || []; }
     catch (e) { gEvents = []; }
   }
-  await pullG();
+
+  await Promise.all([loadNotes(), pullG()]);
+  try {
+    sessionStorage.setItem(CACHE, JSON.stringify({ notes, g: gEvents }));
+  } catch (e) { /* 저장소가 꽉 차도 그냥 갑니다 */ }
 
   /* ── 그리기 ── */
   function draw() {
