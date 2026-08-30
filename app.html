@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>My WAY — 앱</title>
+
+<!-- 홈 화면에 설치되는 앱의 첫 화면입니다.
+     폰에서 이 주소를 열고 「홈 화면에 추가」 하면
+     아이콘이 생기고, 주소창 없이 앱처럼 뜹니다. -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#4f9d92">
+<link rel="apple-touch-icon" href="assets/img/app/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My WAY">
+<link rel="icon" href="assets/img/app/icon-192.png">
+<link rel="stylesheet" href="assets/css/style.css?v=202609020100">
+
+<style>
+  /* 앱 화면만의 옷 — 폰에 맞춰 한 손 거리 안에 큼직하게 */
+  body { background: var(--paper, #f6f4f1); }
+  .app { max-width: 560px; margin: 0 auto; padding: 18px 16px 40px;
+    padding-top: calc(18px + env(safe-area-inset-top)); }
+  .app__head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
+  .app__head h1 { font-size: 1.5rem; margin: 0; color: var(--ink, #1c1a19); }
+  .app__head span { font-size: .82rem; color: var(--mauve, #8d8578); }
+  .app__today { margin: 0 0 14px; font-size: .86rem; color: var(--mauve, #8d8578); }
+
+  /* 큰 단추 둘 — 가장 잦은 일부터 */
+  .app__write { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
+  .app__write a { display: block; padding: 18px 14px; border-radius: 14px;
+    text-align: center; font-weight: 700; font-size: 1.02rem; color: #fff;
+    box-shadow: 0 4px 14px rgba(28, 26, 25, .12); }
+  .app__write a small { display: block; margin-top: 4px; font-size: .72rem;
+    font-weight: 400; opacity: .85; }
+  .app__write .w-diary { background: #c98a3f; }
+  .app__write .w-sched { background: #4f9d92; }
+
+  /* 달력 — 첫 화면의 것을 그대로 씁니다 */
+  #hocal { margin: 0 0 14px; }
+
+  /* 바로가기 */
+  .app__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .app__grid a { display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 6px 12px; background: #fff; border: 1px solid var(--line, #e5e0d6);
+    border-radius: 14px; color: var(--ink, #1c1a19); font-size: .82rem; font-weight: 600; }
+  .app__grid a i { font-style: normal; font-size: 1.35rem; line-height: 1; }
+  .app__note { margin: 18px 0 0; font-size: .74rem; line-height: 1.7;
+    color: var(--mauve, #8d8578); }
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="app__head"><h1>My WAY…</h1><span>skyish.kr</span></div>
+  <p class="app__today" id="apToday"></p>
+
+  <div class="app__write">
+    <a class="w-diary" id="goDiary" href="blog.html?cat=diary">✎ 오늘 일기<small>제목에 오늘 날짜가 저절로</small></a>
+    <a class="w-sched" id="goSched" href="blog.html?cat=schedule">📅 일정 쓰기<small>Schedule 새 글</small></a>
+  </div>
+
+  <!-- 관리자로 들어와 있으면 이번 달 달력이 폅니다.
+       일정 글자를 누르면 그 글로, 날짜를 누르면 그날 일기로 갑니다. -->
+  <div id="hocal" hidden></div>
+
+  <div class="app__grid">
+    <a href="blog.html"><i>📝</i>게시판</a>
+    <a href="blog.html?cat=people"><i>👥</i>사람들</a>
+    <a href="map.html?g=food"><i>🍚</i>맛집 지도</a>
+    <a href="map.html?g=all"><i>🗺️</i>종합 지도</a>
+    <a href="contact.html?p=addr"><i>📇</i>주소록</a>
+    <a href="index.html"><i>🏠</i>홈페이지</a>
+  </div>
+
+  <p class="app__note">
+    이 화면을 폰의 홈 화면에 담으시면 앱처럼 쓰실 수 있습니다.<br>
+    안드로이드 크롬: ⋮ 메뉴 → <b>홈 화면에 추가</b> ·
+    아이폰 사파리: 공유 단추 → <b>홈 화면에 추가</b>
+  </p>
+</main>
+
+<script type="module">
+  // 오늘 날짜 — 「2026.09.01 (월)」
+  const W = ["일", "월", "화", "수", "목", "금", "토"];
+  const t = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  const ymd = `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}`;
+  document.getElementById("apToday").textContent =
+    `${t.getFullYear()}.${p(t.getMonth() + 1)}.${p(t.getDate())} (${W[t.getDay()]})`;
+
+  // 쓰기 단추에 오늘을 실어 줍니다 — 게시판이 받아서 새 글을 엽니다
+  document.getElementById("goDiary").href = "blog.html?cat=diary&new=" + ymd;
+  document.getElementById("goSched").href = "blog.html?cat=schedule&new=" + ymd;
+
+  // 달력 — 첫 화면 것을 그대로. 관리자가 아니면 스스로 사라집니다.
+  import("./assets/js/home-cal.js?v=202609020100")
+    .then((m) => m.initHomeCal("hocal"))
+    .catch(() => {});
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@
 //  그리기는 notes.js 가 캔버스에 합니다.
 //  그래서 node 로 곧바로 시험할 수 있습니다 (tools/test/network.mjs).
 
-import * as ST from "./notes-stats.js?v=202609012300";
+import * as ST from "./notes-stats.js?v=202609020100";
 
 /* ── 그래프 만들기 ───────────────────────────────────────── */
 

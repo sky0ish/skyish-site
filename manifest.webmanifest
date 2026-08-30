@@ -1,0 +1,17 @@
+{
+  "name": "My WAY — skyish.kr",
+  "short_name": "My WAY",
+  "description": "달력에서 바로 일기·일정을 적고, 게시판과 지도로 갑니다.",
+  "start_url": "/app.html?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f4f1",
+  "theme_color": "#4f9d92",
+  "lang": "ko",
+  "icons": [
+    { "src": "assets/img/app/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/app/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/img/app/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
