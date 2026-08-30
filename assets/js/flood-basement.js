@@ -48,7 +48,7 @@
   // 승인된 분만 받을 수 있고, 주소를 직접 쳐도 열리지 않습니다.
   function getJSON(url) {
     var path = String(url).replace(/^assets\/data\//, "");   // → "flood/basement-points.json"
-    return import("./auth/auth.js").then(function (m) {
+    return import("../../auth/auth.js").then(function (m) {
       return m.loadAnalysisJson(path);
     });
   }
@@ -59,9 +59,9 @@
   function baseMap(id, center, zoom) {
     var m = L.map(id, { preferCanvas: true, zoomControl: true, scrollWheelZoom: true })
              .setView(center, zoom);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      attribution: 'Esri · HERE · OpenStreetMap contributors'
     }).addTo(m);
     L.control.scale({ imperial: false }).addTo(m);
     return m;

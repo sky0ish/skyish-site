@@ -222,9 +222,9 @@
     if (!el) return;
     map = L.map("dc-map4", { preferCanvas: true, scrollWheelZoom: true })
            .setView(GG_CENTER, GG_ZOOM);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      attribution: 'Esri · HERE · OpenStreetMap contributors'
     }).addTo(map);
     L.control.scale({ imperial: false }).addTo(map);
     canvas = L.canvas({ padding: 0.4 });
@@ -233,7 +233,7 @@
     // 배포본(단독 폴더)에서는 자료를 파일에 박아두므로 fetch 없이 바로 그린다
     var pre = window.DC_NETWORK_DATA
       ? Promise.resolve(window.DC_NETWORK_DATA)
-      : import("./auth/auth.js").then(function (m) {
+      : import("../../auth/auth.js").then(function (m) {
           return m.loadAnalysisJson("defense/network.json");
         });
     pre

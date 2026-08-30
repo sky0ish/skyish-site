@@ -35,9 +35,10 @@
   }
   function baseMap(id) {
     var m = L.map(id, { preferCanvas: true, scrollWheelZoom: true }).setView(GG_CENTER, GG_ZOOM);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+    /* CARTO 는 열쇠를 요구해 「API KEY REQUIRED」 도장이 찍힙니다 — Esri 로 바꿉니다 */
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      attribution: 'Esri · HERE · OpenStreetMap contributors'
     }).addTo(m);
     L.control.scale({ imperial: false }).addTo(m);
     return m;
@@ -215,7 +216,7 @@
     busy("dc-busy2", "자료를 불러오는 중입니다…");
 
     // 비공개 보관함(analysis)에서 받습니다 — 승인된 분만 열 수 있습니다
-    import("./auth/auth.js")
+    import("../../auth/auth.js")
       .then(function (m) { return m.loadAnalysisJson("defense/points.json"); })
       .then(function (j) {
         doc = j;
