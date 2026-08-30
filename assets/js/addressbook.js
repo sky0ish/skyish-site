@@ -269,15 +269,17 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
 
   /* ── 화면 그리기 ── */
   function ui() {
+    // 찾는 칸을 갈래 단추보다 위에 둡니다 — 먼저 찾고, 그다음 좁히는 차례라서.
     body.innerHTML =
-      '<nav class="ntabs" id="abTabs"></nav>' +
-      '<div class="nbar">' +
-        '<label class="nsearch"><span class="sr-only">찾기</span>' +
+      '<div class="nbar abbar">' +
+        '<label class="nsearch nsearch--big"><span class="sr-only">찾기</span>' +
           '<input type="search" id="abQ" ' +
             'placeholder="이름 · 소속 · 직함 · 전공 · 전화 · 이메일로 찾기" autocomplete="off"></label>' +
+        '<button type="button" class="nbtn nbtn--go" id="abGo">🔍 검색</button>' +
         '<select id="abMajor" class="nbtn asel"></select>' +
         '<button type="button" class="nbtn" id="abXls">⤓ 보이는 것만 엑셀로</button>' +
       "</div>" +
+      '<nav class="ntabs" id="abTabs"></nav>' +
       '<p class="ncount" id="abCount"></p>' +
       '<div class="nimp__scroll"><table class="nimp__tbl" id="abTbl">' +
         "<thead><tr><th>이름</th><th>소속</th><th>직함</th>" +
@@ -358,7 +360,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (tr) detail(rows[+tr.dataset.i]);
     });
 
-    q.addEventListener("input", () => { shownCount = PAGE; paint(); });
+    const run = () => { shownCount = PAGE; paint(); };
+    q.addEventListener("input", run);
+    q.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); run(); } });
+    document.getElementById("abGo").addEventListener("click", () => { run(); q.focus(); });
     sel.addEventListener("change", () => { major = sel.value; shownCount = PAGE; paint(); });
     document.getElementById("abXls").addEventListener("click", () => download(shown()));
     paint();

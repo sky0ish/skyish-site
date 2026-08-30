@@ -2510,3 +2510,10 @@ button.cev--g:hover { filter:brightness(.94);
   border-radius: 7px; opacity: 0; transition: .15s var(--ease); }
 .scard:hover .scard__edit { opacity: 1; }
 .scard__edit:hover { color: var(--teal-text); background: #f3f7f6; }
+
+/* 주소록 찾는 칸 — 3,900명에서 고르는 자리라 넉넉하게 */
+.abbar { margin-bottom: 1.1rem; }
+.nsearch--big { flex: 1 1 420px; }
+.nsearch--big input {
+  font-size: .95rem; padding: .85em 1.25em; border-radius: 100px;
+}
