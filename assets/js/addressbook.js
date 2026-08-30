@@ -161,12 +161,42 @@ export function fromUtokyo(rows, headers) {
 /* ── 내 컴퓨터 파일 기억해 두기 (IndexedDB) ──
    고른 폴더를 다음에 와도 기억합니다. 자료가 아니라 「어느 폴더였는지」만 담습니다. */
 const DB = "skyish-addr", STORE = "handle", KEY = "folder";
+const CACHE_STORE = "cache";           // 폰처럼 폴더를 못 여는 곳을 위한 자료 보관 칸
 const openDb = () => new Promise((ok, no) => {
-  const r = indexedDB.open(DB, 1);
-  r.onupgradeneeded = () => r.result.createObjectStore(STORE);
+  const r = indexedDB.open(DB, 2);
+  r.onupgradeneeded = () => {
+    const d = r.result;
+    if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
+    if (!d.objectStoreNames.contains(CACHE_STORE)) d.createObjectStore(CACHE_STORE);
+  };
   r.onsuccess = () => ok(r.result);
   r.onerror = () => no(r.error);
 });
+
+/* 읽은 주소록을 이 브라우저 안에 담아 둡니다 — 어디로도 나가지 않습니다.
+   폰은 컴퓨터 폴더를 못 열어서, 한 번 읽힌 것을 여기 두고 다음부터 폅니다. */
+async function putCache(rows) {
+  try {
+    const db = await openDb();
+    await new Promise((ok, no) => {
+      const t = db.transaction(CACHE_STORE, "readwrite");
+      t.objectStore(CACHE_STORE).put({ rows, at: Date.now() }, "rows");
+      t.oncomplete = ok; t.onerror = () => no(t.error);
+    });
+    db.close();
+  } catch (e) { /* 못 담아도 이번 화면은 그대로 씁니다 */ }
+}
+async function getCache() {
+  try {
+    const db = await openDb();
+    const v = await new Promise((ok, no) => {
+      const r = db.transaction(CACHE_STORE, "readonly").objectStore(CACHE_STORE).get("rows");
+      r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
+    });
+    db.close();
+    return v || null;
+  } catch (e) { return null; }
+}
 async function putHandle(h) {
   try {
     const db = await openDb();
@@ -474,6 +504,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     const nAlum = rows.length - nCard;
     say(`명함첩 ${nCard}명 · 동문 ${nAlum}명을 읽었습니다. 이 화면에만 있습니다.`);
     ui();
+    /* 폴더를 못 여는 곳(폰)에서는 담아 둡니다 — 다음부터 고르지 않아도 폅니다.
+       컴퓨터는 폴더에서 늘 새로 읽으므로 담지 않습니다. */
+    if (!FSA) putCache(rows);
   }
 
   async function fromDir(dir) {
@@ -504,6 +537,27 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     const f = [...e.target.files]; e.target.value = "";
     if (f.length) useFiles(f);
   });
+
+  /* 폴더를 못 여는 곳(폰) — 담아 둔 주소록이 있으면 바로 폅니다.
+     없으면 무엇을 하면 되는지 폰에 맞춰 알려 줍니다. */
+  if (!FSA) {
+    const c = await getCache();
+    if (c && Array.isArray(c.rows) && c.rows.length) {
+      rows = c.rows;
+      const nCard = rows.filter((r) => r.src === "card").length;
+      say(`담아 둔 명함첩 ${nCard}명 · 동문 ${rows.length - nCard}명 — 이 폰 브라우저에만 있습니다. ` +
+          "새 엑셀을 읽히려면 「엑셀 고르기」.");
+      ui();
+    } else {
+      const not = document.getElementById("abNot");
+      if (not) not.innerHTML =
+        "폰은 컴퓨터 폴더를 곧장 못 읽습니다.<br>" +
+        "① 명함첩·동문 엑셀 두 파일을 폰에 한 번 내려받고<br>" +
+        "② 위 단추로 두 파일을 고르시면 —<br>" +
+        "그 뒤로는 <b>저절로</b> 열립니다. 자료는 이 폰 브라우저 밖으로 안 나갑니다.";
+    }
+    return true;
+  }
 
   /* 지난번에 고른 폴더를 되살립니다.
        권한이 이미 있으면(granted)  → 누르지 않아도 바로 읽어 그립니다
