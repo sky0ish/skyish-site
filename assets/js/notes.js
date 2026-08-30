@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609050100";
-import * as GC from "./gcal.js?v=202609050100";
-import * as ST from "./notes-stats.js?v=202609050100";
-import * as NW from "./notes-network.js?v=202609050100";
-import { alumniNames } from "./addressbook.js?v=202609050100";
+import * as NF from "./notes-files.js?v=202609050300";
+import * as GC from "./gcal.js?v=202609050300";
+import * as ST from "./notes-stats.js?v=202609050300";
+import * as NW from "./notes-network.js?v=202609050300";
+import { alumniNames } from "./addressbook.js?v=202609050300";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1312,6 +1312,43 @@ export async function initNotes(mountId = "notesapp") {
     msg.textContent = "구글 일정을 옮겨 왔습니다. 고쳐서 저장하세요.";
   }
 
+  /* ── 아래 칸 → 본문 자동 반영 ──────────────────────────────
+     장소·시간·만난 사람·행사명을 고치면 본문의 해당 줄을 갈아 끼웁니다.
+     본문에 그 줄이 없으면 맨 앞에 넣고, 칸을 비우면 줄을 지웁니다.
+     손으로 쓴 다른 글은 건드리지 않습니다. */
+  const SYNC = [
+    ["nmTm", "시각"],
+    ["nmP",  "장소"],
+    ["nmW",  "만난 사람"],
+    ["nmE",  "행사"],
+  ];
+
+  function syncBody(label, value) {
+    const b = document.getElementById("nmB");
+    const NL = String.fromCharCode(10);
+    const re = new RegExp("^" + label + ":.*$", "m");
+    const v = (value || "").trim();
+    let t = b.value;
+
+    if (!v) {                                   // 칸을 비우면 그 줄을 지웁니다
+      if (!re.test(t)) return;
+      t = t.replace(re, "").replace(/\n{3,}/g, NL + NL).replace(/^\n+/, "");
+    } else if (re.test(t)) {                    // 있으면 갈아 끼웁니다
+      t = t.replace(re, label + ": " + v);
+    } else {                                    // 없으면 맨 앞에 넣습니다
+      t = label + ": " + v + (t ? NL + t : "");
+    }
+    if (t !== b.value) { b.value = t; dirty = true; }
+  }
+
+  SYNC.forEach(([id, label]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // 다 치고 칸을 떠날 때 한 번만 — 한 글자마다 본문이 들썩이면 성가십니다
+    el.addEventListener("change", () => syncBody(label, el.value));
+    el.addEventListener("blur",   () => syncBody(label, el.value));
+  });
+
   /* ── 글 쓰기·고치기 ── */
   function open(row) {
     editing = row || null;
@@ -1911,7 +1948,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609050100");
+    const NFD = await import("./notes-folder.js?v=202609050300");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
