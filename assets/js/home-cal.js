@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609021700";
+import * as GC from "./gcal.js?v=202609021900";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -228,8 +228,9 @@ export async function initHomeCal(id = "hocal") {
         e.preventDefault();                          // 일정 글줄의 제 길로 가지 않게
         const r = cell.getBoundingClientRect();
         const diary = e.clientY < r.top + Math.max(34, r.height * 0.45);
+        // back=app — 저장하면 앱 달력으로 되돌아오라는 표시입니다
         location.href = "blog.html?cat=" + (diary ? "diary" : "schedule") +
-                        "&new=" + cell.dataset.d;
+                        "&new=" + cell.dataset.d + "&back=app";
         return;
       }
       if (e.target.closest(".hev")) return;          // 일정을 누른 것은 그 글로 갑니다

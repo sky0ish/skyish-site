@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609021700";
-import * as GC from "./gcal.js?v=202609021700";
-import * as ST from "./notes-stats.js?v=202609021700";
-import * as NW from "./notes-network.js?v=202609021700";
-import { alumniNames } from "./addressbook.js?v=202609021700";
+import * as NF from "./notes-files.js?v=202609021900";
+import * as GC from "./gcal.js?v=202609021900";
+import * as ST from "./notes-stats.js?v=202609021900";
+import * as NW from "./notes-network.js?v=202609021900";
+import { alumniNames } from "./addressbook.js?v=202609021900";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1583,6 +1583,14 @@ export async function initNotes(mountId = "notesapp") {
       if (say.length) alert(say.join(NL + NL));
     }
 
+    /* 앱에서 온 길(back=app)이면 저장을 마치고 앱 달력으로 되돌아갑니다.
+       시각을 붙여 방금 쓴 일정이 바로 보이게 새로 불러옵니다. */
+    if (new URLSearchParams(location.search).get("back") === "app") {
+      msg.textContent = "";
+      location.href = "app.html?r=" + Date.now();
+      return;
+    }
+
     msg.textContent = "";      // 「저장하는 중…」을 지워 둡니다
     close();
     await load();
@@ -1714,7 +1722,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609021700");
+    const NFD = await import("./notes-folder.js?v=202609021900");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
