@@ -45,11 +45,20 @@
     margin: 0 0 14px; box-sizing: border-box; }
   .hocal--app[hidden] { display: none !important; }
 
-  /* 바로가기 */
+  /* 바로가기 — 달력과 같은 결의 어두운 유리 단추.
+     반투명한 진한 회색 판이 떠 있는 느낌, 글자는 흰색. */
   .app__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .app__grid a { display: flex; flex-direction: column; align-items: center; gap: 6px;
-    padding: 14px 6px 12px; background: #fff; border: 1px solid var(--line, #e5e0d6);
-    border-radius: 14px; color: var(--ink, #1c1a19); font-size: .82rem; font-weight: 600; }
+    padding: 14px 6px 12px;
+    background: rgba(45, 42, 38, .78);
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 14px; color: #fff; font-size: .82rem; font-weight: 600;
+    box-shadow: 0 6px 18px rgba(28, 26, 25, .28);
+    transition: .15s ease; }
+  @supports (backdrop-filter: blur(1px)) {
+    .app__grid a { background: rgba(45, 42, 38, .64); backdrop-filter: blur(14px); }
+  }
+  .app__grid a:active { transform: translateY(1px); box-shadow: 0 3px 10px rgba(28, 26, 25, .3); }
   .app__grid a i { font-style: normal; font-size: 1.35rem; line-height: 1; }
   .app__note { margin: 18px 0 0; font-size: .74rem; line-height: 1.7;
     color: var(--mauve, #8d8578); }
