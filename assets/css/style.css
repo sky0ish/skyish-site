@@ -2648,7 +2648,16 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hoc .hev span, .hoc em span {
   overflow: hidden; white-space: normal; word-break: break-all;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-.hoc em.more { justify-content: center; background: none; opacity: .6; font-size: .55rem; }
+.hoc em.more { justify-content: center; background: none; opacity: .6; font-size: .55rem;
+  cursor: pointer; }
+.hoc em.more:hover { opacity: 1; text-decoration: underline; }
+
+/* +n 을 눌러 펴는 「그날 다 보기」 창 */
+.hopick--all { min-width: 190px; max-width: 250px; text-align: left; }
+.hopick--all a { display: flex; align-items: center; gap: 6px; }
+.hopick--all a i { flex: none; width: 6px; height: 6px; border-radius: 50%; }
+.hopick--all a span { flex: 1; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
 
 .hocal__soon { margin-top: 12px; padding-top: 10px;
   border-top: 1px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 1px; }

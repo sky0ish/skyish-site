@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609022100";
+import * as GC from "./gcal.js?v=202609022300";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -163,7 +163,9 @@ export async function initHomeCal(id = "hocal") {
         `<a class="hev" href="${esc(linkTo(x))}" title="${esc(x.t)}">` +
         `<i style="background:${esc(x.c)}"></i>` +
         `<span>${esc(x.t)}</span></a>`).join("") +
-        (list.length > 2 ? `<em class="more">+${list.length - 2}</em>` : "");
+        (list.length > 2
+          ? `<em class="more" data-more="${k}" title="이날 일정 모두 보기">+${list.length - 2}</em>`
+          : "");
       cells += `<span class="hoc${out ? " out" : ""}${k === today ? " now" : ""}` +
         `${list.length ? " has" : ""}" data-d="${k}"` +
         `${list.length ? ` title="${esc(list.map((x) => x.t).join(" · "))}"` : ""}>` +
@@ -215,6 +217,25 @@ export async function initHomeCal(id = "hocal") {
 
     /* 날짜를 누르면 「그날 무엇을 쓸지」 고르개가 뜹니다 */
     const grid = box.querySelector(".hocal__grid");
+    /** +n 을 눌렀을 때 — 그날 일정을 다 폅니다. 항목을 누르면 그 글·게시판으로. */
+    function showAll(cell, day) {
+      document.querySelectorAll(".hopick").forEach((x) => x.remove());
+      const list = byDay[day] || [];
+      const p = document.createElement("div");
+      p.className = "hopick hopick--all";
+      p.innerHTML = `<b>${esc(day.replace(/-/g, "."))} — ${list.length}건</b>` +
+        list.map((x) =>
+          `<a href="${esc(linkTo(x))}"><i style="background:${esc(x.c)}"></i>` +
+          `<span>${x.time ? esc(x.time) + " " : ""}${esc(x.t)}</span></a>`).join("");
+      cell.appendChild(p);
+      const shut = (ev) => {
+        if (p.contains(ev.target)) return;
+        p.remove();
+        document.removeEventListener("click", shut, true);
+      };
+      setTimeout(() => document.addEventListener("click", shut, true), 0);
+    }
+
     /* 폰 앱(.hocal--app)에서는 좁은 표적 대신 칸을 위아래 두 구역으로 나눕니다.
        손가락이 굵어도 어긋나지 않게 —
          위 (숫자 쪽, 칸의 45%·최소 34px) → 그날 Diary
@@ -223,6 +244,13 @@ export async function initHomeCal(id = "hocal") {
     const appMode = box.classList.contains("hocal--app");
     if (grid) grid.addEventListener("click", (e) => {
       const cell = e.target.closest(".hoc");
+      // +n 은 어느 화면에서든 「그날 다 보기」 가 먼저입니다
+      const more = e.target.closest(".more");
+      if (more && cell) {
+        e.preventDefault();
+        showAll(cell, more.dataset.more || cell.dataset.d);
+        return;
+      }
       if (appMode) {
         if (!cell || !cell.dataset.d) return;
         e.preventDefault();                          // 일정 글줄의 제 길로 가지 않게
