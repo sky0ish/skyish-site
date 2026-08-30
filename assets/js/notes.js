@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609031100";
-import * as GC from "./gcal.js?v=202609031100";
-import * as ST from "./notes-stats.js?v=202609031100";
-import * as NW from "./notes-network.js?v=202609031100";
-import { alumniNames } from "./addressbook.js?v=202609031100";
+import * as NF from "./notes-files.js?v=202609031300";
+import * as GC from "./gcal.js?v=202609031300";
+import * as ST from "./notes-stats.js?v=202609031300";
+import * as NW from "./notes-network.js?v=202609031300";
+import { alumniNames } from "./addressbook.js?v=202609031300";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1568,9 +1568,12 @@ export async function initNotes(mountId = "notesapp") {
 
     // txt 를 모읍니다 — 「글로바꾼것」 이 한 겹 안에 있어도 찾아 들어갑니다
     const txts = [];
+    const forms = new Map();                 // 「…_회의록.hwpx」 초안들 — 이름으로 찾습니다
     async function walk(d, depth) {
       for await (const e of d.values()) {
         if (e.kind === "file" && /\.txt$/i.test(e.name)) txts.push(await e.getFile());
+        else if (e.kind === "file" && /_회의록\.hwpx$/i.test(e.name))
+          forms.set(e.name, await e.getFile());
         else if (e.kind === "directory" && depth < 1) await walk(e, depth + 1);
       }
     }
@@ -1600,9 +1603,15 @@ export async function initNotes(mountId = "notesapp") {
           skip.push(f.name + " — 이미 붙어 있습니다"); continue;
         }
         const up = await NF.upload(f);
+        const ups = [up];
+        // 같은 이름의 회의록 hwpx 초안이 있으면 나란히 붙입니다
+        const form = forms.get(f.name.replace(/\.txt$/i, "") + "_회의록.hwpx");
+        if (form && !(row && (row.files || []).some((x) => x.name === form.name))) {
+          ups.push(await NF.upload(form));
+        }
         if (row) {
           const body = mergeBlock(row.body || "", f.name, gist);
-          const files = (row.files || []).concat([up]);
+          const files = (row.files || []).concat(ups);
           const r2 = await sb.from("notes").update({ body, files }).eq("id", row.id);
           if (r2.error) throw r2.error;
           done.push(day + " → 「" + row.title + "」 에 붙였습니다");
@@ -1611,7 +1620,7 @@ export async function initNotes(mountId = "notesapp") {
           const r2 = await sb.from("notes").insert({
             category: "schedule", title,
             body: mergeBlock("", f.name, gist),
-            event_date: day, files: [up], created_by: user.id,
+            event_date: day, files: ups, created_by: user.id,
           });
           if (r2.error) throw r2.error;
           done.push(day + " → 새 글 「" + title + "」");
@@ -1902,7 +1911,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609031100");
+    const NFD = await import("./notes-folder.js?v=202609031300");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
