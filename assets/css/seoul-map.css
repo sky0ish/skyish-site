@@ -415,3 +415,9 @@
   .mapbox { height: clamp(360px, 56vh, 560px); }
   .layers { width: 100%; }
 }
+
+/* 종합 갈래 — 어느 갈래를 겹쳐 볼지 */
+.lygrp { margin-top: 0; }
+.lygpkg { margin-top: 3px; background: #f3f7f6; border-color: #cfe3df; color: #2f6a62; }
+.lygpkg:hover { background: #e6f1ee; }
+.lygpkg:disabled { opacity: .55; cursor: default; }

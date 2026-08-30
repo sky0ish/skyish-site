@@ -16,11 +16,26 @@ export const GROUPS = {
             lead: "아파트 · 주거단지 · 개발지 — 위치와 여건을 지도 위에 정리합니다." },
   trip:   { name: "여행",     en: "Travel",         first: "hot",
             lead: "다녀온 곳과 다시 가고 싶은 곳 — 출장과 여행에서 만난 장소들입니다." },
-  daily:  { name: "일상",     en: "Daily Life",     first: "food",
-            lead: "자주 가는 곳, 손에 익은 자리 — 주차장 · 단골집처럼 늘 쓰는 장소입니다." },
+  food:   { name: "맛집",     en: "Good Food",      first: "food",
+            lead: "다시 갈 만한 곳만 남깁니다 — 밥집 · 카페 · 술집." },
+  /* 종합 — 여러 갈래를 한 지도에 얹어 봅니다.
+     grps 가 있는 갈래는 그 목록을 한꺼번에 읽고, 갈래마다 켜고 끌 수 있습니다. */
+  all:    { name: "종합",     en: "All",            first: "hot",
+            grps: ["hot", "food", "estate", "trip"],
+            lead: "핫플 · 맛집 · 부동산 · 여행을 한 지도에서 함께 봅니다." },
   etc:    { name: "기타",     en: "Etc",            first: "hot",
             lead: "어느 갈래에도 넣기 어려운 곳들을 모아둡니다." },
 };
+
+/** 종합 화면에서 갈래마다 쓰는 빛깔 */
+export const GRP_COLOR = {
+  hot: "#e6398b", food: "#e8590c", estate: "#2a5fa8",
+  trip: "#4f9d92", urban: "#8a6bb0", etc: "#7d7768",
+};
+
+/** 첫 화면이 담을 자리 — 서울 중구에서 양재까지.
+    여기서부터 전국 어디로든 옮겨 보실 수 있습니다. */
+export const HOME_BOUNDS = [[37.4620, 126.9080], [37.5950, 127.1050]];
 export const GROUP_KEYS = Object.keys(GROUPS);
 
 /** 지금 보고 있는 갈래 (주소에 없거나 모르는 값이면 핫플) */
@@ -173,9 +188,13 @@ const SHELL = `
       <div class="mapbox"><div id="cmap"></div></div>
       <aside class="mapside">
         <div class="layers" id="mlayers">
+          <span class="lytitle lygrp" id="lyGrpTtl" hidden>갈래 선택</span>
+          <span class="lyboxes" id="lyGrps" hidden></span>
           <span class="lytitle">레이어 선택</span>
           <span class="lyboxes" id="lyBoxes"></span>
           <button type="button" class="lyall" id="lyAll">전체 켜기 / 끄기</button>
+          <button type="button" class="lyall" id="lyFit">◎ 올린 곳 전체 보기</button>
+          <button type="button" class="lyall lygpkg" id="lyGpkg" hidden>⤓ GPKG 로 받기</button>
           <span class="lytitle lybase">맛집지도</span>
           <span class="lyboxes" id="lyFood"></span>
           <span class="lytitle lybase">바탕지도 선택</span>
@@ -338,10 +357,41 @@ export async function initMap(mountId = "mapapp") {
   let loadError = "";                       // 불러오기가 실패했을 때 알려줄 말
   let markers = [];                         // 그 장소들의 지도 표시
   const shown = new Set(CATS.map(([k]) => k));   // 지도에 보이는 분류 (처음엔 모두)
+  const MULTI = !!GROUPS[GRP].grps;              // 종합처럼 여러 갈래를 겹쳐 보는가
+  const shownGrp = new Set(GROUPS[GRP].grps || [GRP]);   // 종합에서 켜진 갈래
+  let firstFit = true;                           // 첫 그리기에만 자리를 맞춥니다
   let layer = L.layerGroup().addTo(map);
 
   // ── 레이어 체크박스 ──
   //    회원이 올린 분류 다섯 + 기본으로 깔리는 철도역(초록)
+  /* ── 종합 갈래 : 어느 갈래를 겹쳐 볼지 고릅니다 ── */
+  if (MULTI) {
+    document.getElementById("lyGrpTtl").hidden = false;
+    const gb = document.getElementById("lyGrps");
+    gb.hidden = false;
+    gb.innerHTML = GROUPS[GRP].grps.map((g) =>
+      `<label class="ly"><input type="checkbox" data-g="${g}" checked>` +
+      `<span class="lydot"><i style="background:${GRP_COLOR[g] || "#888"}"></i></span>` +
+      `${esc(GROUPS[g].name)}</label>`).join("") +
+      '<button type="button" class="lyall" id="lyGrpAll">갈래 전체 켜기 / 끄기</button>';
+
+    gb.querySelectorAll("input[data-g]").forEach((c) =>
+      c.addEventListener("change", () => {
+        c.checked ? shownGrp.add(c.dataset.g) : shownGrp.delete(c.dataset.g);
+        c.closest(".ly").classList.toggle("off", !c.checked);
+        draw();
+      }));
+    document.getElementById("lyGrpAll").addEventListener("click", () => {
+      const anyOff = GROUPS[GRP].grps.some((g) => !shownGrp.has(g));
+      gb.querySelectorAll("input[data-g]").forEach((c) => {
+        c.checked = anyOff;
+        c.checked ? shownGrp.add(c.dataset.g) : shownGrp.delete(c.dataset.g);
+        c.closest(".ly").classList.toggle("off", !c.checked);
+      });
+      draw();
+    });
+  }
+
   const boxes = document.getElementById("lyBoxes");
   const LEG = CATS.slice();
   boxes.innerHTML = LEG.map(([k, v]) =>
@@ -355,6 +405,55 @@ export async function initMap(mountId = "mapapp") {
     c.closest(".ly").classList.toggle("off", !c.checked);
     draw();
   }));
+  /* 올린 곳을 모두 담아 보여 줍니다 (전국으로 퍼져 있어도) */
+  document.getElementById("lyFit").addEventListener("click", () => {
+    const pts = places.filter((p) => p.lat && p.lng).map((p) => [p.lat, p.lng]);
+    if (!pts.length) { map.fitBounds(HOME_BOUNDS); return; }
+    if (pts.length === 1) map.setView(pts[0], 15);
+    else map.fitBounds(pts, { padding: [50, 50] });
+  });
+
+  /* ── GPKG 로 받기 — 종합 갈래에서만 ──
+     켜 둔 갈래마다 레이어를 따로 만들어 파일 하나로 묶습니다.
+     QGIS 에서 열면 갈래별로 나뉘어 들어옵니다. */
+  const gpkgBtn = document.getElementById("lyGpkg");
+  if (MULTI) {
+    gpkgBtn.hidden = false;
+    gpkgBtn.addEventListener("click", async () => {
+      const on = [...shownGrp];
+      if (!on.length) { alert("켜 둔 갈래가 없습니다."); return; }
+      const picked = places.filter((p) => on.indexOf(p.grp) >= 0 && p.lat && p.lng);
+      if (!picked.length) { alert("담을 장소가 없습니다."); return; }
+
+      const was = gpkgBtn.textContent;
+      gpkgBtn.disabled = true;
+      gpkgBtn.textContent = "만드는 중…";
+      try {
+        const G = await import("./gpkg.js?v=202608311400");
+        const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
+        const layers = on.map((g) => ({
+          name: GROUPS[g].name,
+          desc: GROUPS[g].lead || "",
+          fields: FIELDS,
+          rows: picked.filter((p) => p.grp === g),
+        })).filter((L) => L.rows.length);
+
+        const bytes = await G.buildGpkg(layers);
+        const t = new Date();
+        G.saveGpkg(bytes, "지도_" + t.getFullYear() +
+          String(t.getMonth() + 1).padStart(2, "0") +
+          String(t.getDate()).padStart(2, "0") + ".gpkg");
+        alert(layers.map((L) => L.name + " " + L.rows.length + "곳").join(" · ") +
+              String.fromCharCode(10) + "레이어 " + layers.length + "개로 담았습니다.");
+      } catch (e) {
+        alert("GPKG 를 만들지 못했습니다 — " + (e && e.message ? e.message : e));
+      } finally {
+        gpkgBtn.disabled = false;
+        gpkgBtn.textContent = was;
+      }
+    });
+  }
+
   const railBox = boxes.querySelector("input[data-rail]");
   railBox.addEventListener("change", () => {
     railBox.closest(".ly").classList.toggle("off", !railBox.checked);
@@ -508,9 +607,13 @@ export async function initMap(mountId = "mapapp") {
     loadError = "";
     if (list.length) {
       try {
-        const r = await sb.from("map_places").select("*")
-                          .eq("grp", GRP).in("category", list)
-                          .order("created_at", { ascending: false });
+        /* 종합 갈래는 grps 에 적힌 여러 갈래를 함께 읽습니다.
+           그중 체크가 켜진 것만 봅니다. */
+        let qy = sb.from("map_places").select("*")
+                   .in("category", list)
+                   .order("created_at", { ascending: false });
+        qy = MULTI ? qy.in("grp", [...shownGrp]) : qy.eq("grp", GRP);
+        const r = await qy;
         // supabase 는 조회 실패를 예외로 던지지 않고 error 로 돌려줍니다.
         // 이걸 안 보면 표가 없어도 "장소 0곳" 으로만 보여 원인을 알 수 없습니다.
         if (r.error) {
@@ -545,9 +648,10 @@ export async function initMap(mountId = "mapapp") {
         }).addTo(layer).on("click", () => open(i));
       });
       drawList();
-      if (!pts.length) map.setView([37.5665, 126.9780], 11);          // 장소가 아직 없으면 서울 전경
-      else if (pts.length === 1) map.setView(pts[0], 16);
-      else map.fitBounds(pts, { padding: [50, 50], maxZoom: 15 });
+      /* 처음 한 번만 서울 중구~양재를 담아 보여 드립니다.
+         자료가 전국으로 퍼지면 자동으로 전부 맞추는 것이 오히려 불편합니다 —
+         보시던 자리를 지키고, 전체를 보고 싶으실 땐 「전체 보기」를 누르시면 됩니다. */
+      if (firstFit) { map.fitBounds(HOME_BOUNDS); firstFit = false; }
       setTimeout(() => map.invalidateSize(), 100);
     });
   }
