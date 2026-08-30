@@ -91,14 +91,25 @@
     border-color: rgba(255, 255, 255, .6); font-weight: 600;
     text-shadow: 0 1px 4px rgba(50, 45, 40, .55); }
 
-  /* 바로가기 — 처음의 흰 카드로 */
-  .app__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .app__grid a { display: flex; flex-direction: column; align-items: center; gap: 6px;
-    padding: 14px 6px 12px; background: #fff; border: 1px solid var(--line, #e5e0d6);
-    border-radius: 14px; color: var(--ink, #1c1a19); font-size: .82rem; font-weight: 600;
-    transition: .15s ease; }
-  .app__grid a:active { transform: translateY(1px); }
-  .app__grid a i { font-style: normal; font-size: 1.35rem; line-height: 1; }
+  /* 바로가기 — 흰 카드를 도톰하게 띄웁니다.
+     위는 밝고 아래로 살짝 어두운 결 + 겹그림자 + 아랫단 테두리로 입체감. */
+  .app__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .app__grid a { display: flex; flex-direction: column; align-items: center; gap: 7px;
+    padding: 16px 6px 13px;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f3ee 100%);
+    border: 1px solid #ddd6c9;
+    border-bottom: 3px solid #cfc7b8;
+    border-radius: 16px; color: var(--ink, #1c1a19); font-size: .84rem; font-weight: 700;
+    box-shadow: 0 1px 0 #fff inset, 0 6px 14px rgba(28, 26, 25, .12),
+                0 2px 4px rgba(28, 26, 25, .08);
+    transition: .12s ease; }
+  .app__grid a:active {
+    transform: translateY(2px);
+    border-bottom-width: 1px;
+    background: linear-gradient(180deg, #f3f0ea 0%, #edeae3 100%);
+    box-shadow: 0 1px 0 #fff inset, 0 2px 5px rgba(28, 26, 25, .1); }
+  .app__grid a i { font-style: normal; font-size: 1.5rem; line-height: 1;
+    filter: drop-shadow(0 2px 3px rgba(28, 26, 25, .22)); }
   .app__note { margin: 18px 0 0; font-size: .74rem; line-height: 1.7;
     color: var(--mauve, #8d8578); }
 </style>
