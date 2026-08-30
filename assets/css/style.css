@@ -2437,7 +2437,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
 
 .hocal {
   flex: none; width: min(640px, 44vw); align-self: center;
-  background: rgba(24, 22, 20, .56);
+  background: rgba(22, 20, 18, .70);
   border: 1px solid rgba(255,255,255,.24);
   border-radius: 16px; padding: 16px 16px 14px;
   color: #fff; font-size: .82rem;
@@ -2445,7 +2445,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
 }
 @supports (backdrop-filter: blur(1px)) {
   /* 뒤를 흐리되 바탕은 어둡게 — 밝은 사진 위에서도 흰 글씨가 또렷하도록 */
-  .hocal { background: rgba(24, 22, 20, .46); backdrop-filter: blur(18px) saturate(1.15); }
+  .hocal { background: rgba(22, 20, 18, .60); backdrop-filter: blur(20px) saturate(1.2); }
 }
 .hocal__wait { margin: 0; opacity: .7; font-size: .8rem; text-align: center; padding: 20px 0; }
 
