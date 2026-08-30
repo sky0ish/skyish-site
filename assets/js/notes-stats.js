@@ -193,6 +193,37 @@ export function scale(list) {
   }));
 }
 
+/** 이 셈이 다루는 자료의 테두리 — 언제부터 언제까지, 몇 건, 어느 게시판 */
+export function span(rows) {
+  const dated = [];
+  let count = 0;
+  const byCat = {};
+  (rows || []).forEach((r) => {
+    if (!peopleOf(r).length) return;         // 만난 사람이 없는 글은 셈 밖입니다
+    count += 1;
+    const c = (r && r.category) || "etc";
+    byCat[c] = (byCat[c] || 0) + 1;
+    const m = String((r && (r.event_date || r.created_at)) || "").match(/^\d{4}-\d{2}-\d{2}/);
+    if (m) dated.push(m[0]);
+  });
+  dated.sort();
+  const from = dated[0] || "", to = dated[dated.length - 1] || "";
+  let months = 0;
+  if (from && to) {
+    const [fy, fm] = from.split("-").map(Number);
+    const [ty, tm] = to.split("-").map(Number);
+    months = (ty - fy) * 12 + (tm - fm) + 1;   // 걸친 달 수 — 8월~8월이면 1
+  }
+  return { from, to, months, count, byCat };
+}
+
+/** 달 수를 사람 말로 — 1년 6개월 · 8개월 */
+export function spanWord(months) {
+  if (!months) return "";
+  const y = Math.floor(months / 12), m = months % 12;
+  return (y ? y + "년" : "") + (y && m ? " " : "") + (m ? m + "개월" : "");
+}
+
 /** 한눈 요약 */
 export function summary(rows, today = new Date()) {
   const ppl = byPerson(rows);

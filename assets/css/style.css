@@ -2284,6 +2284,12 @@ button.cev--g:hover { filter:brightness(.94);
   line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pstat span { display: block; margin-top: 4px; font-size: .78rem; color: var(--mauve); }
 
+/* 자료 설명 — 어느 기간, 몇 건을 센 것인지 */
+.pdesc { margin: -0.5rem 0 1.5rem; padding: 11px 16px; font-size: .8rem;
+  line-height: 1.75; color: var(--mauve);
+  background: #faf8f4; border: 1px solid var(--line); border-radius: 10px; }
+.pdesc b { color: var(--teal-text); font-weight: 600; }
+
 .pbox { margin: 0 0 1.6rem; }
 .pbox h4 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px;
   margin: 0 0 .8rem; font-size: .95rem; font-weight: 700; color: var(--ink); }

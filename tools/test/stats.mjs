@@ -88,6 +88,18 @@ const sc = S.scale(S.wordsPeople(rows, 5));
 eq("가장 잦은 것이 1", sc[0].t, 1);
 eq("가장 드문 것이 0", sc[sc.length - 1].t, 0);
 
+console.log("\n── 자료 테두리 ──");
+const sp = S.span(rows);
+eq("언제부터", sp.from, "2024-01-05");
+eq("언제까지", sp.to, "2026-08-30");
+eq("걸친 달 수", sp.months, 32);                       // 2024.01 ~ 2026.08
+eq("센 글", sp.count, 5);                              // 사람 없는 f 는 밖
+eq("게시판별", sp.byCat, { schedule: 3, diary: 1, minutes: 1 });
+eq("달 수를 말로", S.spanWord(32), "2년 8개월");
+eq("한 해 밑", S.spanWord(8), "8개월");
+eq("꼭 한 해", S.spanWord(12), "1년");
+eq("빈 자료", S.span([]).count, 0);
+
 console.log("\n── 한눈 요약 ──");
 const sm = S.summary(rows, TODAY);
 eq("사람 수", sm.people, 6);

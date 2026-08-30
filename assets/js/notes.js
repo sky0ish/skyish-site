@@ -4,10 +4,10 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609011900";
-import * as GC from "./gcal.js?v=202609011900";
-import * as ST from "./notes-stats.js?v=202609011900";
-import * as NW from "./notes-network.js?v=202609011900";
+import * as NF from "./notes-files.js?v=202609012100";
+import * as GC from "./gcal.js?v=202609012100";
+import * as ST from "./notes-stats.js?v=202609012100";
+import * as NW from "./notes-network.js?v=202609012100";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -656,6 +656,22 @@ export async function initNotes(mountId = "notesapp") {
         cloud("③ 행사 낱말", ST.wordsEvent(rows, 40), "ev") +
       "</div></section>";
 
+    /* 이 셈이 어느 자료를 다루는지 — 기간·건수·게시판을 밝혀 둡니다.
+       기간이 안 적힌 그림은 읽는 사람이 「요즘 것」 으로 오해합니다. */
+    const sp = ST.span(rows);
+    const dot = (d) => (d || "").replace(/-/g, ".");
+    const catBits = Object.entries(sp.byCat)
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, n]) => (CAT_NAME[k] || k) + " " + n + "건").join(" · ");
+    const desc = sp.count
+      ? '<p class="pdesc">이 셈판은 「만난 사람」 칸이 있는 글 <b>' + sp.count + "건</b>을 봅니다 — " +
+        "<b>" + dot(sp.from) + " ~ " + dot(sp.to) + "</b>" +
+        (sp.months > 1 ? " (" + ST.spanWord(sp.months) + " 치)" : "") +
+        (catBits ? " · " + catBits : "") + ".<br>" +
+        "「지난 열두 달」 막대만 최근 12개월이고, " +
+        "TOP 10 · 관계망 · 낱말 구름은 이 기간 <b>전체</b>를 셉니다.</p>"
+      : "";
+
     /* ⑤ 관계망 — 점은 사람, 글자 점은 기관·주제, 선은 함께한 횟수 */
     const net = '<section class="pbox"><h4>관계망' +
       '<span class="phint">점 = 사람 (크기·선 굵기 = 만난 횟수) · ' +
@@ -665,7 +681,7 @@ export async function initNotes(mountId = "notesapp") {
       '<div class="pnet__tip" id="pNetTip" hidden></div>' +
       '<div class="pnet__card" id="pNetCard" hidden></div></div></section>';
 
-    return head + net + bars + rank + clouds;
+    return head + desc + net + bars + rank + clouds;
   }
 
   /* ── 관계망 그리기 ──
@@ -1633,7 +1649,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609011900");
+    const NFD = await import("./notes-folder.js?v=202609012100");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
