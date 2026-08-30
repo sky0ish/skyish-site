@@ -4,10 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609012100";
-import * as GC from "./gcal.js?v=202609012100";
-import * as ST from "./notes-stats.js?v=202609012100";
-import * as NW from "./notes-network.js?v=202609012100";
+import * as NF from "./notes-files.js?v=202609012300";
+import * as GC from "./gcal.js?v=202609012300";
+import * as ST from "./notes-stats.js?v=202609012300";
+import * as NW from "./notes-network.js?v=202609012300";
+import { alumniNames } from "./addressbook.js?v=202609012300";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -541,6 +542,7 @@ export async function initNotes(mountId = "notesapp") {
      한자리에 모아 이름으로 찾아보는 화면입니다.
      이름을 누르면 그 사람과의 만남이 펼쳐지고, 다시 누르면 그 글로 갑니다. */
   let openWho = "";                    // 지금 펼쳐 둔 사람
+  let almaSet = null;                  // 동경대 동문 이름 — 처음 그릴 때 한 번만 읽습니다
 
   /** 「홍길동 (경기연구원)」 에서 이름만 떼어 냅니다 — 같은 사람으로 묶으려고 */
   const bareName = (s) => String(s).replace(/\s*[(（].*$/, "").trim();
@@ -673,13 +675,22 @@ export async function initNotes(mountId = "notesapp") {
       : "";
 
     /* ⑤ 관계망 — 점은 사람, 글자 점은 기관·주제, 선은 함께한 횟수 */
+    const hasAlma = !!(almaSet && almaSet.size);
     const net = '<section class="pbox"><h4>관계망' +
       '<span class="phint">점 = 사람 (크기·선 굵기 = 만난 횟수) · ' +
-      '글자 점 = <i class="plg plg--org"></i>기관 · <i class="plg plg--topic"></i>행사 주제 · ' +
-      '점을 누르면 그 사람·그 말로 갑니다</span></h4>' +
+      '글자 점 = <i class="plg plg--org"></i>기관 · <i class="plg plg--topic"></i>행사 주제' +
+      (hasAlma ? ' · <i class="plg plg--alma"></i>동경대 동문' : "") +
+      ' · 점을 누르면 그 사람·그 말로 갑니다</span></h4>' +
       '<div class="pnet"><canvas id="pNet"></canvas>' +
       '<div class="pnet__tip" id="pNetTip" hidden></div>' +
-      '<div class="pnet__card" id="pNetCard" hidden></div></div></section>';
+      '<div class="pnet__card" id="pNetCard" hidden></div></div>' +
+      /* 그림의 출처 — 보는 날을 기준으로, 어느 자료를 언제까지 센 것인지 */
+      '<p class="pnet__src">기준일 <b>' + dot(iso(new Date())) + "</b> (그림을 여는 날마다 다시 셉니다)" +
+      (sp.from ? " · 자료 <b>" + dot(sp.from) + " ~ " + dot(sp.to) + "</b> · 글 " + sp.count + "건" : "") +
+      " · 출처: 이 게시판의 「만난 사람」·행사명·말머리·제목" +
+      (hasAlma
+        ? " · 동경대 총동문회 주소록 " + almaSet.size + "명 — 내 컴퓨터 안에서만 이름을 맞춰 보고, 어디로도 보내지 않습니다"
+        : "") + "</p></section>";
 
     return head + desc + net + bars + rank + clouds;
   }
@@ -696,11 +707,22 @@ export async function initNotes(mountId = "notesapp") {
     cv.width = W * dpr; cv.height = H * dpr;
     cv.style.height = H + "px";
 
-    const g = NW.layout(NW.buildGraph(rows), W, H);
+    /* 동문 명부는 처음 한 번만 읽습니다. 다 읽히면 그림을 새로 그립니다. */
+    if (almaSet === null) {
+      almaSet = new Set();               // 읽는 동안은 없는 셈 치고 먼저 그립니다
+      alumniNames().then((got) => {
+        if (got && got.size) {
+          almaSet = got;
+          if (cur === PEOPLE_CAT && !q.value.trim()) drawPeople();
+        }
+      }).catch(() => {});
+    }
+    const g = NW.layout(NW.buildGraph(rows, { alumni: almaSet }), W, H);
     const ctx = cv.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const COL = { who: "#5c9e4a", org: "#d9822b", topic: "#c95fb0" };
+    /* alma 의 옅은 파랑은 동경대의 상징색입니다 */
+    const COL = { who: "#5c9e4a", org: "#d9822b", topic: "#c95fb0", alma: "#3d7dc0" };
     const maxW = Math.max(1, ...g.edges.map((e) => e.w));
 
     function paint(litId) {
@@ -761,8 +783,10 @@ export async function initNotes(mountId = "notesapp") {
       cv.style.cursor = n ? "pointer" : "";
       if (!n) { tip.hidden = true; return; }
       tip.hidden = false;
-      tip.textContent = (n.type === "who" ? "○ " : n.type === "org" ? "◈ " : "# ") +
-        n.label + " — " + n.n + "번";
+      tip.textContent = n.type === "alma"
+        ? "◎ 동경대 동문 — " + n.n + "명"
+        : (n.type === "who" ? "○ " : n.type === "org" ? "◈ " : "# ") +
+          n.label + " — " + n.n + "번";
       tip.style.left = Math.min(mx + 14, W - 150) + "px";
       tip.style.top = (my + 14) + "px";
     };
@@ -779,13 +803,24 @@ export async function initNotes(mountId = "notesapp") {
 
     function showCard(n, mx, my) {
       let head = "", body = "", foot = "";
-      if (n.type === "who") {
+      if (n.type === "alma") {
+        // 내가 만난 사람 가운데 동문 명부와 이름이 같은 분들
+        const hit = ST.byPerson(rows).filter((p) => almaSet.has(p.key));
+        head = '<b class="pnc__name">◎ 동경대 동문</b>';
+        body = `<p class="pnc__n">만난 사람 가운데 ${hit.length}명이 명부와 이름이 같습니다</p>` +
+          `<p class="pnc__who">${esc(hit.map((p) =>
+            p.key + " " + p.meets.length + "번").join(", "))}</p>` +
+          '<p class="pnc__n">이름만 맞춰 본 것이라 동명이인일 수 있습니다.</p>';
+        foot = "";
+      } else if (n.type === "who") {
         // 이 사람과의 만남 — 요즘 것부터 석 줄
         const meets = rows.filter((r) =>
           ST.peopleOf(r).some((one) => ST.splitPerson(one).name === n.label))
           .sort((a, b) => String(b.event_date || "").localeCompare(String(a.event_date || "")));
         head = `<b class="pnc__name">○ ${esc(n.label)}</b>` +
-          (n.org ? `<span class="pnc__org">◈ ${esc(n.org)}</span>` : "");
+          (n.org ? `<span class="pnc__org">◈ ${esc(n.org)}</span>` : "") +
+          (almaSet && almaSet.has(n.label)
+            ? '<span class="pnc__alma">◎ 동경대 동문 명부에 같은 이름이 있습니다</span>' : "");
         body = `<p class="pnc__n">${meets.length}번 만났습니다</p>` +
           meets.slice(0, 3).map(meetLine).join("");
         foot = `<button type="button" class="nbtn nbtn--go pnc__go" data-who="${esc(n.label)}">` +
@@ -825,6 +860,7 @@ export async function initNotes(mountId = "notesapp") {
         b.addEventListener("click", () =>
           detail(rows.find((x) => x.id === b.dataset.id))));
       const go = card.querySelector(".pnc__go");
+      if (!go) return;
       go.onclick = () => {
         hideCard();
         if (go.dataset.who) { openPerson(go.dataset.who); return; }
@@ -1649,7 +1685,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609012100");
+    const NFD = await import("./notes-folder.js?v=202609012300");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

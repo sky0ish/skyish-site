@@ -111,6 +111,8 @@ const load = (p, extra = (s) => s) => {
     "const ST = await import(" + JSON.stringify(statsUrl) + ");");
   /* 관계망은 시늉 — 그래프 셈은 tools/test/network.mjs 가 따로 봅니다.
      화면 쪽도 canvas 가 없으면 스스로 비켜서게 되어 있습니다. */
+  s = s.replace(/^import \{ alumniNames \} from "\.\/addressbook\.js[^"]*";$/m,
+    "const alumniNames = async () => new Set();");
   s = s.replace(/^import \* as NW from "\.\/notes-network\.js[^"]*";$/m,
     "const NW = { buildGraph: () => ({ nodes: [], edges: [] }), layout: (g) => g };");
   s = s.replace(/^import \* as GC from "\.\/gcal\.js[^"]*";$/m,

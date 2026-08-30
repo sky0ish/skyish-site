@@ -232,6 +232,39 @@ export async function loadFromFiles(files, say) {
 }
 
 
+/* ── 동문 이름만 꺼내 주기 ──
+   「사람들」 관계망이 씁니다. 내가 만난 사람 가운데 누가 동경대 동문인지
+   이름을 맞춰 보려는 것입니다.
+   · 지난번에 골라 둔 폴더의 권한이 살아 있을 때만 읽습니다 (묻는 창을 띄우지 않습니다)
+   · 이름 Set 만 돌려줍니다 — 명부의 다른 정보는 그 화면으로 가져가지 않습니다
+   · 어디로도 올라가지 않습니다. 이 브라우저 안에서 끝납니다. */
+export async function alumniNames() {
+  try {
+    if (typeof window.showDirectoryPicker !== "function") return new Set();
+    const h = await getHandle();
+    if (!h) return new Set();
+    const st = await h.queryPermission({ mode: "read" }).catch(() => "prompt");
+    if (st !== "granted") return new Set();
+
+    const files = [];
+    for await (const e of h.values()) {
+      if (e.kind !== "file") continue;
+      const n = e.name;
+      if (!/\.xlsx?$/i.test(n) || /^~\$/.test(n)) continue;
+      if (!/주소록|동문|동경대/.test(n) || /명함/.test(n)) continue;   // 동문 명부만
+      files.push(await e.getFile());
+    }
+    if (!files.length) return new Set();
+
+    const out = new Set();
+    (await loadFromFiles(files)).forEach((r) => {
+      if (r.src === "alum" && r.name) out.add(r.name);
+    });
+    return out;
+  } catch (e) { return new Set(); }
+}
+
+
 /* ══════════════════════════════════════════════════════════ */
 export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   const mount = document.getElementById(mountId);

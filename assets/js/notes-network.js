@@ -13,7 +13,7 @@
 //  그리기는 notes.js 가 캔버스에 합니다.
 //  그래서 node 로 곧바로 시험할 수 있습니다 (tools/test/network.mjs).
 
-import * as ST from "./notes-stats.js?v=202609012100";
+import * as ST from "./notes-stats.js?v=202609012300";
 
 /* ── 그래프 만들기 ───────────────────────────────────────── */
 
@@ -97,6 +97,17 @@ export function buildGraph(rows, opts) {
     });
   });
 
+  /* 동경대 동문 — 명부(내 컴퓨터)와 이름이 같은 분들을 한 점으로 모읍니다.
+     선 두께는 그분과 만난 횟수입니다. 명부에만 있고 만난 적 없는 분은
+     점을 만들지 않습니다 — 이 그림은 어디까지나 「내가 만난 사람」 이 주인공입니다. */
+  if (opts && opts.alumni && opts.alumni.size) {
+    const hit = ppl.filter((p) => opts.alumni.has(p.key));
+    if (hit.length) {
+      const aid = add("alma", "동경대", hit.length);
+      hit.forEach((p) => tie(whoId(p.key), aid, p.meets.length));
+    }
+  }
+
   const edges = [...wEdge.entries()].map(([k, w]) => {
     const [a, b] = k.split("|").map(Number);
     return { a, b, w };
@@ -115,6 +126,7 @@ export function buildGraph(rows, opts) {
   alive.forEach((n) => {
     const t = Math.sqrt(n.n / hi);
     n.size = (n.type === "who" ? 3.5 + t * 12 : 5 + t * 13);
+    if (n.type === "alma") n.size = Math.max(n.size, 9);   // 동경대 점은 늘 또렷하게
   });
 
   return { nodes: alive, edges: eAlive };

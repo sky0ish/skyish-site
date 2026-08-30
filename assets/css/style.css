@@ -2385,6 +2385,10 @@ button.cev--g:hover { filter:brightness(.94);
 .pnc__foot { margin-top: .6rem; display: flex; justify-content: flex-end; }
 .pnc__go { font-size: .76rem !important; padding: .45em 1em !important; }
 .plg--topic { background: #c95fb0; }
+.plg--alma { background: #3d7dc0; }
+.pnc__alma { display: block; margin-top: 3px; font-size: .74rem; color: #3d7dc0; }
+.pnet__src { margin: .55rem 0 0; font-size: .74rem; line-height: 1.7; color: var(--mauve); }
+.pnet__src b { color: var(--teal-text); font-weight: 600; }
 
 /* ── 사람들 — 모든 게시판의 「만난 사람」 모아 보기 ──
    이름은 알약처럼 늘어놓고, 누르면 그 사람과의 만남이 한 줄로 펼쳐집니다. */

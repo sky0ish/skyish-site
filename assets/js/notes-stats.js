@@ -168,6 +168,11 @@ export function wordsOrg(rows, n = 40) {
 /** ③ 행사 낱말 — 행사명·말머리·제목에서 */
 export function wordsEvent(rows, n = 40) {
   const m = new Map();
+  /* 만난 사람의 이름은 뺍니다 — 제목에 「(박진우) 자치행정 토론」 처럼
+     이름이 적히면 사람이 주제 낱말로도 잡혀 그림에 두 번 나옵니다. */
+  const isName = new Set();
+  (rows || []).forEach((r) =>
+    peopleOf(r).forEach((one) => isName.add(splitPerson(one).name)));
   (rows || []).forEach((r) => {
     const text = [r.event, r.tag, r.title].filter(Boolean).join(" ");
     text
@@ -176,7 +181,7 @@ export function wordsEvent(rows, n = 40) {
       .replace(/\(\s*[월화수목금토일]\s*\)/g, " ")
       .split(/[\s,./·「」【】\[\]()（）:;•~"'!?_+=|\\]+/)
       .map((w) => w.replace(/^[제第]/, "").trim())
-      .filter(keepWord)
+      .filter((w) => keepWord(w) && !isName.has(w))
       .forEach((w) => bump(m, w, r));
   });
   return sorted(m, n);

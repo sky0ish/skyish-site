@@ -76,6 +76,9 @@ eq("행사 낱말", ev.includes("지방자치") && ev.includes("토론회"), tru
 eq("「제」를 뗀다", ev.includes("12회"), false);
 eq("날짜는 안 센다", ev.some((w) => /^2026$|^\(일\)$|^08$/.test(w)), false);
 eq("흔한 말은 뺀다", ev.includes("회의"), false);
+eq("만난 사람 이름은 주제가 아니다",
+   S.wordsEvent([{ title: "(박진우) 자치행정 토론회", people: "박진우, 이소라" }], 20)
+     .some((x) => x.word === "박진우" || x.word === "이소라"), false);
 
 console.log("\n── 낱말 고르기 ──");
 eq("한 글자 뺀다", S.keepWord("가"), false);

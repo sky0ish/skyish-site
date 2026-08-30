@@ -45,6 +45,23 @@ ok("점 크기가 잦기를 따른다", by("who", "이소라").size > by("who", 
 ok("모든 선이 살아 있는 점을 가리킨다",
    g.edges.every((e) => g.nodes[e.a] && g.nodes[e.b]));
 
+console.log("[동경대 동문]");
+{
+  const ga = buildGraph(rows, { alumni: new Set(["이소라", "최영희", "명부에만있는분"]) });
+  const alma = ga.nodes.find((n) => n.type === "alma");
+  const by2 = (t, l) => ga.nodes.find((n) => n.type === t && n.label === l);
+  const e2 = (p, q2) => ga.edges.find((e) =>
+    (e.a === p.id && e.b === q2.id) || (e.a === q2.id && e.b === p.id));
+  ok("동경대 점이 생긴다", !!alma && alma.label === "동경대");
+  ok("맞은 사람 수를 센다", alma && alma.n === 2, alma && "n=" + alma.n);
+  ok("동문과 이어진다", !!e2(by2("who", "이소라"), alma));
+  ok("선 두께 = 그분과 만난 횟수", e2(by2("who", "이소라"), alma).w === 2);   // a·b 두 자리
+  ok("명부에만 있고 만난 적 없는 분은 점이 없다",
+     !ga.nodes.some((n) => n.label === "명부에만있는분"));
+  ok("명부 없이는 동경대 점도 없다",
+     !buildGraph(rows).nodes.some((n) => n.type === "alma"));
+}
+
 console.log("\n── 자리 잡기 ──");
 const W = 900, H = 520;
 layout(g, W, H);
