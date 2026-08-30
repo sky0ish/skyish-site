@@ -314,7 +314,7 @@ export async function initMap(mountId = "mapapp") {
   let cur = new URLSearchParams(location.search).get("cat");
   if (!CAT_NAME[cur]) cur = GROUPS[GRP].first;
 
-  const map = L.map("cmap", { scrollWheelZoom: true, zoomControl: true })
+  const map = L.map("cmap", { scrollWheelZoom: true, zoomControl: true, minZoom: 5 })
                .setView([37.5665, 126.9780], 11);
   // ── 바탕지도 고르기 ──
   let baseLayer = null;
@@ -360,6 +360,7 @@ export async function initMap(mountId = "mapapp") {
   const MULTI = !!GROUPS[GRP].grps;              // 종합처럼 여러 갈래를 겹쳐 보는가
   const shownGrp = new Set(GROUPS[GRP].grps || [GRP]);   // 종합에서 켜진 갈래
   let firstFit = true;                           // 첫 그리기에만 자리를 맞춥니다
+  let fitTries = 0;
   let layer = L.layerGroup().addTo(map);
 
   // ── 레이어 체크박스 ──
@@ -429,7 +430,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202608311400");
+        const G = await import("./gpkg.js?v=202608311500");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,
@@ -633,6 +634,14 @@ export async function initMap(mountId = "mapapp") {
     places = base.concat(rows);
   }
 
+  /** 서울 중구~양재를 담아 보여 줍니다. 지도 크기가 아직이면 잠깐 기다립니다. */
+  function fitHome() {
+    map.invalidateSize();
+    if (map.getSize().y < 60 && fitTries++ < 25) { setTimeout(fitHome, 160); return; }
+    map.fitBounds(HOME_BOUNDS, { padding: [20, 20], maxZoom: 14 });
+    firstFit = false;
+  }
+
   function draw() {
     layer.clearLayers();
     load().then(() => {
@@ -651,7 +660,10 @@ export async function initMap(mountId = "mapapp") {
       /* 처음 한 번만 서울 중구~양재를 담아 보여 드립니다.
          자료가 전국으로 퍼지면 자동으로 전부 맞추는 것이 오히려 불편합니다 —
          보시던 자리를 지키고, 전체를 보고 싶으실 땐 「전체 보기」를 누르시면 됩니다. */
-      if (firstFit) { map.fitBounds(HOME_BOUNDS); firstFit = false; }
+      /* 지도 크기가 0 일 때 fitBounds 를 부르면 줌이 0(세계 전체)으로 떨어지고,
+         그 줌에는 상세 타일이 없어 「Map data not yet available」 만 깔립니다.
+         크기가 잡힐 때까지 기다렸다 맞춥니다. */
+      if (firstFit) fitHome();
       setTimeout(() => map.invalidateSize(), 100);
     });
   }

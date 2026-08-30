@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202608311400";
+import * as GC from "./gcal.js?v=202608311500";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -82,13 +82,15 @@ export async function initHomeCal(id = "hocal") {
       const k = iso(d);
       const out = d.getMonth() !== m;
       const list = byDay[k] || [];
-      // 점은 세 개까지만 — 더 있으면 진하게
-      const dots = list.slice(0, 3).map((x) =>
-        `<i style="background:${esc(x.c)}"></i>`).join("");
+      // 두 건까지는 이름을 보여 주고, 더 있으면 「+n」 으로 줄입니다
+      const items = list.slice(0, 2).map((x) =>
+        `<em title="${esc(x.t)}"><i style="background:${esc(x.c)}"></i>` +
+        `<span>${esc(x.t)}</span></em>`).join("") +
+        (list.length > 2 ? `<em class="more">+${list.length - 2}</em>` : "");
       cells += `<span class="hoc${out ? " out" : ""}${k === today ? " now" : ""}` +
         `${list.length ? " has" : ""}"${list.length ? ` title="${esc(list.map((x) => x.t).join(" · "))}"` : ""}>` +
         `<b class="${d.getDay() === 0 ? "sun" : d.getDay() === 6 ? "sat" : ""}">${d.getDate()}</b>` +
-        (dots ? `<em>${dots}</em>` : "") + "</span>";
+        items + "</span>";
     }
 
     // 오늘부터 다가오는 일정 넷

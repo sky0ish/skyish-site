@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608311400";
-import * as GC from "./gcal.js?v=202608311400";
+import * as NF from "./notes-files.js?v=202608311500";
+import * as GC from "./gcal.js?v=202608311500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -274,6 +274,16 @@ export async function initNotes(mountId = "notesapp") {
   const VIEW = isAdmin ? CATS : CATS.filter(([k]) => MEMBER_CATS.indexOf(k) >= 0);
 
   mount.innerHTML =
+    /* Diary 를 폈을 때만 보이는 머리그림 — 맨 위에 두고 그 위에 이름을 얹습니다.
+       그러면 위쪽 머리 칸을 접을 수 있어 화면이 넓어집니다. */
+    '<figure class="ndiary" id="nDiaryBg" hidden>' +
+      '<img src="assets/img/diary-bg.jpg" alt="" loading="lazy" decoding="async">' +
+      '<figcaption class="ndiary__me">My WAY…</figcaption>' +
+      '<figcaption class="ndiary__word">' +
+        '<span class="ndiary__the">The</span>' +
+        '<span class="ndiary__big">Diary</span>' +
+        "<small>오늘의 한 쪽</small></figcaption>" +
+    "</figure>" +
     '<nav class="ntabs" id="nTabs" aria-label="기록 갈래"></nav>' +
     '<div class="nbar">' +
       '<label class="nsearch"><span class="sr-only">찾기</span>' +
@@ -290,14 +300,6 @@ export async function initNotes(mountId = "notesapp") {
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
-    /* Diary 를 폈을 때만 보이는 머리그림 */
-    '<figure class="ndiary" id="nDiaryBg" hidden>' +
-      '<img src="assets/img/diary-bg.jpg" alt="" loading="lazy" decoding="async">' +
-      '<figcaption class="ndiary__word">' +
-        '<span class="ndiary__the">The</span>' +
-        '<span class="ndiary__big">Diary</span>' +
-        "<small>오늘의 한 쪽</small></figcaption>" +
-    "</figure>" +
     '<div class="ngcal" id="nGcalBox" hidden></div>' +
     '<div class="ncal" id="nCalBox" hidden></div>' +
     '<div class="nlist" id="nList"></div>' +
@@ -457,9 +459,11 @@ export async function initNotes(mountId = "notesapp") {
       `${cur === "all" ? "전체" : CAT_NAME[cur]} ${l.length}건` +
       (rows.length !== l.length ? ` · 모두 ${rows.length}건` : "");
 
-    // Diary 일 때만 머리그림을 폅니다
+    // Diary 일 때만 머리그림을 폅니다. 그때는 위 머리 칸을 접어 자리를 내줍니다.
     const dbg = document.getElementById("nDiaryBg");
-    if (dbg) dbg.hidden = (cur !== "diary");
+    const isDiary = (cur === "diary");
+    if (dbg) dbg.hidden = !isDiary;
+    document.body.classList.toggle("diary-on", isDiary);
 
     if (!calBox.hidden) drawCal();
 
@@ -1074,7 +1078,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608311400");
+    const NFD = await import("./notes-folder.js?v=202608311500");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

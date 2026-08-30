@@ -19,7 +19,7 @@
 // intro·final 자료에서 행사명·장소·같은 자리 사람을 뽑고,
 // 구글 달력의 같은 날 일정과 맞춰 봅니다.
 // 마지막에 표로 보여 드리니, 고칠 것은 고치고 만드시면 됩니다.
-import * as NF from "./notes-files.js?v=202608311400";
+import * as NF from "./notes-files.js?v=202608311500";
 
 const NL = String.fromCharCode(10);
 const esc = (s) => String(s == null ? "" : s)

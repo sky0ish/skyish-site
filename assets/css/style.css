@@ -2319,8 +2319,8 @@ button.cev--g:hover { filter:brightness(.94);
    아래로 갈수록 바탕빛으로 스며들어, 그림과 게시판이 이어지게 합니다. */
 .ndiary {
   position: relative;
-  margin: -.4rem 0 1.6rem;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  margin: 0 0 1.6rem;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
   /* 원본 비율(2:1) 그대로 둡니다. 좌우가 넓은 그림이라
      자르지 않아도 첼로부터 시계까지 다 들어옵니다. */
@@ -2349,12 +2349,32 @@ button.cev--g:hover { filter:brightness(.94);
       rgba(246,244,241,0)  86%,
       rgba(246,244,241,.30) 100%);
 }
+/* Diary 를 폈을 때 — 그림을 맨 위까지 올리고 머리 칸을 접습니다 */
+body.diary-on .blogsec { padding-top: 0 !important; }
+body.diary-on #blogHead { display: none; }
+body.diary-on .blogsec > .container { max-width: 100%; padding-inline: 0; }
+/* 그림 아래 것들은 다시 안쪽으로 들여 놓습니다 */
+body.diary-on #notesapp > *:not(.ndiary) {
+  max-width: var(--container); margin-inline: auto;
+  padding-inline: var(--gutter); box-sizing: border-box;
+}
+
 /* 그림 위에 얹는 글귀 — 「The Diary」 책표지처럼 */
 .ndiary__word {
   position: absolute; left: 0; right: 0; bottom: 5%;
   text-align: center; z-index: 2;
   color: #4a3b30;
   text-shadow: 0 1px 12px rgba(255,255,255,.8), 0 0 30px rgba(255,255,255,.5);
+}
+/* 화면 이름 — 그림 왼쪽 위에 흰 글씨로.
+   그림(.ndiary) 을 기준으로 잡아야 화면 높이가 바뀌어도 자리가 흔들리지 않습니다. */
+.ndiary__me {
+  position: absolute; left: 0; right: 0; top: 8%;
+  z-index: 3; text-align: center;
+  font-family: var(--font-display, inherit);
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  color: #fff; letter-spacing: .02em; line-height: 1;
+  text-shadow: 0 2px 22px rgba(70,52,38,.6), 0 0 60px rgba(70,52,38,.4);
 }
 .ndiary__the {
   display: block;
@@ -2412,7 +2432,7 @@ button.cev--g:hover { filter:brightness(.94);
 .hero__text { flex: 1; min-width: 0; max-width: 680px; }
 
 .hocal {
-  flex: none; width: 320px; align-self: center;
+  flex: none; width: min(640px, 44vw); align-self: center;
   background: rgba(28, 26, 25, .38);
   border: 1px solid rgba(255,255,255,.20);
   border-radius: 16px; padding: 16px 16px 14px;
@@ -2436,17 +2456,22 @@ button.cev--g:hover { filter:brightness(.94);
 .hocal__wd { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
   font-size: .66rem; opacity: .62; text-align: center; margin-bottom: 3px; }
 .hocal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-.hoc { position: relative; aspect-ratio: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 2px; border-radius: 7px;
-  font-size: .72rem; }
+/* 칸을 넓게 두고 일정 이름이 들어가게 합니다 */
+.hoc { position: relative; min-height: 52px; display: flex; flex-direction: column;
+  align-items: stretch; gap: 2px; border-radius: 7px; padding: 3px 3px 4px;
+  font-size: .72rem; overflow: hidden; }
 .hoc.out { opacity: .28; }
 .hoc.has { background: rgba(255,255,255,.10); }
 .hoc.now { outline: 1.5px solid rgba(255,255,255,.75); font-weight: 700; }
-.hoc b { font-weight: 500; }
+.hoc b { font-weight: 500; text-align: left; padding-left: 2px; flex: none; }
 .hoc .sun { color: #ff9f9f; }
 .hoc .sat { color: #a9c8ff; }
-.hoc em { display: flex; gap: 2px; }
-.hoc em i { width: 4px; height: 4px; border-radius: 50%; display: block; }
+.hoc em { display: flex; align-items: center; gap: 3px; font-style: normal;
+  font-size: .58rem; line-height: 1.35; padding: 1px 3px; border-radius: 3px;
+  background: rgba(255,255,255,.17); min-width: 0; }
+.hoc em i { flex: none; width: 4px; height: 4px; border-radius: 50%; display: block; }
+.hoc em span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hoc em.more { justify-content: center; background: none; opacity: .6; font-size: .55rem; }
 
 .hocal__soon { margin-top: 12px; padding-top: 10px;
   border-top: 1px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 1px; }
@@ -2464,6 +2489,7 @@ button.cev--g:hover { filter:brightness(.94);
 .hocal__more:hover { opacity: 1; }
 
 /* 좁은 화면에서는 달력을 감춥니다 — 히어로 글이 우선입니다 */
+@media (max-width: 1280px) { .hocal { width: min(460px, 40vw); } }
 @media (max-width: 1080px) {
   .hero__inner { display: block; }
   .hocal { display: none; }
