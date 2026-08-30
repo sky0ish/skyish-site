@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608302230";
-import * as GC from "./gcal.js?v=202608302230";
+import * as NF from "./notes-files.js?v=202608302330";
+import * as GC from "./gcal.js?v=202608302330";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -643,13 +643,28 @@ export async function initNotes(mountId = "notesapp") {
     modal.classList.add("on");
     document.getElementById("nmT").focus();
   }
-  const close = () => modal.classList.remove("on");
+  /* 저장하는 동안에는 창이 닫히지 않게 잠급니다.
+     고치던 글이 있는데 바깥을 잘못 눌러 창이 사라지면 적은 것이 날아갑니다. */
+  let busy = false;      // 저장·올리기가 도는 중
+  let dirty = false;     // 무언가 고치셨는지
+
+  const close = () => { dirty = false; modal.classList.remove("on"); };
+  const tryClose = () => {
+    if (busy) return;                                  // 저장 중에는 안 닫습니다
+    if (dirty && !confirm("적으신 것이 저장되지 않았습니다. 그래도 닫을까요?")) return;
+    close();
+  };
+
+  // 글쓰기 창 안에서 무엇이든 건드리면 「고치는 중」으로 봅니다
+  modal.addEventListener("input", () => { dirty = true; });
+  modal.addEventListener("change", () => { dirty = true; });
+
   const nNewBtn = document.getElementById("nNew");
   if (nNewBtn) nNewBtn.addEventListener("click", () => open(null));
-  document.getElementById("nmCancel").addEventListener("click", close);
-  modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+  document.getElementById("nmCancel").addEventListener("click", tryClose);
+  modal.addEventListener("click", (e) => { if (e.target === modal) tryClose(); });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("on")) close();
+    if (e.key === "Escape" && modal.classList.contains("on")) tryClose();
   });
 
   /* ── 붙임 파일 ── */
@@ -676,9 +691,11 @@ export async function initNotes(mountId = "notesapp") {
         if (el.dataset.new === "1") picked.splice(i, 1); else attached.splice(i, 1);
         drawFiles();
       }));
-    const n = picked.length + attached.length;
-    fMsg.textContent = n
-      ? "파일 " + n + "개를 담았습니다. 저장할 때 함께 올라갑니다."
+    const bits = [];
+    if (attached.length) bits.push("이미 올라간 파일 " + attached.length + "개");
+    if (picked.length)   bits.push("새로 담은 " + picked.length + "개 (저장할 때 올라갑니다)");
+    fMsg.textContent = bits.length
+      ? bits.join(" · ")
       : "그림 · 엑셀 · PDF · 문서를 올리실 수 있습니다. 엑셀과 PDF 는 내 이름이 든 줄을 뽑아 아래에 적어 드립니다.";
   }
 
@@ -707,6 +724,7 @@ export async function initNotes(mountId = "notesapp") {
   async function addFiles(list) {
     const arr = [...list];
     if (!arr.length) return;
+    dirty = true;
     picked = picked.concat(arr);
     drawFiles();
     for (const f of arr) {
@@ -730,6 +748,8 @@ export async function initNotes(mountId = "notesapp") {
     if (!todo.length) { fMsg.textContent = "다시 읽을 엑셀·PDF·문서가 없습니다."; return; }
 
     if (btn) btn.disabled = true;
+    dirty = true;
+    busy = true;
     for (let i = 0; i < todo.length; i++) {
       const f = todo[i];
       fMsg.textContent = "다시 읽는 중… (" + (i + 1) + "/" + todo.length + ") " + f.name;
@@ -740,6 +760,7 @@ export async function initNotes(mountId = "notesapp") {
         fMsg.textContent = f.name + " — 내려받지 못했습니다: " + friendly(err.message);
       }
     }
+    busy = false;
     if (btn) btn.disabled = false;
     fMsg.textContent = todo.length + "개를 다시 읽었습니다. 확인하시고 저장을 눌러 주세요.";
   }
@@ -822,6 +843,8 @@ export async function initNotes(mountId = "notesapp") {
       tag:    tagsFor(mCat.value).length ? (mTag.value || null) : null,
     };
     e.target.disabled = true;
+    busy = true;
+    try {
     // 새로 담은 파일을 먼저 올립니다
     const up = [];
     for (let i = 0; i < picked.length; i++) {
@@ -829,28 +852,30 @@ export async function initNotes(mountId = "notesapp") {
       try { up.push(await NF.upload(picked[i])); }
       catch (err) {
         msg.textContent = "파일 올리기 실패: " + friendly(err.message);
-        e.target.disabled = false; return;
+        return;
       }
     }
     patch.files = attached.concat(up);
     msg.textContent = "저장하는 중…";
 
     const r = await putNote(patch, editing && editing.id);
-    e.target.disabled = false;
     if (r.error) { msg.textContent = friendly(r.error.message); return; }
     if (r.dropped.length) {
       alert("저장했습니다. 다만 " + r.dropped.map((c) => LATE_NAME[c]).join(" · ") +
             " 칸이 아직 없어 그것만 빠졌습니다." + String.fromCharCode(10) +
             "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
     }
-    e.target.disabled = false;
-    if (r.error) { msg.textContent = friendly(r.error.message); return; }
-    if (noCol) {
-      alert("저장했습니다. 다만 행사명 칸이 아직 없어 그것만 빠졌습니다.\n" +
-            "Supabase SQL Editor 에서 auth/event_setup.sql 을 한 번 돌려 주세요.");
-    }
+    msg.textContent = "";      // 「저장하는 중…」을 지워 둡니다
     close();
     await load();
+    } catch (err) {
+      /* 무슨 일이 나든 「저장하는 중…」에서 멈추지 않게 합니다.
+         까닭을 화면에 그대로 보여 드립니다. */
+      msg.textContent = "저장하지 못했습니다 — " + friendly(err && err.message ? err.message : err);
+    } finally {
+      busy = false;
+      e.target.disabled = false;
+    }
   });
 
   document.getElementById("nmDel").addEventListener("click", async () => {
@@ -971,7 +996,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608302230");
+    const NFD = await import("./notes-folder.js?v=202608302330");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
