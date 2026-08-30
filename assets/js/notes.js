@@ -3,8 +3,8 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608312300";
-import * as GC from "./gcal.js?v=202608312300";
+import * as NF from "./notes-files.js?v=202609010000";
+import * as GC from "./gcal.js?v=202609010000";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1078,7 +1078,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608312300");
+    const NFD = await import("./notes-folder.js?v=202609010000");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
@@ -1107,9 +1107,26 @@ export async function initNotes(mountId = "notesapp") {
     if (GC.ready()) await pullGoogle(false, GC.connected());
   }
 
-  /* 첫 화면 달력에서 「blog.html?cat=…&id=…」 로 넘어오면 그 글을 곧바로 폅니다 */
+  /* 첫 화면 달력에서 넘어온 것을 받습니다.
+       ?id=…   그 글을 폅니다
+       ?new=…  그날로 새 글 창을 폅니다 */
   async function openWanted() {
-    const want = new URLSearchParams(location.search).get("id");
+    const qs = new URLSearchParams(location.search);
+    const day = qs.get("new");
+    if (day && isAdmin && /^\d{4}-\d{2}-\d{2}$/.test(day)) {
+      open(null);
+      document.getElementById("nmD").value = ymd(day);
+      if (mCat.value === "diary") {
+        // 일기는 제목이 날짜로 시작합니다
+        const t2 = document.getElementById("nmT");
+        if (!t2.value.trim()) t2.value = todayTitle(new Date(day + "T00:00:00"));
+      }
+      const u = new URL(location.href);
+      u.searchParams.delete("new");
+      history.replaceState(null, "", u.pathname + (u.search || ""));
+      return;
+    }
+    const want = qs.get("id");
     if (!want) return;
     const r = rows.find((x) => String(x.id) === want);
     if (r) {

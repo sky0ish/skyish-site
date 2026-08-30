@@ -9,11 +9,18 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202608312300";
+import * as GC from "./gcal.js?v=202609010000";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
 const CAT_COLOR = { schedule: "#4f9d92", diary: "#c98a3f" };
+
+/* 날짜를 눌렀을 때 고를 수 있는 게시판.
+   notes.js 와 같은 값입니다 — 그 쪽을 불러오면 첫 화면이 무거워져 따로 적어 둡니다. */
+const WRITE_CATS = [
+  ["schedule", "Schedule"], ["diary", "Diary"], ["minutes", "회의록"],
+  ["people", "사람들"], ["daily", "일상"], ["etc", "ETC"],
+];
 
 const pad = (n) => String(n).padStart(2, "0");
 const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -99,6 +106,25 @@ export async function initHomeCal(id = "hocal") {
     sessionStorage.setItem(CACHE, JSON.stringify({ notes, g: gEvents }));
   } catch (e) { /* 저장소가 꽉 차도 그냥 갑니다 */ }
 
+  /** 그날 어느 게시판에 쓸지 고르는 작은 창 */
+  function pick(cell, day) {
+    document.querySelectorAll(".hopick").forEach((x) => x.remove());
+    const p = document.createElement("div");
+    p.className = "hopick";
+    p.innerHTML = `<b>${day.replace(/-/g, ".")} 에 쓰기</b>` +
+      WRITE_CATS.map(([k, v]) =>
+        `<a href="blog.html?cat=${k}&new=${day}">${esc(v)}</a>`).join("");
+    cell.appendChild(p);
+
+    // 바깥을 누르면 닫습니다
+    const shut = (ev) => {
+      if (p.contains(ev.target)) return;
+      p.remove();
+      document.removeEventListener("click", shut, true);
+    };
+    setTimeout(() => document.addEventListener("click", shut, true), 0);
+  }
+
   /* 일정 하나가 어디로 이어질지 —
      내가 쓴 글이면 그 글로, 구글에서 온 것이면 일정 게시판으로. */
   function linkTo(x) {
@@ -139,7 +165,8 @@ export async function initHomeCal(id = "hocal") {
         `<span>${esc(x.t)}</span></a>`).join("") +
         (list.length > 2 ? `<em class="more">+${list.length - 2}</em>` : "");
       cells += `<span class="hoc${out ? " out" : ""}${k === today ? " now" : ""}` +
-        `${list.length ? " has" : ""}"${list.length ? ` title="${esc(list.map((x) => x.t).join(" · "))}"` : ""}>` +
+        `${list.length ? " has" : ""}" data-d="${k}"` +
+        `${list.length ? ` title="${esc(list.map((x) => x.t).join(" · "))}"` : ""}>` +
         `<b class="${d.getDay() === 0 ? "sun" : d.getDay() === 6 ? "sat" : ""}">${d.getDate()}</b>` +
         items + "</span>";
     }
@@ -165,6 +192,15 @@ export async function initHomeCal(id = "hocal") {
             `<span class="t">${esc(s.t)}</span></a>`).join("") + "</div>"
         : '<p class="hocal__none">앞으로 잡힌 일정이 없습니다.</p>') +
       '<a class="hocal__more" href="blog.html?cat=schedule">일정 전체 보기 →</a>';
+
+    /* 날짜를 누르면 「그날 무엇을 쓸지」 고르개가 뜹니다 */
+    const grid = box.querySelector(".hocal__grid");
+    if (grid) grid.addEventListener("click", (e) => {
+      if (e.target.closest(".hev")) return;          // 일정을 누른 것은 그 글로 갑니다
+      const cell = e.target.closest(".hoc");
+      if (!cell || !cell.dataset.d) return;
+      pick(cell, cell.dataset.d);
+    });
 
     box.querySelectorAll("[data-go]").forEach((b) =>
       b.addEventListener("click", async () => {
