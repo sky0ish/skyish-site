@@ -74,7 +74,10 @@ export const CATS = [
   ["cfood", "중식",   "food"],
   ["efood", "기타",   "food"],
   ["cafe",  "카페",   "food"],
-  ["apt",   "아파트"],
+  ["apt",     "APT"],
+  ["myhome",  "My Home",    "apt"],
+  ["remodel", "Remodeling", "apt"],
+  ["intr",    "Interior",   "apt"],
   ["arch",  "건축물"],
   ["farch", "유명건축",   "arch"],
   ["udev",  "도시개발",   "arch"],
@@ -106,6 +109,12 @@ export const CAT_INFO = {
     desc: "일하기 좋은 곳, 이야기 나누기 좋은 곳 — <b>서울의 카페</b>를 모았습니다." },
   apt:  { shape: "dot",  mark: "파란 동그라미",
     desc: "눈여겨본 <b>아파트·주거단지</b>입니다. 배치와 외관, 주변 환경을 함께 적어두면 좋습니다." },
+  myhome:  { shape: "dot", mark: "하늘색 동그라미",
+    desc: "<b>살았거나 살고 싶은 집</b> — 직접 살아 본 곳, 눈여겨보는 곳입니다." },
+  remodel: { shape: "dot", mark: "청보라 동그라미",
+    desc: "<b>리모델링</b> — 고쳐 쓴 집·건물. 전후와 손댄 곳을 적어 둡니다." },
+  intr:    { shape: "dot", mark: "분홍 동그라미",
+    desc: "<b>인테리어</b> — 마감·가구·조명처럼 안쪽을 눈여겨본 곳입니다." },
   arch: { shape: "dot",  mark: "주황 동그라미",
     desc: "<b>가 볼 만한 건축물</b>입니다. 설계자와 특징을 함께 적어주시면 좋습니다." },
   farch: { shape: "dot", mark: "짙은 주황 동그라미",
@@ -480,7 +489,7 @@ export async function initMap(mountId = "mapapp") {
       gpkgBtn.disabled = true;
       gpkgBtn.textContent = "만드는 중…";
       try {
-        const G = await import("./gpkg.js?v=202608311700");
+        const G = await import("./gpkg.js?v=202608311800");
         const FIELDS = ["name", "category", "address", "note", "memory", "created_at"];
         const layers = on.map((g) => ({
           name: GROUPS[g].name,

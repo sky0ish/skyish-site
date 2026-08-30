@@ -12,15 +12,24 @@
 --      중식 cfood
 --      기타 efood   (양식·아시아·분식처럼 위에 없는 것)
 --      카페 cafe
---    아파트 apt · 건축물 arch · 핫플 hot
+--    APT apt
+--      My Home myhome · Remodeling remodel · Interior intr
+--    건축물 arch
+--      유명건축 farch · 도시개발 udev · 도시재생 urgn ·
+--      역세권개발 tod · 역사건축 harch
+--    핫플 hot
 -- ═══════════════════════════════════════════════════════════
 
 alter table public.map_places drop constraint if exists map_places_category_check;
 alter table public.map_places add  constraint map_places_category_check
-  check (category in ('food','kfood','jfood','cfood','efood','cafe','apt','arch','hot'));
+  check (category in (
+    'food','kfood','jfood','cfood','efood','cafe',
+    'apt','myhome','remodel','intr',
+    'arch','farch','udev','urgn','tod','harch',
+    'hot'));
 
 comment on column public.map_places.category is
-  '분류 : food(맛집) · kfood(한식) · jfood(일식) · cfood(중식) · efood(기타) · cafe · apt · arch · hot';
+  '분류 : 맛집 food/kfood/jfood/cfood/efood/cafe · 부동산 apt/myhome/remodel/intr · 도시건축 arch/farch/udev/urgn/tod/harch · hot';
 
 
 -- ═══════════════════════════════════════════════════════════

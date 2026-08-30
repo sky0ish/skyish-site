@@ -460,3 +460,17 @@
 .pbtn.fav { border-color: #e8cf9a; color: #9a7420; }
 .pbtn.fav:hover { background: #fdf6e6; border-color: #e0b95f; }
 .pbtn.fav.on { background: #fdf1d6; border-color: #e0b95f; color: #8a6410; font-weight: 700; }
+
+/* 부동산 아래 갈래 빛깔 */
+.ly.c-myhome  .lydot i, .lydot.c-myhome  i { background: #5aa9e6; }
+.ly.c-remodel .lydot i, .lydot.c-remodel i { background: #6b5bc4; }
+.ly.c-intr    .lydot i, .lydot.c-intr    i { background: #d96b9a; }
+.cmark.c-myhome  i, .cdmark.c-myhome  i { background: #5aa9e6; }
+.cmark.c-remodel i, .cdmark.c-remodel i { background: #6b5bc4; }
+.cmark.c-intr    i, .cdmark.c-intr    i { background: #d96b9a; }
+.mtabs a.c-myhome.on  { background:#dceefb; border-color:#5aa9e6; color:#1f5f8f; }
+.mtabs a.c-remodel.on { background:#e4e0f7; border-color:#6b5bc4; color:#443a86; }
+.mtabs a.c-intr.on    { background:#fbe0ec; border-color:#d96b9a; color:#96395f; }
+.apcats .c-myhome.on  { background:#dceefb; border-color:#5aa9e6; color:#1f5f8f; }
+.apcats .c-remodel.on { background:#e4e0f7; border-color:#6b5bc4; color:#443a86; }
+.apcats .c-intr.on    { background:#fbe0ec; border-color:#d96b9a; color:#96395f; }
