@@ -4,11 +4,11 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609050700";
-import * as GC from "./gcal.js?v=202609050700";
-import * as ST from "./notes-stats.js?v=202609050700";
-import * as NW from "./notes-network.js?v=202609050700";
-import { alumniNames } from "./addressbook.js?v=202609050700";
+import * as NF from "./notes-files.js?v=202609050900";
+import * as GC from "./gcal.js?v=202609050900";
+import * as ST from "./notes-stats.js?v=202609050900";
+import * as NW from "./notes-network.js?v=202609050900";
+import { alumniNames } from "./addressbook.js?v=202609050900";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -495,11 +495,18 @@ export async function initNotes(mountId = "notesapp") {
   // 말머리는 회의록에서만 씁니다
   /* 일기는 그날의 글이라 제목이 늘 날짜로 시작합니다.
      매번 손으로 적지 않도록 오늘로 채워 둡니다 (비어 있을 때만). */
+  /* 일기 제목에 날짜를 찍습니다.
+     날짜 칸에 이미 값이 있으면 그날로 — 달력에서 8월 20일을 눌러 들어왔는데
+     제목만 오늘로 찍히던 일을 막습니다. */
   function stampToday() {
     const t = document.getElementById("nmT");
     const d = document.getElementById("nmD");
-    if (!t.value.trim()) t.value = todayTitle();
-    if (!d.value.trim()) d.value = ymd(iso(new Date()));
+    const on = d.value.trim();                      // 「2026.08.20」 꼴
+    const day = on
+      ? new Date(on.replace(/[.]/g, "-") + "T00:00:00")
+      : new Date();
+    if (!t.value.trim()) t.value = todayTitle(isNaN(day) ? new Date() : day);
+    if (!on) d.value = ymd(iso(new Date()));
   }
 
   const syncTag = () => {
@@ -1326,8 +1333,10 @@ export async function initNotes(mountId = "notesapp") {
   function newDiary(day) {
     open(null);
     mCat.value = "diary";
-    syncTag();
+    /* 날짜를 먼저 넣고 syncTag 를 부릅니다 —
+       거꾸로 하면 제목이 오늘로 찍힌 뒤에 날짜만 바뀌어 어긋납니다. */
     document.getElementById("nmD").value = ymd(day);
+    syncTag();
     const t = document.getElementById("nmT");
     if (!t.value.trim()) {
       const d = new Date(day + "T00:00:00");
@@ -1990,7 +1999,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609050700");
+    const NFD = await import("./notes-folder.js?v=202609050900");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),
@@ -2028,6 +2037,7 @@ export async function initNotes(mountId = "notesapp") {
     if (day && isAdmin && /^\d{4}-\d{2}-\d{2}$/.test(day)) {
       open(null);
       document.getElementById("nmD").value = ymd(day);
+      syncTag();                                   // 날짜를 넣은 뒤 제목을 찍습니다
       if (mCat.value === "diary") {
         // 일기는 제목이 날짜로 시작합니다
         const t2 = document.getElementById("nmT");
