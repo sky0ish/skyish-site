@@ -81,15 +81,18 @@ export const BASEMAPS = [
   { k: "osm", n: "기본", sub: "OpenStreetMap",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     att: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' },
-  { k: "voyager", n: "부드러운 컬러", sub: "CARTO Voyager",
-    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    att: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' },
-  { k: "positron", n: "밝은 회색", sub: "CARTO Positron",
-    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    att: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' },
-  { k: "dark", n: "어두운", sub: "CARTO Dark",
-    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    att: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>' },
+  /* CARTO 는 2026년부터 열쇠 없이 쓰면 타일에 「API KEY REQUIRED」 를 찍어 보냅니다.
+     막힌 것이 아니라 글자가 박혀 오는 것이라 더 나쁩니다 — Esri 로 갈아탔습니다.
+     Esri 는 {s} 를 쓰지 않고 칸 순서가 {z}/{y}/{x} 입니다. */
+  { k: "street", n: "부드러운 컬러", sub: "Esri Street",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    sd: false, att: 'Tiles &copy; Esri' },
+  { k: "positron", n: "밝은 회색", sub: "Esri Light Gray",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    sd: false, att: 'Tiles &copy; Esri' },
+  { k: "dark", n: "어두운", sub: "Esri Dark Gray",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    sd: false, att: 'Tiles &copy; Esri' },
   { k: "topo", n: "지형", sub: "OpenTopoMap",
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", maxZoom: 17,
     att: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)' },
@@ -311,6 +314,7 @@ export async function initMap(mountId = "mapapp") {
   baseSel.innerHTML = BASEMAPS.map(b => `<option value="${b.k}">${b.n}</option>`).join("");
   let saved = "osm";
   try { saved = localStorage.getItem("skyish-basemap") || "osm"; } catch (e) {}
+  if (saved === "voyager") saved = "street";   // CARTO 시절 이름을 이어 받습니다
   baseSel.value = BASEMAPS.some(b => b.k === saved) ? saved : "osm";
   baseSel.addEventListener("change", () => setBase(baseSel.value));
   setBase(baseSel.value);
