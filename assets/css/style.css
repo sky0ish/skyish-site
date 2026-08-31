@@ -2459,6 +2459,32 @@ button.cev--g:hover { filter:brightness(.94);
 .npmeet__t small { display:block; margin-top:3px; font-size:.75rem; color:var(--mauve); }
 .npmeet__d { flex:none; font-size:.78rem; color:var(--mauve); font-weight:500; }
 
+/* ── 그날 동경대에 남긴 내 기록 (날짜 창 아래) ──────────────
+   동문회 쪽 빛깔(금빛)로 구분해, 개인 홈피 글과 헷갈리지 않게 둡니다. */
+.utday__h { display:flex; align-items:center; gap:8px; margin:1.1rem 0 .5rem;
+  font-size:.82rem; font-weight:700; color:#8a6d2b; }
+.utday__n { padding:.1em .5em; border-radius:100px; background:#f6ecd4;
+  color:#8a6d2b; font-size:.72rem; font-weight:700; }
+.utday__out { margin-left:auto; border:0; background:none; cursor:pointer;
+  font-family:inherit; font-size:.72rem; color:var(--mauve); text-decoration:underline; }
+.utday__out:hover { color:#8a6d2b; }
+
+.utday__login { margin:1.1rem 0 .2rem; padding:10px 14px; border:1px solid #ece0c9;
+  border-radius:12px; background:#fdfaf3; }
+.utday__login summary { cursor:pointer; font-size:.82rem; font-weight:600; color:#8a6d2b; }
+.utday__hint { margin:.6rem 0 .7rem; font-size:.76rem; color:var(--mauve); line-height:1.65; }
+.utday__form { display:flex; gap:6px; flex-wrap:wrap; }
+.utday__form input { flex:1 1 150px; min-width:0; padding:.55em .7em;
+  border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:.84rem; }
+.utday__form input:focus { outline:0; border-color:#c9a24b; }
+.utday__msg:empty { display:none; }
+.utday__alt { margin:.55rem 0 0; }
+.utday__alt button { border:0; background:none; padding:0; cursor:pointer;
+  font-family:inherit; font-size:.74rem; color:var(--mauve); text-decoration:underline; }
+.utday__alt button:hover { color:#8a6d2b; }
+.utday__form[hidden] { display:none; }
+.utday__msg { margin:.6rem 0 0; font-size:.76rem; color:#b3543b; }
+
 /* 글 자세히 보기 */
 .ndet { position:fixed; inset:0; background:rgba(20,18,17,.6); display:none;
   z-index:820; align-items:center; justify-content:center; padding:24px; }

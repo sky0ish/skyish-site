@@ -4,12 +4,13 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202608312350";
-import * as GC from "./gcal.js?v=202608312350";
-import { dropMirrors } from "./cal-merge.js?v=202608312350";
-import * as ST from "./notes-stats.js?v=202608312350";
-import * as NW from "./notes-network.js?v=202608312350";
-import { alumniNames } from "./addressbook.js?v=202608312350";
+import * as NF from "./notes-files.js?v=202609010200";
+import * as GC from "./gcal.js?v=202609010200";
+import { dropMirrors } from "./cal-merge.js?v=202609010200";
+import * as UT from "./utokyo.js?v=202609010200";
+import * as ST from "./notes-stats.js?v=202609010200";
+import * as NW from "./notes-network.js?v=202609010200";
+import { alumniNames } from "./addressbook.js?v=202609010200";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1254,8 +1255,15 @@ export async function initNotes(mountId = "notesapp") {
     if (cell && cell.dataset.day) dayView(cell.dataset.day);
   });
 
+  /* 날짜 창을 열 때마다 하나씩 올립니다.
+     동경대 기록은 바깥에서 받아 오느라 늦게 옵니다. 그 사이에 다른 날짜를
+     열면, 늦게 온 답이 새 창에 붙어 「9월 5일」 자리에 9월 1일 기록이
+     그려질 수 있습니다. 번호가 어긋나면 조용히 물러납니다. */
+  let dayGen = 0;
+
   /** 그날의 모든 일정을 한 창에 — 내 글과 구글 일정을 함께 폅니다 */
   function dayView(key) {
+    dayGen += 1;
     const dbox = document.getElementById("nDay");
     const mine = rows.filter((r) => (r.event_date || "").slice(0, 10) === key)
       .sort((a, b) => String(a.event_time || "99:99").localeCompare(String(b.event_time || "99:99")));
@@ -1293,6 +1301,8 @@ export async function initNotes(mountId = "notesapp") {
       ((!mine.length && !g.length)
         ? '<p class="nempty" style="margin:.6rem 0">이날은 잡힌 일정이 없습니다.</p>' : "") +
       "</div>" +
+      /* 동경대 쪽 기록이 들어올 자리 — 있을 때만 채웁니다 */
+      '<div id="nDayUT"></div>' +
       (isAdmin
         ? '<div class="ndet__foot">' +
           '<button type="button" class="nbtn" data-write="diary">✎ 이날 일기</button>' +
@@ -1301,6 +1311,7 @@ export async function initNotes(mountId = "notesapp") {
         : "");
 
     dbox.classList.add("on");
+    drawUTokyo(key);                 // 그날 동경대에 남긴 내 기록 (조용히)
     /* 듣는 이가 쌓이지 않게 onclick 하나로 받습니다 (자세히 보기와 같은 까닭) */
     dbox.onclick = (e2) => {
       if (e2.target === dbox || e2.target.closest(".ndet__x")) {
@@ -1328,6 +1339,127 @@ export async function initNotes(mountId = "notesapp") {
         document.getElementById("nmD").value = ymd(key);
       }
     };
+  }
+
+  /* ── 그날 동경대에 남긴 내 기록 ──────────────────────────
+     동문회 홈페이지(u-tokyo.kr)는 다른 Supabase 프로젝트라 연결이 따로입니다.
+     글을 옮겨 오지 않고 제목만 보여 주며, 누르면 그쪽 글로 넘어갑니다.
+     이어져 있지 않거나 그날 남긴 것이 없으면 아무것도 그리지 않습니다. */
+  async function drawUTokyo(key) {
+    const mine = dayGen;                     // 이 그리기가 어느 창의 것인지
+    const box = document.getElementById("nDayUT");
+    if (!box) return;
+    box.innerHTML = "";
+    if (!isAdmin) return;                    // 남의 기록을 보여 줄 일이 없습니다
+
+    let rec = null;
+    try { rec = await UT.dayRecords(key); } catch (e) { return; }
+    if (mine !== dayGen || !box.isConnected) return;   // 그 사이 다른 날짜가 열렸습니다
+    const linked = !!(await UT.me().catch(() => null));
+    if (mine !== dayGen || !box.isConnected) return;
+
+    if (!linked) { box.innerHTML = utLoginHtml(); wireUTLogin(key); return; }
+    if (!rec || !UT.total(rec)) return;      // 그날 남긴 것이 없으면 조용히
+
+    const row = (href, tagText, tagColor, title, sub) =>
+      `<a class="npmeet" href="${esc(href)}" target="_blank" rel="noopener">` +
+        `<span class="ncat" style="--c:${tagColor}">${esc(tagText)}</span>` +
+        `<span class="npmeet__t"><b>${esc(title)}</b>` +
+        (sub ? `<small>${esc(sub)}</small>` : "") + "</span>" +
+        '<span class="npmeet__d">↗</span></a>';
+
+    box.innerHTML =
+      '<h4 class="utday__h">동경대에 남긴 기록' +
+        `<span class="utday__n">${UT.total(rec)}건</span>` +
+        '<button type="button" class="utday__out" title="동경대 연결 끊기">연결 끊기</button></h4>' +
+      '<div class="nperson__meets">' +
+      rec.posts.map((x) =>
+        row(UT.postUrl(x.id, x.org), "글", "#c9a24b", x.title || "(제목 없음)", "")).join("") +
+      rec.comments.map((x) =>
+        row(UT.postUrl(x.post_id), "댓글", "#5c9e4a",
+            String(x.content || "").replace(/\s+/g, " ").slice(0, 60), "")).join("") +
+      rec.photos.map((x) =>
+        row(UT.albumUrl(x), "사진", "#7a6bb0",
+            x.caption || "(설명 없는 사진)", x.category || "")).join("") +
+      "</div>";
+
+    const out = box.querySelector(".utday__out");
+    if (out) out.addEventListener("click", async () => {
+      await UT.signOut();
+      drawUTokyo(key);
+    });
+  }
+
+  /** 동경대 계정으로 잇는 작은 칸.
+      동경대 계정은 다른 분들 자료가 담긴 사이트의 열쇠라, 비밀번호가
+      이 홈페이지 쪽을 지나가지 않도록 **메일로 온 숫자**를 먼저 씁니다. */
+  function utLoginHtml() {
+    return '<details class="utday__login"><summary>동경대 기록 보기</summary>' +
+      '<p class="utday__hint">동문회 홈페이지(u-tokyo.kr) 계정으로 한 번 이으면 ' +
+      '그날 남기신 글·댓글·사진을 여기서 함께 봅니다. ' +
+      '개인 홈피 로그인과는 따로라 서로 밀어내지 않습니다.</p>' +
+      '<div class="utday__form">' +
+        '<input type="email" id="utEm" placeholder="동경대 계정 이메일" autocomplete="email">' +
+        '<button type="button" class="nbtn nbtn--go" id="utSend">메일로 숫자 받기</button>' +
+      "</div>" +
+      '<div class="utday__form" id="utCodeBox" hidden>' +
+        '<input type="text" id="utCode" placeholder="메일로 온 여섯 자리" ' +
+          'inputmode="numeric" autocomplete="one-time-code" maxlength="8">' +
+        '<button type="button" class="nbtn nbtn--go" id="utGo">잇기</button>' +
+      "</div>" +
+      '<p class="utday__msg" id="utMsg"></p>' +
+      '<p class="utday__alt"><button type="button" id="utPwToggle">' +
+        '메일이 안 오면 — 비밀번호로 잇기</button></p>' +
+      '<div class="utday__form" id="utPwBox" hidden>' +
+        '<input type="password" id="utPw" placeholder="비밀번호">' +
+        '<button type="button" class="nbtn" id="utPwGo">비밀번호로 잇기</button>' +
+      "</div></details>";
+  }
+
+  function wireUTLogin(key) {
+    const $ = (id) => document.getElementById(id);
+    const msg = $("utMsg");
+    if (!msg) return;
+    const email = () => ($("utEm").value || "").trim();
+    const done = () => { msg.textContent = ""; drawUTokyo(key); };
+    const fail = (err) => { msg.textContent = "잇지 못했습니다 — " + ((err && err.message) || ""); };
+
+    const send = async () => {
+      if (!email()) { msg.textContent = "이메일을 적어 주세요."; return; }
+      $("utSend").disabled = true; msg.textContent = "메일을 보내는 중…";
+      try {
+        await UT.sendCode(email());
+        $("utCodeBox").hidden = false;
+        msg.textContent = "메일로 여섯 자리 숫자를 보냈습니다. 받은 숫자를 적어 주세요.";
+        $("utCode").focus();
+      } catch (err) { fail(err); } finally { $("utSend").disabled = false; }
+    };
+    const verify = async () => {
+      const code = ($("utCode").value || "").trim();
+      if (!code) { msg.textContent = "메일로 온 숫자를 적어 주세요."; return; }
+      $("utGo").disabled = true; msg.textContent = "잇는 중…";
+      try { await UT.verifyCode(email(), code); done(); }
+      catch (err) { fail(err); } finally { $("utGo").disabled = false; }
+    };
+    const byPw = async () => {
+      const pw = $("utPw").value || "";
+      if (!email() || !pw) { msg.textContent = "이메일과 비밀번호를 적어 주세요."; return; }
+      $("utPwGo").disabled = true; msg.textContent = "잇는 중…";
+      try { await UT.signIn(email(), pw); done(); }
+      catch (err) { fail(err); } finally { $("utPwGo").disabled = false; }
+    };
+
+    $("utSend").addEventListener("click", send);
+    $("utGo").addEventListener("click", verify);
+    $("utPwGo").addEventListener("click", byPw);
+    $("utPwToggle").addEventListener("click", () => {
+      const b = $("utPwBox");
+      b.hidden = !b.hidden;
+      if (!b.hidden) $("utPw").focus();
+    });
+    $("utEm").addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+    $("utCode").addEventListener("keydown", (e) => { if (e.key === "Enter") verify(); });
+    $("utPw").addEventListener("keydown", (e) => { if (e.key === "Enter") byPw(); });
   }
 
   function drawCal() {
@@ -2194,7 +2326,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202608312350");
+    const NFD = await import("./notes-folder.js?v=202609010200");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

@@ -168,6 +168,11 @@ const load = (p, extra = (s) => s) => {
     "const alumniNames = async () => new Set();");
   s = s.replace(/^import \* as NW from "\.\/notes-network\.js[^"]*";$/m,
     "const NW = { buildGraph: () => ({ nodes: [], edges: [] }), layout: (g) => g };");
+  /* 동경대 연결은 시늉 — 바깥 프로젝트라 시험 틀에서는 늘 비어 있습니다 */
+  s = s.replace(/^import \* as UT from "\.\/utokyo\.js[^"]*";$/m,
+    'const UT = { me: async () => null, signIn: async () => {}, signOut: async () => {},' +
+    ' dayRecords: async () => ({ posts: [], comments: [], photos: [] }),' +
+    ' postUrl: () => "#", albumUrl: () => "#", total: () => 0 };');
   s = s.replace(/^import \* as GC from "\.\/gcal\.js[^"]*";$/m,
     'const GC = { ready: () => false, connected: () => false, month: async () => [],' +
     ' connect: async () => {}, disconnect() {}, addEvent: async () => "" };');
