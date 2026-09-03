@@ -4,13 +4,14 @@
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609010200";
-import * as GC from "./gcal.js?v=202609010200";
-import { dropMirrors } from "./cal-merge.js?v=202609010200";
-import * as UT from "./utokyo.js?v=202609010200";
-import * as ST from "./notes-stats.js?v=202609010200";
-import * as NW from "./notes-network.js?v=202609010200";
-import { alumniNames } from "./addressbook.js?v=202609010200";
+import * as NF from "./notes-files.js?v=202609010300";
+import * as GC from "./gcal.js?v=202609010300";
+import { dropMirrors } from "./cal-merge.js?v=202609010300";
+import * as UT from "./utokyo.js?v=202609010300";
+import { readBrief } from "./notes-brief.js?v=202609010300";
+import * as ST from "./notes-stats.js?v=202609010300";
+import * as NW from "./notes-network.js?v=202609010300";
+import { alumniNames } from "./addressbook.js?v=202609010300";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -1740,6 +1741,11 @@ export async function initNotes(mountId = "notesapp") {
       : "그림 · 엑셀 · PDF · 문서를 올리실 수 있습니다. 엑셀과 PDF 는 내 이름이 든 줄을 뽑아 아래에 적어 드립니다.";
   }
 
+  /* 이 이름이면 안내문으로 보고 그림도 글자를 읽습니다.
+     아무 사진이나 읽으면 느리고 쓸모도 없습니다. */
+  const LOOKS_BRIEF =
+    /개최|개요|건의|안내|초청|프로그램|일정표|식순|심포|세미나|포럼|학술|대회|총회|공고|계획/;
+
   /* 파일 하나에서 뽑은 것을 글에 얹습니다.
      손으로 적어 두신 것은 지우지 않습니다 —
      행사명은 비었을 때만 채우고, 사람은 있는 것에 더하고,
@@ -1749,8 +1755,15 @@ export async function initNotes(mountId = "notesapp") {
     const evEl  = document.getElementById("nmE");
     const whoEl = document.getElementById("nmW");
     let r;
-    try { r = await NF.extract(f); }
-    catch (err) { r = { total: 0, mine: [], head: [], people: [], event: "", error: err.message }; }
+    try {
+      r = await NF.extract(f, null, {
+        ocr: !!(opt && opt.ocr),
+        say: (m) => { fMsg.textContent = f.name + " — " + m; },
+      });
+    } catch (err) {
+      r = { total: 0, mine: [], head: [], people: [], event: "", lines: [],
+            error: err.message };
+    }
 
     const t = NF.asText(f.name, r);
     if (t) body.value = mergeBlock(body.value, f.name, t);
@@ -1759,6 +1772,32 @@ export async function initNotes(mountId = "notesapp") {
 
     if (r.event && (!evEl.value.trim() || (opt && opt.force))) evEl.value = r.event;
     if (r.people && r.people.length) whoEl.value = mergePeople(whoEl.value, r.people);
+
+    /* ── 개최개요·프로그램에서 더 뽑습니다 ──────────────────
+       심포지엄 안내문이나 자문회의 개최건의를 붙이면
+       행사명·날짜·시각·장소·만난 사람이 한꺼번에 들어옵니다.
+       손으로 적어 두신 칸은 건드리지 않습니다. */
+    try {
+      const b = readBrief(r.lines || []);
+      const fill = (id, v) => {
+        if (!v) return;
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.value.trim() && !(opt && opt.force)) return;   // 적어 두신 것이 먼저
+        el.value = v;
+      };
+      if (b.event) fill("nmE", b.event);
+      if (b.date)  fill("nmD", ymd(b.date));
+      if (b.time)  fill("nmTm", b.time);
+      if (b.place) { fill("nmP", b.place); autoFill.place = b.place; }
+      if (b.people && b.people.length) {
+        whoEl.value = mergePeople(whoEl.value, b.people);
+        autoFill.people = whoEl.value;
+      }
+      /* 일기 제목이 아직 비어 있고 날짜를 알아냈으면 그날로 찍어 둡니다 */
+      if (b.date && mCat.value === "diary") stampToday();
+      r.brief = b;
+    } catch (e) { /* 못 읽어도 나머지는 그대로 씁니다 */ }
     return r;
   }
 
@@ -1770,9 +1809,12 @@ export async function initNotes(mountId = "notesapp") {
     drawFiles();
     for (const f of arr) {
       const k = NF.kind(f);
-      if (k === "image" || k === "file") continue;
+      if (k === "file") continue;
+      /* 그림은 글자 읽개가 무거워, 안내문처럼 보이는 이름일 때만 읽습니다
+         (개최개요·프로그램·안내·초청·심포지엄·세미나·포럼…). */
+      if (k === "image" && !LOOKS_BRIEF.test(f.name)) continue;
       fMsg.textContent = f.name + " 에서 글을 뽑는 중…";
-      const r = await applyOne(f);
+      const r = await applyOne(f, { ocr: k === "image" });
       if (r.error) fMsg.textContent = f.name + " — " + r.error;
     }
     drawFiles();
@@ -2326,7 +2368,7 @@ export async function initNotes(mountId = "notesapp") {
     const list = e.target.files;
     e.target.value = "";                       // 같은 폴더를 다시 골라도 열리게
     if (!list || !list.length) return;
-    const NFD = await import("./notes-folder.js?v=202609010200");
+    const NFD = await import("./notes-folder.js?v=202609010300");
     await NFD.openImport(list, {
       user, rows,
       tags: tagsFor("schedule"),

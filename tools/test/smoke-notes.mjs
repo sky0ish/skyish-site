@@ -155,6 +155,13 @@ const load = (p, extra = (s) => s) => {
      notes-stats.js 는 아무것도 들여오지 않아 이렇게 해도 됩니다. */
   const statsUrl = "data:text/javascript;base64," +
     Buffer.from(readFileSync(REPO + "/assets/js/notes-stats.js", "utf8")).toString("base64");
+  const briefUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-brief.js", "utf8")
+      .replace(/^import \{ justName \} from "\.\/notes-stats\.js[^"]*";$/m,
+        "const { justName } = await import(" + JSON.stringify(statsUrl) + ");"),
+      "utf8").toString("base64");
+  s = s.replace(/^import \{ readBrief \} from "\.\/notes-brief\.js[^"]*";$/m,
+    "const { readBrief } = await import(" + JSON.stringify(briefUrl) + ");");
   /* 겹침 걷어내기도 진짜를 씁니다 — 셈 자체는 tools/test/cal-merge.mjs 가 봅니다 */
   const mergeUrl = "data:text/javascript;base64," +
     Buffer.from(readFileSync(REPO + "/assets/js/cal-merge.js", "utf8")).toString("base64");

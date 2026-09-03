@@ -99,6 +99,7 @@ export async function fileFromStore(f) {
 const LIB = {
   xlsx: "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm",
   pdf:  "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/+esm",
+  ocr:  "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/+esm",
 };
 
 async function readText(file) {
@@ -240,22 +241,44 @@ export function eventName(blocks, lines) {
 }
 
 
+/* ── 그림에서 글자 읽기 ─────────────────────────────────────
+   심포지엄 안내문을 사진·캡처로 받으실 때가 많습니다.
+   그때만 글자 읽개를 내려받습니다 — 덩치가 커서 늘 들고 있지 않습니다.
+   한국어 자료는 처음 한 번 몇십 초 걸립니다(글꼴 자료를 받습니다). */
+export async function fromImage(file, say) {
+  const T = await import(/* @vite-ignore */ LIB.ocr);
+  if (say) say("글자를 읽는 중… (처음 한 번은 조금 걸립니다)");
+  const worker = await T.createWorker(["kor", "eng"], 1, {
+    logger: () => {},                       // 자잘한 진행 알림은 삼킵니다
+  });
+  try {
+    const { data } = await worker.recognize(file);
+    return String((data && data.text) || "").split(/\r?\n/)
+      .map((x) => x.trim()).filter(Boolean);
+  } finally {
+    try { await worker.terminate(); } catch (e) {}
+  }
+}
+
 /**
  * 파일에서 쓸 만한 부분을 뽑습니다.
  * @returns {Promise<{mine:Array, head:Array, total:number}>}
  *   mine  내 이름·낱말이 든 줄
  *   head  하나도 없을 때 보여 줄 앞머리 줄
  */
-export async function extract(file, words) {
+export async function extract(file, words, opt) {
   const k = kind(file);
   let lines = [];
   try {
     if (k === "excel") lines = await fromExcel(file);
     else if (k === "pdf") lines = await fromPdf(file);
     else if (k === "csv" || k === "text") lines = await fromText(file);
-    else return { mine: [], head: [], people: [], event: "", total: 0 };
+    /* 그림은 부르는 쪽이 시켰을 때만 읽습니다 (글자 읽개가 무겁습니다) */
+    else if (k === "image" && opt && opt.ocr) lines = await fromImage(file, opt.say);
+    else return { mine: [], head: [], people: [], event: "", total: 0, lines: [] };
   } catch (e) {
-    return { mine: [], head: [], people: [], event: "", total: 0, error: e.message };
+    return { mine: [], head: [], people: [], event: "", total: 0, lines: [],
+             error: e.message };
   }
 
   const keys = (words && words.length ? words : MINE).map((w) => w.toLowerCase());
@@ -296,7 +319,8 @@ export async function extract(file, words) {
            .map((x) => ({ where: x.where, line: x.line.slice(0, 180) + (x.line.length > 180 ? "…" : "") }))
            .slice(0, 8);
 
-  return { mine, head, people, event, total: lines.length };
+  // lines 를 함께 돌려줍니다 — 개최개요 파서가 이 줄들을 다시 읽습니다
+  return { mine, head, people, event, lines, total: lines.length };
 }
 
 /** 뽑아낸 것을 사람이 읽는 글로 */
