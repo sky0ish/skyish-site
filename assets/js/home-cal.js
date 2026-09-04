@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609010300";
+import * as GC from "./gcal.js?v=202609040900";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -205,10 +205,16 @@ export async function initHomeCal(id = "hocal") {
             `<span class="d">${esc(s.k.slice(5).replace("-", "."))}</span>` +
             `<span class="t">${esc(s.t)}</span></a>`).join("") + "</div>"
         : '<p class="hocal__none">앞으로 잡힌 일정이 없습니다.</p>') +
-      /* 이 브라우저에서 아직 구글을 안 이었으면 잇는 단추를 놓습니다.
+      /* 이어져 있지 않으면 늘 잇는 단추를 놓습니다.
+         전에는 「한 번이라도 이었으면」 숨겼는데, 조용히 잇기가 실패하면
+         (구글에서 로그아웃·허락 취소·다른 브라우저) 다시 이을 길이 없었습니다.
          구글 창은 사람이 누른 순간에만 뜰 수 있어, 스스로 열지 못합니다. */
-      (GC.ready() && !GC.connected() && !(GC.everLinked && GC.everLinked())
-        ? '<button type="button" class="hocal__gc" id="hocalGc">🔗 구글 달력 잇기 — 구글 일정도 함께 보입니다</button>'
+      (GC.ready() && !GC.connected()
+        ? '<button type="button" class="hocal__gc" id="hocalGc">'
+          + (GC.everLinked && GC.everLinked()
+              ? "🔗 구글 달력 다시 잇기 — 연결이 풀렸습니다"
+              : "🔗 구글 달력 잇기 — 구글 일정도 함께 보입니다")
+          + "</button>"
         : "") +
       '<a class="hocal__more" href="blog.html?cat=schedule">일정 전체 보기 →</a>';
 

@@ -5,7 +5,7 @@
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as NF from "./notes-files.js?v=202609010300";
-import * as GC from "./gcal.js?v=202609010300";
+import * as GC from "./gcal.js?v=202609040900";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
@@ -2256,7 +2256,11 @@ export async function initNotes(mountId = "notesapp") {
     if (calBox.hidden) { gBox.hidden = true; return; }
     drawCal();
     // 달력을 열면 구글 일정도 함께 얹습니다 (한 번 허락하시면 그다음부터는 조용히)
-    if (GC.ready()) await pullGoogle(false, GC.connected());
+    /* 열쇠가 만료됐어도 전에 이어 두었다면 창 없이 조용히 다시 받아 옵니다 */
+    if (GC.ready()) {
+      if (!GC.connected() && GC.silent) { try { await GC.silent(); } catch (e) {} }
+      await pullGoogle(false, GC.connected());
+    }
   });
   /* 구글 일정 — 읽기 권한을 받아 달력에 함께 얹습니다 */
   const gBox = document.getElementById("nGcalBox");
@@ -2280,7 +2284,10 @@ export async function initNotes(mountId = "notesapp") {
     calBtn.disabled = true;
     calBtn.textContent = "일정 불러오는 중…";
     try {
-      if (force) GC.disconnect();
+      /* 「다른 계정으로」 — 먼저 끊지 않습니다.
+         전에는 여기서 끊어 버려, 구글 창을 취소하면 멀쩡하던 연결까지
+         사라졌습니다. connect(true) 가 select_account 로 계정을 고르게 하고,
+         새 열쇠를 받으면 그때 옛 것을 덮어씁니다. */
       await GC.connect(force);
       gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth());
       gBox.hidden = false;
@@ -2394,7 +2401,14 @@ export async function initNotes(mountId = "notesapp") {
     calBox.hidden = false;
     calBtn.classList.add("on");
     drawCal();
-    if (GC.ready()) await pullGoogle(false, GC.connected());
+    /* 여기는 사람이 누른 자리가 아닙니다 (갈래를 열면 저절로 펴집니다).
+       그래서 조용히 잇기만 해 보고, 안 되면 그냥 둡니다 — quiet 를 늘 참으로.
+       구글 창을 띄우려 하면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
+       못 이었으면 달력 단추를 눌러 주시면 그때 창이 뜹니다. */
+    if (GC.ready()) {
+      if (!GC.connected() && GC.silent) { try { await GC.silent(); } catch (e) {} }
+      await pullGoogle(false, true);
+    }
   }
 
   /* 첫 화면 달력에서 넘어온 것을 받습니다.

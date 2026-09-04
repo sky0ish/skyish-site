@@ -17,16 +17,18 @@ import { GCAL_CLIENT_ID } from "../../auth/config.js";
    권한을 넓혔으니 이미 이어 두셨던 분은 한 번 다시 이어 주셔야 합니다. */
 const SCOPE = "https://www.googleapis.com/auth/calendar.events";
 const KEY = "skyish-gcal-token";
+/* 만료 다섯 분 전부터는 미리 새로 받아 둡니다 */
+const FRESH = 5 * 60 * 1000;
 
 let token = null;
 
 /* 열쇠는 localStorage 에 둡니다.
    전에는 sessionStorage 라 탭을 닫으면 사라져, 열 때마다 다시 이어야 했습니다.
    이 브라우저 안에만 있고 어디로도 나가지 않습니다. */
-function saved() {
+function saved(marginMs) {
   try {
     const v = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (v && v.exp > Date.now()) return v.token;
+    if (v && v.exp > Date.now() + (marginMs || 0)) return v.token;
   } catch (e) {}
   return null;
 }
@@ -45,34 +47,50 @@ export const everLinked = () => {
   try { return localStorage.getItem(KEY + "-ok") === "1"; } catch (e) { return false; }
 };
 
+/* 조용히 잇기가 이미 돌고 있으면 그 하나를 함께 씁니다.
+   month() 가 calendars() 를 부르는 식으로 한 번에 두 번 물으면,
+   창이 두 번 뜨거나 4초를 두 번 기다리게 됩니다. */
+let silentJob = null;
+
 /** 창을 띄우지 않고 조용히 열쇠만 다시 받아 옵니다.
-    구글에 이미 로그인돼 있고 전에 허락하셨다면 됩니다. */
+    구글에 이미 로그인돼 있고 전에 허락하셨다면 됩니다.
+    어떤 일이 있어도 예외를 던지지 않고 null 을 돌려줍니다. */
 export async function silent() {
-  const t = saved();
+  const t = saved(FRESH);
   if (t) { token = t; return t; }
   if (!GCAL_CLIENT_ID || !everLinked()) return null;
-  await loadGis();
-  return new Promise((ok) => {
-    let done = false;
-    const fin = (v) => { if (!done) { done = true; ok(v); } };
-    try {
-      const cli = google.accounts.oauth2.initTokenClient({
-        client_id: GCAL_CLIENT_ID,
-        scope: SCOPE,
-        prompt: "none",                 // 창을 띄우지 않습니다
-        callback: (r) => {
-          if (r && r.access_token) {
-            token = r.access_token;
-            keep(token, r.expires_in || 3600);
-            fin(token);
-          } else fin(null);
-        },
-        error_callback: () => fin(null),
-      });
-      cli.requestAccessToken();
-      setTimeout(() => fin(null), 4000);   // 오래 걸리면 포기하고 넘어갑니다
-    } catch (e) { fin(null); }
-  });
+  if (silentJob) return silentJob;                 // 돌고 있으면 그것을 기다립니다
+  silentJob = (async () => {
+    /* 구글 조각을 못 받아도 여기서 끝냅니다 —
+       전에는 예외가 useToken() 까지 올라가, 아직 살아 있는 열쇠를 두고도
+       통째로 실패했습니다. */
+    try { await loadGis(); } catch (e) { return null; }
+    return new Promise((ok) => {
+      let done = false;
+      const fin = (v) => { if (!done) { done = true; ok(v); } };
+      try {
+        const cli = google.accounts.oauth2.initTokenClient({
+          client_id: GCAL_CLIENT_ID,
+          scope: SCOPE,
+          /* "none" 이라야 정말 창을 띄우지 않습니다.
+             "" 는 「필요하면 띄운다」 라서, 사람이 누르지 않은 자리에서
+             창이 뜨거나 브라우저에 막힙니다. */
+          prompt: "none",
+          callback: (r) => {
+            if (r && r.access_token) {
+              token = r.access_token;
+              keep(token, r.expires_in || 3600);
+              fin(token);
+            } else fin(null);
+          },
+          error_callback: () => fin(null),
+        });
+        cli.requestAccessToken();
+        setTimeout(() => fin(null), 4000);   // 오래 걸리면 포기하고 넘어갑니다
+      } catch (e) { fin(null); }
+    });
+  })().finally(() => { silentJob = null; });
+  return silentJob;
 }
 
 /** 구글 로그인 조각을 한 번만 불러옵니다 */
@@ -109,7 +127,9 @@ export async function connect(force) {
     const cli = google.accounts.oauth2.initTokenClient({
       client_id: GCAL_CLIENT_ID,
       scope: SCOPE,
-      prompt: force ? "consent" : "",
+      /* 계정을 바꾸려면 select_account 가 있어야 합니다.
+         consent 만으로는 같은 계정에 동의만 다시 받습니다. */
+      prompt: force ? "select_account consent" : "",
       callback: (r) => {
         if (r && r.access_token) {
           token = r.access_token;
@@ -123,16 +143,38 @@ export async function connect(force) {
   });
 }
 
-export function disconnect() {
+export function disconnect(forget) {
   token = null;
-  try { sessionStorage.removeItem(KEY); } catch (e) {}
+  /* 열쇠는 localStorage 에 둡니다 — 여기를 지워야 정말 끊깁니다.
+     전에는 sessionStorage 를 지워, 죽은 열쇠가 남아 connected() 가 계속
+     참이라 「다시 잇기」 단추가 안 나타났습니다. */
+  try {
+    localStorage.removeItem(KEY);
+    if (forget) localStorage.removeItem(KEY + "-ok");   // 사람이 손수 끊을 때만
+  } catch (e) {}
 }
 
-export const connected = () => !!(token || saved());
+/* 저장된 열쇠만 봅니다.
+   전에는 (token || saved()) 였는데, 모듈 변수 token 은 disconnect() 에서만
+   비워집니다. 열쇠가 스스로 만료되면 saved() 는 null 이 되지만 죽은 token 이
+   남아 계속 「이어져 있다」 고 답했고, 그래서 「다시 잇기」 단추가 그 탭에서
+   영영 나타나지 않았습니다 — 바로 그 증상입니다. */
+export const connected = () => !!saved();
+
+/* 늘 살아 있는 열쇠를 돌려줍니다 — 만료가 다가오면 창 없이 미리 새로 받습니다.
+   silent() 는 창을 띄우지 않으므로, 그것이 안 되면 마지막에 한 번만
+   구글 창을 엽니다 (사람이 누른 자리에서 불려야 합니다). */
+async function useToken() {
+  const ok = saved(FRESH);
+  if (ok) { token = ok; return ok; }
+  const s = await silent();
+  if (s) return s;
+  return saved() || await connect();
+}
 
 /** 내가 쓰는 캘린더 목록 (숨긴 것은 뺍니다) */
-export async function calendars() {
-  const t = token || saved() || await connect();
+export async function calendars(tok) {
+  const t = tok || await useToken();
   const r = await fetch(
     "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader",
     { headers: { Authorization: "Bearer " + t } });
@@ -156,10 +198,10 @@ export async function calendars() {
  * @returns [{date:"2026-08-14", title, place, time, cal, color}]
  */
 export async function month(year, mon0) {
-  const t = token || saved() || await connect();
+  const t = await useToken();
   const from = new Date(year, mon0, 1);
   const to = new Date(year, mon0 + 1, 1);
-  const cals = await calendars();
+  const cals = await calendars(t);
 
   const one = async (c) => {
     const u = "https://www.googleapis.com/calendar/v3/calendars/"
@@ -205,7 +247,7 @@ export async function month(year, mon0) {
    @param {date:"2026-09-02", time:"14:00"|"" , title, place}
    시각이 있으면 그때부터 한 시간, 없으면 종일로 넣습니다. */
 export async function addEvent(ev) {
-  const t = token || saved() || await connect();
+  const t = await useToken();
   const body = { summary: String(ev.title || "").slice(0, 200) };
   if (ev.place) body.location = String(ev.place).slice(0, 200);
   if (ev.time) {
@@ -230,8 +272,10 @@ export async function addEvent(ev) {
       headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
       body: JSON.stringify(body) });
   if (!r.ok) {
-    if (r.status === 403 || r.status === 401)
+    if (r.status === 403 || r.status === 401) {
+      disconnect();
       throw new Error("구글이 쓰기를 막았습니다 — 「구글 달력 잇기」 를 다시 눌러 새 권한으로 이어 주세요.");
+    }
     throw new Error("구글에 넣지 못했습니다 (" + r.status + ")");
   }
   return (await r.json()).id || "";
