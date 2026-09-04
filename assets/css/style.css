@@ -3036,3 +3036,10 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .ahas { text-align:center; font-weight:700; font-size:.82rem; width:52px; }
 .ahas.yes { color:#3f6a3a; }
 .ahas.no  { color:#c9bfa6; font-weight:500; }
+/* 표를 칸별로 줄 세우기 */
+#abTbl th.asort { cursor:pointer; user-select:none; white-space:nowrap;
+  transition:.14s var(--ease); }
+#abTbl th.asort:hover { color:var(--teal); }
+#abTbl th.asort i { font-style:normal; font-size:.66rem; margin-left:4px;
+  color:var(--teal); }
+#abTbl th.asort.on { color:var(--ink); }

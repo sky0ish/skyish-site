@@ -444,6 +444,49 @@ async function photoDir() {
   return null;
 }
 
+/* ── 표 정렬 ──────────────────────────────────────────────
+   칸 이름을 누르면 그 칸으로 줄을 세웁니다. 한 번 더 누르면 거꾸로.
+   한글은 사전 차례(localeCompare "ko"), 빈 칸은 늘 맨 뒤로 보냅니다
+   — 빈 칸이 위에 몰리면 아무것도 안 보이는 것처럼 느껴집니다. */
+export const SORT_KEYS = {
+  name:    (r) => r.name,
+  company: (r) => r.company,
+  title:   (r) => r.title,
+  major:   (r) => r.majorName || r.univDept,
+  tel:     (r) => r.mobile || r.phone,
+  src:     (r) => (r.src === "alum" ? "동문" : (GROUP_NAME[r.kind] || "")),
+  photo:   null,          // 사진은 따로 — 있는 사람이 먼저
+};
+
+/**
+ * @param rows  줄 목록
+ * @param key   SORT_KEYS 의 이름 ("" 이면 원래 차례 그대로)
+ * @param dir   1 오름차순 · -1 내림차순
+ * @param has   (name) => boolean — 사진이 있는지 (photo 로 세울 때만 씁니다)
+ */
+export function sortRows(rows, key, dir, has) {
+  const L = Array.isArray(rows) ? rows.slice() : [];
+  if (!key || (key !== "photo" && !SORT_KEYS[key])) return L;
+  const d = dir < 0 ? -1 : 1;
+  if (key === "photo") {
+    const yes = (r) => (has && has(r && r.name)) ? 1 : 0;
+    return L.map((r, i) => [r, i]).sort((A, B) => {
+      const g = yes(B[0]) - yes(A[0]);          // 있는 사람이 먼저
+      return (g ? g * d : 0) || A[1] - B[1];    // 같으면 원래 차례
+    }).map(([r]) => r);
+  }
+  const get = SORT_KEYS[key];
+  const v = (r) => String(get(r) == null ? "" : get(r)).trim();
+  return L.map((r, i) => [r, i]).sort((A, B) => {
+    const a = v(A[0]), b = v(B[0]);
+    if (!a && !b) return A[1] - B[1];
+    if (!a) return 1;                            // 빈 칸은 늘 맨 뒤
+    if (!b) return -1;
+    const c = a.localeCompare(b, "ko", { numeric: true });
+    return (c ? c * d : 0) || A[1] - B[1];
+  }).map(([r]) => r);
+}
+
 /** 그림 종류 → 확장자 */
 export function extOf(type) {
   const t = String(type || "").toLowerCase();
@@ -607,7 +650,7 @@ export async function photoCount() {
 
 /** 표를 그린 뒤, 사진이 있는 분의 이름 칸에 얼굴을 얹습니다.
     없는 분은 그대로 둡니다 — 자리를 비워 두면 줄이 들쭉날쭉해집니다. */
-async function fillFaces(tbody) {
+async function fillFaces(tbody, onFace) {
   if (!tbody) return;
   const cells = [...tbody.querySelectorAll("td.aface[data-n]")];
   if (!cells.length) return;
@@ -627,6 +670,8 @@ async function fillFaces(tbody) {
       mark.textContent = u ? "O" : "X";
       mark.className = "ahas " + (u ? "yes" : "no");
     }
+    /* 사진 칸으로 줄을 세울 때 씁니다 */
+    if (typeof onFace === "function") onFace(name, !!u);
   }
 }
 
@@ -675,6 +720,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   const say  = (t) => { hint.textContent = t; };
 
   let rows = [], cur = "all", major = "", shownCount = PAGE;
+  let sortKey = "", sortDir = 1;          // 어느 칸으로, 어느 쪽으로
+  const havePhoto = new Set();            // 사진이 있는 사람 (사진 칸 정렬용)
 
   /* ── 화면 그리기 ── */
   function ui() {
@@ -694,8 +741,14 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       '<nav class="ntabs" id="abTabs"></nav>' +
       '<p class="ncount" id="abCount"></p>' +
       '<div class="nimp__scroll"><table class="nimp__tbl" id="abTbl">' +
-        "<thead><tr><th>이름</th><th>소속</th><th>직함</th>" +
-        "<th>전공 · 학부</th><th>연락처</th><th>출처</th><th>사진</th></tr></thead>" +
+        '<thead><tr>' +
+          [["name", "이름"], ["company", "소속"], ["title", "직함"],
+           ["major", "전공 · 학부"], ["tel", "연락처"], ["src", "출처"],
+           ["photo", "사진"]]
+            .map(([k, label]) =>
+              `<th class="asort" data-s="${k}" title="눌러서 줄 세우기">` +
+              `${label}<i></i></th>`).join("") +
+        "</tr></thead>" +
         "<tbody></tbody></table></div>" +
       '<p class="nempty" id="abEmpty" hidden></p>' +
       '<div class="amore" id="abMore" hidden></div>' +
@@ -725,7 +778,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         .join(" ").toLowerCase().includes(s);
     };
     const inGroup = (r) => cur === "all" || (cur === "alum" ? r.src === "alum" : r.kind === cur);
-    const shown = () => rows.filter(inGroup).filter(match);
+    const shown = () => sortRows(
+      rows.filter(inGroup).filter(match), sortKey, sortDir,
+      (n) => havePhoto.has(photoKey(n)));
 
     function paint() {
       const l = shown();
@@ -763,7 +818,14 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           '<td class="ahas" data-n="' + esc(r.name) + '">·</td>' +
         "</tr>").join("");
 
-      fillFaces(tbody);
+      /* 사진이 있는지 알아 두었다가 「사진」 칸으로 줄 세울 때 씁니다.
+         알아낸 뒤에는 그 칸으로 세워 둔 상태면 다시 그립니다. */
+      fillFaces(tbody, (n, yes) => {
+        const k = photoKey(n);
+        const was = havePhoto.has(k);
+        if (yes) havePhoto.add(k); else havePhoto.delete(k);
+        if (sortKey === "photo" && was !== yes) paint();
+      });
 
       moreEl.hidden = l.length <= shownCount;
       moreEl.innerHTML = moreEl.hidden ? "" :
@@ -771,6 +833,23 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       const mb = document.getElementById("abMoreBtn");
       if (mb) mb.addEventListener("click", () => { shownCount += PAGE; paint(); });
     }
+
+    /* 칸 이름을 누르면 그 칸으로 줄을 세웁니다. 같은 칸을 또 누르면 거꾸로,
+       한 번 더 누르면 원래 차례로 돌아옵니다. */
+    document.querySelectorAll("#abTbl th.asort").forEach((th) =>
+      th.addEventListener("click", () => {
+        const k = th.dataset.s;
+        if (sortKey !== k) { sortKey = k; sortDir = 1; }
+        else if (sortDir === 1) { sortDir = -1; }
+        else { sortKey = ""; sortDir = 1; }
+        document.querySelectorAll("#abTbl th.asort").forEach((x) => {
+          const on = x.dataset.s === sortKey;
+          x.classList.toggle("on", on);
+          x.querySelector("i").textContent = on ? (sortDir === 1 ? "▲" : "▼") : "";
+        });
+        shownCount = PAGE;
+        paint();
+      }));
 
     // 줄 하나하나에 듣는 이를 붙이면 무겁습니다 — 표 하나에만 걸고 되짚습니다
     tbody.addEventListener("click", (e) => {
@@ -951,7 +1030,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     const tb = document.querySelector("#abTbl tbody");
     if (!tb) return;
     tb.querySelectorAll("img.afaceimg").forEach((im) => im.remove());
-    fillFaces(tb);
+    fillFaces(tb, (n, yes) => {
+      const k = photoKey(n);
+      if (yes) havePhoto.add(k); else havePhoto.delete(k);
+    });
   }
 
   /* ── 보이는 것만 엑셀로 ── */

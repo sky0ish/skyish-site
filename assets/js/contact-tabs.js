@@ -6,7 +6,7 @@
 //   Sites    자주 드나드는 곳 — 관리자만
 //
 // 관리자가 아니면 뒤의 두 갈래는 단추째 사라집니다.
-import { initAddr } from "./addressbook.js?v=202609051600";
+import { initAddr } from "./addressbook.js?v=202609051700";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
 

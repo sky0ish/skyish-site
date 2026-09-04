@@ -135,5 +135,40 @@ const back = await AB.collectPhotos(d("9.FACE", [f(made)]));
 eq("되찾힌다", [...back.keys()], ["현병천"]);
 eq("파일 이름", made, "현병천.jpg");
 
+/* ── 칸별로 줄 세우기 ── */
+console.log("\n── 줄 세우기 ──");
+const L = [
+  P({ name: "홍길동", company: "다라건축", title: "대표", mobile: "010-3-3" }),
+  P({ name: "강감찬", company: "", title: "부장", mobile: "" }),
+  P({ name: "이순신", company: "가나연구원", title: "", mobile: "010-1-1" }),
+];
+const nm = (l) => l.map((x) => x.name);
+eq("이름 오름차순", nm(AB.sortRows(L, "name", 1)), ["강감찬", "이순신", "홍길동"]);
+eq("이름 내림차순", nm(AB.sortRows(L, "name", -1)), ["홍길동", "이순신", "강감찬"]);
+eq("소속으로 (빈 칸은 맨 뒤)", nm(AB.sortRows(L, "company", 1)),
+   ["이순신", "홍길동", "강감찬"]);
+eq("소속 거꾸로 해도 빈 칸은 맨 뒤", nm(AB.sortRows(L, "company", -1)),
+   ["홍길동", "이순신", "강감찬"]);
+eq("연락처로", nm(AB.sortRows(L, "tel", 1)), ["이순신", "홍길동", "강감찬"]);
+eq("아무 칸도 안 고르면 그대로", nm(AB.sortRows(L, "", 1)), nm(L));
+eq("모르는 칸이면 그대로", nm(AB.sortRows(L, "없는칸", 1)), nm(L));
+eq("원본을 건드리지 않는다", (AB.sortRows(L, "name", 1), nm(L)),
+   ["홍길동", "강감찬", "이순신"]);
+
+console.log("\n── 사진 칸으로 ──");
+const has = (n) => n === "홍길동";
+eq("사진 있는 사람이 먼저", nm(AB.sortRows(L, "photo", 1, has)),
+   ["홍길동", "강감찬", "이순신"]);
+eq("거꾸로 하면 없는 사람이 먼저", nm(AB.sortRows(L, "photo", -1, has)),
+   ["강감찬", "이순신", "홍길동"]);
+eq("같은 무리 안에서는 원래 차례", nm(AB.sortRows(L, "photo", 1, () => false)), nm(L));
+
+console.log("\n── 험한 것 ──");
+eq("빈 목록", AB.sortRows([], "name", 1), []);
+eq("아무것도 아닌 것", AB.sortRows(null, "name", 1), []);
+eq("이름이 없는 줄이 섞여도",
+   AB.sortRows([P({ name: "" }), P({ name: "가" })], "name", 1).map((x) => x.name),
+   ["가", ""]);
+
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);
