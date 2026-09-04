@@ -3042,5 +3042,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
   transition:.14s var(--ease); }
 #abTbl th.asort:hover { color:var(--teal); }
 #abTbl th.asort i { font-style:normal; font-size:.66rem; margin-left:4px;
-  color:var(--teal); }
+  color:var(--mauve); opacity:.45; }
+#abTbl th.asort:hover i { opacity:.8; }
 #abTbl th.asort.on { color:var(--ink); }
+#abTbl th.asort.on i { color:var(--teal); opacity:1; }

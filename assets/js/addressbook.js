@@ -643,6 +643,30 @@ export async function photo(name) {
   } catch (e) { photoUrls.set(k, ""); return ""; }
 }
 
+/** 붙여넣어 담아 둔 사진들의 이름 열쇠 */
+async function storedNames() {
+  try {
+    const db = await openDb();
+    const v = await new Promise((ok, no) => {
+      const r = db.transaction(PHOTO_STORE, "readonly").objectStore(PHOTO_STORE).getAllKeys();
+      r.onsuccess = () => ok(r.result || []); r.onerror = () => no(r.error);
+    });
+    db.close();
+    return v;
+  } catch (e) { return []; }
+}
+
+/** 사진이 있는 사람의 이름 열쇠 모두 —
+ *  ① 9.FACE 폴더에 있는 것  ② 붙여넣어 담아 둔 것
+ *  화면에 그려진 줄만 보고는 3,859명을 줄 세울 수 없어서,
+ *  미리 한 번에 모아 둡니다. */
+export async function photoNames() {
+  const out = new Set();
+  try { (await loadPhotoMap()).forEach((_, k) => out.add(k)); } catch (e) {}
+  try { (await storedNames()).forEach((k) => out.add(String(k))); } catch (e) {}
+  return out;
+}
+
 /** 사진이 몇 장 준비돼 있는지 — 안내에 씁니다 */
 export async function photoCount() {
   return (await loadPhotoMap()).size;
@@ -724,7 +748,15 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
 
   let rows = [], cur = "all", major = "", shownCount = PAGE;
   let sortKey = "", sortDir = 1;          // 어느 칸으로, 어느 쪽으로
-  const havePhoto = new Set();            // 사진이 있는 사람 (사진 칸 정렬용)
+  let havePhoto = new Set();              // 사진이 있는 사람 (O/X 와 줄 세우기에)
+  /* 폴더와 저장소에서 한 번에 모아 둡니다 — 그려진 줄만 봐서는
+     3,859명을 사진으로 줄 세울 수 없습니다. */
+  async function refreshPhotoNames() {
+    try {
+      havePhoto = await photoNames();
+      if (document.getElementById("abTbl")) paint();
+    } catch (e) {}
+  }
 
   /* ── 화면 그리기 ── */
   function ui() {
@@ -818,7 +850,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           `<td><span class="ncat" style="--c:${GROUP_COLOR[r.src === "alum" ? "alum" : r.kind]}">` +
             `${esc(r.src === "alum" ? "동문" : GROUP_NAME[r.kind].replace("명함_", ""))}</span></td>` +
           /* 사진이 있는지 — 그린 뒤에 fillFaces 가 채웁니다 */
-          '<td class="ahas" data-n="' + esc(r.name) + '">·</td>' +
+          (() => {
+            const yes = havePhoto.has(photoKey(r.name));
+            return '<td class="ahas ' + (yes ? "yes" : "no") + '" data-n="' +
+                   esc(r.name) + '">' + (yes ? "O" : "X") + "</td>";
+          })() +
         "</tr>").join("");
 
       /* 사진이 있는지 알아 두었다가 「사진」 칸으로 줄 세울 때 씁니다.
@@ -837,19 +873,27 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (mb) mb.addEventListener("click", () => { shownCount += PAGE; paint(); });
     }
 
-    /* 칸 이름을 누르면 그 칸으로 줄을 세웁니다. 같은 칸을 또 누르면 거꾸로,
-       한 번 더 누르면 원래 차례로 돌아옵니다. */
+    /* 어느 칸으로 세워 두었는지 화살표로 보입니다.
+       안 고른 칸에는 ↕ 를 흐리게 두어 「누를 수 있다」 를 알립니다. */
+    function markSort() {
+      document.querySelectorAll("#abTbl th.asort").forEach((x) => {
+        const on = x.dataset.s === sortKey;
+        x.classList.toggle("on", on);
+        x.querySelector("i").textContent = on ? (sortDir === 1 ? "▲" : "▼") : "↕";
+      });
+    }
+    markSort();
+
+    /* 칸 이름을 누르면 그 칸으로 줄을 세웁니다. 같은 칸을 또 누르면 거꾸로. */
     document.querySelectorAll("#abTbl th.asort").forEach((th) =>
       th.addEventListener("click", () => {
+        /* 한 번 누르면 그 칸으로, 또 누르면 거꾸로 — 그것뿐입니다.
+           (전에는 세 번째에 원래 차례로 돌아가서, 눌러도 안 바뀌는 것처럼
+            보였습니다.) */
         const k = th.dataset.s;
         if (sortKey !== k) { sortKey = k; sortDir = 1; }
-        else if (sortDir === 1) { sortDir = -1; }
-        else { sortKey = ""; sortDir = 1; }
-        document.querySelectorAll("#abTbl th.asort").forEach((x) => {
-          const on = x.dataset.s === sortKey;
-          x.classList.toggle("on", on);
-          x.querySelector("i").textContent = on ? (sortDir === 1 ? "▲" : "▼") : "";
-        });
+        else { sortDir = -sortDir; }
+        markSort();
         shownCount = PAGE;
         paint();
       }));
@@ -941,6 +985,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           e.stopPropagation();
           await dropPhoto(r.name);
           await show();
+          await refreshPhotoNames();
           paintFacesNow();
         });
       } else {
@@ -956,6 +1001,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (blob.size > 8 * 1024 * 1024) { say("사진이 8MB를 넘습니다."); return; }
       await savePhoto(r.name, blob);
       await show();
+      await refreshPhotoNames();
       paintFacesNow();
       /* 폴더에도 되돌려 저장합니다 — 브라우저를 비워도 남게 */
       const saved = await saveToFaceFolder(r.name, blob);
@@ -1073,6 +1119,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     say(`명함첩 ${nCard}명 · 동문 ${nAlum}명을 읽었습니다. ` +
         "겹친 것은 새 쪽으로 하나만 남겼습니다. 이 화면에만 있습니다.");
     ui();
+    refreshPhotoNames();          // 누가 사진이 있는지 미리 모읍니다 (조용히)
     /* 폴더를 못 여는 곳(폰)에서는 담아 둡니다 — 다음부터 고르지 않아도 폅니다.
        컴퓨터는 폴더에서 늘 새로 읽으므로 담지 않습니다. */
     if (!FSA) putCache(rows);
@@ -1124,6 +1171,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       say(n
         ? `얼굴 사진 ${n}장을 찾았습니다. 이름이 같은 분께 붙습니다.`
         : "그 폴더에서 그림을 찾지 못했습니다. 파일 이름을 그 사람 이름으로 지어 주세요 (예: 이석준.jpg).");
+      await refreshPhotoNames();
       draw();
     } catch (e) {
       if (e.name !== "AbortError") say("폴더를 열지 못했습니다 — " + e.message);
