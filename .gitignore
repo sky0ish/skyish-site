@@ -77,5 +77,6 @@ assets/data/flood/
 # 얼굴 사진 — 개인정보입니다. 저장소는 공개이므로 절대 올리지 않습니다.
 # 홈페이지에서는 내 컴퓨터의 폴더를 브라우저가 직접 읽습니다 (서버로 안 올라갑니다).
 /face/
+/9.FACE/
 _phototest.html
 _authstub.js

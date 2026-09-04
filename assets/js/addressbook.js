@@ -372,7 +372,9 @@ export async function cards(force) {
 
    그림은 브라우저 안에서만 풀립니다 (blob:). 어디로도 올라가지 않습니다. */
 const FACE_KEY = "face";              // 얼굴 사진 폴더 손잡이 (IndexedDB)
-const PHOTO_DIR = "명함사진";          // 00.주소록 안에 두셨을 때의 이름
+/* 그림이 들어 있을 만한 폴더 이름 —
+   홈피 폴더의 9.FACE 가 기본이고, 옛 이름도 함께 봅니다. */
+const PHOTO_DIRS = ["9.FACE", "face", "FACE", "명함사진"];
 const IMG_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
 let photoMap = null;                  // 열쇠 → 파일 손잡이
 const photoUrls = new Map();          // 열쇠 → blob 주소 (한 번만 만듭니다)
@@ -382,7 +384,9 @@ const photoKey = (s) => String(s || "").replace(/\s+/g, "").toLowerCase();
 /** 얼굴 사진 폴더를 골라 둡니다 — 홈피 폴더의 face/ 를 고르시면 됩니다 */
 export async function pickFaceFolder() {
   if (typeof window.showDirectoryPicker !== "function") return false;
-  const dir = await window.showDirectoryPicker({ id: "skyish-face", mode: "read" });
+  /* 읽고 쓰기로 고릅니다 — 붙여넣은 사진을 「이름.jpg」 로 이 폴더에
+     되돌려 저장하기 위해서입니다. 쓰기를 허락 안 하셔도 읽기는 됩니다. */
+  const dir = await window.showDirectoryPicker({ id: "skyish-face", mode: "readwrite" });
   try {
     const db = await openDb();
     await new Promise((ok, no) => {
@@ -409,37 +413,90 @@ async function faceHandle() {
   } catch (e) { return null; }
 }
 
+/** 이 폴더 안에 9.FACE 같은 그림 폴더가 있으면 그것을, 없으면 자기 자신을 */
+async function intoPhotoDir(dir) {
+  if (!dir) return null;
+  try {
+    for await (const e of dir.values()) {
+      if (e.kind === "directory" && PHOTO_DIRS.indexOf(e.name) >= 0) return e;
+    }
+  } catch (e) {}
+  return dir;
+}
+
 /** 그림이 든 폴더를 찾습니다 —
-    ① 따로 골라 두신 face 폴더  ② 없으면 00.주소록/명함사진/ */
+    ① 따로 골라 두신 폴더 (9.FACE 를 곧바로 고르셨어도, 홈피 폴더를
+       고르셨어도 됩니다 — 안에 9.FACE 가 있으면 그리로 들어갑니다)
+    ② 없으면 00.주소록 안의 명함사진/ */
 async function photoDir() {
   const f = await faceHandle();
   if (f) {
     const st = await f.queryPermission({ mode: "read" }).catch(() => "prompt");
-    if (st === "granted") return f;
+    if (st === "granted") return await intoPhotoDir(f);
   }
   const h = await getHandle();
   if (!h) return null;
   const st = await h.queryPermission({ mode: "read" }).catch(() => "prompt");
   if (st !== "granted") return null;
   for await (const e of h.values()) {
-    if (e.kind === "directory" && e.name === PHOTO_DIR) return e;
+    if (e.kind === "directory" && PHOTO_DIRS.indexOf(e.name) >= 0) return e;
   }
   return null;
+}
+
+/** 그림 종류 → 확장자 */
+export function extOf(type) {
+  const t = String(type || "").toLowerCase();
+  if (t === "image/jpeg" || t === "image/jpg") return ".jpg";
+  if (t === "image/webp") return ".webp";
+  if (t === "image/gif") return ".gif";
+  if (t === "image/avif") return ".avif";
+  return ".png";
+}
+
+/** 사람 이름 → 파일 이름. 파일에 못 쓰는 글자만 걷어냅니다. */
+export function safeFileName(name) {
+  return String(name || "")
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^\.+/, "")
+    .slice(0, 60);
+}
+
+/** 폴더 하나를 훑어 「이름 → 파일」 표를 만듭니다.
+ *  · 파일 이름이 곧 사람 이름입니다 — 「이석준.jpg」
+ *  · 밑줄·괄호 뒤는 메모로 봅니다 — 「서민호_국토연구원.png」 → 서민호
+ *  · 하위 폴더도 한 겹 봅니다 (기관별로 나눠 두셔도 됩니다)
+ *  · 같은 이름이 여럿이면 먼저 나온 것을 씁니다
+ *  손잡이(FileSystemDirectoryHandle)든, values() 를 가진 무엇이든 됩니다 —
+ *  그래서 시험할 수 있습니다 (tools/test/addr.mjs).
+ */
+export async function collectPhotos(dir) {
+  const m = new Map();
+  if (!dir) return m;
+  const eat = async (d) => {
+    for await (const e of d.values()) {
+      if (e.kind !== "file" || !IMG_EXT.test(e.name)) continue;
+      const stem = e.name.replace(IMG_EXT, "").split(/[_(]/)[0];
+      const k = photoKey(stem);
+      if (k && !m.has(k)) m.set(k, e);
+    }
+  };
+  try {
+    await eat(dir);
+    for await (const e of dir.values()) {
+      if (e.kind === "directory") { try { await eat(e); } catch (x) {} }
+    }
+  } catch (e) { /* 못 읽는 폴더가 섞여도 나머지는 씁니다 */ }
+  return m;
 }
 
 async function loadPhotoMap() {
   if (photoMap) return photoMap;
   photoMap = new Map();
   try {
-    const dir = await photoDir();
-    if (!dir) return photoMap;
-    for await (const e of dir.values()) {
-      if (e.kind !== "file" || !IMG_EXT.test(e.name)) continue;
-      // 「서민호_국토연구원.png」 → 서민호
-      const stem = e.name.replace(IMG_EXT, "").split(/[_(]/)[0];
-      const k = photoKey(stem);
-      if (k && !photoMap.has(k)) photoMap.set(k, e);
-    }
+    photoMap = await collectPhotos(await photoDir());
   } catch (e) { /* 폴더가 없어도 그냥 갑니다 */ }
   return photoMap;
 }
@@ -464,6 +521,31 @@ export async function savePhoto(name, blob) {
     photoUrls.delete(k);                 // 다음에 물으면 새로 만듭니다
     return true;
   } catch (e) { return false; }
+}
+
+/** 붙여넣은 사진을 9.FACE 폴더에 「이름.jpg」 로 되돌려 저장합니다.
+ *  폴더를 안 고르셨거나 쓰기를 안 허락하셨으면 조용히 넘어갑니다
+ *  (브라우저 안 사본은 이미 저장돼 있어 화면에는 그대로 보입니다).
+ *  @returns 저장한 파일 이름, 못 했으면 빈 글자
+ */
+export async function saveToFaceFolder(name, blob) {
+  try {
+    const dir = await photoDir();
+    if (!dir || typeof dir.getFileHandle !== "function") return "";
+    let st = await dir.queryPermission({ mode: "readwrite" }).catch(() => "prompt");
+    if (st !== "granted") {
+      /* 붙여넣기는 사람이 누른 자리라 여기서 물어볼 수 있습니다 */
+      st = await dir.requestPermission({ mode: "readwrite" }).catch(() => "denied");
+    }
+    if (st !== "granted") return "";
+    const fname = safeFileName(name) + extOf(blob && blob.type);
+    const fh = await dir.getFileHandle(fname, { create: true });
+    const w = await fh.createWritable();
+    await w.write(blob);
+    await w.close();
+    photoMap = null;                 // 폴더를 다시 읽습니다
+    return fname;
+  } catch (e) { return ""; }
 }
 
 /** 붙여넣은 사진을 지웁니다 (폴더에 있는 그림은 그대로) */
@@ -571,7 +653,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       /* 얼굴 사진은 따로 골라 둡니다 — 홈피 폴더의 face/ 를 고르시면 됩니다.
          한 번 고르면 기억합니다. 그림은 브라우저 안에서만 풀립니다. */
       (FSA ? '<button type="button" class="nbtn" id="abFace" ' +
-        'title="홈피 폴더의 face/ 를 고르세요 — 이름이 같은 그림을 얼굴로 씁니다">' +
+        'title="홈피 폴더의 9.FACE 를 고르세요 — 파일 이름이 사람 이름인 그림을 얼굴로 씁니다">' +
         '🙂 얼굴 사진 폴더</button>' : "") +
       '<button type="button" class="nbtn" id="abAgain" hidden></button>' +
       (FSA ? "" :
@@ -793,7 +875,12 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       await savePhoto(r.name, blob);
       await show();
       paintFacesNow();
-      say(`${r.name} 님의 사진을 넣었습니다.`);
+      /* 폴더에도 되돌려 저장합니다 — 브라우저를 비워도 남게 */
+      const saved = await saveToFaceFolder(r.name, blob);
+      say(saved
+        ? `${r.name} 님의 사진을 넣었습니다. 9.FACE 폴더에 「${saved}」 로도 저장했습니다.`
+        : `${r.name} 님의 사진을 넣었습니다. ` +
+          "(폴더에도 남기시려면 「🙂 얼굴 사진 폴더」 로 9.FACE 를 골라 주세요)");
     };
 
     /* 클립보드에서 그림을 꺼냅니다.
