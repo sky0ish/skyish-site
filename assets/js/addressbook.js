@@ -660,8 +660,11 @@ async function fillFaces(tbody, onFace) {
     /* 얼굴 — 있으면 이름 앞에 동그랗게 */
     const had = td.querySelector(".afaceimg");
     if (u && !had) {
-      td.insertAdjacentHTML("afterbegin",
-        '<img class="afaceimg" src="' + u + '" alt="" loading="lazy">');
+      /* 이름 바로 오른쪽에 붙입니다 — 소속 줄(.asub) 은 아래에 그대로 옵니다 */
+      const nameEl = td.querySelector("b");
+      const html = '<img class="afaceimg" src="' + u + '" alt="" loading="lazy">';
+      if (nameEl) nameEl.insertAdjacentHTML("afterend", html);
+      else td.insertAdjacentHTML("afterbegin", html);
     } else if (!u && had) { had.remove(); }
     /* 맨 끝 칸에 O · X */
     const tr = td.parentElement;

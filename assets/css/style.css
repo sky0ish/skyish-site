@@ -3005,9 +3005,10 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .ncard__full-photo-note { font-size:.74rem; color:var(--mauve); margin-top:10px; }
 
 /* ── 주소록 얼굴 사진 ─────────────────────────────────────── */
-.afaceimg { float:left; width:34px; height:34px; border-radius:50%;
-  object-fit:cover; margin:0 8px 0 0; border:1px solid var(--line);
-  background:#f2efe6; }
+/* 이름 오른쪽에 작게 */
+.afaceimg { display:inline-block; vertical-align:middle; width:30px; height:30px;
+  border-radius:50%; object-fit:cover; margin:-2px 0 -2px 8px;
+  border:1px solid var(--line); background:#f2efe6; }
 
 /* 자세히 창 — 왼쪽 적힌 것, 오른쪽 얼굴 */
 .adet2 { display:grid; grid-template-columns:minmax(0,1fr) 172px; gap:26px;
