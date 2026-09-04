@@ -44,7 +44,7 @@ function makeEl(id) {
       }
       // 갈래 고르개 — Diary 를 눌러 놓은 상태를 만들 수 있게
       if (id === "nTabs" && sel === "button") {
-        return ["all", "schedule", "diary"].map((k) => {
+        return ["all", "schedule", "diary", "uploads"].map((k) => {
           const b = byId("ntab-" + k);
           b.dataset.k = k;
           return b;
@@ -60,7 +60,15 @@ function makeEl(id) {
     },
     querySelector() { return makeEl(id + "-child"); },
     closest() { return makeEl(id + "-closest"); },
-    appendChild() {}, remove() {}, focus() {}, click() {},
+    appendChild() {}, remove() {}, focus() {},
+    /* 진짜 브라우저처럼 듣는 이를 부릅니다.
+       전에는 빈 함수라, 위 저장 단추가 저장을 두 번 부르는 것을
+       시험이 못 잡았습니다 (달력에 같은 일정이 두 번 뜨던 버그). */
+    click() {
+      const fns = [...(listeners.get(id + "|click") || [])];
+      const ev = { target: el, currentTarget: el, preventDefault() {} };
+      fns.forEach((fn) => fn(ev));
+    },
     setSelectionRange() {}, select() {}, blur() {},
   };
   Object.defineProperty(el, "innerHTML", {
@@ -403,8 +411,8 @@ await check("사람들 글을 저장해도 사람들에 남는다", async () => 
    붙임이 있는 글을 여럿 두고, 그 화면이 터지지 않고 그려지는지 봅니다.
    셈 자체는 tools/test/uploads.mjs 가 따로 봅니다. */
 await check("Uploads 화면이 그려진다", async () => {
-  globalThis.location.search = "?cat=uploads";
-  await M.initNotes("notesapp");
+  await fire("nmCancel", "click");
+  await fire("ntab-uploads", "click");
   const html = byId("nList").innerHTML || "";
   if (!html.includes("urow")) throw new Error("자료 줄이 없습니다 — " + html.slice(0, 120));
   for (const n of ["개최개요.jpg", "발표자료.pdf", "명단.xlsx"])
@@ -429,6 +437,23 @@ await check("종류 거르개가 놓인다", () => {
   for (const n of ["전체", "그림", "PDF", "표"])
     if (!html.includes(n)) throw new Error("「" + n + "」 단추가 없습니다");
   if (byId("nPeopleSw").hidden) throw new Error("거르개가 숨겨져 있습니다");
+});
+
+/* ── 위 저장 단추가 한 번만 저장해야 합니다 ──
+   창 위 「저장」 은 아래 「저장」 과 같은 일을 합니다. 전에는 아래 단추의
+   손을 직접 부르고 그다음 진짜 클릭까지 보내서, 브라우저에서 글이 두 줄
+   들어갔습니다. 달력에 같은 일정이 두 번 뜨던 바로 그 까닭입니다. */
+await check("창 위 저장을 눌러도 한 번만 저장한다", async () => {
+  await fire("nmCancel", "click");
+  await fire("nNew", "click");
+  byId("nmT").value = "건설국미팅.";
+  byId("nmCat").value = "schedule";
+  await fire("nmCat", "change");
+  calls.length = 0;
+  await fire("nmSaveTop", "click");
+  const puts = calls.filter((c) => c[0] === "insert" || c[0] === "update");
+  if (puts.length !== 1)
+    throw new Error(puts.length + "번 저장했습니다 (한 번이어야 합니다)");
 });
 
 console.log("─".repeat(60));

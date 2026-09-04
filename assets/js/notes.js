@@ -1962,10 +1962,17 @@ export async function initNotes(mountId = "notesapp") {
     if (!top || !bottom) return;
     top.addEventListener("click", (e) => {
       e.preventDefault();
-      // 아래 단추가 받는 것과 같은 꼴로 넘겨 줍니다
+      /* 한 번만 돌아야 합니다.
+         전에는 손을 직접 부르고 그다음 진짜 클릭도 보냈습니다. 진짜
+         브라우저에서는 둘 다 돌아 글이 두 줄 들어갔습니다 (달력에
+         같은 일정이 두 번 뜨던 까닭). 시늉 화면에서는 click() 이
+         아무 일도 안 해서 시험이 이를 못 잡았습니다.
+         이제 진짜 클릭을 먼저 보내고, 그것이 안 먹혔을 때만 손을 부릅니다. */
+      bottom.__fired = false;
+      if (typeof bottom.click === "function") bottom.click();
+      if (bottom.__fired) return;
       const ev = { target: bottom, currentTarget: bottom, preventDefault() {} };
       (bottom.__handlers || []).forEach((fn) => fn(ev));
-      if (bottom.click) bottom.click();
     });
   };
   /* 아래 단추에 달리는 손을 기억해 두었다가 위에서도 부릅니다 */
@@ -1974,10 +1981,14 @@ export async function initNotes(mountId = "notesapp") {
     if (!el || el.__wrapped) return;
     el.__wrapped = true;
     el.__handlers = [];
+    el.__fired = false;
     const orig = el.addEventListener.bind(el);
     el.addEventListener = (type, fn, opt) => {
-      if (type === "click") el.__handlers.push(fn);
-      orig(type, fn, opt);
+      if (type !== "click") { orig(type, fn, opt); return; }
+      /* 돌았다는 표시를 남깁니다 — 위 단추가 두 번 부르지 않게 */
+      const mark = (ev) => { el.__fired = true; return fn(ev); };
+      el.__handlers.push(mark);
+      orig(type, mark, opt);
     };
   });
   alsoOn("nmSaveTop", "nmSave");
