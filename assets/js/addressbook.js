@@ -747,13 +747,20 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     document.getElementById("abX").addEventListener("click", shut);
     document.getElementById("abClose").addEventListener("click", shut);
     box.onclick = (e) => { if (e.target === box) shut(); };
-    wirePhoto(r);
+    /* 여기서 터지면 칸은 보이는데 아무것도 안 걸립니다 —
+       조용히 죽지 말고 무엇이 잘못됐는지 알려 줍니다. */
+    try { wirePhoto(r, box); }
+    catch (e) { say("사진 칸을 붙이지 못했습니다 — " + (e && e.message)); }
   }
 
   /* ── 얼굴 사진 붙이기 ──
      붙여넣은 그림은 이 브라우저 안(IndexedDB)에만 담깁니다.
      skyish.kr 에도 GitHub 에도 한 장도 올라가지 않습니다. */
-  function wirePhoto(r) {
+  /* @param panel  자세히 보기 창(#abDet) — detail() 안의 지역 변수라
+                    여기로 넘겨받아야 합니다. 전에는 그냥 box 라고 썼다가
+                    「없는 이름」 이라 곧바로 터졌고, 그래서 붙여넣기·끌어놓기·
+                    고르기가 하나도 안 걸렸습니다 (칸은 보이는데 안 먹던 까닭). */
+  function wirePhoto(r, panel) {
     const wrap = document.getElementById("abPhoto");
     const boxEl = document.getElementById("abPhotoBox");
     const act = document.getElementById("abPhotoAct");
@@ -789,24 +796,47 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       say(`${r.name} 님의 사진을 넣었습니다.`);
     };
 
+    /* 클립보드에서 그림을 꺼냅니다.
+       두 자리를 다 봐야 합니다 —
+         · files  : 파일 탐색기에서 그림 파일을 복사한 경우 여기에만 옵니다
+         · items  : 웹에서 「이미지 복사」 한 경우 여기에 옵니다
+       전에는 items 만 봐서, 탐색기에서 복사한 그림이 안 들어갔습니다. */
+    const grabImage = (dt) => {
+      if (!dt) return null;
+      const f = [...(dt.files || [])].find((x) => /^image\//i.test(x.type || ""));
+      if (f) return f;
+      const it = [...(dt.items || [])]
+        .find((x) => x.kind === "file" && /^image\//i.test(x.type || ""));
+      return it ? it.getAsFile() : null;
+    };
+
     /* 붙여넣기 — 창이 열려 있는 동안만 듣습니다 */
     const onPaste = (e) => {
-      if (!box.classList.contains("on")) return;
-      const items = [...((e.clipboardData || {}).items || [])];
-      const it = items.find((x) => x.kind === "file" && /^image\//.test(x.type));
-      if (!it) return;
+      if (!panel.classList.contains("on")) return;
+      const dt = e.clipboardData;
+      const img = grabImage(dt);
+      if (!img) {
+        /* 그림이 아니면 조용히 넘기되, 무엇이 왔는지는 알려 드립니다 —
+           「눌렀는데 아무 일도 안 일어난다」 가 가장 답답하니까요. */
+        const kinds = [...((dt && dt.items) || [])].map((x) => x.type).filter(Boolean);
+        if (kinds.length) {
+          say("붙여넣은 것에 그림이 없습니다 (" + kinds.join(", ") + "). " +
+              "그림을 복사하시거나, 칸을 눌러 파일을 고르세요.");
+        }
+        return;
+      }
       e.preventDefault();
-      take(it.getAsFile());
+      take(img);
     };
     document.addEventListener("paste", onPaste);
     /* 창을 닫으면 듣기를 거둡니다 — 쌓이면 한 번 붙여넣기가 여러 번 돕니다 */
     const off = new MutationObserver(() => {
-      if (!box.classList.contains("on")) {
+      if (!panel.classList.contains("on")) {
         document.removeEventListener("paste", onPaste);
         off.disconnect();
       }
     });
-    off.observe(box, { attributes: true, attributeFilter: ["class"] });
+    off.observe(panel, { attributes: true, attributeFilter: ["class"] });
 
     ["dragenter", "dragover"].forEach((ev) =>
       wrap.addEventListener(ev, (e) => { e.preventDefault(); wrap.classList.add("over"); }));
@@ -814,8 +844,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       wrap.addEventListener(ev, () => wrap.classList.remove("over")));
     wrap.addEventListener("drop", (e) => {
       e.preventDefault();
-      const f = [...((e.dataTransfer || {}).files || [])][0];
+      const f = grabImage(e.dataTransfer);
       if (f) take(f);
+      else say("끌어다 놓으신 것이 그림이 아닙니다.");
     });
     wrap.addEventListener("click", (e) => {
       if (e.target.closest("#abPhotoDel")) return;

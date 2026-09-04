@@ -13,7 +13,7 @@ import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
-import { alumniNames, cards as addrCards, photo as addrPhoto } from "./addressbook.js?v=202609051200";
+import { alumniNames, cards as addrCards, photo as addrPhoto } from "./addressbook.js?v=202609051400";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609051200";
 
