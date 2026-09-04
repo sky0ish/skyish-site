@@ -68,6 +68,26 @@ export async function signedUrl(path, sec = 3600) {
   return data.signedUrl;
 }
 
+/** 창에서 여는 대신 곧바로 「받기」 가 되는 임시 주소입니다.
+    올릴 때 붙인 이름(name)으로 저장됩니다 — 보관함 안 이름은
+    notes/1757_ab12cd.pdf 처럼 사람이 알아볼 수 없게 되어 있습니다. */
+export async function downloadUrl(path, name, sec = 3600) {
+  /* 이름은 주소의 물음표 뒤(?download=…)에 실려 갑니다.
+     & # + 처럼 주소에서 뜻이 있는 글자가 들어 있으면 거기서 잘려,
+     「예산&계획.pdf」 가 「예산」 으로 저장되곤 했습니다.
+     그런 글자만 비슷한 모양으로 바꿔 둡니다 (확장자는 그대로). */
+  const safe = String(name || "")
+    .replace(/[&#+?%]/g, "_")
+    .replace(/[\/:*"<>|]/g, "_")      // 파일 이름에 못 쓰는 글자도 함께
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+  const { data, error } = await sb.storage.from(BUCKET)
+    .createSignedUrl(path, sec, safe ? { download: safe } : { download: true });
+  if (error) return null;
+  return data.signedUrl;
+}
+
 export async function remove(path) {
   await sb.storage.from(BUCKET).remove([path]);
 }

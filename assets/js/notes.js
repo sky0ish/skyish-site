@@ -1,22 +1,27 @@
 // ─── BLOG — My Road… (나만 보는 기록) ────────────────────
 // Schedule · Diary · 사람들 · 회의록 · 일상 · ETC.
 // 「사람들」 만은 게시판이 아니라, Schedule·Diary 에서 만난 사람을 모아 보는 화면입니다.
+// 「Uploads」 도 게시판이 아니라, 글마다 흩어진 붙임 파일을 한자리에 모아
+// 곧바로 내려받게 해 주는 화면입니다.
 // 글에 적힌 날짜를 알아채어 달력에 얹고, 엑셀로 내려받을 수 있습니다.
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as NF from "./notes-files.js?v=202609010300";
+import * as NF from "./notes-files.js?v=202609051200";
 import * as GC from "./gcal.js?v=202609040900";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
-import { alumniNames } from "./addressbook.js?v=202609010300";
+import { alumniNames, cards as addrCards, photo as addrPhoto } from "./addressbook.js?v=202609051200";
+import * as CD from "./notes-cards.js?v=202609051200";
+import * as UP from "./notes-uploads.js?v=202609051200";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
   ["diary",    "Diary",    "#c98a3f"],
   ["people",   "사람들",   "#8a6bb0"],
+  ["uploads",  "Uploads",  "#3f7fa8"],
   ["minutes",  "회의록",   "#b3543b"],
   ["daily",    "일상",     "#5c9e4a"],
   ["etc",      "ETC",      "#7d7768"],
@@ -26,9 +31,13 @@ export const CATS = [
 export const MEMBER_CATS = ["daily"];
 export const CAT_NAME  = Object.fromEntries(CATS.map(([k, v]) => [k, v]));
 
-/** 글을 쓸 수 있는 갈래 — 「사람들」 은 찾아보기 화면이라 뺍니다 */
+/** 글을 쓸 수 있는 갈래 —
+    「사람들」 과 「Uploads」 는 글이 쌓이는 곳이 아니라 찾아보기 화면이라 뺍니다.
+    (Uploads 는 다른 글에 붙은 자료를 모아 보여 줄 뿐, 제 글을 갖지 않습니다.) */
 export const PEOPLE_CAT = "people";
-export const WRITE_CATS = CATS.filter(([k]) => k !== PEOPLE_CAT);
+export const UPLOADS_CAT = "uploads";
+const BROWSE_CATS = [PEOPLE_CAT, UPLOADS_CAT];
+export const WRITE_CATS = CATS.filter(([k]) => BROWSE_CATS.indexOf(k) < 0);
 
 /** 주인 이메일 — 회원 정보 줄이 없어도 관리자로 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -38,7 +47,7 @@ export const GCAL = "whlove@gmail.com";
 
 /** 갈래마다 쓰는 말머리 — 여기 없는 갈래는 말머리 칸이 나오지 않습니다 */
 export const TAGS = {
-  schedule: ["발표", "토론", "자문회의", "자문참석", "위원회", "세미나참석", "GRI행사", "ETC"],
+  schedule: ["발표", "토론", "자문회의", "자문참석", "업무회의", "위원회", "세미나참석", "GRI행사", "ETC"],
   minutes:  ["GRI", "도시일반", "건축일반", "주거", "균형발전", "산업", "일상", "ETC"],
 };
 // Diary 는 말머리를 쓰지 않습니다 — 일정이 아니라 그날 그날의 글이라서
@@ -397,6 +406,9 @@ export async function initNotes(mountId = "notesapp") {
     '<div class="ndet" id="nDetail"></div>' +
     '<div class="ndet" id="nDay" role="dialog" aria-modal="true" aria-label="그날 일정">' +
       '<div class="ndet__box"></div></div>' +
+    /* 명함 한 장을 자세히 — 달력의 명함을 누르면 열립니다 */
+    '<div class="ndet" id="nCard" role="dialog" aria-modal="true" aria-label="명함">' +
+      '<div class="ndet__box"></div></div>' +
     '<div class="nimp" id="nImp"></div>' +
     '<div class="nmodal" id="nModal" role="dialog" aria-modal="true" aria-label="글 쓰기">' +
       '<div class="nmodal__box">' +
@@ -497,7 +509,11 @@ export async function initNotes(mountId = "notesapp") {
      견줘야 합니다 — 모든 글로 견주면, 갈래를 Diary 로 좁혔을 때
      화면에 없는 Schedule 글이 제 구글 사본을 걷어 내 그 칸이 텅 빕니다. */
   const gShown = (list) => dropMirrors(list || rows, gEvents);
-  if (wantCat && CATS.some(([k]) => k === wantCat)) cur = wantCat;
+  /* 주소에 ?cat= 이 있으면 그 갈래로 엽니다.
+     다만 일반 회원에게 열려 있지 않은 갈래는 무시합니다 —
+     그러지 않으면 ?cat=uploads 로 곧바로 들어올 수 있습니다.
+     (자료 자체는 RLS 가 막지만, 화면부터 안 열리는 편이 맞습니다.) */
+  if (wantCat && VIEW.some(([k]) => k === wantCat)) cur = wantCat;
   let calAt = new Date(); calAt.setDate(1);
 
   const mCat = document.getElementById("nmCat");
@@ -690,6 +706,139 @@ export async function initNotes(mountId = "notesapp") {
       ? (s ? "" : statsHtml())
       : peopleHtml(hit, s));
     wirePeople();
+  }
+
+  /* ── Uploads — 여러 게시판에 흩어진 붙임 파일을 한자리에 ──
+     Schedule 에서도, 회의록에서도, 일상에서도 자료를 올립니다.
+     그 글들을 하나씩 열어 보지 않고 여기서 훑고 곧바로 받습니다.
+     보관함이 비공개라 주소는 누른 그때 임시로 받아 옵니다. */
+  let upGroup = "all";                 // 종류 거르개 (전체·그림·PDF·표·문서)
+  let upBoard = "all";                 // 게시판 거르개
+
+  function drawUploads() {
+    const all = UP.fileRows(rows, CAT_NAME);
+    const s = q.value.trim();
+
+    /* 사람들 화면과 같은 자리를 나눠 쓰므로, 무엇보다 먼저 비웁니다.
+       전에는 자료가 0개일 때 아래에서 일찍 돌아서느라
+       「사람들 · 네트워크망」 단추가 그대로 남아 있었습니다. */
+    const sw = document.getElementById("nPeopleSw");
+    if (sw) { sw.hidden = false; sw.innerHTML = ""; }
+
+    /* 골라 둔 게시판이 지금은 없는 곳이면 되돌립니다.
+       안 그러면 칩 줄이 사라진 채 거르개만 남아, 있는 자료를 못 찾고
+       되돌릴 단추도 화면에 없습니다. */
+    if (upBoard !== "all" && !all.some((x) => x.cat === upBoard)) upBoard = "all";
+
+    /* 종류 단추의 숫자는 「지금 고른 게시판·찾는 말」 안에서 셉니다 —
+       눌러 보면 몇 개가 나올지 숫자가 그대로 알려 줍니다. */
+    const inBoard = UP.pickFiles(all, "all", s, upBoard);
+    const hit = UP.pickFiles(all, upGroup, s, upBoard);
+    const cnt = UP.counts(inBoard);
+
+    /* 「자료 3개」 — 거르개를 걸었으면 전체 수도 함께 알려 줍니다 */
+    countEl.textContent = UP.summary(hit) +
+      (all.length !== hit.length ? ` (전체 ${all.length}개 가운데)` : "");
+
+    if (!all.length) {
+      list.innerHTML = "";
+      emptyEl.hidden = false;
+      emptyEl.textContent =
+        "아직 올린 자료가 없습니다. 글을 쓸 때 파일을 붙이시면 여기에 모입니다.";
+      return;
+    }
+    emptyEl.hidden = true;
+
+    /* 종류 단추는 사람들 화면과 같은 자리(찾는 칸 줄)에 둡니다 */
+    sw.innerHTML = UP.GROUPS
+      .filter(([k]) => k === "all" || cnt[k])          // 없는 종류는 안 보입니다
+      .map(([k, label]) =>
+        `<button type="button" class="ptab${k === upGroup ? " on" : ""}" data-g="${k}">` +
+        `${esc(label)}<span class="n">${cnt[k] || 0}</span></button>`).join("");
+    sw.querySelectorAll(".ptab").forEach((b) =>
+      b.addEventListener("click", () => { upGroup = b.dataset.g; drawUploads(); }));
+
+    /* 어느 게시판에서 온 자료인지 — 여러 곳에서 올라오므로 골라 볼 수 있게 */
+    const boards = UP.byBoard(UP.pickFiles(all, upGroup, s, "all"));
+    /* 게시판을 골라 둔 상태에서는 하나뿐이어도 줄을 그립니다 —
+       그래야 「모든 게시판」 으로 되돌릴 단추가 화면에 남습니다. */
+    const chips = (boards.length > 1 || upBoard !== "all"
+      ? '<div class="uchips">' +
+        `<button type="button" class="uchip${upBoard === "all" ? " on" : ""}" data-c="all">` +
+        `모든 게시판<span class="n">${UP.pickFiles(all, upGroup, s, "all").length}</span></button>` +
+        boards.map((b) =>
+          `<button type="button" class="uchip${b.cat === upBoard ? " on" : ""}" data-c="${esc(b.cat)}" ` +
+          `style="--c:${CAT_COLOR[b.cat] || "#888"}">${esc(b.label)}<span class="n">${b.n}</span></button>`
+        ).join("") + "</div>"
+      : "");
+
+    list.innerHTML = chips + (hit.length
+      ? '<div class="ulist">' + hit.map(uploadHtml).join("") + "</div>"
+      : '<p class="nempty">이 조건에 맞는 자료가 없습니다.</p>');
+
+    list.querySelectorAll(".uchip").forEach((b) =>
+      b.addEventListener("click", () => { upBoard = b.dataset.c; drawUploads(); }));
+    wireUploads(hit);
+  }
+
+  const UP_ICON = { image: "🖼", pdf: "📕", sheet: "📊", doc: "📄" };
+
+  function uploadHtml(x, i) {
+    return '<div class="urow">' +
+      `<span class="uicon" aria-hidden="true">${UP_ICON[x.group] || "📄"}</span>` +
+      '<span class="uname">' +
+        `<b>${esc(x.name)}</b>` +
+        `<em>${x.size ? esc(UP.niceSize(x.size)) : ""}</em>` +
+      "</span>" +
+      '<span class="uwhere">' +
+        `<span class="ncat" style="--c:${CAT_COLOR[x.cat] || "#888"}">${esc(x.catLabel)}</span>` +
+        `<button type="button" class="ulink" data-post="${esc(x.postId)}" ` +
+        `title="이 자료가 붙은 글 열기">${esc(x.postTitle)}</button>` +
+      "</span>" +
+      `<span class="udate">${x.date ? esc(ymd(x.date)) : ""}</span>` +
+      '<span class="uact">' +
+        `<button type="button" class="nbtn ubtn" data-see="${i}">보기</button>` +
+        `<button type="button" class="nbtn ubtn" data-get="${i}">⤓ 받기</button>` +
+      "</span>" +
+    "</div>";
+  }
+
+  function wireUploads(hit) {
+    /* 붙은 글로 건너뛰기 */
+    list.querySelectorAll(".ulink").forEach((b) =>
+      b.addEventListener("click", () =>
+        openRow(rows.find((r) => String(r.id) === b.dataset.post))));
+
+    /* 주소는 누른 그때 받아 옵니다 — 미리 다 받아 두면 자료가 많을 때 느립니다 */
+    const go = async (btn, x, download) => {
+      const was = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "여는 중…";
+      try {
+        const u = download
+          ? await NF.downloadUrl(x.path, x.name)
+          : await NF.signedUrl(x.path);
+        if (!u) throw new Error("주소를 받지 못했습니다");
+        /* 창이 막히면 window.open 이 null 을 줍니다 —
+           그냥 두면 아무 일도 안 일어난 것처럼 보입니다.
+           그때는 이 자리에 눌러서 열 수 있는 고리를 놓아 드립니다. */
+        const w = window.open(u, "_blank", "noopener");
+        if (!w) {
+          btn.insertAdjacentHTML("afterend",
+            '<a class="nbtn ubtn ubtn--fall" href="' + u + '" target="_blank" ' +
+            'rel="noopener"' + (download ? ' download' : "") + '>새 창이 막혔습니다 — 여기를 누르세요</a>');
+        }
+      } catch (e) {
+        alert(`「${x.name}」 을 열지 못했습니다.${String.fromCharCode(10)}` +
+              "보관함에서 지워졌거나 권한이 없을 수 있습니다.");
+      }
+      btn.disabled = false;
+      btn.textContent = was;
+    };
+    list.querySelectorAll("[data-see]").forEach((b) =>
+      b.addEventListener("click", () => go(b, hit[+b.dataset.see], false)));
+    list.querySelectorAll("[data-get]").forEach((b) =>
+      b.addEventListener("click", () => go(b, hit[+b.dataset.get], true)));
   }
 
   /* 셈과 그림에 넘길 글 — 사람들 글은 뺍니다.
@@ -1103,7 +1252,15 @@ export async function initNotes(mountId = "notesapp") {
 
   function draw() {
     const mk = (k, label) => {
-      const n = (k === "all" ? rows : rows.filter((r) => catOf(r) === k)).filter(match).length;
+      /* Uploads 는 글이 아니라 「붙임 파일」 을 셉니다 —
+         여러 게시판에 흩어진 자료를 모아 보여 주는 화면이라서. */
+      /* Uploads 는 글이 아니라 「붙임 파일」 을 셉니다. 게다가 화면이 쓰는
+         잣대(파일 이름·글 제목·게시판 이름…)와 같아야 합니다 —
+         글 단위 match() 로 세면 「파일 이름에만 있는 말」 을 찾을 때
+         단추에는 0 이 붙는데 목록에는 자료가 나오는 어긋남이 생깁니다. */
+      const n = k === UPLOADS_CAT
+        ? UP.pickFiles(UP.fileRows(rows, CAT_NAME), "all", q.value, "all").length
+        : (k === "all" ? rows : rows.filter((r) => catOf(r) === k)).filter(match).length;
       return `<button type="button" data-k="${k}"${k === cur ? ' class="on"' : ""}>` +
              `${esc(label)}<span class="n">${n}</span></button>`;
     };
@@ -1133,10 +1290,17 @@ export async function initNotes(mountId = "notesapp") {
 
     if (!calBox.hidden) drawCal();
 
-    // 「사람들」 은 글 목록이 아니라 찾아보기 화면입니다
+    // 「사람들」 과 「Uploads」 는 글 목록이 아니라 찾아보기 화면입니다
     const sw0 = document.getElementById("nPeopleSw");
-    if (sw0) sw0.hidden = (cur !== PEOPLE_CAT);
+    if (sw0) sw0.hidden = (BROWSE_CATS.indexOf(cur) < 0);
+    /* 글을 기준으로 도는 단추들은 찾아보기 화면에서 뜻이 없습니다 */
+    const offOnBrowse = ["nXls", "nCal", "nFill"];
+    offOnBrowse.forEach((id) => {
+      const b = document.getElementById(id);
+      if (b) b.hidden = (cur === UPLOADS_CAT);
+    });
     if (cur === PEOPLE_CAT) { drawPeople(); return; }
+    if (cur === UPLOADS_CAT) { drawUploads(); return; }
 
     if (!l.length) {
       list.innerHTML = "";
@@ -1262,6 +1426,122 @@ export async function initNotes(mountId = "notesapp") {
      그려질 수 있습니다. 번호가 어긋나면 조용히 물러납니다. */
   let dayGen = 0;
 
+  /* ── 그날 만난 사람의 명함 ──
+     일정에 적힌 「만난 사람」 을 내 명함첩과 맞춰, 걸리면 명함을 얹습니다.
+     명함첩은 내 컴퓨터의 엑셀이라 어디로도 나가지 않습니다.
+     폴더를 아직 안 고르셨으면 아무것도 안 보입니다 (조용히). */
+  let cardIdx = null;                  // 이 탭에서 한 번만 만듭니다
+
+  async function drawDayCards(key, mine) {
+    const box = document.getElementById("nDayCards");
+    if (!box) return;
+    box.innerHTML = "";
+    if (!isAdmin || !mine.length) return;
+    const gen = dayGen;                // 그 사이 다른 날을 열었으면 버립니다
+    try {
+      if (!cardIdx) cardIdx = CD.buildIndex(await addrCards());
+      if (gen !== dayGen) return;
+      const hits = CD.cardsForDay(mine, cardIdx);
+      if (!hits.length) return;
+      box.innerHTML =
+        `<p class="ndet__meta ncard__head">이날 만난 분 ${hits.length}명 — 명함첩에서</p>` +
+        '<div class="ncards">' + hits.map(cardHtml).join("") + "</div>";
+      box.querySelectorAll(".ncard").forEach((el) =>
+        el.addEventListener("click", () => {
+          const h = hits[+el.dataset.i];
+          if (h) showCard(h);
+        }));
+      /* 00.주소록/명함사진/ 에 넣어 두신 그림이 있으면 얹습니다.
+         없으면 글자 명함 그대로입니다 (조용히). */
+      hits.forEach(async (h, i) => {
+        try {
+          const u = await addrPhoto(h.name);
+          if (!u || gen !== dayGen) return;
+          const el = box.querySelector('.ncard[data-i="' + i + '"] .ncard__face');
+          if (el) el.insertAdjacentHTML("afterbegin",
+            '<img class="ncard__photo" src="' + u + '" alt="" loading="lazy">');
+        } catch (e) {}
+      });
+    } catch (e) { /* 명함첩이 없어도 달력은 그대로 */ }
+  }
+
+  /** 명함 한 장 — 리멤버 엑셀에는 스캔 그림이 없어 글자로 그립니다.
+      뒷날 그림이 생기면 face.image 자리에 그대로 들어갑니다. */
+  function cardHtml(hit, i) {
+    const c = hit.one || hit.cards[0];
+    const f = CD.cardFace(c);
+    const many = hit.cards.length > 1;
+    return `<button type="button" class="ncard" data-i="${i}" ` +
+      `title="${esc(f.name)} — 눌러서 자세히">` +
+      (f.image
+        ? `<img class="ncard__img" src="${esc(f.image)}" alt="${esc(f.name)} 명함" loading="lazy">`
+        : '<span class="ncard__face">' +
+          `<b class="ncard__name">${esc(f.name)}` +
+            (f.title ? `<em>${esc(f.title)}</em>` : "") + "</b>" +
+          (f.company ? `<span class="ncard__co">${esc(f.company)}</span>` : "") +
+          (f.dept ? `<span class="ncard__dept">${esc(f.dept)}</span>` : "") +
+          (f.lines.length ? `<span class="ncard__tel">${esc(f.lines[0])}</span>` : "") +
+        "</span>") +
+      (many ? `<span class="ncard__many">같은 이름 ${hit.cards.length}장</span>` : "") +
+    "</button>";
+  }
+
+  /** 명함을 누르면 그 사람의 자세한 것을 폅니다 */
+  function showCard(hit) {
+    const box = document.getElementById("nCard");
+    box.querySelector(".ndet__box").innerHTML =
+      '<button type="button" class="ndet__x" aria-label="닫기">✕</button>' +
+      `<h3>${esc(hit.name)}</h3>` +
+      (hit.cards.length > 1
+        ? `<p class="ndet__meta">같은 이름으로 ${hit.cards.length}장이 있습니다.</p>` : "") +
+      hit.cards.map((c) => {
+        const f = CD.cardFace(c);
+        return '<div class="ncard__full">' +
+          `<p class="ncard__full-top"><b>${esc(f.company || "(회사 없음)")}</b>` +
+            (f.title ? ` · ${esc(f.title)}` : "") + "</p>" +
+          "<dl>" + CD.cardDetail(c).map(([k, v]) =>
+            `<dt>${esc(k)}</dt><dd>${
+              /메일/.test(k) ? `<a href="mailto:${esc(v)}">${esc(v)}</a>`
+              : /폰|직통/.test(k) ? `<a href="tel:${esc(v.replace(/[^0-9+]/g, ""))}">${esc(v)}</a>`
+              : esc(v)}</dd>`).join("") + "</dl>" +
+        "</div>";
+      }).join("") +
+      /* 이 사람과 만난 자리 — 사람들 화면과 같은 셈을 씁니다 */
+      (() => {
+        const meets = statRows().filter((r) =>
+          CD.splitPeople(r.people).some((n) => CD.keyOf(n) === CD.keyOf(hit.name)));
+        if (!meets.length) return "";
+        return `<p class="ndet__meta">이 분과 만난 자리 ${meets.length}번</p>` +
+          '<div class="nperson__meets">' + meets.slice(0, 8).map((r) =>
+            `<button type="button" class="npmeet" data-open="${r.id}">` +
+              `<span class="ncat" style="--c:${CAT_COLOR[catOf(r)] || "#888"}">` +
+                `${esc(CAT_NAME[catOf(r)] || "")}</span>` +
+              `<span class="npmeet__t"><b>${esc(r.title)}</b></span>` +
+              `<span class="npmeet__d">${r.event_date ? esc(ymd(r.event_date)) : ""}</span>` +
+            "</button>").join("") + "</div>";
+      })();
+
+    box.classList.add("on");
+    /* 사진이 있으면 제목 옆에 둥글게 */
+    addrPhoto(hit.name).then((u) => {
+      if (!u) return;
+      const h3 = box.querySelector("h3");
+      if (h3) h3.insertAdjacentHTML("afterbegin",
+        '<img class="ncard__photo ncard__photo--big" src="' + u + '" alt="">');
+    }).catch(() => {});
+    box.onclick = (e) => {
+      if (e.target === box || e.target.closest(".ndet__x")) {
+        box.classList.remove("on"); return;
+      }
+      const go = e.target.closest("[data-open]");
+      if (go) {
+        box.classList.remove("on");
+        document.getElementById("nDay").classList.remove("on");
+        openRow(rows.find((r) => String(r.id) === go.dataset.open));
+      }
+    };
+  }
+
   /** 그날의 모든 일정을 한 창에 — 내 글과 구글 일정을 함께 폅니다 */
   function dayView(key) {
     dayGen += 1;
@@ -1312,6 +1592,7 @@ export async function initNotes(mountId = "notesapp") {
         : "");
 
     dbox.classList.add("on");
+    drawDayCards(key, mine);         // 그날 만난 사람의 명함 (조용히)
     drawUTokyo(key);                 // 그날 동경대에 남긴 내 기록 (조용히)
     /* 듣는 이가 쌓이지 않게 onclick 하나로 받습니다 (자세히 보기와 같은 까닭) */
     dbox.onclick = (e2) => {
@@ -1622,7 +1903,7 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmDelTop").hidden = !row;
     fillCats(row ? row.category : "");     // 그 글의 갈래에 자리를 내어 줍니다
     mCat.value = row ? row.category
-                     : ((cur === "all" || cur === PEOPLE_CAT) ? "schedule" : cur);
+                     : ((cur === "all" || BROWSE_CATS.indexOf(cur) >= 0) ? "schedule" : cur);
     if (!mCat.value) mCat.value = "etc";   // 없어진 갈래의 옛 글을 열었을 때
     document.getElementById("nmT").value = row ? row.title || "" : "";
     document.getElementById("nmB").value = row ? row.body || "" : "";

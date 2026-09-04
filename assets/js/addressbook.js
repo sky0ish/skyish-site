@@ -158,16 +158,44 @@ export function fromUtokyo(rows, headers) {
 }
 
 
+/* ── 같은 사람이 두 번 들어온 것을 하나로 ──
+   리멤버는 내보낼 때마다 새 파일을 만들고, 한 파일 안에도 같은 사람이
+   두 번 들어 있는 일이 있습니다. 사람을 가르는 열쇠는
+   「어디서 왔나 + 이름 + 회사」 입니다.
+   같은 사람이면 **새 것**을 남깁니다 — 명함 등록일이 늦은 쪽,
+   그것도 같으면 채워진 칸이 많은 쪽입니다. */
+const filled = (r) => Object.keys(r || {})
+  .filter((k) => k !== "src" && k !== "kind")
+  .reduce((n, k) => n + (String(r[k] == null ? "" : r[k]).trim() ? 1 : 0), 0);
+
+export function dedupePeople(rows) {
+  const best = new Map();
+  const order = [];
+  (Array.isArray(rows) ? rows : []).forEach((r) => {
+    if (!r) return;
+    const key = [r.src || "", String(r.name || "").replace(/\s+/g, ""),
+                 String(r.company || "").replace(/\s+/g, "")].join("|").toLowerCase();
+    const cur = best.get(key);
+    if (!cur) { best.set(key, r); order.push(key); return; }
+    const at = (x) => String((x && x.at) || "");
+    if (at(r) > at(cur) || (at(r) === at(cur) && filled(r) > filled(cur))) best.set(key, r);
+  });
+  return order.map((k) => best.get(k));
+}
+
+
 /* ── 내 컴퓨터 파일 기억해 두기 (IndexedDB) ──
    고른 폴더를 다음에 와도 기억합니다. 자료가 아니라 「어느 폴더였는지」만 담습니다. */
 const DB = "skyish-addr", STORE = "handle", KEY = "folder";
 const CACHE_STORE = "cache";           // 폰처럼 폴더를 못 여는 곳을 위한 자료 보관 칸
+const PHOTO_STORE = "photos";          // 붙여넣기로 넣어 두신 얼굴 사진
 const openDb = () => new Promise((ok, no) => {
-  const r = indexedDB.open(DB, 2);
+  const r = indexedDB.open(DB, 3);
   r.onupgradeneeded = () => {
     const d = r.result;
     if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
     if (!d.objectStoreNames.contains(CACHE_STORE)) d.createObjectStore(CACHE_STORE);
+    if (!d.objectStoreNames.contains(PHOTO_STORE)) d.createObjectStore(PHOTO_STORE);
   };
   r.onsuccess = () => ok(r.result);
   r.onerror = () => no(r.error);
@@ -296,6 +324,230 @@ export async function alumniNames() {
   } catch (e) { return new Set(); }
 }
 
+/* ── 명함첩만 뽑아 오기 ──
+   달력에서 「그날 만난 사람」 의 명함을 보여 주려고 씁니다.
+   허락해 두신 00.주소록 폴더에서 개인명함첩_*.xlsx 만 읽습니다.
+   폴더를 아직 안 고르셨거나 허락이 풀렸으면 조용히 빈 목록을 돌려줍니다
+   — 달력은 그대로 잘 돌아가야 하니까요.
+
+   2,500장을 화면 열 때마다 다시 읽으면 느리므로 한 번 읽은 것은 담아 둡니다.
+   담아 두는 곳은 이 탭의 기억(변수)뿐입니다 — 새로고침하면 사라지고,
+   어디로도 나가지 않습니다. */
+let cardCache = null;
+
+export async function cards(force) {
+  if (cardCache && !force) return cardCache;
+  try {
+    if (typeof window.showDirectoryPicker !== "function") return (cardCache = []);
+    const h = await getHandle();
+    if (!h) return (cardCache = []);
+    const st = await h.queryPermission({ mode: "read" }).catch(() => "prompt");
+    if (st !== "granted") return (cardCache = []);
+
+    const files = [];
+    for await (const e of h.values()) {
+      if (e.kind !== "file") continue;
+      const n = e.name;
+      if (!/\.xlsx?$/i.test(n) || /^~\$/.test(n)) continue;
+      if (!/명함/.test(n)) continue;                    // 명함첩만
+      files.push(await e.getFile());
+    }
+    if (!files.length) return (cardCache = []);
+
+    /* 파일이 여럿이면 가장 새것 하나만 — 리멤버는 내보낼 때마다 새 파일을
+       만들어서, 옛 파일이 남아 있으면 한 사람이 두 번 잡힙니다. */
+    files.sort((a, b) => (b.lastModified || 0) - (a.lastModified || 0));
+    cardCache = (await loadFromFiles([files[0]])).filter((r) => r.src === "card");
+    return cardCache;
+  } catch (e) { return (cardCache = []); }
+}
+
+/* ── 명함 사진 ──
+   00.주소록/명함사진/ 폴더에 넣어 두신 그림을 이름으로 찾아 씁니다.
+     명함사진/이석준.jpg          → 이석준
+     명함사진/서민호_국토연구원.png → 서민호   (밑줄 뒤는 무시합니다)
+   리멤버 앱의 명함 스캔이나 행사 사진처럼 **이미 갖고 계신 그림**을 쓰는 자리입니다.
+   인터넷에서 얼굴을 긁어 오지 않습니다 — 남의 얼굴을 본인 모르게 모으는 일이라
+   하지 않습니다.
+
+   그림은 브라우저 안에서만 풀립니다 (blob:). 어디로도 올라가지 않습니다. */
+const FACE_KEY = "face";              // 얼굴 사진 폴더 손잡이 (IndexedDB)
+const PHOTO_DIR = "명함사진";          // 00.주소록 안에 두셨을 때의 이름
+const IMG_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
+let photoMap = null;                  // 열쇠 → 파일 손잡이
+const photoUrls = new Map();          // 열쇠 → blob 주소 (한 번만 만듭니다)
+
+const photoKey = (s) => String(s || "").replace(/\s+/g, "").toLowerCase();
+
+/** 얼굴 사진 폴더를 골라 둡니다 — 홈피 폴더의 face/ 를 고르시면 됩니다 */
+export async function pickFaceFolder() {
+  if (typeof window.showDirectoryPicker !== "function") return false;
+  const dir = await window.showDirectoryPicker({ id: "skyish-face", mode: "read" });
+  try {
+    const db = await openDb();
+    await new Promise((ok, no) => {
+      const t = db.transaction(STORE, "readwrite");
+      t.objectStore(STORE).put(dir, FACE_KEY);
+      t.oncomplete = ok; t.onerror = () => no(t.error);
+    });
+    db.close();
+  } catch (e) {}
+  photoMap = null;                    // 다시 읽습니다
+  photoUrls.clear();
+  return true;
+}
+
+async function faceHandle() {
+  try {
+    const db = await openDb();
+    const v = await new Promise((ok, no) => {
+      const r = db.transaction(STORE, "readonly").objectStore(STORE).get(FACE_KEY);
+      r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
+    });
+    db.close();
+    return v || null;
+  } catch (e) { return null; }
+}
+
+/** 그림이 든 폴더를 찾습니다 —
+    ① 따로 골라 두신 face 폴더  ② 없으면 00.주소록/명함사진/ */
+async function photoDir() {
+  const f = await faceHandle();
+  if (f) {
+    const st = await f.queryPermission({ mode: "read" }).catch(() => "prompt");
+    if (st === "granted") return f;
+  }
+  const h = await getHandle();
+  if (!h) return null;
+  const st = await h.queryPermission({ mode: "read" }).catch(() => "prompt");
+  if (st !== "granted") return null;
+  for await (const e of h.values()) {
+    if (e.kind === "directory" && e.name === PHOTO_DIR) return e;
+  }
+  return null;
+}
+
+async function loadPhotoMap() {
+  if (photoMap) return photoMap;
+  photoMap = new Map();
+  try {
+    const dir = await photoDir();
+    if (!dir) return photoMap;
+    for await (const e of dir.values()) {
+      if (e.kind !== "file" || !IMG_EXT.test(e.name)) continue;
+      // 「서민호_국토연구원.png」 → 서민호
+      const stem = e.name.replace(IMG_EXT, "").split(/[_(]/)[0];
+      const k = photoKey(stem);
+      if (k && !photoMap.has(k)) photoMap.set(k, e);
+    }
+  } catch (e) { /* 폴더가 없어도 그냥 갑니다 */ }
+  return photoMap;
+}
+
+/* ── 붙여넣은 사진 ──
+   Ctrl+V 로 넣으신 그림은 이 브라우저의 IndexedDB 에 담깁니다.
+   폴더 권한이 필요 없고, 다음에 와도 그대로 있습니다.
+   어디로도 올라가지 않습니다 — skyish.kr 에도, GitHub 에도. */
+export async function savePhoto(name, blob) {
+  const k = photoKey(name);
+  if (!k || !blob) return false;
+  try {
+    const db = await openDb();
+    await new Promise((ok, no) => {
+      const t = db.transaction(PHOTO_STORE, "readwrite");
+      t.objectStore(PHOTO_STORE).put(blob, k);
+      t.oncomplete = ok; t.onerror = () => no(t.error);
+    });
+    db.close();
+    const old = photoUrls.get(k);
+    if (old) URL.revokeObjectURL(old);
+    photoUrls.delete(k);                 // 다음에 물으면 새로 만듭니다
+    return true;
+  } catch (e) { return false; }
+}
+
+/** 붙여넣은 사진을 지웁니다 (폴더에 있는 그림은 그대로) */
+export async function dropPhoto(name) {
+  const k = photoKey(name);
+  if (!k) return;
+  try {
+    const db = await openDb();
+    await new Promise((ok, no) => {
+      const t = db.transaction(PHOTO_STORE, "readwrite");
+      t.objectStore(PHOTO_STORE).delete(k);
+      t.oncomplete = ok; t.onerror = () => no(t.error);
+    });
+    db.close();
+  } catch (e) {}
+  const old = photoUrls.get(k);
+  if (old) URL.revokeObjectURL(old);
+  photoUrls.delete(k);
+}
+
+async function storedPhoto(k) {
+  try {
+    const db = await openDb();
+    const v = await new Promise((ok, no) => {
+      const r = db.transaction(PHOTO_STORE, "readonly").objectStore(PHOTO_STORE).get(k);
+      r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
+    });
+    db.close();
+    return v || null;
+  } catch (e) { return null; }
+}
+
+/** 이 사람의 사진 주소 — 없으면 빈 글자.
+    ① 붙여넣어 두신 것  ② 없으면 폴더에 있는 그림 */
+export async function photo(name) {
+  const k = photoKey(name);
+  if (!k) return "";
+  if (photoUrls.has(k)) return photoUrls.get(k);
+  try {
+    const b = await storedPhoto(k);
+    if (b) {
+      const url = URL.createObjectURL(b);
+      photoUrls.set(k, url);
+      return url;
+    }
+    const m = await loadPhotoMap();
+    const fh = m.get(k);
+    if (!fh) { photoUrls.set(k, ""); return ""; }
+    const url = URL.createObjectURL(await fh.getFile());
+    photoUrls.set(k, url);
+    return url;
+  } catch (e) { photoUrls.set(k, ""); return ""; }
+}
+
+/** 사진이 몇 장 준비돼 있는지 — 안내에 씁니다 */
+export async function photoCount() {
+  return (await loadPhotoMap()).size;
+}
+
+/** 표를 그린 뒤, 사진이 있는 분의 이름 칸에 얼굴을 얹습니다.
+    없는 분은 그대로 둡니다 — 자리를 비워 두면 줄이 들쭉날쭉해집니다. */
+async function fillFaces(tbody) {
+  if (!tbody) return;
+  const cells = [...tbody.querySelectorAll("td.aface[data-n]")];
+  if (!cells.length) return;
+  for (const td of cells) {
+    const name = td.dataset.n;
+    const u = await photo(name);
+    /* 얼굴 — 있으면 이름 앞에 동그랗게 */
+    const had = td.querySelector(".afaceimg");
+    if (u && !had) {
+      td.insertAdjacentHTML("afterbegin",
+        '<img class="afaceimg" src="' + u + '" alt="" loading="lazy">');
+    } else if (!u && had) { had.remove(); }
+    /* 맨 끝 칸에 O · X */
+    const tr = td.parentElement;
+    const mark = tr && tr.querySelector("td.ahas");
+    if (mark) {
+      mark.textContent = u ? "O" : "X";
+      mark.className = "ahas " + (u ? "yes" : "no");
+    }
+  }
+}
+
 
 /* ══════════════════════════════════════════════════════════ */
 export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
@@ -316,6 +568,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   mount.innerHTML =
     '<div class="abar">' +
       '<button type="button" class="nbtn nbtn--go" id="abOpen">📁 주소록 폴더 열기</button>' +
+      /* 얼굴 사진은 따로 골라 둡니다 — 홈피 폴더의 face/ 를 고르시면 됩니다.
+         한 번 고르면 기억합니다. 그림은 브라우저 안에서만 풀립니다. */
+      (FSA ? '<button type="button" class="nbtn" id="abFace" ' +
+        'title="홈피 폴더의 face/ 를 고르세요 — 이름이 같은 그림을 얼굴로 씁니다">' +
+        '🙂 얼굴 사진 폴더</button>' : "") +
       '<button type="button" class="nbtn" id="abAgain" hidden></button>' +
       (FSA ? "" :
         '<label class="nbtn afiles">📄 엑셀 고르기' +
@@ -356,7 +613,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       '<p class="ncount" id="abCount"></p>' +
       '<div class="nimp__scroll"><table class="nimp__tbl" id="abTbl">' +
         "<thead><tr><th>이름</th><th>소속</th><th>직함</th>" +
-        "<th>전공 · 학부</th><th>연락처</th><th>출처</th></tr></thead>" +
+        "<th>전공 · 학부</th><th>연락처</th><th>출처</th><th>사진</th></tr></thead>" +
         "<tbody></tbody></table></div>" +
       '<p class="nempty" id="abEmpty" hidden></p>' +
       '<div class="amore" id="abMore" hidden></div>' +
@@ -409,7 +666,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       const part = l.slice(0, shownCount);
       tbody.innerHTML = part.map((r, i) =>
         `<tr data-i="${rows.indexOf(r)}">` +
-          `<td><b>${esc(r.name)}</b>${r.nameKanji ? `<div class="asub">${esc(r.nameKanji)}</div>` : ""}</td>` +
+          `<td class="aface" data-n="${esc(r.name)}">` +
+            `<b>${esc(r.name)}</b>` +
+            `${r.nameKanji ? `<div class="asub">${esc(r.nameKanji)}</div>` : ""}</td>` +
           `<td>${esc(r.company)}${r.orgDept ? `<div class="asub">${esc(r.orgDept)}</div>` : ""}</td>` +
           `<td>${esc(r.title)}</td>` +
           `<td>${r.majorName ? `<b>${esc(r.majorName)}</b>` : ""}` +
@@ -418,7 +677,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
             `${r.email ? `<div class="asub">${esc(r.email)}</div>` : ""}</td>` +
           `<td><span class="ncat" style="--c:${GROUP_COLOR[r.src === "alum" ? "alum" : r.kind]}">` +
             `${esc(r.src === "alum" ? "동문" : GROUP_NAME[r.kind].replace("명함_", ""))}</span></td>` +
+          /* 사진이 있는지 — 그린 뒤에 fillFaces 가 채웁니다 */
+          '<td class="ahas" data-n="' + esc(r.name) + '">·</td>' +
         "</tr>").join("");
+
+      fillFaces(tbody);
 
       moreEl.hidden = l.length <= shownCount;
       moreEl.innerHTML = moreEl.hidden ? "" :
@@ -453,14 +716,27 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         `<span class="ncat" style="--c:${GROUP_COLOR[r.src === "alum" ? "alum" : r.kind]}">` +
           `${esc(r.src === "alum" ? "동문" : GROUP_NAME[r.kind])}</span>` +
         `<h3>${esc(r.name)}${r.nameKanji ? ` <small>${esc(r.nameKanji)}</small>` : ""}</h3>` +
-        '<div class="alist">' +
-          line("소속", r.company) + line("부서", r.orgDept) + line("직함", r.title) +
-          line("전공", r.majorName) + line("학부", r.univDept) +
-          line("학위", [r.degree, r.degreeYear].filter(Boolean).join(" ")) +
-          line("연구실", r.lab) +
-          line("휴대폰", r.mobile) + line("회사 전화", r.phone) +
-          line("이메일", r.email) + line("주소", r.addr) +
-          line("지역", r.city) + line("꼬리표", r.tag) + line("명함 등록", r.at) +
+        /* 왼쪽은 적힌 것, 오른쪽은 얼굴 */
+        '<div class="adet2">' +
+          '<div class="alist">' +
+            line("소속", r.company) + line("부서", r.orgDept) + line("직함", r.title) +
+            line("전공", r.majorName) + line("학부", r.univDept) +
+            line("학위", [r.degree, r.degreeYear].filter(Boolean).join(" ")) +
+            line("연구실", r.lab) +
+            line("휴대폰", r.mobile) + line("회사 전화", r.phone) +
+            line("이메일", r.email) + line("주소", r.addr) +
+            line("지역", r.city) + line("꼬리표", r.tag) + line("명함 등록", r.at) +
+          "</div>" +
+          /* 사진 — 붙여넣기(Ctrl+V) · 끌어놓기 · 눌러서 고르기 */
+          '<div class="aphoto" id="abPhoto" tabindex="0" ' +
+            'title="사진을 붙여넣거나(Ctrl+V) 끌어다 놓으세요. 눌러서 고를 수도 있습니다">' +
+            '<div class="aphoto__box" id="abPhotoBox">' +
+              '<span class="aphoto__hint">얼굴 사진<br><b>Ctrl+V</b> 로 붙여넣기<br>' +
+              '<small>끌어다 놓거나 눌러서 고르기</small></span>' +
+            "</div>" +
+            '<div class="aphoto__act" id="abPhotoAct"></div>' +
+            '<input type="file" id="abPhotoFile" accept="image/*" hidden>' +
+          "</div>" +
         "</div>" +
         '<div class="ndet__foot">' +
           '<button type="button" class="nbtn" id="abClose">닫기</button>' +
@@ -471,6 +747,93 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     document.getElementById("abX").addEventListener("click", shut);
     document.getElementById("abClose").addEventListener("click", shut);
     box.onclick = (e) => { if (e.target === box) shut(); };
+    wirePhoto(r);
+  }
+
+  /* ── 얼굴 사진 붙이기 ──
+     붙여넣은 그림은 이 브라우저 안(IndexedDB)에만 담깁니다.
+     skyish.kr 에도 GitHub 에도 한 장도 올라가지 않습니다. */
+  function wirePhoto(r) {
+    const wrap = document.getElementById("abPhoto");
+    const boxEl = document.getElementById("abPhotoBox");
+    const act = document.getElementById("abPhotoAct");
+    const fileEl = document.getElementById("abPhotoFile");
+    if (!wrap || !boxEl) return;
+
+    const show = async () => {
+      const u = await photo(r.name);
+      if (u) {
+        boxEl.innerHTML = '<img src="' + u + '" alt="' + esc(r.name) + '">';
+        act.innerHTML = '<button type="button" class="nbtn" id="abPhotoDel">사진 지우기</button>';
+        const del = document.getElementById("abPhotoDel");
+        if (del) del.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await dropPhoto(r.name);
+          await show();
+          paintFacesNow();
+        });
+      } else {
+        boxEl.innerHTML =
+          '<span class="aphoto__hint">얼굴 사진<br><b>Ctrl+V</b> 로 붙여넣기<br>' +
+          '<small>끌어다 놓거나 눌러서 고르기</small></span>';
+        act.innerHTML = "";
+      }
+    };
+
+    const take = async (blob) => {
+      if (!blob || !/^image\//.test(blob.type || "")) return;
+      if (blob.size > 8 * 1024 * 1024) { say("사진이 8MB를 넘습니다."); return; }
+      await savePhoto(r.name, blob);
+      await show();
+      paintFacesNow();
+      say(`${r.name} 님의 사진을 넣었습니다.`);
+    };
+
+    /* 붙여넣기 — 창이 열려 있는 동안만 듣습니다 */
+    const onPaste = (e) => {
+      if (!box.classList.contains("on")) return;
+      const items = [...((e.clipboardData || {}).items || [])];
+      const it = items.find((x) => x.kind === "file" && /^image\//.test(x.type));
+      if (!it) return;
+      e.preventDefault();
+      take(it.getAsFile());
+    };
+    document.addEventListener("paste", onPaste);
+    /* 창을 닫으면 듣기를 거둡니다 — 쌓이면 한 번 붙여넣기가 여러 번 돕니다 */
+    const off = new MutationObserver(() => {
+      if (!box.classList.contains("on")) {
+        document.removeEventListener("paste", onPaste);
+        off.disconnect();
+      }
+    });
+    off.observe(box, { attributes: true, attributeFilter: ["class"] });
+
+    ["dragenter", "dragover"].forEach((ev) =>
+      wrap.addEventListener(ev, (e) => { e.preventDefault(); wrap.classList.add("over"); }));
+    ["dragleave", "drop"].forEach((ev) =>
+      wrap.addEventListener(ev, () => wrap.classList.remove("over")));
+    wrap.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const f = [...((e.dataTransfer || {}).files || [])][0];
+      if (f) take(f);
+    });
+    wrap.addEventListener("click", (e) => {
+      if (e.target.closest("#abPhotoDel")) return;
+      fileEl.click();
+    });
+    fileEl.addEventListener("change", (e) => {
+      const f = e.target.files[0]; e.target.value = "";
+      if (f) take(f);
+    });
+    show();
+  }
+
+  /* 표에 이미 그려진 얼굴을 새로 고칩니다 (사진을 넣거나 지운 뒤) */
+  function paintFacesNow() {
+    const tb = document.querySelector("#abTbl tbody");
+    if (!tb) return;
+    tb.querySelectorAll("img.afaceimg").forEach((im) => im.remove());
+    fillFaces(tb);
   }
 
   /* ── 보이는 것만 엑셀로 ── */
@@ -493,7 +856,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   /* ── 파일 읽어 들이기 ── */
   async function useFiles(files) {
     try {
-      rows = await loadFromFiles(files, say);
+      rows = dedupePeople(await loadFromFiles(files, say));
     } catch (e) {
       say("읽지 못했습니다 — " + e.message);
       return;
@@ -504,7 +867,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     }
     const nCard = rows.filter((r) => r.src === "card").length;
     const nAlum = rows.length - nCard;
-    say(`명함첩 ${nCard}명 · 동문 ${nAlum}명을 읽었습니다. 이 화면에만 있습니다.`);
+    say(`명함첩 ${nCard}명 · 동문 ${nAlum}명을 읽었습니다. ` +
+        "겹친 것은 새 쪽으로 하나만 남겼습니다. 이 화면에만 있습니다.");
     ui();
     /* 폴더를 못 여는 곳(폰)에서는 담아 둡니다 — 다음부터 고르지 않아도 폅니다.
        컴퓨터는 폴더에서 늘 새로 읽으므로 담지 않습니다. */
@@ -518,7 +882,21 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (!/\.xlsx?$/i.test(h.name) || /^~\$/.test(h.name)) continue;
       files.push(await h.getFile());
     }
-    await useFiles(files);
+    await useFiles(newestOfEachKind(files));
+  }
+
+  /* 같은 종류의 엑셀이 여럿 있으면 가장 새것 하나만 씁니다.
+     리멤버는 내보낼 때마다 새 파일을 만들어서, 옛 파일이 남아 있으면
+     한 사람이 두 번 나옵니다 (「현병천」 이 두 줄로 보이던 까닭). */
+  function newestOfEachKind(files) {
+    const best = new Map();
+    (files || []).forEach((f) => {
+      const kind = /명함/.test(f.name) ? "card"
+        : /주소록|동문|동경대/.test(f.name) ? "alum" : f.name;
+      const cur = best.get(kind);
+      if (!cur || (f.lastModified || 0) > (cur.lastModified || 0)) best.set(kind, f);
+    });
+    return [...best.values()];
   }
 
   document.getElementById("abOpen").addEventListener("click", async () => {
@@ -532,6 +910,21 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     }
     await putHandle(dir);
     await fromDir(dir);
+  });
+
+  /* 얼굴 사진 폴더 — 홈피 폴더의 face/ 를 한 번 골라 두시면 기억합니다 */
+  const faceBtn = document.getElementById("abFace");
+  if (faceBtn) faceBtn.addEventListener("click", async () => {
+    try {
+      if (!(await pickFaceFolder())) return;
+      const n = await photoCount();
+      say(n
+        ? `얼굴 사진 ${n}장을 찾았습니다. 이름이 같은 분께 붙습니다.`
+        : "그 폴더에서 그림을 찾지 못했습니다. 파일 이름을 그 사람 이름으로 지어 주세요 (예: 이석준.jpg).");
+      draw();
+    } catch (e) {
+      if (e.name !== "AbortError") say("폴더를 열지 못했습니다 — " + e.message);
+    }
   });
 
   const filesEl = document.getElementById("abFiles");

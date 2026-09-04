@@ -117,7 +117,16 @@ globalThis.__rows = [{
   id: "r1", category: "schedule", title: "20260828_[토론] (박진우) 자치행정학회",
   body: "시각: 14:00", event_date: "2026-08-28", event_time: "14:00",
   place: "대전철도청", contact: "박진우", people: "이상대 (용인시정연구원)",
-  event: "2026 한국지방자치학회 하계국제학술대회", tag: "토론", files: [],
+  event: "2026 한국지방자치학회 하계국제학술대회", tag: "토론",
+  files: [
+    { name: "개최개요.jpg", path: "notes/1_a.jpg", type: "image", size: 388000 },
+    { name: "발표자료.pdf", path: "notes/2_b.pdf", type: "pdf", size: 2400000 },
+  ],
+}, {
+  /* 자료는 Schedule 말고 회의록에서도 올라옵니다 */
+  id: "m1", category: "minutes", title: "방산클러스터 자문회의",
+  body: "", event_date: "2026-08-30", place: "경기연구원", people: "이석준",
+  files: [{ name: "명단.xlsx", path: "notes/3_c.xlsx", type: "excel", size: 12000 }],
 }, {
   /* 사람들 글 — 손으로는 새로 못 쓰는 갈래입니다.
      이 글을 열어 저장해도 갈래가 딴 데로 가면 안 됩니다. */
@@ -149,7 +158,14 @@ const load = (p, extra = (s) => s) => {
     'const NF = { kind: () => "file", niceSize: () => "1B", mergePeople: (a) => a || "",' +
     ' extract: async () => ({ total: 0, mine: [], head: [], people: [], event: "" }),' +
     ' asText: () => "", filesFrom: () => [], upload: async () => ({}),' +
-    ' signedUrl: async () => "x", remove: async () => {}, fileFromStore: async () => ({}) };');
+    ' signedUrl: async () => "x", downloadUrl: async () => "x",' +
+    ' remove: async () => {}, fileFromStore: async () => ({}) };');
+  /* 올린 자료 모으기도 진짜를 씁니다 — 셈 자체는 tools/test/uploads.mjs 가 봅니다.
+     notes-uploads.js 는 아무것도 들여오지 않아 그대로 심어 넣을 수 있습니다. */
+  const upUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-uploads.js", "utf8")).toString("base64");
+  s = s.replace(/^import \* as UP from "\.\/notes-uploads\.js[^"]*";$/m,
+    "const UP = await import(" + JSON.stringify(upUrl) + ");");
   /* 셈 모듈은 시늉이 아니라 진짜를 씁니다 (셈 자체는 tools/test/stats.mjs 가 봅니다).
      data: 꼴 안에서는 상대 경로가 풀리지 않아, 소스를 그대로 심어 넣습니다.
      notes-stats.js 는 아무것도 들여오지 않아 이렇게 해도 됩니다. */
@@ -171,8 +187,21 @@ const load = (p, extra = (s) => s) => {
     "const ST = await import(" + JSON.stringify(statsUrl) + ");");
   /* 관계망은 시늉 — 그래프 셈은 tools/test/network.mjs 가 따로 봅니다.
      화면 쪽도 canvas 가 없으면 스스로 비켜서게 되어 있습니다. */
-  s = s.replace(/^import \{ alumniNames \} from "\.\/addressbook\.js[^"]*";$/m,
-    "const alumniNames = async () => new Set();");
+  s = s.replace(/^import \{[^}]*\} from "\.\/addressbook\.js[^"]*";$/m,
+    "const alumniNames = async () => new Set();" +
+    " const addrCards = async () => (globalThis.__cards || []);" +
+    " const addrPhoto = async () => (globalThis.__photo || \"\");");
+  /* 명함 짝짓기는 진짜를 씁니다 — 셈 자체는 tools/test/cards.mjs 가 봅니다.
+     notes-stats.js 를 들여오므로 그것도 함께 심어 넣습니다. */
+  const statsUrl0 = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-stats.js", "utf8")).toString("base64");
+  const cardsUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-cards.js", "utf8")
+      .replace(/^import \{ justName \} from "\.\/notes-stats\.js[^"]*";$/m,
+        "const { justName } = await import(" + JSON.stringify(statsUrl0) + ");"),
+      "utf8").toString("base64");
+  s = s.replace(/^import \* as CD from "\.\/notes-cards\.js[^"]*";$/m,
+    "const CD = await import(" + JSON.stringify(cardsUrl) + ");");
   s = s.replace(/^import \* as NW from "\.\/notes-network\.js[^"]*";$/m,
     "const NW = { buildGraph: () => ({ nodes: [], edges: [] }), layout: (g) => g };");
   /* 동경대 연결은 시늉 — 바깥 프로젝트라 시험 틀에서는 늘 비어 있습니다 */
@@ -368,6 +397,38 @@ await check("사람들 글을 저장해도 사람들에 남는다", async () => 
   if (!put) throw new Error("저장을 안 했습니다 — " + byId("nmMsg").textContent);
   if (put[1].category !== "people")
     throw new Error("갈래가 「" + put[1].category + "」 로 저장됐습니다");
+});
+
+/* ── Uploads — 여러 게시판에 흩어진 자료를 한자리에 ──
+   붙임이 있는 글을 여럿 두고, 그 화면이 터지지 않고 그려지는지 봅니다.
+   셈 자체는 tools/test/uploads.mjs 가 따로 봅니다. */
+await check("Uploads 화면이 그려진다", async () => {
+  globalThis.location.search = "?cat=uploads";
+  await M.initNotes("notesapp");
+  const html = byId("nList").innerHTML || "";
+  if (!html.includes("urow")) throw new Error("자료 줄이 없습니다 — " + html.slice(0, 120));
+  for (const n of ["개최개요.jpg", "발표자료.pdf", "명단.xlsx"])
+    if (!html.includes(n)) throw new Error("「" + n + "」 이 안 보입니다");
+});
+
+await check("어느 게시판에서 온 자료인지 보인다", () => {
+  const html = byId("nList").innerHTML || "";
+  for (const n of ["Schedule", "회의록"])
+    if (!html.includes(n)) throw new Error("「" + n + "」 이름표가 없습니다");
+  if (!html.includes("uchip")) throw new Error("게시판 거르개가 없습니다");
+});
+
+await check("자료 수와 크기를 알려 준다", () => {
+  const t = byId("nCount").textContent || "";
+  if (!/자료 3개/.test(t)) throw new Error("셈이 이상합니다 — " + t);
+  if (!/MB|KB/.test(t)) throw new Error("크기가 없습니다 — " + t);
+});
+
+await check("종류 거르개가 놓인다", () => {
+  const html = byId("nPeopleSw").innerHTML || "";
+  for (const n of ["전체", "그림", "PDF", "표"])
+    if (!html.includes(n)) throw new Error("「" + n + "」 단추가 없습니다");
+  if (byId("nPeopleSw").hidden) throw new Error("거르개가 숨겨져 있습니다");
 });
 
 console.log("─".repeat(60));

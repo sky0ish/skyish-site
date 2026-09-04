@@ -67,6 +67,7 @@
         { label: "Schedule", file: "blog.html?cat=schedule" },
         { label: "Diary",    file: "blog.html?cat=diary"    },
         { label: "사람들",   file: "blog.html?cat=people"   },
+        { label: "Uploads",  file: "blog.html?cat=uploads"  },
         { label: "회의록",   file: "blog.html?cat=minutes"  },
         { label: "일상",     file: "blog.html?cat=daily"    },
         { label: "ETC",      file: "blog.html?cat=etc"      }
