@@ -198,7 +198,14 @@ const load = (p, extra = (s) => s) => {
   s = s.replace(/^import \{[^}]*\} from "\.\/addressbook\.js[^"]*";$/m,
     "const alumniNames = async () => new Set();" +
     " const addrCards = async () => (globalThis.__cards || []);" +
-    " const addrPhoto = async () => (globalThis.__photo || \"\");");
+    ' const addrPhoto = async () => (globalThis.__photo || "");' +
+    " const addrSavePhoto = async () => true;" +
+    ' const addrToFolder = async () => "";');
+  /* 얼굴 자르기 셈도 진짜를 씁니다 — 셈 자체는 tools/test/facetag.mjs 가 봅니다 */
+  const ftUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-facetag.js", "utf8")).toString("base64");
+  s = s.replace(/^import \* as FT from "\.\/notes-facetag\.js[^"]*";$/m,
+    "const FT = await import(" + JSON.stringify(ftUrl) + ");");
   /* 명함 짝짓기는 진짜를 씁니다 — 셈 자체는 tools/test/cards.mjs 가 봅니다.
      notes-stats.js 를 들여오므로 그것도 함께 심어 넣습니다. */
   const statsUrl0 = "data:text/javascript;base64," +

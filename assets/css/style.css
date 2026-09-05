@@ -3046,3 +3046,38 @@ body.diary-on #notesapp > *:not(.ndiary) {
 #abTbl th.asort:hover i { opacity:.8; }
 #abTbl th.asort.on { color:var(--ink); }
 #abTbl th.asort.on i { color:var(--teal); opacity:1; }
+
+/* ── 사진 속 얼굴에 이름 달기 ─────────────────────────────── */
+.nshotwrap { position:relative; display:inline-block; }
+.nshot__tag, .nfile__face { border:1px solid var(--line); background:#fff;
+  border-radius:999px; padding:3px 10px; font:inherit; font-size:.72rem;
+  color:var(--ink); cursor:pointer; transition:.16s var(--ease); }
+.nshot__tag { position:absolute; left:6px; bottom:6px;
+  background:rgba(255,255,255,.92); box-shadow:0 1px 4px rgba(0,0,0,.18); }
+.nshot__tag:hover, .nfile__face:hover { border-color:var(--teal); color:var(--teal); }
+.nfile__face { margin-left:6px; }
+
+.ftwrap { position:relative; display:inline-block; max-width:100%;
+  margin:6px 0 10px; user-select:none; touch-action:none; }
+.ftwrap img { display:block; max-width:100%; max-height:62vh; cursor:crosshair; }
+.ftbox { position:absolute; border:2px solid var(--teal);
+  background:rgba(79,157,146,.14); pointer-events:none; border-radius:2px; }
+.ftmarks { position:absolute; inset:0; pointer-events:none; }
+.ftmark { position:absolute; border:2px solid #c9a24b; border-radius:2px;
+  background:rgba(201,162,75,.10); }
+.ftmark b { position:absolute; left:0; bottom:-1.35em; white-space:nowrap;
+  font-size:.7rem; font-weight:600; color:#fff; background:#8a6d2b;
+  border-radius:3px; padding:1px 6px; }
+
+.ftask { margin:0 0 8px; }
+.ftask input { width:100%; padding:9px 12px; border:1px solid var(--line);
+  border-radius:6px; font:inherit; }
+.fthits { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.fthit { border:1px solid var(--line); background:#fff; border-radius:999px;
+  padding:5px 12px; font:inherit; font-size:.8rem; cursor:pointer;
+  transition:.16s var(--ease); }
+.fthit:hover { border-color:var(--teal); color:var(--teal); }
+.fthit.here { background:#f2f8f6; border-color:#bcdcd5; }
+.fthit em { font-style:normal; font-size:.66rem; color:var(--mauve);
+  margin-left:5px; }
+.ftnone { font-size:.78rem; color:var(--mauve); }
