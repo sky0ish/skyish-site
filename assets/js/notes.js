@@ -425,7 +425,7 @@ export async function initNotes(mountId = "notesapp") {
             '<button type="button" class="nbtn nmini" id="nmXTop">취소</button>' +
             /* 일정이 바뀌어 없어졌을 때 여기서 바로 지웁니다 —
                아래까지 내려가지 않아도 되게 취소 옆에 둡니다. */
-            '<button type="button" class="nbtn nbtn--del nmini" id="nmDelTop" hidden>삭제</button>' +
+            '<button type="button" class="nbtn nbtn--del nmini" id="nmDelTop" disabled>삭제</button>' +
           "</div>" +
         "</div>" +
         '<label for="nmCat">갈래</label><select id="nmCat"></select>' +
@@ -2100,8 +2100,14 @@ export async function initNotes(mountId = "notesapp") {
     dirty = false;                       // 새로 여는 것이므로 고친 것이 없습니다
     document.getElementById("nDetail").classList.remove("on");   // 위에 덮인 창을 걷습니다
     document.getElementById("nmTitle").textContent = row ? "글 고치기" : "새 글";
+    /* 아래 「지우기」 는 고칠 때만 나옵니다.
+       위 「삭제」 는 늘 보이되, 새 글일 때는 눌리지 않습니다 —
+       숨겨 두었더니 「단추가 없다」 고 찾으시는 일이 잦았습니다. */
     document.getElementById("nmDel").hidden = !row;
-    document.getElementById("nmDelTop").hidden = !row;
+    const delTop = document.getElementById("nmDelTop");
+    delTop.hidden = false;
+    delTop.disabled = !row;
+    delTop.title = row ? "이 글을 지웁니다" : "새 글은 아직 지울 것이 없습니다";
     fillCats(row ? row.category : "");     // 그 글의 갈래에 자리를 내어 줍니다
     mCat.value = row ? row.category
                      : ((cur === "all" || BROWSE_CATS.indexOf(cur) >= 0) ? "schedule" : cur);

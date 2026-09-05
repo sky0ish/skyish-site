@@ -3096,3 +3096,7 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .nmpic__head small { color:var(--mauve); font-weight:400; margin-left:6px; }
 .ftmsg { font-size:.78rem; color:var(--mauve); margin:4px 0 0; }
 #ftHost .ftwrap { max-width:100%; }
+/* 위쪽 「삭제」 — 새 글일 때는 눌리지 않게 흐리게 */
+.nmodal__acts .nbtn--del { border-color:#e0c4c0; color:#b3453b; }
+.nmodal__acts .nbtn--del:hover:not(:disabled) { background:#fbf1f0; border-color:#c9756b; }
+.nmodal__acts .nbtn--del:disabled { opacity:.4; cursor:default; }
