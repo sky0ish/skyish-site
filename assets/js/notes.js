@@ -14,7 +14,7 @@ import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder } from "./addressbook.js?v=202609051900";
-import * as FT from "./notes-facetag.js?v=202609052000";
+import * as FT from "./notes-facetag.js?v=202609052100";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609051200";
 
@@ -469,6 +469,8 @@ export async function initNotes(mountId = "notesapp") {
           '<input type="file" id="nmFiles" multiple hidden>' +
         "</label>" +
         '<div class="nfiles" id="nmFileList"></div>' +
+        /* 붙임 그림을 펴 놓는 자리 — 얼굴에 이름을 답니다 */
+        '<div class="nmpics" id="nmPics"></div>' +
         '<div class="nredo">' +
           '<button type="button" class="nbtn nbtn--sm" id="nmRe">⟳ 붙임 파일 다시 읽기</button>' +
           '<span>예전에 올린 글도 이 단추로 행사명 · 만난 사람 · 요약을 채울 수 있습니다.</span>' +
@@ -1429,38 +1431,34 @@ export async function initNotes(mountId = "notesapp") {
   }
 
   /* ── 사진 속 얼굴에 이름 달기 ──
-     단체 사진 위에 네모를 두르고 이름을 고르면, 그 자리를 잘라
+     사진 위에 네모를 두르고 이름을 고르면, 그 자리를 잘라
      그 사람의 얼굴 사진으로 씁니다 (주소록 + 9.FACE 폴더).
-     얼굴을 알아보는 일은 하지 않습니다 — 어디가 누구인지는 사람이 정합니다. */
-  async function faceTag(url, row) {
-    const box = document.getElementById("nFace");
-    box.querySelector(".ndet__box").innerHTML =
-      '<button type="button" class="ndet__x" aria-label="닫기">✕</button>' +
-      "<h3>사진 속 얼굴에 이름 달기</h3>" +
-      '<p class="ndet__meta">얼굴을 <b>네모로 두른 뒤</b> 이름을 고르세요. ' +
-      "그 자리를 잘라 주소록과 9.FACE 폴더에 넣습니다.</p>" +
-      '<div class="ftwrap" id="ftWrap">' +
-        '<img id="ftImg" alt="" draggable="false">' +
-        '<div class="ftbox" id="ftBox" hidden></div>' +
-        '<div class="ftmarks" id="ftMarks"></div>' +
-      "</div>" +
-      '<div class="ftask" id="ftAsk" hidden>' +
-        '<input type="search" id="ftQ" placeholder="이름을 치거나 아래에서 고르세요" ' +
-          'autocomplete="off">' +
-        '<div class="fthits" id="ftHits"></div>' +
-      "</div>" +
-      '<p class="ndet__meta" id="ftMsg">사진을 여는 중…</p>';
-    box.classList.add("on");
+     얼굴을 알아보는 일은 하지 않습니다 — 어디가 누구인지는 사람이 정합니다.
 
-    const img = document.getElementById("ftImg");
-    const sel = document.getElementById("ftBox");
-    const ask = document.getElementById("ftAsk");
-    const q = document.getElementById("ftQ");
-    const hits = document.getElementById("ftHits");
-    const marks = document.getElementById("ftMarks");
-    const msg = document.getElementById("ftMsg");
+     @param host       그려 넣을 자리
+     @param url        사진 주소
+     @param getPeople  그 글의 「만난 사람」 을 돌려주는 함수 (이름 추천에 씁니다)
+  */
+  async function mountFaceTag(host, url, getPeople) {
+    if (!host) return;
+    host.innerHTML =
+      '<div class="ftwrap">' +
+        '<img class="ftimg" alt="" draggable="false">' +
+        '<div class="ftbox" hidden></div>' +
+        '<div class="ftmarks"></div>' +
+      "</div>" +
+      '<div class="ftask" hidden>' +
+        '<input type="search" class="ftq" placeholder="이름을 치거나 아래에서 고르세요" ' +
+          'autocomplete="off">' +
+        '<div class="fthits"></div>' +
+      "</div>" +
+      '<p class="ftmsg">사진을 여는 중…</p>';
+
+    const $ = (c) => host.querySelector(c);
+    const img = $(".ftimg"), sel = $(".ftbox"), marks = $(".ftmarks");
+    const ask = $(".ftask"), q = $(".ftq"), hits = $(".fthits"), msg = $(".ftmsg");
     const tags = [];
-    let names = [];
+    let cards = [];
 
     img.src = url;
     await new Promise((ok) => {
@@ -1470,7 +1468,14 @@ export async function initNotes(mountId = "notesapp") {
     msg.textContent = img.naturalWidth
       ? "얼굴을 네모로 두르세요."
       : "사진을 열지 못했습니다.";
-    try { names = (await addrCards()).map((c) => c.name).filter(Boolean); } catch (e) {}
+    try { cards = await addrCards(); } catch (e) {}
+    const names = cards.map((c) => c.name).filter(Boolean);
+    /* 파일 이름을 「이름_소속」 으로 짓기 위해 소속을 찾습니다 */
+    const orgOf = (n) => {
+      const k = CD.keyOf(n);
+      const hit = cards.find((c) => CD.keyOf(c.name) === k);
+      return (hit && hit.company) || "";
+    };
 
     let from = null, cur = null;
     const at = (e) => {
@@ -1503,13 +1508,14 @@ export async function initNotes(mountId = "notesapp") {
       if (!cur) { sel.hidden = true; return; }
       ask.hidden = false;
       q.value = ""; showHits("");
-      try { q.focus(); } catch (x) {}
+      try { q.focus({ preventScroll: true }); } catch (x) {}
     };
     img.addEventListener("pointerup", done);
     img.addEventListener("pointercancel", done);
 
     function showHits(text) {
-      const list = FT.nameHints(row && row.people, CD.splitPeople, names, text);
+      const people = typeof getPeople === "function" ? getPeople() : "";
+      const list = FT.nameHints(people, CD.splitPeople, names, text);
       hits.innerHTML = list.length
         ? list.map((x, i) =>
             '<button type="button" class="fthit' + (x.here ? " here" : "") +
@@ -1535,7 +1541,10 @@ export async function initNotes(mountId = "notesapp") {
       try {
         const blob = await cropFace(img, at2);
         await addrSavePhoto(name, blob);
-        const saved = await addrToFolder(name, blob);
+        /* 파일 이름은 「이름_소속」 — 동명이인을 눈으로 가릴 수 있게.
+           다시 읽을 때는 밑줄 앞만 보므로 같은 사람으로 되찾힙니다. */
+        const org = orgOf(name);
+        const saved = await addrToFolder(org ? name + "_" + org : name, blob);
         tags.push({ name: name, box: at2 });
         drawMarks();
         msg.textContent = saved
@@ -1559,11 +1568,23 @@ export async function initNotes(mountId = "notesapp") {
     }
     const onResize = () => drawMarks();
     window.addEventListener("resize", onResize);
+    host.__offResize = () => window.removeEventListener("resize", onResize);
+  }
 
+  /** 창을 띄워 얼굴에 이름을 답니다 (글 자세히 보기에서 씁니다) */
+  function faceTag(url, row) {
+    const box = document.getElementById("nFace");
+    box.querySelector(".ndet__box").innerHTML =
+      '<button type="button" class="ndet__x" aria-label="닫기">✕</button>' +
+      "<h3>사진 속 얼굴에 이름 달기</h3>" +
+      '<div id="ftHost"></div>';
+    box.classList.add("on");
+    const host = document.getElementById("ftHost");
+    mountFaceTag(host, url, () => (row && row.people) || "");
     box.onclick = (e) => {
       if (e.target === box || e.target.closest(".ndet__x")) {
         box.classList.remove("on");
-        window.removeEventListener("resize", onResize);
+        if (host.__offResize) host.__offResize();
       }
     };
   }
@@ -1935,10 +1956,18 @@ export async function initNotes(mountId = "notesapp") {
       const d = new Date(start); d.setDate(start.getDate() + i);
       const key = iso(d);
       const out = d.getMonth() !== m;
+      /* 사진이 붙은 일정은 오른쪽 끝에 아주 작은 표를 답니다 —
+         있는지 없는지만 한눈에 보이면 됩니다. */
+      const hasPic = (r) => (Array.isArray(r.files) ? r.files : [])
+        .some((f) => f && (f.type === "image" ||
+          /\.(jpe?g|png|gif|webp|avif|bmp)$/i.test(f.name || "")));
       const items = (byDay[key] || []).map((r) =>
         `<button type="button" class="cev" data-open="${r.id}" ` +
-        `style="--c:${CAT_COLOR[catOf(r)] || CAT_COLOR.schedule}" title="${esc(r.title)}">` +
-        `${esc(r.title)}</button>`).join("")
+        `style="--c:${CAT_COLOR[catOf(r)] || CAT_COLOR.schedule}" ` +
+        `title="${esc(r.title)}${hasPic(r) ? " · 사진 있음" : ""}">` +
+        `<span class="cev__t">${esc(r.title)}</span>` +
+        (hasPic(r) ? '<i class="cev__pic" aria-label="사진 있음">▣</i>' : "") +
+        "</button>").join("")
         + (gByDay[key] || []).map((e, gi) =>
         `<${isAdmin ? "button type=\"button\"" : "span"} class="cev cev--g" ` +
         `style="--c:${esc(e.color || "#4285f4")}" ` +
@@ -2183,7 +2212,8 @@ export async function initNotes(mountId = "notesapp") {
   function drawFiles() {
     /* 그림이면 「얼굴」 단추를 함께 답니다 — 누르면 사진이 열리고
        얼굴마다 이름을 달 수 있습니다. */
-    const isPic = (f) => /^image\//i.test(f.type || "") || NF.kind(f) === "image";
+    /* 그림인지는 isPicF 가 가립니다 (아래에 한 곳에 두었습니다) */
+    const isPic = isPicF;
     const chip = (f, i, isNew) =>
       '<span class="nfile" data-i="' + i + '" data-new="' + (isNew ? 1 : 0) + '">' +
       '<b>' + esc(f.name) + "</b>" +
@@ -2224,12 +2254,57 @@ export async function initNotes(mountId = "notesapp") {
         }
         b.disabled = false; b.textContent = was;
       }));
+    /* 그림은 곧바로 펴서 보입니다 — 누르지 않아도 얼굴에 이름을 달 수 있게 */
+    showPics();
+
     const bits = [];
     if (attached.length) bits.push("이미 올라간 파일 " + attached.length + "개");
     if (picked.length)   bits.push("새로 담은 " + picked.length + "개 (저장할 때 올라갑니다)");
     fMsg.textContent = bits.length
       ? bits.join(" · ")
       : "그림 · 엑셀 · PDF · 문서를 올리실 수 있습니다. 엑셀과 PDF 는 내 이름이 든 줄을 뽑아 아래에 적어 드립니다.";
+  }
+
+  /* 그림인지 가립니다.
+     · 새로 담은 것 : type 이 "image/png" 같은 MIME
+     · 이미 올라간 것 : type 이 우리가 적어 둔 "image"
+     · 둘 다 아니면 이름의 확장자로 봅니다 (전에는 이걸 안 봐서
+       올라간 PNG 에 「얼굴」 단추가 안 나왔습니다) */
+  const isPicF = (f) => !!f && (f.type === "image" ||
+    /^image\//i.test(f.type || "") ||
+    /\.(jpe?g|png|gif|webp|avif|bmp)$/i.test(f.name || ""));
+
+  /* 붙임 그림을 글쓰기 창 안에 펴 놓습니다 — 누르지 않아도 바로 보입니다.
+     얼굴을 네모로 두르고 이름을 고르면 그 자리를 잘라
+     주소록과 9.FACE 폴더에 넣습니다. */
+  let picsShown = "";
+  async function showPics() {
+    const host = document.getElementById("nmPics");
+    if (!host) return;
+    const pics = attached.filter(isPicF).map((f) => ({ f: f, isNew: false }))
+      .concat(picked.filter(isPicF).map((f) => ({ f: f, isNew: true })));
+    /* 같은 것을 다시 그리면 두르던 네모가 사라집니다 — 달라졌을 때만 */
+    const key = pics.map((p) => (p.isNew ? "n:" : "a:") + p.f.name +
+                                "|" + (p.f.size || 0)).join(",");
+    if (key === picsShown) return;
+    picsShown = key;
+    host.innerHTML = "";
+    if (!pics.length) return;
+    for (const p of pics) {
+      let url = "";
+      try {
+        url = p.isNew ? URL.createObjectURL(p.f) : await NF.signedUrl(p.f.path);
+      } catch (e) {}
+      if (!url) continue;
+      const wrap = document.createElement("div");
+      wrap.className = "nmpic";
+      wrap.innerHTML = '<p class="nmpic__head">' + esc(p.f.name) +
+        " <small>얼굴을 네모로 두르면 이름을 달 수 있습니다</small></p>" +
+        '<div class="nmpic__stage"></div>';
+      host.appendChild(wrap);
+      mountFaceTag(wrap.querySelector(".nmpic__stage"), url,
+                   () => document.getElementById("nmW").value);
+    }
   }
 
   /* 이 이름이면 안내문으로 보고 그림도 글자를 읽습니다.

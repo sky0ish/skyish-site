@@ -3081,3 +3081,18 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .fthit em { font-style:normal; font-size:.66rem; color:var(--mauve);
   margin-left:5px; }
 .ftnone { font-size:.78rem; color:var(--mauve); }
+
+/* 달력 — 사진이 붙은 일정 표시 (오른쪽 끝) */
+.cev { display:flex; align-items:center; gap:4px; }
+.cev__t { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; }
+.cev__pic { flex:none; font-style:normal; font-size:.62em; opacity:.75;
+  line-height:1; }
+
+/* 글쓰기 창 — 붙임 그림을 펴 놓는 자리 */
+.nmpics { margin:10px 0 4px; }
+.nmpic { margin-bottom:14px; }
+.nmpic__head { font-size:.8rem; color:var(--ink); margin-bottom:5px; }
+.nmpic__head small { color:var(--mauve); font-weight:400; margin-left:6px; }
+.ftmsg { font-size:.78rem; color:var(--mauve); margin:4px 0 0; }
+#ftHost .ftwrap { max-width:100%; }
