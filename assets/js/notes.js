@@ -13,7 +13,7 @@ import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
-import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder } from "./addressbook.js?v=202609051900";
+import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609051900";
 import * as FT from "./notes-facetag.js?v=202609052100";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609051200";
@@ -1452,11 +1452,14 @@ export async function initNotes(mountId = "notesapp") {
           'autocomplete="off">' +
         '<div class="fthits"></div>' +
       "</div>" +
-      '<p class="ftmsg">사진을 여는 중…</p>';
+      '<p class="ftmsg">사진을 여는 중…</p>' +
+      '<div class="ftdone" hidden><p class="ftdone__head">이름을 단 얼굴</p>' +
+        '<div class="ftdone__list"></div></div>';
 
     const $ = (c) => host.querySelector(c);
     const img = $(".ftimg"), sel = $(".ftbox"), marks = $(".ftmarks");
     const ask = $(".ftask"), q = $(".ftq"), hits = $(".fthits"), msg = $(".ftmsg");
+    const doneBox = $(".ftdone"), doneList = $(".ftdone__list");
     const tags = [];
     let cards = [];
 
@@ -1547,6 +1550,7 @@ export async function initNotes(mountId = "notesapp") {
         const saved = await addrToFolder(org ? name + "_" + org : name, blob);
         tags.push({ name: name, box: at2 });
         drawMarks();
+        addDone(name, blob, saved);
         msg.textContent = saved
           ? name + " — 주소록과 9.FACE 폴더(" + saved + ")에 넣었습니다."
           : name + " — 주소록에 넣었습니다. " +
@@ -1554,6 +1558,31 @@ export async function initNotes(mountId = "notesapp") {
       } catch (e) {
         msg.textContent = "자르지 못했습니다 — " + (e && e.message);
       }
+    }
+
+    /* 이름을 단 얼굴을 사진 아래에 하나씩 쌓습니다 —
+       무엇을 넣었는지 눈으로 확인할 수 있어야 합니다. */
+    function addDone(name, blob, savedName) {
+      doneBox.hidden = false;
+      const el = document.createElement("span");
+      el.className = "ftface";
+      const url = URL.createObjectURL(blob);
+      el.innerHTML = '<img src="' + url + '" alt="">' +
+        "<b>" + esc(name) + "</b>" +
+        '<small>' + (savedName ? esc(savedName) : "주소록에만") + "</small>" +
+        '<button type="button" class="ftface__x" title="이 얼굴 되돌리기">✕</button>';
+      el.querySelector(".ftface__x").addEventListener("click", async () => {
+        try { await addrDropPhoto(name); } catch (e) {}
+        const i = tags.findIndex((t) => t.name === name);
+        if (i >= 0) tags.splice(i, 1);
+        drawMarks();
+        URL.revokeObjectURL(url);
+        el.remove();
+        if (!doneList.children.length) doneBox.hidden = true;
+        msg.textContent = name + " — 되돌렸습니다. " +
+          "(9.FACE 폴더에 저장된 파일은 그대로 남습니다)";
+      });
+      doneList.appendChild(el);
     }
 
     function drawMarks() {
