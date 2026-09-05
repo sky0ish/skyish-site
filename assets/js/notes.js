@@ -1463,14 +1463,29 @@ export async function initNotes(mountId = "notesapp") {
     const tags = [];
     let cards = [];
 
-    img.src = url;
+    /* 보관함의 사진은 다른 곳(supabase.co)에서 옵니다.
+       그대로 canvas 에 그리면 「더렵혀져(tainted)」 잘라낼 수 없습니다
+       — Tainted canvases may not be exported.
+       그래서 먼저 받아 와 내 쪽 주소(blob:)로 바꿔 그립니다. */
+    let src = url, mine = false;
+    if (!/^blob:|^data:/i.test(url)) {
+      try {
+        const r = await fetch(url, { mode: "cors", credentials: "omit" });
+        if (r.ok) { src = URL.createObjectURL(await r.blob()); mine = true; }
+      } catch (e) { /* 못 받으면 아래에서 알려 드립니다 */ }
+    } else { mine = true; }
+    img.src = src;
     await new Promise((ok) => {
       if (img.complete && img.naturalWidth) return ok();
       img.onload = ok; img.onerror = ok;
     });
-    msg.textContent = img.naturalWidth
-      ? "얼굴을 네모로 두르세요."
-      : "사진을 열지 못했습니다.";
+    msg.textContent = !img.naturalWidth
+      ? "사진을 열지 못했습니다."
+      : mine
+        ? "얼굴을 네모로 두르세요."
+        : "사진은 보이지만 잘라낼 수 없습니다 — 보관함에서 그림을 받아오지 못했습니다. " +
+          "잠시 뒤 다시 열어 보세요.";
+    if (mine && src !== url) host.__revoke = () => URL.revokeObjectURL(src);
     try { cards = await addrCards(); } catch (e) {}
     const names = cards.map((c) => c.name).filter(Boolean);
     /* 파일 이름을 「이름_소속」 으로 짓기 위해 소속을 찾습니다 */
@@ -1614,6 +1629,7 @@ export async function initNotes(mountId = "notesapp") {
       if (e.target === box || e.target.closest(".ndet__x")) {
         box.classList.remove("on");
         if (host.__offResize) host.__offResize();
+        if (host.__revoke) host.__revoke();
       }
     };
   }
@@ -1628,9 +1644,17 @@ export async function initNotes(mountId = "notesapp") {
     const c = document.createElement("canvas");
     c.width = size.w; c.height = size.h;
     c.getContext("2d").drawImage(img, r.x, r.y, r.w, r.h, 0, 0, size.w, size.h);
-    return await new Promise((ok, no) =>
-      c.toBlob((b) => (b ? ok(b) : no(new Error("그림으로 못 만들었습니다"))),
-               "image/jpeg", 0.9));
+    try {
+      return await new Promise((ok, no) =>
+        c.toBlob((b) => (b ? ok(b) : no(new Error("그림으로 못 만들었습니다"))),
+                 "image/jpeg", 0.9));
+    } catch (e) {
+      if (/taint/i.test(e && e.message)) {
+        throw new Error("보관함에서 그림을 받아오지 못해 자를 수 없습니다. " +
+                        "창을 닫고 다시 열어 보세요.");
+      }
+      throw e;
+    }
   }
 
   /* ── 달력 ── */
