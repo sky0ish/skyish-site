@@ -59,16 +59,23 @@ eq("새것부터 온다", items.map((x) => x.date),
 eq("날짜 없는 것은 맨 뒤", items[items.length - 1].postId, "d");
 eq("글 제목을 달고 온다", items[0].postTitle, "국토도시계획학회 발표");
 
-console.log("\n── 종류 묶기 ──");
-eq("그림", groupOf("image"), "image");
-eq("PDF", groupOf("pdf"), "pdf");
-eq("엑셀도 CSV도 표", [groupOf("excel"), groupOf("csv")], ["sheet", "sheet"]);
-eq("나머지는 문서", [groupOf("text"), groupOf("file"), groupOf(undefined)],
-   ["doc", "doc", "doc"]);
-eq("묶음마다 셈", counts(items), { all: 5, image: 2, pdf: 1, sheet: 1, doc: 1 });
+console.log("\n── 분류 (이름을 먼저 봅니다) ──");
+eq("회의록", groupOf("pdf", "20260824_국방연구원_남기헌_회의록.pdf"), "minutes");
+eq("개최개요", groupOf("image", "20260902_개최개요.jpg"), "brief");
+eq("개최건의도 개최개요로", groupOf("pdf", "자문회의 개최건의(8월24일).pdf"), "brief");
+eq("그림은 Pictures", groupOf("image", "20260831_CUE.png"), "pic");
+eq("이름만 보고도 그림을 안다", groupOf("file", "사진.JPEG"), "pic");
+eq("나머지는 자료",
+   [groupOf("pdf", "경기도_3대_공간산업.pdf"), groupOf("excel", "명단.xlsx"),
+    groupOf("text", "메모.txt"), groupOf(undefined, "")],
+   ["doc", "doc", "doc", "doc"]);
+eq("이름이 먼저 — 그림이어도 회의록이면 회의록",
+   groupOf("image", "20260824_회의록.png"), "minutes");
+eq("분류마다 셈", counts(items), { all: 5, minutes: 0, brief: 2, pic: 0, doc: 3 });
 
 console.log("\n── 거르기 ──");
-eq("PDF 만", pickFiles(items, "pdf", "").map((x) => x.name), ["발표자료.pdf"]);
+eq("자료만", pickFiles(items, "doc", "").map((x) => x.name).sort(),
+   ["메모.txt", "명단.xlsx", "발표자료.pdf"]);
 eq("전체는 다", pickFiles(items, "all", "").length, 5);
 eq("파일 이름으로 찾기", pickFiles(items, "all", "명단").map((x) => x.name), ["명단.xlsx"]);
 eq("글 제목으로 찾기", pickFiles(items, "all", "방산").map((x) => x.name).sort(),
@@ -77,7 +84,7 @@ eq("장소로 찾기", pickFiles(items, "all", "서울역").length, 2);
 eq("만난 사람으로 찾기", pickFiles(items, "all", "이석준").length, 2);
 eq("낱말을 모두 품어야", pickFiles(items, "all", "방산 명단").map((x) => x.name), ["명단.xlsx"]);
 eq("없는 말", pickFiles(items, "all", "없는말").length, 0);
-eq("묶음과 찾기를 함께", pickFiles(items, "image", "개최").length, 2);
+eq("묶음과 찾기를 함께", pickFiles(items, "brief", "개최").length, 2);
 
 console.log("\n── 여러 게시판에서 올라옵니다 ──");
 eq("어디서 온 것인지 달고 온다",
@@ -88,8 +95,8 @@ eq("게시판마다 셈 (많은 곳부터)",
    [["Schedule", 2], ["회의록", 2], ["ETC", 1]]);
 eq("회의록 것만", pickFiles(items, "all", "", "minutes").map((x) => x.name).sort(),
    ["메모.txt", "명단.xlsx"]);
-eq("Schedule 의 PDF 만",
-   pickFiles(items, "pdf", "", "schedule").map((x) => x.name), ["발표자료.pdf"]);
+eq("Schedule 의 개최개요만",
+   pickFiles(items, "brief", "", "schedule").map((x) => x.name), ["개최개요.jpg"]);
 eq("게시판 이름으로도 찾힌다", pickFiles(items, "all", "회의록").length, 2);
 eq("게시판을 안 고르면 다", pickFiles(items, "all", "", "all").length, 5);
 eq("이름표가 없으면 갈래값을 그대로",
@@ -108,9 +115,10 @@ console.log("\n── 대소문자를 가리지 않는다 ──");
 eq("소문자로 찾아도", pickFiles(odd, "all", "camelcase").length, 1);
 eq("대문자로 찾아도", pickFiles(odd, "all", "CAMELCASE").length, 1);
 eq("확장자도", pickFiles(odd, "all", ".pdf").length, 2);
+eq("분류가 이름을 따른다", odd.map((x) => x.group), ["doc", "doc"]);
 
 console.log("\n── 알림말 ──");
-eq("셈과 크기", summary(pickFiles(items, "pdf", "")), "자료 1개 · 모두 2.3MB");
+eq("셈과 크기", summary(pickFiles(items, "brief", "", "schedule")), "자료 1개 · 모두 379KB");
 eq("빈 것", summary([]), "자료 0개");
 eq("여러 개면 크기를 더한다", summary(items), "자료 5개 · 모두 3.0MB");
 eq("크기를 모르면 셈만", summary([{ size: 0 }, { size: 0 }]), "자료 2개");

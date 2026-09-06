@@ -201,6 +201,15 @@ const load = (p, extra = (s) => s) => {
     ' const addrPhoto = async () => (globalThis.__photo || "");' +
     " const addrSavePhoto = async () => true;" +
     ' const addrToFolder = async () => "";');
+  /* 회의록 폴더 읽기도 진짜를 씁니다 — 셈 자체는 tools/test/minutes.mjs 가 봅니다.
+     notes-brief.js 를 들여오므로 그것도 함께 심어 넣습니다. */
+  const mnUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-minutes.js", "utf8")
+      .replace(/^import \{ looksLikeName \} from "\.\/notes-brief\.js[^"]*";$/m,
+        "const { looksLikeName } = await import(" + JSON.stringify(briefUrl) + ");"),
+      "utf8").toString("base64");
+  s = s.replace(/^import \* as MN from "\.\/notes-minutes\.js[^"]*";$/m,
+    "const MN = await import(" + JSON.stringify(mnUrl) + ");");
   /* 얼굴 자르기 셈도 진짜를 씁니다 — 셈 자체는 tools/test/facetag.mjs 가 봅니다 */
   const ftUrl = "data:text/javascript;base64," +
     Buffer.from(readFileSync(REPO + "/assets/js/notes-facetag.js", "utf8")).toString("base64");
@@ -439,11 +448,20 @@ await check("자료 수와 크기를 알려 준다", () => {
   if (!/MB|KB/.test(t)) throw new Error("크기가 없습니다 — " + t);
 });
 
-await check("종류 거르개가 놓인다", () => {
+await check("분류 거르개가 놓인다", () => {
   const html = byId("nPeopleSw").innerHTML || "";
-  for (const n of ["전체", "그림", "PDF", "표"])
-    if (!html.includes(n)) throw new Error("「" + n + "」 단추가 없습니다");
+  /* 회의록·개최개요·Pictures·자료 — 있는 것만 나옵니다 (전체는 늘) */
+  if (!html.includes("전체")) throw new Error("「전체」 단추가 없습니다");
+  if (!/회의록|개최개요|Pictures|자료/.test(html))
+    throw new Error("분류 단추가 하나도 없습니다 — " + html.slice(0, 120));
   if (byId("nPeopleSw").hidden) throw new Error("거르개가 숨겨져 있습니다");
+});
+
+await check("줄 맨 앞에 분류가 붙는다", () => {
+  const html = byId("nList").innerHTML || "";
+  if (!html.includes("ukind")) throw new Error("분류 이름표가 없습니다");
+  if (!/회의록|개최개요|Pictures|자료/.test(html))
+    throw new Error("분류 이름이 안 보입니다");
 });
 
 /* ── 위 저장 단추가 한 번만 저장해야 합니다 ──

@@ -2928,8 +2928,8 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .uchip .n { font-size:.72rem; opacity:.65; font-variant-numeric:tabular-nums; }
 
 .ulist { display:flex; flex-direction:column; }
-.urow { display:grid; align-items:center; gap:14px;
-  grid-template-columns:26px minmax(0,2fr) minmax(0,2fr) 92px auto;
+.urow { display:grid; align-items:center; gap:12px;
+  grid-template-columns:22px 74px minmax(0,2fr) minmax(0,2fr) 92px auto;
   padding:11px 4px; border-bottom:1px solid var(--line); }
 .urow:last-child { border-bottom:0; }
 .urow:hover { background:#fbfaf7; }
@@ -2951,9 +2951,10 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .ubtn { padding:5px 11px; font-size:.76rem; }
 
 /* 좁은 화면 — 한 줄에 다 못 넣으므로 위아래로 풉니다 */
+.ukind { justify-self:start; }
 @media (max-width:760px) {
-  .urow { grid-template-columns:26px minmax(0,1fr); row-gap:6px; }
-  .uwhere, .udate, .uact { grid-column:2; }
+  .urow { grid-template-columns:22px minmax(0,1fr); row-gap:6px; }
+  .ukind, .uwhere, .udate, .uact { grid-column:2; }
   .udate { font-size:.72rem; }
 }
 

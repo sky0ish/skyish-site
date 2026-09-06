@@ -8,21 +8,30 @@
 //  (tools/test/uploads.mjs). 임시 주소를 받아 오는 일과 화면에 거는 일은
 //  notes.js 쪽에 있습니다.
 
-/** 종류 묶음 — 파일 하나하나의 type 을 사람이 고를 만한 갈래로 묶습니다 */
+/** 분류 — 파일이 「무엇인지」 로 나눕니다.
+    그림·PDF 같은 파일 꼴보다 이쪽이 찾을 때 훨씬 쓸모가 있습니다. */
 export const GROUPS = [
-  ["all",   "전체"],
-  ["image", "그림"],
-  ["pdf",   "PDF"],
-  ["sheet", "표"],
-  ["doc",   "문서"],
+  ["all",     "전체"],
+  ["minutes", "회의록"],
+  ["brief",   "개최개요"],
+  ["pic",     "Pictures"],
+  ["doc",     "자료"],
 ];
 
-/** notes-files.js 의 kind() 값 → 위 묶음 */
-export function groupOf(type) {
+/* 이름만 보고도 알 수 있는 것들 — 파일 꼴보다 이름이 먼저입니다 */
+const RE_MINUTES = /(_회의록|회의록|회의\s*결과|녹취|받아쓰기)/;
+const RE_BRIEF   = /(개최\s*개요|개최\s*건의|개최\s*안내|초청|프로그램|식순|일정표|안내문)/;
+
+/** 이 파일이 무엇인가 — 이름을 먼저 보고, 그다음 파일 꼴을 봅니다.
+ *  @param type notes-files.js 의 kind() 값 ("image"·"pdf"·"excel"…)
+ *  @param name 파일 이름
+ */
+export function groupOf(type, name) {
+  const n = String(name || "");
+  if (RE_MINUTES.test(n)) return "minutes";
+  if (RE_BRIEF.test(n)) return "brief";
   const t = String(type || "");
-  if (t === "image") return "image";
-  if (t === "pdf") return "pdf";
-  if (t === "excel" || t === "csv") return "sheet";
+  if (t === "image" || /\.(jpe?g|png|gif|webp|avif|bmp)$/i.test(n)) return "pic";
   return "doc";
 }
 
@@ -57,7 +66,7 @@ export function fileRows(rows, catName) {
         name: String(f.name || "(이름 없음)"),
         path: String(f.path),
         type: String(f.type || "file"),
-        group: groupOf(f.type),
+        group: groupOf(f.type, f.name),
         size: Number(f.size) || 0,
         postId: r.id,
         postTitle: String(r.title || "(제목 없음)"),

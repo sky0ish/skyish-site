@@ -15,8 +15,9 @@ import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609051900";
 import * as FT from "./notes-facetag.js?v=202609052100";
+import * as MN from "./notes-minutes.js?v=202609060900";
 import * as CD from "./notes-cards.js?v=202609051200";
-import * as UP from "./notes-uploads.js?v=202609051200";
+import * as UP from "./notes-uploads.js?v=202609060900";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -398,7 +399,7 @@ export async function initNotes(mountId = "notesapp") {
       '<label class="nbtn nfolder" id="nFolderBtn" ' +
         'title="0_schedule 폴더를 고르면 행사마다 글을 만들어 드립니다">📁 폴더에서 가져오기' +
         '<input type="file" id="nFolder" webkitdirectory directory multiple hidden></label>' +
-      '<button type="button" class="nbtn" id="nRec" title="1.Record/글로바꾼것 폴더를 고르세요">🎙 회의록 붙이기</button>' +
+      '<button type="button" class="nbtn" id="nRec" title="1.회의록 폴더를 고르세요 — 회의마다 그날 일정에 회의록 PDF 가 붙습니다">🎙 회의록 붙이기</button>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
@@ -789,11 +790,16 @@ export async function initNotes(mountId = "notesapp") {
     wireUploads(hit);
   }
 
-  const UP_ICON = { image: "🖼", pdf: "📕", sheet: "📊", doc: "📄" };
+  const UP_ICON = { pic: "🖼", minutes: "🗒", brief: "📋", doc: "📄" };
+  const UP_NAME = { pic: "Pictures", minutes: "회의록", brief: "개최개요", doc: "자료" };
+  const UP_COLOR = { pic: "#2e6a8f", minutes: "#b3543b", brief: "#8a6bb0", doc: "#7d7768" };
 
   function uploadHtml(x, i) {
     return '<div class="urow">' +
       `<span class="uicon" aria-hidden="true">${UP_ICON[x.group] || "📄"}</span>` +
+      /* 무엇인지 맨 앞에 — 회의록·개최개요·Pictures·자료 */
+      `<span class="ncat ukind" style="--c:${UP_COLOR[x.group] || "#888"}">` +
+        `${esc(UP_NAME[x.group] || "자료")}</span>` +
       '<span class="uname">' +
         `<b>${esc(x.name)}</b>` +
         `<em>${x.size ? esc(UP.niceSize(x.size)) : ""}</em>` +
@@ -2561,7 +2567,7 @@ export async function initNotes(mountId = "notesapp") {
      그날 글이 없으면 새로 만듭니다. 같은 이름이 이미 붙어 있으면 건너뜁니다. */
   document.getElementById("nRec").addEventListener("click", async () => {
     if (typeof window.showDirectoryPicker !== "function") {
-      alert("컴퓨터에서 쓰는 기능입니다 — 받아쓰기 도구가 컴퓨터에서 돌기 때문입니다.");
+      alert("컴퓨터에서 쓰는 기능입니다 — 회의록이 컴퓨터 폴더에 있기 때문입니다.");
       return;
     }
     let dir;
@@ -2569,73 +2575,104 @@ export async function initNotes(mountId = "notesapp") {
       dir = await window.showDirectoryPicker({ id: "skyish-rec", mode: "read" });
     } catch (err) { return; }               // 고르다 닫으신 것
 
-    // txt 를 모읍니다 — 「글로바꾼것」 이 한 겹 안에 있어도 찾아 들어갑니다
-    const txts = [];
-    const forms = new Map();                 // 「…_회의록.hwpx」 초안들 — 이름으로 찾습니다
-    async function walk(d, depth) {
-      for await (const e of d.values()) {
-        if (e.kind === "file" && /\.txt$/i.test(e.name)) txts.push(await e.getFile());
-        else if (e.kind === "file" && /_회의록\.hwpx$/i.test(e.name))
-          forms.set(e.name, await e.getFile());
-        else if (e.kind === "directory" && depth < 1) await walk(e, depth + 1);
+    /* 1.회의록 안은 회의 하나가 폴더 하나입니다.
+       폴더 이름에서 날짜·기관·만난 사람을 읽고, 안의 「…_회의록.pdf」 를 붙입니다.
+       녹음(m4a)과 한글 원본은 올리지 않습니다 — 회의록 PDF 만 갑니다. */
+    const folders = [];
+    const handles = new Map();              // 폴더이름 → {파일이름: 손잡이}
+    try {
+      for await (const e of dir.values()) {
+        if (e.kind !== "directory") continue;
+        const names = [], hs = {};
+        for await (const f of e.values()) {
+          if (f.kind !== "file") continue;
+          names.push(f.name); hs[f.name] = f;
+        }
+        folders.push({ name: e.name, files: names });
+        handles.set(e.name, hs);
       }
-    }
-    await walk(dir, 0);
-    const jobs = txts
-      .map((f) => ({ f, day: findDate(f.name) }))
-      .filter((x) => x.day);
-    if (!jobs.length) {
-      alert("날짜로 시작하는 txt 를 못 찾았습니다." + String.fromCharCode(10) +
-        "1.Record 에서 python 받아쓰기.py 를 먼저 돌리고, 「글로바꾼것」 폴더를 골라 주세요.");
+    } catch (err) {
+      alert("폴더를 읽지 못했습니다 — " + (err && err.message));
       return;
     }
-    if (!confirm(`회의록 ${jobs.length}건을 그날 Schedule 글에 붙입니다.` +
-      String.fromCharCode(10) + "그날 글이 없으면 새로 만듭니다. 계속할까요?")) return;
 
-    const done = [], skip = [];
-    for (const { f, day } of jobs) {
+    const { jobs, skip } = MN.plan(folders);
+    if (!jobs.length) {
+      alert("붙일 회의록을 못 찾았습니다." + String.fromCharCode(10) +
+        "1.회의록 폴더를 고르셨는지, 회의 폴더 안에 「…_회의록.pdf」 가 있는지 봐 주세요." +
+        (skip.length ? String.fromCharCode(10) + String.fromCharCode(10) +
+          skip.map((x) => "· " + x.name + " — " + x.why).join(String.fromCharCode(10)) : ""));
+      return;
+    }
+    if (!confirm("회의록 " + jobs.length + "건을 그날 Schedule 글에 붙입니다." +
+      String.fromCharCode(10) + "그날 글이 없으면 새로 만듭니다." +
+      String.fromCharCode(10) + "녹음과 한글 원본은 올리지 않습니다. 계속할까요?")) return;
+
+    const done = [], failed = skip.map((x) => x.name + " — " + x.why);
+    for (const job of jobs) {
       try {
-        const text = await f.text();
-        // 본문에는 요약까지만 — 전문은 붙임 txt 로 보면 됩니다
-        const cut = text.indexOf("■ 전문");
-        const gist = (cut > 0 ? text.slice(0, cut) : text.slice(0, 1500)).trim();
+        const hs = handles.get(job.raw) || {};
+        const pdfH = hs[job.pdf];
+        if (!pdfH) { failed.push(job.raw + " — 회의록 PDF 를 열지 못했습니다"); continue; }
+
+        /* 제목은 회의록내용.json 의 title 이 가장 좋습니다 */
+        let jsonTitle = "";
+        if (job.json && hs[job.json]) {
+          try {
+            const t = JSON.parse(await (await hs[job.json].getFile()).text());
+            jsonTitle = (t && t.title) || "";
+          } catch (e) {}
+        }
+        const title = MN.titleOf(job, jsonTitle);
+
+        /* 본문에 담을 요약 — txt 가 있으면 「전문」 앞까지만 */
+        let gist = "";
+        if (job.txt && hs[job.txt]) {
+          try {
+            const text = await (await hs[job.txt].getFile()).text();
+            const cut = text.indexOf("■ 전문");
+            gist = (cut > 0 ? text.slice(0, cut) : text.slice(0, 1500)).trim();
+          } catch (e) {}
+        }
 
         const row = rows.find((r) =>
-          r.category === "schedule" && (r.event_date || "").slice(0, 10) === day);
-        if (row && (row.files || []).some((x) => x.name === f.name)) {
-          skip.push(f.name + " — 이미 붙어 있습니다"); continue;
+          r.category === "schedule" && (r.event_date || "").slice(0, 10) === job.date);
+        if (row && MN.alreadyHas(row.files, job.pdf)) {
+          failed.push(job.pdf + " — 이미 붙어 있습니다"); continue;
         }
-        const up = await NF.upload(f);
-        const ups = [up];
-        // 같은 이름의 회의록 hwpx 초안이 있으면 나란히 붙입니다
-        const form = forms.get(f.name.replace(/\.txt$/i, "") + "_회의록.hwpx");
-        if (form && !(row && (row.files || []).some((x) => x.name === form.name))) {
-          ups.push(await NF.upload(form));
-        }
+        const up = await NF.upload(await pdfH.getFile());
+        const who = (job.people || []).join(", ");
+
         if (row) {
-          const body = mergeBlock(row.body || "", f.name, gist);
-          const files = (row.files || []).concat(ups);
-          const r2 = await sb.from("notes").update({ body, files }).eq("id", row.id);
+          const patch = {
+            body: gist ? mergeBlock(row.body || "", job.pdf, gist) : (row.body || ""),
+            files: (row.files || []).concat([up]),
+          };
+          /* 비어 있는 칸만 채웁니다 — 손으로 적어 두신 것은 그대로 둡니다 */
+          if (who) patch.people = NF.mergePeople(row.people, job.people);
+          if (job.place && !(row.place || "").trim()) patch.place = job.place;
+          const r2 = await sb.from("notes").update(patch).eq("id", row.id);
           if (r2.error) throw r2.error;
-          done.push(day + " → 「" + row.title + "」 에 붙였습니다");
+          done.push(job.date + " → 「" + row.title + "」 에 붙였습니다");
         } else {
-          const title = f.name.replace(/\.txt$/i, "");
           const r2 = await sb.from("notes").insert({
-            category: "schedule", title,
-            body: mergeBlock("", f.name, gist),
-            event_date: day, files: ups, created_by: user.id,
+            category: "schedule", tag: "업무회의", title: title,
+            body: gist ? mergeBlock("", job.pdf, gist) : "",
+            event_date: job.date, place: job.place || null,
+            people: who || null, files: [up], created_by: user.id,
           });
           if (r2.error) throw r2.error;
-          done.push(day + " → 새 글 「" + title + "」");
+          done.push(job.date + " → 새 글 「" + title + "」");
         }
       } catch (err) {
-        skip.push(f.name + " — " + (err && err.message || "실패"));
+        failed.push(job.raw + " — " + ((err && err.message) || "실패"));
       }
     }
     await load();
-    alert((done.length ? "붙였습니다:" + String.fromCharCode(10) + done.join(String.fromCharCode(10)) : "") +
-      (done.length && skip.length ? String.fromCharCode(10) + String.fromCharCode(10) : "") +
-      (skip.length ? "건너뜀:" + String.fromCharCode(10) + skip.join(String.fromCharCode(10)) : ""));
+    const NL = String.fromCharCode(10);
+    alert((done.length ? "붙였습니다:" + NL + done.join(NL) : "") +
+      (done.length && failed.length ? NL + NL : "") +
+      (failed.length ? "건너뜀:" + NL + failed.join(NL) : ""));
   });
 
   document.getElementById("nmSave").addEventListener("click", async (e) => {
