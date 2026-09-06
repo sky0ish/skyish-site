@@ -2724,6 +2724,39 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .hopick--all a span { flex: 1; min-width: 0; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
 
+/* ── 그날 일정 고르개 ─────────────────────────────────────
+   달력에서 날짜를 눌렀을 때, 그날 일정이 여럿이면 먼저 크게 펼칩니다.
+   달력 칸 안에 넣으면 폰에서는 손가락보다 작아 고를 수가 없어,
+   화면 한가운데에 띄웁니다. */
+.hoday { position: fixed; inset: 0; z-index: 900; display: flex;
+  align-items: center; justify-content: center; padding: 16px;
+  background: rgba(28, 25, 22, .45); }
+.hoday__box { width: min(460px, 100%); max-height: 82vh; overflow: auto;
+  background: var(--card, #fff); color: var(--ink, #1c1a19);
+  border-radius: 16px; padding: 14px 14px 10px;
+  box-shadow: 0 18px 50px rgba(28, 25, 22, .28); }
+.hoday__h { display: block; font-size: 1.02rem; margin-bottom: 8px; }
+.hoday__list { display: flex; flex-direction: column; gap: 2px; }
+.hoday__i { display: flex; align-items: center; gap: 8px;
+  padding: 11px 8px; min-height: 44px; border-radius: 10px; text-decoration: none;
+  color: inherit; line-height: 1.35; }   /* 44px — 손가락으로 눌러도 어긋나지 않게 */
+.hoday__i:hover, .hoday__i:focus { background: rgba(95, 88, 80, .1); }
+.hoday__i i { flex: none; width: 7px; height: 7px; border-radius: 50%; }
+.hoday__i em { flex: none; font-style: normal; opacity: .75;
+  font-variant-numeric: tabular-nums; }
+.hoday__i span { flex: 1; min-width: 0; }
+.hoday__i small { flex: none; opacity: .55; font-size: .8em; }
+.hoday__new { display: flex; gap: 6px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid rgba(95, 88, 80, .18); }
+.hoday__new a, .hoday__x { flex: 1; text-align: center; padding: 12px 6px;
+  border-radius: 10px; border: 1px solid rgba(95, 88, 80, .28);
+  background: none; color: inherit; font: inherit; text-decoration: none;
+  cursor: pointer; }
+.hoday__new a:hover, .hoday__x:hover { background: rgba(95, 88, 80, .1); }
+@media (prefers-color-scheme: dark) {
+  .hoday__box { background: #262320; color: #efeae3; }
+}
+
 .hocal__soon { margin-top: 12px; padding-top: 10px;
   border-top: 1px solid rgba(255,255,255,.16); display: flex; flex-direction: column; gap: 1px; }
 .hocal__soon a { display: flex; align-items: center; gap: 7px; padding: 5px 4px;

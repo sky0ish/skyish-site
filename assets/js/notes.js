@@ -7,7 +7,7 @@
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as NF from "./notes-files.js?v=202609051200";
-import * as GC from "./gcal.js?v=202609040900";
+import * as GC from "./gcal.js?v=202609070900";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
@@ -509,6 +509,17 @@ export async function initNotes(mountId = "notesapp") {
 
   // 주소에 ?cat= 이 붙어 오면 그 갈래를 펴 놓습니다 (상단 차림표에서 옵니다)
   const wantCat = new URLSearchParams(location.search).get("cat");
+  /* 폰 앱 달력에서 들어왔는가 (back=app).
+     저장뿐 아니라 「취소」·✕·Esc·「지우기」 를 마쳐도 앱 달력으로 되돌아갑니다 —
+     전에는 저장 한 곳에서만 보아, 취소하면 게시판에 갇혔습니다. */
+  const fromApp = new URLSearchParams(location.search).get("back") === "app";
+  const backToApp = () => {
+    /* 앱이 지난번 화면을 담아 두므로 시각을 붙여 새로 부릅니다.
+       replace 로 갑니다 — 앱에서 뒤로가기를 눌렀을 때 방금 나온 게시판으로
+       도로 떨어지지 않게. 담아 둔 달력도 지워 방금 고친 글이 바로 보이게 합니다. */
+    try { sessionStorage.removeItem("skyish-homecal"); } catch (e) {}
+    location.replace("app.html?r=" + Date.now());
+  };
   let rows = [], cur = isAdmin ? "all" : MEMBER_CATS[0], editing = null;
   let gEvents = [];   // 구글에서 받아 온 일정
   /* 달력에 그릴 구글 일정 — 내가 여기서 쓴 글이 구글로 넘어간 것은 걷어 냅니다.
@@ -2059,6 +2070,11 @@ export async function initNotes(mountId = "notesapp") {
       '<div class="cgrid">' + cells + "</div>";
     const hop = async (d) => {
       calAt.setMonth(m + d);
+      /* 열쇠는 한 시간마다 만료됩니다. 여기서 조용히 다시 받지 않으면,
+         한 시간 뒤에 달을 넘기는 순간 구글 일정이 말없이 사라졌습니다. */
+      if (!GC.connected() && GC.everLinked && GC.everLinked() && GC.silent) {
+        try { await GC.silent(); } catch (e) {}
+      }
       if (GC.connected()) {
         try { gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth()); } catch (e) {}
       }
@@ -2213,6 +2229,7 @@ export async function initNotes(mountId = "notesapp") {
     if (busy) return;                                  // 저장 중에는 안 닫습니다
     if (dirty && !confirm("적으신 것이 저장되지 않았습니다. 그래도 닫을까요?")) return;
     close();
+    if (fromApp) backToApp();                          // 앱에서 왔으면 앱 달력으로
   };
 
   // 글쓰기 창 안에서 무엇이든 건드리면 「고치는 중」으로 봅니다
@@ -2740,7 +2757,10 @@ export async function initNotes(mountId = "notesapp") {
     const gcWant = !editing && mCat.value === "schedule" && GC.ready() &&
       !document.getElementById("nmGcalBox").hidden &&
       document.getElementById("nmGcal").checked;
-    const gcLink = (gcWant && !GC.connected())
+    /* 이어 둔 적이 있으면 창을 열지 않습니다 — addEvent() 가 조용히 새 열쇠를
+       받아 옵니다. 열쇠는 한 시간마다 만료되므로, 전에는 멀쩡히 이어져 있는데도
+       저장할 때마다 구글 창이 떴습니다. */
+    const gcLink = (gcWant && !GC.connected() && !(GC.everLinked && GC.everLinked()))
       ? GC.connect().catch((err) => err)      // 창은 여기서 뜨고, 결과는 나중에 봅니다
       : null;
     const body = document.getElementById("nmB").value.trim();
@@ -2939,13 +2959,8 @@ export async function initNotes(mountId = "notesapp") {
       if (say.length) alert(say.join(NL + NL));
     }
 
-    /* 앱에서 온 길(back=app)이면 저장을 마치고 앱 달력으로 되돌아갑니다.
-       시각을 붙여 방금 쓴 일정이 바로 보이게 새로 불러옵니다. */
-    if (new URLSearchParams(location.search).get("back") === "app") {
-      msg.textContent = "";
-      location.href = "app.html?r=" + Date.now();
-      return;
-    }
+    /* 앱에서 온 길(back=app)이면 저장을 마치고 앱 달력으로 되돌아갑니다. */
+    if (fromApp) { msg.textContent = ""; backToApp(); return; }
 
     msg.textContent = "";      // 「저장하는 중…」을 지워 둡니다
     close();
@@ -2962,7 +2977,9 @@ export async function initNotes(mountId = "notesapp") {
 
   document.getElementById("nmDel").addEventListener("click", async () => {
     if (!editing) return;
-    if (await removePost(editing)) close();
+    if (!await removePost(editing)) return;
+    close();
+    if (fromApp) backToApp();                          // 앱에서 왔으면 앱 달력으로
   });
 
   /* ── 달력 켜고 끄기 · 엑셀 ── */
@@ -2973,11 +2990,25 @@ export async function initNotes(mountId = "notesapp") {
     if (calBox.hidden) { gBox.hidden = true; return; }
     drawCal();
     // 달력을 열면 구글 일정도 함께 얹습니다 (한 번 허락하시면 그다음부터는 조용히)
-    /* 열쇠가 만료됐어도 전에 이어 두었다면 창 없이 조용히 다시 받아 옵니다 */
-    if (GC.ready()) {
-      if (!GC.connected() && GC.silent) { try { await GC.silent(); } catch (e) {} }
-      await pullGoogle(false, GC.connected());
+    if (!GC.ready()) return;
+    if (GC.connected()) { await pullGoogle(false, true); return; }
+    if (GC.everLinked && GC.everLinked()) {
+      /* 이어 둔 적이 있으면 창 없이 조용히 다시 받습니다.
+         여기서 기다린 뒤에 구글 창을 열면, 기다리는 사이 「사람이 눌렀다」 는
+         효력이 만료돼 브라우저가 막습니다 (Failed to open popup window).
+         그래서 조용히만 하고, 안 되면 다시 이을 단추로 안내합니다. */
+      try { await GC.silent(); } catch (e) {}
+      await pullGoogle(false, true);
+      if (!GC.connected()) {
+        gBox.hidden = false;
+        gBox.innerHTML = '<p class="ngcal__note">구글 연결이 풀렸습니다. ' +
+          '<button type="button" class="nlink" id="gRelink">다시 잇기</button></p>';
+        document.getElementById("gRelink").addEventListener("click", () => pullGoogle(false));
+      }
+      return;
     }
+    // 아직 한 번도 이은 적이 없습니다 — 누르신 김에 창을 엽니다
+    await pullGoogle(false, false);
   });
   /* 구글 일정 — 읽기 권한을 받아 달력에 함께 얹습니다 */
   const gBox = document.getElementById("nGcalBox");
@@ -3128,35 +3159,54 @@ export async function initNotes(mountId = "notesapp") {
     }
   }
 
-  /* 첫 화면 달력에서 넘어온 것을 받습니다.
-       ?id=…   그 글을 폅니다
-       ?new=…  그날로 새 글 창을 폅니다 */
+  /* 첫 화면·앱 달력에서 넘어온 것을 받습니다.
+       ?id=…                 그 글을 폅니다
+       ?new=…                그날로 새 글 창을 폅니다
+       ?new=…&gt=…&gtm=&gp=  구글에서 온 일정을 「글로 옮기기」 —
+                             제목·시각·장소를 미리 채워 둡니다
+     @returns 무언가 열었으면 참. 아무것도 못 열었으면 거짓 —
+              그때만 달력을 폅니다 (열어 놓고 그 뒤에서 달력을 펴면,
+              창을 닫는 순간 달력이 나타나 「글이 아니라 달력이 나온다」 가 됩니다). */
   async function openWanted() {
     const qs = new URLSearchParams(location.search);
+    const tidy = (keys) => {
+      const u = new URL(location.href);
+      keys.forEach((k) => u.searchParams.delete(k));
+      history.replaceState(null, "", u.pathname + (u.search || ""));
+    };
     const day = qs.get("new");
     if (day && isAdmin && /^\d{4}-\d{2}-\d{2}$/.test(day)) {
       open(null, day);            // 날짜를 안고 열면 제목도 그날로 찍힙니다
-      const u = new URL(location.href);
-      u.searchParams.delete("new");
-      history.replaceState(null, "", u.pathname + (u.search || ""));
-      return;
+      const gt = qs.get("gt");
+      if (gt) {
+        document.getElementById("nmT").value = gt.slice(0, 120);
+        const gtm = qs.get("gtm");
+        if (gtm) document.getElementById("nmTm").value = gtm.slice(0, 20);
+        const gp = qs.get("gp");
+        if (gp) document.getElementById("nmP").value = gp.slice(0, 120);
+      }
+      tidy(["new", "gt", "gtm", "gp"]);
+      return true;
     }
     const want = qs.get("id");
-    if (!want) return;
+    if (!want) return false;
     const r = rows.find((x) => String(x.id) === want);
-    if (r) {
-      openRow(r);
-      // 주소는 정리해 둡니다 — 새로고침할 때마다 다시 열리면 성가십니다
-      const u = new URL(location.href);
-      u.searchParams.delete("id");
-      history.replaceState(null, "", u.pathname + (u.search || ""));
+    // 주소는 정리해 둡니다 — 새로고침할 때마다 다시 열리면 성가십니다
+    tidy(["id"]);
+    if (!r) {
+      /* 그 글이 없습니다 (지웠거나 남의 것). 말없이 지나가면 달력만 펴져
+         「눌렀는데 아무 일도 안 났다」 가 됩니다. */
+      alert("그 글을 찾지 못했습니다 — 지워졌거나 다른 게시판에 있습니다.");
+      return false;
     }
+    openRow(r);
+    return true;
   }
 
   q.addEventListener("input", draw);
   q.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); draw(); } });
   document.getElementById("nGo").addEventListener("click", () => { draw(); q.focus(); });
   await load();
-  await openWanted();
-  await autoCal();
+  const opened = await openWanted();
+  if (!opened) await autoCal();      // 글을 열었으면 그 뒤에서 달력을 펴지 않습니다
 }

@@ -10,6 +10,18 @@
 //   4. 사용자 인증 정보 → OAuth 클라이언트 ID → 웹 애플리케이션
 //      승인된 자바스크립트 원본에  https://skyish.kr  를 넣습니다
 //   5. 나온 클라이언트 ID 를 auth/config.js 의 GCAL_CLIENT_ID 에 적습니다
+//
+// ── 「한 번 이으면 내가 끊기 전까지」 ──────────────────────
+//  구글이 주는 열쇠(access token)는 한 시간짜리입니다. 서버가 없으니
+//  갱신 열쇠(refresh token)는 받을 수 없습니다. 그래서 이렇게 합니다.
+//
+//    · 한 번 이어 두었다는 표시(-ok)는 **사람이 손수 끊기 전까지** 남습니다.
+//    · 열쇠가 만료될 즈음이면 시계를 걸어 두었다가 창 없이 조용히 새로 받습니다.
+//      화면을 덮어 두었다 다시 켤 때도 그렇게 합니다.
+//    · 화면은 「열쇠가 지금 살아 있나」(connected) 가 아니라
+//      「이어져 있나」(linked) 로 판단합니다. 그래야 한 시간마다
+//      「연결이 풀렸습니다」 가 뜨지 않습니다.
+//    · 「다시 잇기」 단추는 조용히 잇기가 **정말 실패했을 때만** 나옵니다.
 import { GCAL_CLIENT_ID } from "../../auth/config.js";
 
 /* calendar.events — 일정을 읽고 「쓸 수도」 있는 권한입니다.
@@ -17,39 +29,62 @@ import { GCAL_CLIENT_ID } from "../../auth/config.js";
    권한을 넓혔으니 이미 이어 두셨던 분은 한 번 다시 이어 주셔야 합니다. */
 const SCOPE = "https://www.googleapis.com/auth/calendar.events";
 const KEY = "skyish-gcal-token";
+const OKKEY = KEY + "-ok";
 /* 만료 다섯 분 전부터는 미리 새로 받아 둡니다 */
 const FRESH = 5 * 60 * 1000;
+/* 조용히 잇기를 기다려 주는 시간.
+   전에는 4초였는데, 폰에서 구글 조각(50KB)을 처음 받아 오는 길은 그보다
+   자주 깁니다. 4초에 포기하면 뒤늦게 도착한 열쇠는 저장만 되고 버려졌고,
+   화면에는 이미 「연결이 풀렸습니다」 가 그려진 뒤였습니다. */
+const WAIT = 15000;
+/* 조용히 잇기가 실패하면 이만큼은 다시 묻지 않습니다 —
+   화면을 옮길 때마다 15초를 되풀이해 태우지 않게. */
+const COOL = 30 * 1000;
 
 let token = null;
+let lastFail = 0;          // 조용히 잇기가 마지막으로 실패한 시각
+let timer = 0;             // 미리 새로 받아 두는 시계
+let watching = false;      // 화면을 다시 켤 때 살피기 시작했는가
 
 /* 열쇠는 localStorage 에 둡니다.
    전에는 sessionStorage 라 탭을 닫으면 사라져, 열 때마다 다시 이어야 했습니다.
    이 브라우저 안에만 있고 어디로도 나가지 않습니다. */
+function rawSaved() {
+  try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; }
+}
 function saved(marginMs) {
-  try {
-    const v = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (v && v.exp > Date.now() + (marginMs || 0)) return v.token;
-  } catch (e) {}
+  const v = rawSaved();
+  if (v && v.exp > Date.now() + (marginMs || 0)) return v.token;
   return null;
 }
 function keep(t, sec) {
+  /* 하한을 둡니다 — expires_in 이 60 보다 작게 오면 (- 60) 이 음수가 되어
+     「이미 만료된 열쇠」 를 저장했습니다. 이었다고 알린 그 순간
+     다시 「풀렸습니다」 가 뜨던 까닭입니다. */
+  const life = Math.max(30, (Number(sec) || 3600) - 60);
   try {
-    localStorage.setItem(KEY, JSON.stringify({
-      token: t, exp: Date.now() + (sec - 60) * 1000,
-    }));
-    // 한 번 이어 두었음을 기억합니다 — 열쇠가 만료돼도 조용히 다시 잇습니다
-    localStorage.setItem(KEY + "-ok", "1");
+    localStorage.setItem(KEY, JSON.stringify({ token: t, exp: Date.now() + life * 1000 }));
+    // 한 번 이어 두었음을 기억합니다 — 사람이 손수 끊기 전까지 남습니다
+    localStorage.setItem(OKKEY, "1");
   } catch (e) {}
+  lastFail = 0;               // 받아 왔으니 실패 기억을 지웁니다
+  schedule();                 // 다음 갱신을 미리 걸어 둡니다
 }
 
 /** 전에 이어 둔 적이 있는가 (열쇠가 만료됐어도) */
 export const everLinked = () => {
-  try { return localStorage.getItem(KEY + "-ok") === "1"; } catch (e) { return false; }
+  try { return localStorage.getItem(OKKEY) === "1"; } catch (e) { return false; }
 };
+
+/** 화면에 「이어져 있다」 고 보여 줄 것인가.
+ *  열쇠는 한 시간마다 만료되지만 그것은 연결이 풀린 것이 아닙니다 —
+ *  전에는 이 둘을 같은 것으로 보아, 한 시간마다 「연결이 풀렸습니다」 가
+ *  떴습니다. 조용히 잇기가 정말 실패했을 때만 풀린 것으로 봅니다. */
+export const linked = () => !!saved() || (everLinked() && !lastFail);
 
 /* 조용히 잇기가 이미 돌고 있으면 그 하나를 함께 씁니다.
    month() 가 calendars() 를 부르는 식으로 한 번에 두 번 물으면,
-   창이 두 번 뜨거나 4초를 두 번 기다리게 됩니다. */
+   창이 두 번 뜨거나 오래 기다리는 일이 두 번 생깁니다. */
 let silentJob = null;
 
 /** 창을 띄우지 않고 조용히 열쇠만 다시 받아 옵니다.
@@ -60,14 +95,22 @@ export async function silent() {
   if (t) { token = t; return t; }
   if (!GCAL_CLIENT_ID || !everLinked()) return null;
   if (silentJob) return silentJob;                 // 돌고 있으면 그것을 기다립니다
+  if (lastFail && Date.now() - lastFail < COOL) return null;   // 방금 실패했으면 쉽니다
   silentJob = (async () => {
     /* 구글 조각을 못 받아도 여기서 끝냅니다 —
        전에는 예외가 useToken() 까지 올라가, 아직 살아 있는 열쇠를 두고도
        통째로 실패했습니다. */
-    try { await loadGis(); } catch (e) { return null; }
+    try { await loadGis(); } catch (e) { lastFail = Date.now(); return null; }
     return new Promise((ok) => {
       let done = false;
-      const fin = (v) => { if (!done) { done = true; ok(v); } };
+      let clock = 0;
+      const fin = (v) => {
+        if (done) return;
+        done = true;
+        if (clock) { try { clearTimeout(clock); } catch (e) {} }
+        if (!v) lastFail = Date.now();
+        ok(v);
+      };
       try {
         const cli = google.accounts.oauth2.initTokenClient({
           client_id: GCAL_CLIENT_ID,
@@ -79,18 +122,50 @@ export async function silent() {
           callback: (r) => {
             if (r && r.access_token) {
               token = r.access_token;
-              keep(token, r.expires_in || 3600);
+              keep(token, r.expires_in || 3600);   // 늦게 와도 열쇠는 간수합니다
               fin(token);
             } else fin(null);
           },
           error_callback: () => fin(null),
         });
         cli.requestAccessToken();
-        setTimeout(() => fin(null), 4000);   // 오래 걸리면 포기하고 넘어갑니다
+        clock = setTimeout(() => fin(null), WAIT);   // 너무 오래 걸리면 넘어갑니다
       } catch (e) { fin(null); }
     });
   })().finally(() => { silentJob = null; });
   return silentJob;
+}
+
+/* ── 만료를 미리 막습니다 ────────────────────────────────
+   전에는 누군가 부를 때(화면 열기·달력 켜기)만 갱신했습니다. 그래서 앱을
+   켜 둔 채 한 시간이 지나면 열쇠는 죽어 있고, 다음에 만지는 순간에야
+   조용히 잇기가 돌았습니다 — 그 사이가 「자꾸 풀린다」 로 느껴집니다. */
+function schedule() {
+  if (typeof setTimeout !== "function") return;
+  try { clearTimeout(timer); } catch (e) {}
+  const v = rawSaved();
+  if (!v || !v.exp) return;
+  const ms = v.exp - Date.now() - FRESH;
+  // 24.8일이 넘는 값은 setTimeout 이 못 담습니다 (곧바로 터집니다)
+  timer = setTimeout(() => { silent().catch(() => {}); },
+                     Math.max(1000, Math.min(ms, 2147483000)));
+  // node 로 시험할 때 이 시계 하나 때문에 프로그램이 안 끝나지 않게
+  if (timer && typeof timer.unref === "function") timer.unref();
+}
+
+/** 미리 받아 두기를 시작합니다 — 화면이 열릴 때 한 번 부르면 됩니다.
+    화면을 덮어 두었다 다시 켤 때도 낡았으면 조용히 새로 받습니다.
+    (폰에서는 화면이 잠긴 동안 시계가 멈추므로 이쪽이 더 중요합니다.) */
+export function keepAlive() {
+  if (!GCAL_CLIENT_ID || !everLinked()) return;
+  schedule();
+  if (watching || typeof document === "undefined" || !document.addEventListener) return;
+  watching = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (saved(FRESH)) { schedule(); return; }
+    silent().catch(() => {});
+  });
 }
 
 /** 구글 로그인 조각을 한 번만 불러옵니다 */
@@ -113,7 +188,11 @@ export const ready = () => !!GCAL_CLIENT_ID;
    「사람이 눌렀다」 는 효력이 만료돼 브라우저가 창을 막습니다
    (Failed to open popup window 의 진짜 원인). 화면이 열릴 때 미리 데워 두면
    누른 순간 바로 창이 뜹니다. */
-export const warm = () => { if (GCAL_CLIENT_ID) loadGis().catch(() => {}); };
+export const warm = () => {
+  if (!GCAL_CLIENT_ID) return;
+  loadGis().catch(() => {});
+  keepAlive();
+};
 
 /** 권한 받기 — 처음 한 번은 구글 창이 뜹니다 */
 export async function connect(force) {
@@ -124,6 +203,10 @@ export async function connect(force) {
   }
   await loadGis();
   return new Promise((ok, no) => {
+    let done = false;
+    let clock = 0;
+    const win = (t) => { if (!done) { done = true; try { clearTimeout(clock); } catch (e) {} ok(t); } };
+    const lose = (e) => { if (!done) { done = true; try { clearTimeout(clock); } catch (e2) {} no(e); } };
     const cli = google.accounts.oauth2.initTokenClient({
       client_id: GCAL_CLIENT_ID,
       scope: SCOPE,
@@ -134,15 +217,24 @@ export async function connect(force) {
         if (r && r.access_token) {
           token = r.access_token;
           keep(token, r.expires_in || 3600);
-          ok(token);
-        } else no(new Error("권한을 받지 못했습니다"));
+          win(token);
+        } else lose(new Error("권한을 받지 못했습니다"));
       },
-      error_callback: (e) => no(new Error((e && e.message) || "구글 창이 닫혔습니다")),
+      error_callback: (e) => lose(new Error((e && e.message) || "구글 창이 닫혔습니다")),
     });
     cli.requestAccessToken();
+    /* 구글 창이 아무 말 없이 사라지면 callback 도 error_callback 도 오지 않습니다.
+       그러면 부른 쪽 단추가 「구글에 묻는 중…」 에서 영영 멈춥니다. */
+    if (typeof setTimeout === "function") {
+      clock = setTimeout(() => lose(new Error("구글이 답하지 않았습니다 — 다시 눌러 주세요")), 180000);
+    }
   });
 }
 
+/** 연결 끊기.
+ *  @param forget 참이면 「이어 둔 적 있음」 표시까지 지웁니다 —
+ *                사람이 손수 끊을 때만. 이 표시가 남아 있는 동안은
+ *                열쇠가 만료돼도 창 없이 조용히 다시 잇습니다. */
 export function disconnect(forget) {
   token = null;
   /* 열쇠는 localStorage 에 둡니다 — 여기를 지워야 정말 끊깁니다.
@@ -150,26 +242,52 @@ export function disconnect(forget) {
      참이라 「다시 잇기」 단추가 안 나타났습니다. */
   try {
     localStorage.removeItem(KEY);
-    if (forget) localStorage.removeItem(KEY + "-ok");   // 사람이 손수 끊을 때만
+    if (forget) localStorage.removeItem(OKKEY);
   } catch (e) {}
+  if (forget) lastFail = 0;
+  try { clearTimeout(timer); } catch (e) {}
 }
 
 /* 저장된 열쇠만 봅니다.
    전에는 (token || saved()) 였는데, 모듈 변수 token 은 disconnect() 에서만
    비워집니다. 열쇠가 스스로 만료되면 saved() 는 null 이 되지만 죽은 token 이
    남아 계속 「이어져 있다」 고 답했고, 그래서 「다시 잇기」 단추가 그 탭에서
-   영영 나타나지 않았습니다 — 바로 그 증상입니다. */
+   영영 나타나지 않았습니다 — 바로 그 증상입니다.
+
+   ※ 이것은 「지금 부를 수 있나」 입니다. 화면에 무엇을 보여 줄지는
+      linked() 로 물으십시오. */
 export const connected = () => !!saved();
 
 /* 늘 살아 있는 열쇠를 돌려줍니다 — 만료가 다가오면 창 없이 미리 새로 받습니다.
-   silent() 는 창을 띄우지 않으므로, 그것이 안 되면 마지막에 한 번만
-   구글 창을 엽니다 (사람이 누른 자리에서 불려야 합니다). */
+   창은 절대로 스스로 열지 않습니다. 전에는 마지막에 connect() 를 불렀는데,
+   그것이 사람이 누르지 않은 자리(화면 열기·달 넘기기)에서 돌면 브라우저가
+   팝업을 막아 「Failed to open popup window」 가 떴습니다. */
 async function useToken() {
   const ok = saved(FRESH);
   if (ok) { token = ok; return ok; }
   const s = await silent();
   if (s) return s;
-  return saved() || await connect();
+  const last = saved();          // 만료가 코앞이어도 아직 살아 있으면 그것으로
+  if (last) { token = last; return last; }
+  throw new Error("구글 연결이 풀렸습니다 — 「구글 달력 잇기」 를 눌러 주세요.");
+}
+
+/* 구글이 돌려준 403 이 정말 권한 문제인가.
+   속도 제한·할당량 초과도 403 으로 옵니다. 그것까지 「권한이 풀렸다」 로 보고
+   열쇠를 버리면, 잠깐 붐볐을 뿐인데 연결이 끊겨 다시 이으라는 말이 뜹니다. */
+const SOFT_403 = [
+  "rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded",
+  "backendError", "internalError", "variableTermLimitExceeded",
+];
+async function authFail(r) {
+  if (r.status === 401) return true;
+  if (r.status !== 403) return false;
+  try {
+    const j = await r.clone().json();
+    const why = (((j || {}).error || {}).errors || []).map((e) => (e && e.reason) || "");
+    if (why.some((x) => SOFT_403.indexOf(x) >= 0)) return false;
+  } catch (e) {}
+  return true;
 }
 
 /** 내가 쓰는 캘린더 목록 (숨긴 것은 뺍니다) */
@@ -179,8 +297,11 @@ export async function calendars(tok) {
     "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader",
     { headers: { Authorization: "Bearer " + t } });
   if (r.status === 401 || r.status === 403) {
-    disconnect();
-    throw new Error("권한이 풀렸습니다. 다시 연결해 주세요.");
+    if (await authFail(r)) {
+      disconnect();
+      throw new Error("권한이 풀렸습니다. 다시 연결해 주세요.");
+    }
+    throw new Error("구글이 잠시 바쁩니다 — 조금 뒤에 다시 해 주세요.");
   }
   if (!r.ok) throw new Error("캘린더 목록을 받지 못했습니다 (HTTP " + r.status + ")");
   const j = await r.json();
@@ -252,11 +373,16 @@ export async function addEvent(ev) {
   if (ev.place) body.location = String(ev.place).slice(0, 200);
   if (ev.time) {
     const beg = ev.date + "T" + ev.time + ":00";
-    const [h, m] = ev.time.split(":").map(Number);
-    const endH = String(Math.min(23, h + 1)).padStart(2, "0");
+    /* 끝은 「한 시간 뒤」 — 날짜까지 함께 넘깁니다.
+       전에는 시(hour)만 Math.min(23, h+1) 로 잘라, 23시 일정은 끝이 23시가 되어
+       길이 0 짜리 일정이 구글에 들어갔습니다. */
+    const d = new Date(beg);
+    const end = new Date(d.getTime() + 60 * 60 * 1000);
+    const p = (n) => String(n).padStart(2, "0");
+    const local = (x) => x.getFullYear() + "-" + p(x.getMonth() + 1) + "-" + p(x.getDate()) +
+                         "T" + p(x.getHours()) + ":" + p(x.getMinutes()) + ":00";
     body.start = { dateTime: beg, timeZone: "Asia/Seoul" };
-    body.end   = { dateTime: ev.date + "T" + endH + ":" + String(m).padStart(2, "0") + ":00",
-                   timeZone: "Asia/Seoul" };
+    body.end   = { dateTime: local(end), timeZone: "Asia/Seoul" };
   } else {
     // 종일 일정 — 구글은 끝을 「다음 날」 로 받습니다
     const d = new Date(ev.date + "T00:00:00");
@@ -273,8 +399,11 @@ export async function addEvent(ev) {
       body: JSON.stringify(body) });
   if (!r.ok) {
     if (r.status === 403 || r.status === 401) {
-      disconnect();
-      throw new Error("구글이 쓰기를 막았습니다 — 「구글 달력 잇기」 를 다시 눌러 새 권한으로 이어 주세요.");
+      if (await authFail(r)) {
+        disconnect();
+        throw new Error("구글이 쓰기를 막았습니다 — 「구글 달력 잇기」 를 다시 눌러 새 권한으로 이어 주세요.");
+      }
+      throw new Error("구글이 잠시 바쁩니다 — 조금 뒤에 다시 해 주세요.");
     }
     throw new Error("구글에 넣지 못했습니다 (" + r.status + ")");
   }

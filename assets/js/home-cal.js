@@ -9,8 +9,9 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609040900";
+import * as GC from "./gcal.js?v=202609070900";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
+import * as CO from "./cal-open.js?v=202609070900";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -49,6 +50,8 @@ const CACHE = "skyish-homecal";
 export async function initHomeCal(id = "hocal") {
   const box = document.getElementById(id);
   if (!box) return;
+  /* 폰 앱인가 — 앱에서 들어간 글은 저장·취소를 마치면 앱 달력으로 되돌아옵니다 */
+  const appMode = box.classList.contains("hocal--app");
 
   /* ① 저장소만 보고 먼저 가릅니다 — 네트워크를 기다리지 않습니다 */
   const mail = storedMail();
@@ -64,6 +67,9 @@ export async function initHomeCal(id = "hocal") {
   let notes = [], gEvents = [];
 
   box.hidden = false;
+  /* 구글 열쇠를 만료 전에 미리 새로 받아 두게 합니다 —
+     한 번 이어 두었으면 손수 끊기 전까지 이어져 있게. */
+  try { if (GC.keepAlive) GC.keepAlive(); } catch (e) {}
 
   /* ② 지난번에 받아 둔 것이 있으면 그것으로 곧바로 그립니다.
      자료가 새로 오면 조용히 갈아 끼웁니다. */
@@ -135,12 +141,10 @@ export async function initHomeCal(id = "hocal") {
     setTimeout(() => document.addEventListener("click", shut, true), 0);
   }
 
-  /* 일정 하나가 어디로 이어질지 —
-     내가 쓴 글이면 그 글로, 구글에서 온 것이면 일정 게시판으로. */
-  function linkTo(x) {
-    if (x.id) return `blog.html?cat=${x.cat === "diary" ? "diary" : "schedule"}&id=${x.id}`;
-    return "blog.html?cat=schedule";
-  }
+  /* 일정 하나가 어디로 이어질지 — 규칙은 cal-open.js 에 있습니다.
+     내가 쓴 글이면 그 글의 고치기 창으로, 구글에서 온 것이면 그날 새 일정 창으로
+     (제목·시각을 실어 보내 미리 채웁니다). */
+  const linkTo = (x, day) => CO.linkTo(x, day, appMode);
 
   /* ── 그리기 ── */
   function draw() {
@@ -161,7 +165,8 @@ export async function initHomeCal(id = "hocal") {
     /* 내가 여기서 쓴 글이 구글로 넘어간 것은 걷어 냅니다 —
        안 걷으면 한 건이 달력에 두 번 뜹니다. */
     dropMirrors(notes, gEvents).forEach((e) => {
-      (byDay[e.date] ||= []).push({ t: e.title, c: e.color || "#4285f4", g: 1, time: e.time });
+      (byDay[e.date] ||= []).push({ t: e.title, c: e.color || "#4285f4", g: 1,
+                                    time: e.time, place: e.place });
     });
 
     let cells = "";
@@ -172,7 +177,7 @@ export async function initHomeCal(id = "hocal") {
       const list = byDay[k] || [];
       // 두 건까지는 이름을 보여 주고, 더 있으면 「+n」 으로 줄입니다
       const items = list.slice(0, 2).map((x) =>
-        `<a class="hev" href="${esc(linkTo(x))}" title="${esc(x.t)}">` +
+        `<a class="hev" href="${esc(linkTo(x, k))}" title="${esc(x.t)}">` +
         `<i style="background:${esc(x.c)}"></i>` +
         `<span>${esc(x.t)}</span></a>`).join("") +
         (list.length > 2
@@ -201,7 +206,7 @@ export async function initHomeCal(id = "hocal") {
       '<div class="hocal__grid">' + cells + "</div>" +
       (soon.length
         ? '<div class="hocal__soon">' + soon.map((s) =>
-            `<a href="${esc(linkTo(s))}"><i style="background:${esc(s.c)}"></i>` +
+            `<a href="${esc(linkTo(s, s.k))}"><i style="background:${esc(s.c)}"></i>` +
             `<span class="d">${esc(s.k.slice(5).replace("-", "."))}</span>` +
             `<span class="t">${esc(s.t)}</span></a>`).join("") + "</div>"
         : '<p class="hocal__none">앞으로 잡힌 일정이 없습니다.</p>') +
@@ -209,7 +214,7 @@ export async function initHomeCal(id = "hocal") {
          전에는 「한 번이라도 이었으면」 숨겼는데, 조용히 잇기가 실패하면
          (구글에서 로그아웃·허락 취소·다른 브라우저) 다시 이을 길이 없었습니다.
          구글 창은 사람이 누른 순간에만 뜰 수 있어, 스스로 열지 못합니다. */
-      (GC.ready() && !GC.connected()
+      (GC.ready() && !(GC.linked ? GC.linked() : GC.connected())
         ? '<button type="button" class="hocal__gc" id="hocalGc">'
           + (GC.everLinked && GC.everLinked()
               ? "🔗 구글 달력 다시 잇기 — 연결이 풀렸습니다"
@@ -236,61 +241,88 @@ export async function initHomeCal(id = "hocal") {
 
     /* 날짜를 누르면 「그날 무엇을 쓸지」 고르개가 뜹니다 */
     const grid = box.querySelector(".hocal__grid");
-    /** +n 을 눌렀을 때 — 그날 일정을 다 폅니다. 항목을 누르면 그 글·게시판으로. */
-    function showAll(cell, day) {
-      document.querySelectorAll(".hopick").forEach((x) => x.remove());
+
+    /** 그날 일정을 크게 펼칩니다 — 고르면 그 글의 「고치기」 창으로 갑니다.
+     *  구글에서 온 일정은 아직 내 글이 아니므로 「글로 옮기기」 로,
+     *  그날 새 일정 창이 제목·시각까지 채워진 채 열립니다.
+     *  달력 칸 안이 아니라 화면 한가운데에 큼직하게 띄웁니다 — 칸 안에 넣으면
+     *  폰에서는 손가락보다 작아 고를 수가 없습니다. */
+    function showDay(day) {
+      document.querySelectorAll(".hoday").forEach((x) => x.remove());
       const list = byDay[day] || [];
-      const p = document.createElement("div");
-      p.className = "hopick hopick--all";
-      p.innerHTML = `<b>${esc(day.replace(/-/g, "."))} — ${list.length}건</b>` +
-        list.map((x) =>
-          `<a href="${esc(linkTo(x))}"><i style="background:${esc(x.c)}"></i>` +
-          `<span>${x.time ? esc(x.time) + " " : ""}${esc(x.t)}</span></a>`).join("");
-      cell.appendChild(p);
-      const shut = (ev) => {
-        if (p.contains(ev.target)) return;
-        p.remove();
-        document.removeEventListener("click", shut, true);
+      const sheet = document.createElement("div");
+      sheet.className = "hoday" + (appMode ? " hoday--app" : "");
+      sheet.innerHTML =
+        '<div class="hoday__box" role="dialog" aria-label="그날 일정">' +
+          '<b class="hoday__h">' + esc(CO.dayLabel(day)) + " · " + list.length + "건</b>" +
+          '<div class="hoday__list">' +
+          list.map((x) =>
+            '<a class="hoday__i" href="' + esc(linkTo(x, day)) + '">' +
+              '<i style="background:' + esc(x.c) + '"></i>' +
+              (x.time ? '<em>' + esc(x.time) + "</em>" : "") +
+              "<span>" + esc(x.t) + "</span>" +
+              '<small>' + (x.id ? "고치기" : "글로 옮기기") + "</small>" +
+            "</a>").join("") +
+          "</div>" +
+          '<div class="hoday__new">' +
+            '<a href="' + esc(CO.newLink("diary", day, appMode)) + '">✎ 일기</a>' +
+            '<a href="' + esc(CO.newLink("schedule", day, appMode)) + '">📅 일정</a>' +
+            '<button type="button" class="hoday__x">닫기</button>' +
+          "</div>" +
+        "</div>";
+      document.body.appendChild(sheet);
+      const shut = () => {
+        sheet.remove();
+        document.removeEventListener("keydown", esckey, true);
       };
-      setTimeout(() => document.addEventListener("click", shut, true), 0);
+      const esckey = (ev) => { if (ev.key === "Escape") shut(); };
+      /* 바깥이나 「닫기」 를 누르면 닫습니다. 항목은 제 길로 갑니다. */
+      sheet.addEventListener("click", (ev) => {
+        if (ev.target === sheet || ev.target.closest(".hoday__x")) { ev.preventDefault(); shut(); }
+      });
+      document.addEventListener("keydown", esckey, true);
     }
 
-    /* 폰 앱(.hocal--app)에서는 좁은 표적 대신 칸을 위아래 두 구역으로 나눕니다.
+    /* 날짜 칸을 눌렀을 때 —
+         일정이 여럿이면  → 먼저 크게 펼쳐 고르게 합니다 (한 단계 더)
+         하나뿐이면       → 곧바로 그 글의 고치기 창으로
+         하나도 없으면    → 새로 씁니다
+       폰 앱(.hocal--app)에서 아무것도 없는 날은 칸을 위아래로 나눕니다.
        손가락이 굵어도 어긋나지 않게 —
          위 (숫자 쪽, 칸의 45%·최소 34px) → 그날 Diary
-         아래 (글자 쪽)                   → 그날 Schedule
-       일정 글줄도 구역을 따릅니다. 그 글을 열려면 아래 「다가오는 일정」에서. */
-    const appMode = box.classList.contains("hocal--app");
+         아래 (글자 쪽)                   → 그날 Schedule */
     if (grid) grid.addEventListener("click", (e) => {
-      // +n 으로 펼친 창 안의 항목은 제 길(그 글)로 갑니다 — 구역 나누기가 가로채면 안 됩니다
-      if (e.target.closest(".hopick")) return;
+      // 고르개 창 안의 항목은 제 길로 갑니다 — 칸 나누기가 가로채면 안 됩니다
+      if (e.target.closest(".hopick") || e.target.closest(".hoday")) return;
       const cell = e.target.closest(".hoc");
-      // +n 은 어느 화면에서든 「그날 다 보기」 가 먼저입니다
-      const more = e.target.closest(".more");
-      if (more && cell) {
-        e.preventDefault();
-        showAll(cell, more.dataset.more || cell.dataset.d);
-        return;
-      }
+      if (!cell || !cell.dataset.d) return;
+      const day = cell.dataset.d;
+      const list = byDay[day] || [];
+
+      // 「+n」 은 어느 화면에서든 「그날 다 보기」 가 먼저입니다
+      if (e.target.closest(".more")) { e.preventDefault(); showDay(day); return; }
+
+      /* 넓은 화면에서 일정 글줄을 곧바로 누른 것은 그 글로 — 제 길이 있습니다.
+         폰에서는 글줄이 손가락보다 작아, 아래 규칙을 따릅니다. */
+      if (!appMode && e.target.closest(".hev")) return;
+
+      const act = CO.dayAction(list);
+      if (act === "many") { e.preventDefault(); showDay(day); return; }
+      if (act === "one") { e.preventDefault(); location.href = linkTo(list[0], day); return; }
+
+      // 아무 일정도 없는 날 — 새로 씁니다
       if (appMode) {
-        if (!cell || !cell.dataset.d) return;
         e.preventDefault();                          // 일정 글줄의 제 길로 가지 않게
         const r = cell.getBoundingClientRect();
         const diary = e.clientY < r.top + Math.max(34, r.height * 0.45);
-        // back=app — 저장하면 앱 달력으로 되돌아오라는 표시입니다
-        location.href = "blog.html?cat=" + (diary ? "diary" : "schedule") +
-                        "&new=" + cell.dataset.d + "&back=app";
+        // back=app — 저장·취소를 마치면 앱 달력으로 되돌아오라는 표시입니다
+        location.href = CO.newLink(diary ? "diary" : "schedule", day, true);
         return;
       }
-      if (e.target.closest(".hev")) return;          // 일정을 누른 것은 그 글로 갑니다
-      if (!cell || !cell.dataset.d) return;
       // 날짜 숫자를 누르면 곧바로 Diary 로 — 그날의 글을 적는 것이 가장 잦습니다
-      if (e.target.closest("b")) {
-        location.href = "blog.html?cat=diary&new=" + cell.dataset.d;
-        return;
-      }
+      if (e.target.closest("b")) { location.href = CO.newLink("diary", day, false); return; }
       // 칸의 빈 곳을 누르면 다른 게시판도 고를 수 있습니다
-      pick(cell, cell.dataset.d);
+      pick(cell, day);
     });
 
     box.querySelectorAll("[data-go]").forEach((b) =>

@@ -110,11 +110,17 @@ globalThis.document = {
   querySelectorAll: () => [],
   body: makeEl("body"),
 };
-globalThis.location = { search: "", pathname: "/blog.html", replace() {} };
+globalThis.location = { search: "", pathname: "/blog.html",
+  href: "https://skyish.kr/blog.html", replace(u) { location.__went = u; } };
 globalThis.history = { replaceState() {} };
 globalThis.alert = (m) => alerts.push(String(m));
 globalThis.confirm = (m) => { confirms.push(String(m)); return true; };
-globalThis.URL = { createObjectURL: () => "blob:x", revokeObjectURL() {} };
+/* 진짜 URL 을 그대로 두고 blob 만 덧붙입니다 —
+   통째로 갈아 끼웠더니 new URL(location.href) 가 터졌습니다
+   (게시판이 주소에서 ?id=·?new= 를 걷어 낼 때 씁니다). */
+const RealURL = globalThis.URL;
+RealURL.createObjectURL = () => "blob:x";
+RealURL.revokeObjectURL = () => {};
 globalThis.Blob = class {};
 globalThis.File = class { constructor(p, n) { this.name = n; this.size = 1; } };
 
@@ -570,6 +576,41 @@ await check("회의록 PDF 가 없는 폴더는 왜 건너뛰는지 알려 준�
   if (calls.some((c) => c[0] === "insert")) throw new Error("글을 만들었습니다");
   const last = alerts[alerts.length - 1] || "";
   if (!/회의록\.pdf/.test(last)) throw new Error("까닭을 안 알려 줍니다 — " + last);
+});
+
+console.log("─".repeat(60));
+console.log("달력에서 넘어온 주소 (앱 → 게시판)");
+
+/* 회색 상자 줄과 달력 칸이 만드는 주소를 게시판이 제대로 받는지.
+   「눌렀더니 게시글이 아니라 달력이 나온다」 를 되풀이하지 않기 위한 시험입니다. */
+const goTo = async (qs) => {
+  location.search = qs;
+  location.href = "https://skyish.kr/blog.html" + qs;
+  alerts.length = 0;
+  await M.initNotes("notesapp");
+};
+
+await check("구글 일정을 누르면 제목·시각이 채워진 새 일정 창이 열린다", async () => {
+  await goTo("?cat=schedule&new=2026-09-07" +
+             "&gt=%EC%B0%A9%EC%88%98%EC%8B%AC%EC%9D%98&gtm=14%3A00&gp=%EA%B2%BD%EA%B8%B0&back=app");
+  if (byId("nmT").value !== "착수심의")
+    throw new Error("제목이 안 채워졌습니다 — " + byId("nmT").value);
+  if (byId("nmTm").value !== "14:00") throw new Error("시각이 안 채워졌습니다");
+  if (byId("nmP").value !== "경기") throw new Error("장소가 안 채워졌습니다");
+});
+
+await check("글을 열었으면 그 뒤에서 달력을 펴지 않는다", async () => {
+  /* 앞선 시험에서 달력 단추를 눌러 놓았을 수 있으니 접어 두고 봅니다 */
+  byId("nCalBox").hidden = true;
+  await goTo("?cat=schedule&new=2026-09-07&gt=%EB%AC%B4%EC%96%B8%EA%B0%80");
+  if (!byId("nCalBox").hidden)
+    throw new Error("글을 열어 놓고 달력까지 폈습니다 — 창을 닫으면 달력이 나타납니다");
+});
+
+await check("없는 글을 가리키면 까닭을 알려 준다", async () => {
+  await goTo("?cat=schedule&id=없는번호");
+  if (!alerts.some((a) => /찾지 못했/.test(a)))
+    throw new Error("말없이 지나갔습니다 — 눌렀는데 달력만 나옵니다");
 });
 
 console.log("─".repeat(60));
