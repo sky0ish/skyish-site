@@ -81,3 +81,8 @@ assets/data/flood/
 _phototest.html
 _authstub.js
 _facetest.html
+
+# 사진 올리는 도구와 원본 사진 — 저장소에 넣지 않습니다
+#   · 사진은 Supabase 저장소로 올라가므로 여기 둘 까닭이 없고
+#   · .session.json 에는 로그인 표가 들어 있어 절대 공개되면 안 됩니다
+5_Gallery/
