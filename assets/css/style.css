@@ -3119,3 +3119,10 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .ftface__x { position:absolute; top:2px; right:4px; border:0; background:none;
   color:var(--mauve); font-size:.7rem; cursor:pointer; padding:2px; }
 .ftface__x:hover { color:#b3453b; }
+
+/* 사진첩 — 끌어다 놓아 차례 바꾸기 */
+.ordbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:0 0 12px;font-size:13px;color:#6b6b6b;}
+#albapp figure.movable{cursor:grab;}
+#albapp figure.dragging{opacity:.35;}
+#albapp figure.dropzone{outline:3px solid #4f9d92;outline-offset:-3px;}

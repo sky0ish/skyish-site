@@ -583,6 +583,8 @@ export async function initAlbum(mountId = "albapp") {
           ? `<button class="albx" data-id="${p.id}" title="이 사진 지우기">✕</button>` : ""}
       </figure>`).join("");
 
+    if (canEdit && photos.length > 1) wireDrag();
+
     grid.querySelectorAll(".albx").forEach((b) => b.addEventListener("click", async (e) => {
       e.stopPropagation(); e.preventDefault();
       if (!confirm("이 사진을 지울까요?")) return;
@@ -593,6 +595,63 @@ export async function initAlbum(mountId = "albapp") {
       reload();
     }));
   }
+  /* ── 끌어다 놓아 사진 차례 바꾸기 ─────────────────
+     올린 분과 운영자만. 놓는 순간 그 차례가 그대로 저장됩니다. */
+  function wireDrag() {
+    let bar = document.getElementById("ordbar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "ordbar";
+      bar.className = "ordbar";
+      bar.innerHTML = '<b>✥ 사진을 끌어다 놓으면 차례가 바뀝니다.</b><span id="ordMsg"></span>';
+      grid.parentNode.insertBefore(bar, grid);
+    }
+    let from = null;
+    const tiles = () => [...grid.querySelectorAll("figure")];
+    tiles().forEach((el) => {
+      el.classList.add("movable");
+      el.draggable = true;
+      el.addEventListener("dragstart", () => {
+        from = el; el.classList.add("dragging");
+      });
+      el.addEventListener("dragend", () => {
+        el.classList.remove("dragging");
+        tiles().forEach((t) => t.classList.remove("dropzone"));
+      });
+      el.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        if (el !== from) el.classList.add("dropzone");
+      });
+      el.addEventListener("dragleave", () => el.classList.remove("dropzone"));
+      el.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        el.classList.remove("dropzone");
+        if (!from || from === el) return;
+        const list = tiles();
+        const a = list.indexOf(from), b = list.indexOf(el);
+        grid.insertBefore(from, a < b ? el.nextSibling : el);
+        await saveOrder();
+      });
+    });
+  }
+
+  async function saveOrder() {
+    const m = document.getElementById("ordMsg");
+    if (m) m.textContent = " 저장하는 중…";
+    const ids = [...grid.querySelectorAll("figure")].map((t) => t.dataset.id);
+    let err = null;
+    for (let i = 0; i < ids.length; i++) {
+      const r = await sb.from("gallery_photos").update({ sort: i }).eq("id", ids[i]);
+      if (r.error) { err = r.error; break; }
+    }
+    if (m) {
+      m.textContent = err ? " 저장 실패 : " + friendly(err.message)
+                          : " 차례를 저장했습니다 ✓";
+      if (!err) setTimeout(() => { m.textContent = ""; }, 1800);
+    }
+    if (!err) photos.sort((x, y) => ids.indexOf(x.id) - ids.indexOf(y.id));
+  }
+
   await reload();
 
   if (!canAdd) return;
