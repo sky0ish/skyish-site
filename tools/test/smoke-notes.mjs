@@ -118,6 +118,28 @@ globalThis.URL = { createObjectURL: () => "blob:x", revokeObjectURL() {} };
 globalThis.Blob = class {};
 globalThis.File = class { constructor(p, n) { this.name = n; this.size = 1; } };
 
+/* ── 폴더 고르기 시늉 (회의록 붙이기용) ──
+   globalThis.__dirs 에 {폴더이름: [파일이름…]} 을 넣어 두면
+   showDirectoryPicker 가 그것을 돌려줍니다. */
+const fakeFile = (name) => ({
+  kind: "file", name,
+  getFile: async () => ({
+    name, size: 10,
+    text: async () => (globalThis.__text || {})[name] || "",
+  }),
+});
+globalThis.window = globalThis;      // notes.js 가 window.showDirectoryPicker 를 봅니다
+globalThis.showDirectoryPicker = async () => ({
+  async *values() {
+    for (const [dname, files] of Object.entries(globalThis.__dirs || {})) {
+      yield {
+        kind: "directory", name: dname,
+        async *values() { for (const f of files) yield fakeFile(f); },
+      };
+    }
+  },
+});
+
 // ── Supabase 시늉 ──
 const calls = [];
 globalThis.__calls = calls;      // 시늉 모듈 안에서도 닿게 전역으로 둡니다
@@ -163,7 +185,11 @@ const load = (p, extra = (s) => s) => {
   let s = readFileSync(REPO + "/" + p, "utf8");
   s = s.replace(/^import \{[^}]*\} from "\.\.\/\.\.\/auth\/auth\.js";$/m, sbStub);
   s = s.replace(/^import \* as NF from "\.\/notes-files\.js[^"]*";$/m,
-    'const NF = { kind: () => "file", niceSize: () => "1B", mergePeople: (a) => a || "",' +
+    'const NF = { kind: () => "file", niceSize: () => "1B",' +
+    /* 진짜 mergePeople 처럼 이름을 더합니다 — (a) => a 로 두면
+       회의록 붙이기의 「만난 사람」 이 늘 비어 시험이 헛돕니다 */
+    ' mergePeople: (cur, add) => { const have = String(cur || "").split(/\s*,\s*/).filter(Boolean);' +
+    ' (add || []).forEach((n) => { if (!have.includes(n)) have.push(n); }); return have.join(", "); },' +
     ' extract: async () => ({ total: 0, mine: [], head: [], people: [], event: "" }),' +
     ' asText: () => "", filesFrom: () => [], upload: async () => ({}),' +
     ' signedUrl: async () => "x", downloadUrl: async () => "x",' +
@@ -479,6 +505,71 @@ await check("창 위 저장을 눌러도 한 번만 저장한다", async () => {
   const puts = calls.filter((c) => c[0] === "insert" || c[0] === "update");
   if (puts.length !== 1)
     throw new Error(puts.length + "번 저장했습니다 (한 번이어야 합니다)");
+});
+
+/* ── 회의록 붙이기 ──
+   1.회의록 은 회의 하나가 폴더 하나입니다. 같은 날 회의가 둘일 때
+   뒤엣것이 앞엣것을 덮어쓰던 일이 있었습니다 — 여기서 잡습니다. */
+await check("회의록 폴더를 훑어 그날 글에 붙인다", async () => {
+  globalThis.__dirs = {
+    "20260901_경기연구원_이석준": ["20260901_경기연구원_이석준_회의록.pdf"],
+  };
+  globalThis.__text = {};
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 50));
+  const ins = calls.filter((c) => c[0] === "insert");
+  if (!ins.length) throw new Error("아무것도 안 넣었습니다 — " + alerts[alerts.length - 1]);
+  const v = ins[ins.length - 1][1];
+  if (v.event_date !== "2026-09-01") throw new Error("날짜가 " + v.event_date);
+  if (v.category !== "schedule") throw new Error("갈래가 " + v.category);
+  if (v.tag !== "업무회의") throw new Error("말머리가 " + v.tag);
+  if (!/이석준/.test(v.people || "")) throw new Error("만난 사람이 " + v.people);
+  if (v.place !== "경기연구원") throw new Error("장소가 " + v.place);
+});
+
+await check("요약 덩이에 「━ 파일이름」 머리글이 붙는다", async () => {
+  globalThis.__dirs = {
+    "20260904_어디_아무개": ["20260904_어디_아무개_회의록.pdf",
+                             "20260904_어디_아무개.txt"],
+  };
+  globalThis.__text = { "20260904_어디_아무개.txt": "요약입니다" + String.fromCharCode(10) + "■ 전문" };
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 50));
+  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  if (!/━ 20260904_어디_아무개_회의록\.pdf/.test(v.body || ""))
+    throw new Error("머리글이 없습니다 — " + JSON.stringify(v.body));
+});
+
+await check("같은 날 회의가 둘이면 글은 하나에 두 건", async () => {
+  globalThis.__dirs = {
+    "20260902_오전_강은호": ["20260902_오전_강은호_회의록.pdf"],
+    "20260902_오후_김병규": ["20260902_오후_김병규_회의록.pdf"],
+  };
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 50));
+  const ins = calls.filter((c) => c[0] === "insert");
+  if (ins.length !== 1)
+    throw new Error(ins.length + "개의 글을 만들었습니다 (하루에 하나여야 합니다)");
+  const v = ins[0][1];
+  if ((v.files || []).length !== 2)
+    throw new Error("붙임이 " + (v.files || []).length + "개입니다 (둘이어야 합니다)");
+  for (const who of ["강은호", "김병규"])
+    if (!(v.people || "").includes(who))
+      throw new Error(who + " 이 만난 사람에 없습니다 — " + v.people);
+});
+
+await check("회의록 PDF 가 없는 폴더는 왜 건너뛰는지 알려 준다", async () => {
+  globalThis.__dirs = { "20260903_어디_아무개": ["자문회의 개최건의.pdf"] };
+  calls.length = 0;
+  alerts.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 50));
+  if (calls.some((c) => c[0] === "insert")) throw new Error("글을 만들었습니다");
+  const last = alerts[alerts.length - 1] || "";
+  if (!/회의록\.pdf/.test(last)) throw new Error("까닭을 안 알려 줍니다 — " + last);
 });
 
 console.log("─".repeat(60));

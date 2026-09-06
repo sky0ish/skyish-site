@@ -2954,7 +2954,9 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .ukind { justify-self:start; }
 @media (max-width:760px) {
   .urow { grid-template-columns:22px minmax(0,1fr); row-gap:6px; }
-  .ukind, .uwhere, .udate, .uact { grid-column:2; }
+  /* 아이콘만 첫 칸에 두고, 나머지는 모두 둘째 칸에 쌓습니다.
+     .uname 을 빠뜨려 파일 이름이 22px 칸에 끼여 안 보이던 적이 있습니다. */
+  .uname, .ukind, .uwhere, .udate, .uact { grid-column:2; }
   .udate { font-size:.72rem; }
 }
 

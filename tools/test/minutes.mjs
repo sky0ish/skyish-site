@@ -53,7 +53,15 @@ const FILES = [
 ];
 const f = pickFiles(FILES);
 eq("회의록 PDF 만", f.pdf, "20260824_국방연구원_남기헌_강소영_심승배_회의록.pdf");
-eq("개최건의 PDF 는 아니다", /개최건의/.test(f.pdf), false);
+/* 개최건의가 목록 앞에 와도 회의록을 집어야 합니다 —
+   차례 덕에 지나가던 헛시험을 고쳤습니다 */
+eq("개최건의가 먼저 와도 회의록을 집는다",
+   pickFiles(["자문회의 개최건의(8월24일).pdf", "가_회의록.pdf"]).pdf, "가_회의록.pdf");
+eq("회의록이 아닌 PDF 만 있으면 빈 값",
+   pickFiles(["자문회의 개최건의(8월24일).pdf", "보고.pdf"]).pdf, "");
+/* 회의록내용 JSON 잣대가 넓어지면 잡히게 */
+eq("아무 json 이나 집지 않는다",
+   pickFiles(["가_회의록.pdf", "설정.json"]).json, "");
 eq("내용 JSON", /_회의록내용\.json$/.test(f.json), true);
 eq("txt", /\.txt$/.test(f.txt), true);
 eq("녹음은 안 고른다", [f.pdf, f.json, f.txt].some((x) => /\.m4a$/.test(x)), false);

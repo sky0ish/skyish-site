@@ -15,9 +15,9 @@ import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609051900";
 import * as FT from "./notes-facetag.js?v=202609052100";
-import * as MN from "./notes-minutes.js?v=202609060900";
+import * as MN from "./notes-minutes.js?v=202609061000";
 import * as CD from "./notes-cards.js?v=202609051200";
-import * as UP from "./notes-uploads.js?v=202609060900";
+import * as UP from "./notes-uploads.js?v=202609061000";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -738,8 +738,11 @@ export async function initNotes(mountId = "notesapp") {
        안 그러면 칩 줄이 사라진 채 거르개만 남아, 있는 자료를 못 찾고
        되돌릴 단추도 화면에 없습니다. */
     if (upBoard !== "all" && !all.some((x) => x.cat === upBoard)) upBoard = "all";
+    /* 분류도 마찬가지 — 없는 분류를 골라 둔 채로 두면 거르개 단추가
+       화면에서 사라지고 되돌릴 길이 없어집니다. */
+    if (upGroup !== "all" && !UP.GROUPS.some(([k]) => k === upGroup)) upGroup = "all";
 
-    /* 종류 단추의 숫자는 「지금 고른 게시판·찾는 말」 안에서 셉니다 —
+    /* 분류 단추의 숫자는 「지금 고른 게시판·찾는 말」 안에서 셉니다 —
        눌러 보면 몇 개가 나올지 숫자가 그대로 알려 줍니다. */
     const inBoard = UP.pickFiles(all, "all", s, upBoard);
     const hit = UP.pickFiles(all, upGroup, s, upBoard);
@@ -758,9 +761,9 @@ export async function initNotes(mountId = "notesapp") {
     }
     emptyEl.hidden = true;
 
-    /* 종류 단추는 사람들 화면과 같은 자리(찾는 칸 줄)에 둡니다 */
+    /* 분류 단추는 사람들 화면과 같은 자리(찾는 칸 줄)에 둡니다 */
     sw.innerHTML = UP.GROUPS
-      .filter(([k]) => k === "all" || cnt[k])          // 없는 종류는 안 보입니다
+      .filter(([k]) => k === "all" || cnt[k])          // 없는 분류는 안 보입니다
       .map(([k, label]) =>
         `<button type="button" class="ptab${k === upGroup ? " on" : ""}" data-g="${k}">` +
         `${esc(label)}<span class="n">${cnt[k] || 0}</span></button>`).join("");
@@ -2565,7 +2568,9 @@ export async function initNotes(mountId = "notesapp") {
      1.Record/받아쓰기.py 가 만든 txt(글로바꾼것 폴더)를 골라
      그날 Schedule 글에 합칩니다 — 요약은 본문에, 전문 txt 는 붙임으로.
      그날 글이 없으면 새로 만듭니다. 같은 이름이 이미 붙어 있으면 건너뜁니다. */
+  let recBusy = false;                     // 도는 동안 두 번 눌리지 않게
   document.getElementById("nRec").addEventListener("click", async () => {
+    if (recBusy) return;
     if (typeof window.showDirectoryPicker !== "function") {
       alert("컴퓨터에서 쓰는 기능입니다 — 회의록이 컴퓨터 폴더에 있기 때문입니다.");
       return;
@@ -2608,64 +2613,111 @@ export async function initNotes(mountId = "notesapp") {
       String.fromCharCode(10) + "그날 글이 없으면 새로 만듭니다." +
       String.fromCharCode(10) + "녹음과 한글 원본은 올리지 않습니다. 계속할까요?")) return;
 
+    const recBtn = document.getElementById("nRec");
+    recBusy = true; recBtn.disabled = true;
+    const recWas = recBtn.textContent;
+    recBtn.textContent = "붙이는 중…";
+    try {
+
     const done = [], failed = skip.map((x) => x.name + " — " + x.why);
-    for (const job of jobs) {
+
+    /* 날짜별로 묶습니다 — 하루에 회의가 둘이어도(오전·오후) 그날 글은
+       한 번만 씁니다. 하나씩 쓰면 뒤엣것이 앞엣것의 붙임과 본문을
+       통째로 덮어씁니다 (rows 는 도는 동안 다시 읽히지 않으니까요). */
+    const NLc = String.fromCharCode(10);
+    const byDate = new Map();
+    jobs.forEach((j) => {
+      const l = byDate.get(j.date) || [];
+      l.push(j);
+      byDate.set(j.date, l);
+    });
+
+    for (const [date, group] of byDate) {
+      const ups = [];
       try {
-        const hs = handles.get(job.raw) || {};
-        const pdfH = hs[job.pdf];
-        if (!pdfH) { failed.push(job.raw + " — 회의록 PDF 를 열지 못했습니다"); continue; }
-
-        /* 제목은 회의록내용.json 의 title 이 가장 좋습니다 */
-        let jsonTitle = "";
-        if (job.json && hs[job.json]) {
-          try {
-            const t = JSON.parse(await (await hs[job.json].getFile()).text());
-            jsonTitle = (t && t.title) || "";
-          } catch (e) {}
-        }
-        const title = MN.titleOf(job, jsonTitle);
-
-        /* 본문에 담을 요약 — txt 가 있으면 「전문」 앞까지만 */
-        let gist = "";
-        if (job.txt && hs[job.txt]) {
-          try {
-            const text = await (await hs[job.txt].getFile()).text();
-            const cut = text.indexOf("■ 전문");
-            gist = (cut > 0 ? text.slice(0, cut) : text.slice(0, 1500)).trim();
-          } catch (e) {}
-        }
-
         const row = rows.find((r) =>
-          r.category === "schedule" && (r.event_date || "").slice(0, 10) === job.date);
-        if (row && MN.alreadyHas(row.files, job.pdf)) {
-          failed.push(job.pdf + " — 이미 붙어 있습니다"); continue;
+          r.category === "schedule" && (r.event_date || "").slice(0, 10) === date);
+
+        let body = row ? (row.body || "") : "";
+        let people = row ? row.people : "";
+        let place = row ? (row.place || "").trim() : "";
+        const titles = [];
+        let any = false;
+
+        for (const job of group) {
+          const hs = handles.get(job.raw) || {};
+          const pdfH = hs[job.pdf];
+          if (!pdfH) { failed.push(job.raw + " — 회의록 PDF 를 열지 못했습니다"); continue; }
+          if (row && MN.alreadyHas(row.files, job.pdf)) {
+            failed.push(job.pdf + " — 이미 붙어 있습니다"); continue;
+          }
+          if (ups.some((u) => u.name === job.pdf)) {
+            failed.push(job.pdf + " — 같은 이름이 두 번 나왔습니다"); continue;
+          }
+
+          /* 제목은 회의록내용.json 의 title 이 가장 좋습니다 */
+          let jsonTitle = "";
+          if (job.json && hs[job.json]) {
+            try {
+              const t = JSON.parse(await (await hs[job.json].getFile()).text());
+              jsonTitle = (t && t.title) || "";
+            } catch (e) {}
+          }
+          titles.push(MN.titleOf(job, jsonTitle));
+
+          /* 본문에 담을 요약 — txt 가 있으면 「전문」 앞까지만.
+             mergeBlock 이 나중에 이 덩이를 다시 찾을 수 있게
+             「━ 파일이름」 머리글을 붙여 넘깁니다. */
+          let gist = "";
+          if (job.txt && hs[job.txt]) {
+            try {
+              const text = await (await hs[job.txt].getFile()).text();
+              const cut = text.indexOf("■ 전문");
+              gist = (cut > 0 ? text.slice(0, cut) : text.slice(0, 1500)).trim();
+            } catch (e) {}
+          }
+
+          ups.push(await NF.upload(await pdfH.getFile()));
+          any = true;
+          /* mergeBlock 은 「━ 파일이름」 으로 시작하는 줄로 덩이를 찾습니다.
+             머리글 없이 넘기면 다시 찾지 못해, 같은 요약이 두 번 쌓이거나
+             앞 덩이를 갈아 끼울 때 통째로 지워집니다. */
+          if (gist) body = mergeBlock(body, job.pdf, "━ " + job.pdf + NLc + gist);
+          if ((job.people || []).length) people = NF.mergePeople(people, job.people);
+          if (job.place && !place) place = job.place;
         }
-        const up = await NF.upload(await pdfH.getFile());
-        const who = (job.people || []).join(", ");
+
+        if (!any) continue;                    // 이 날은 새로 붙일 것이 없습니다
 
         if (row) {
-          const patch = {
-            body: gist ? mergeBlock(row.body || "", job.pdf, gist) : (row.body || ""),
-            files: (row.files || []).concat([up]),
-          };
-          /* 비어 있는 칸만 채웁니다 — 손으로 적어 두신 것은 그대로 둡니다 */
-          if (who) patch.people = NF.mergePeople(row.people, job.people);
-          if (job.place && !(row.place || "").trim()) patch.place = job.place;
+          const patch = { body: body, files: (row.files || []).concat(ups) };
+          if (people) patch.people = people;
+          if (place && !(row.place || "").trim()) patch.place = place;
           const r2 = await sb.from("notes").update(patch).eq("id", row.id);
           if (r2.error) throw r2.error;
-          done.push(job.date + " → 「" + row.title + "」 에 붙였습니다");
+          /* 메모리의 글도 함께 갱신합니다 — 다시 돌릴 때 낡은 값을 밑감으로
+             삼지 않게. (load() 는 다 끝난 뒤에야 부릅니다.) */
+          Object.assign(row, patch);
+          done.push(date + " → 「" + row.title + "」 에 " + ups.length + "건 붙였습니다");
         } else {
-          const r2 = await sb.from("notes").insert({
-            category: "schedule", tag: "업무회의", title: title,
-            body: gist ? mergeBlock("", job.pdf, gist) : "",
-            event_date: job.date, place: job.place || null,
-            people: who || null, files: [up], created_by: user.id,
-          });
+          const title = titles.length > 1 ? titles.join("  ·  ") : (titles[0] || date);
+          const fresh = {
+            category: "schedule", tag: "업무회의", title: title.slice(0, 200),
+            body: body, event_date: date, place: place || null,
+            people: people || null, files: ups, created_by: user.id,
+          };
+          const r2 = await sb.from("notes").insert(fresh).select();
           if (r2.error) throw r2.error;
-          done.push(job.date + " → 새 글 「" + title + "」");
+          /* 만든 글을 rows 에 밀어 넣습니다 — 다시 돌릴 때 또 만들지 않게 */
+          const made = (r2.data && r2.data[0]) || null;
+          if (made) rows.unshift(made);
+          done.push(date + " → 새 글 「" + fresh.title + "」 (" + ups.length + "건)");
         }
       } catch (err) {
-        failed.push(job.raw + " — " + ((err && err.message) || "실패"));
+        /* 글에 못 붙였으면 올린 파일을 도로 치웁니다 —
+           안 그러면 아무도 안 보는 파일만 보관함에 쌓입니다. */
+        for (const u of ups) { try { await NF.remove(u.path); } catch (e) {} }
+        failed.push(date + " — " + ((err && err.message) || "실패"));
       }
     }
     await load();
@@ -2673,6 +2725,9 @@ export async function initNotes(mountId = "notesapp") {
     alert((done.length ? "붙였습니다:" + NL + done.join(NL) : "") +
       (done.length && failed.length ? NL + NL : "") +
       (failed.length ? "건너뜀:" + NL + failed.join(NL) : ""));
+    } finally {
+      recBusy = false; recBtn.disabled = false; recBtn.textContent = recWas;
+    }
   });
 
   document.getElementById("nmSave").addEventListener("click", async (e) => {

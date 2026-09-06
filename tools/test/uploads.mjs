@@ -39,6 +39,17 @@ const ROWS = [
 ];
 
 /* 한 글에 같은 파일이 두 번 적힌 것 · 날짜가 created_at 뿐인 것 */
+/* 분류마다 하나씩 — minutes·pic 이 자료에 없어 안 재지던 것을 메웁니다 */
+const KINDS = [
+  { id: "k", title: "분류 견본", category: "schedule", event_date: "2026-06-06",
+    files: [
+      { name: "20260606_회의록.pdf", path: "notes/k1.pdf", type: "pdf", size: 10 },
+      { name: "20260606_개최개요.jpg", path: "notes/k2.jpg", type: "image", size: 10 },
+      { name: "사진.png", path: "notes/k3.png", type: "image", size: 10 },
+      { name: "보고서.pdf", path: "notes/k4.pdf", type: "pdf", size: 10 },
+    ] },
+];
+
 const ODD = [
   { id: "e", title: "두 번 적힌 글", category: "daily", event_date: "2026-07-07",
     files: [
@@ -69,8 +80,20 @@ eq("나머지는 자료",
    [groupOf("pdf", "경기도_3대_공간산업.pdf"), groupOf("excel", "명단.xlsx"),
     groupOf("text", "메모.txt"), groupOf(undefined, "")],
    ["doc", "doc", "doc", "doc"]);
-eq("이름이 먼저 — 그림이어도 회의록이면 회의록",
-   groupOf("image", "20260824_회의록.png"), "minutes");
+/* 「이름이 먼저」 — 두 줄을 맞바꾸면 여기가 빨개집니다 */
+eq("그림이어도 회의록이면 회의록", groupOf("image", "20260824_회의록.png"), "minutes");
+eq("그림이어도 개최개요면 개최개요", groupOf("image", "개최개요.png"), "brief");
+eq("PDF 여도 그림 이름이면 Pictures", groupOf("pdf", "사진.jpg"), "pic");
+/* 잣대의 낱말들 — 하나라도 지우면 빨개집니다 */
+eq("회의록 낱말들",
+   ["_회의록.pdf", "회의록초안.hwp", "회의 결과.docx", "녹취록.txt", "받아쓰기.txt"]
+     .map((n) => groupOf("file", n)),
+   ["minutes", "minutes", "minutes", "minutes", "minutes"]);
+eq("개최개요 낱말들",
+   ["개최개요.jpg", "개최 건의.pdf", "개최안내.pdf", "초청장.pdf",
+    "프로그램.pdf", "식순.hwp", "일정표.xlsx", "안내문.pdf"]
+     .map((n) => groupOf("file", n)),
+   ["brief", "brief", "brief", "brief", "brief", "brief", "brief", "brief"]);
 eq("분류마다 셈", counts(items), { all: 5, minutes: 0, brief: 2, pic: 0, doc: 3 });
 
 console.log("\n── 거르기 ──");

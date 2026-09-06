@@ -58,13 +58,18 @@ export function parseFolder(name) {
  *  @param names 파일 이름 목록
  *  @returns {pdf, json, txt} — 없으면 빈 글자
  */
-export function pickFiles(names) {
+export function pickFiles(names, folder) {
   const L = (Array.isArray(names) ? names : []).filter(Boolean);
+  const stem = String(folder || "");
+  /* 폴더 이름으로 시작하는 것을 먼저 봅니다 — 남의 날 파일이 섞여 있어도
+     제 것을 집게. 없으면 그냥 첫 번째를 씁니다. */
+  const pick = (re) => L.filter((n) => re.test(n))
+    .sort((x, y) => (y.indexOf(stem) === 0 ? 1 : 0) - (x.indexOf(stem) === 0 ? 1 : 0))[0] || "";
   return {
     /* 「…_회의록.pdf」 만 봅니다. 「자문회의 개최건의….pdf」 같은 것은 아닙니다 */
-    pdf: L.find((n) => /_회의록\.pdf$/i.test(n)) || "",
-    json: L.find((n) => /_회의록내용\.json$/i.test(n)) || "",
-    txt: L.find((n) => /\.txt$/i.test(n)) || "",
+    pdf: pick(/_회의록\.pdf$/i),
+    json: pick(/_회의록내용\.json$/i),
+    txt: pick(/\.txt$/i),
   };
 }
 
@@ -97,7 +102,7 @@ export function plan(folders) {
     if (/^__|^\./.test(d.name)) return;              // __pycache__ 같은 것
     const info = parseFolder(d.name);
     if (!info.date) { skip.push({ name: d.name, why: "이름이 날짜로 시작하지 않습니다" }); return; }
-    const f = pickFiles(d.files);
+    const f = pickFiles(d.files, d.name);
     if (!f.pdf) { skip.push({ name: d.name, why: "「…_회의록.pdf」 가 없습니다" }); return; }
     jobs.push({ ...info, ...f, title: "" });
   });
