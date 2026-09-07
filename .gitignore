@@ -87,3 +87,11 @@ _facetest.html
 #   · .session.json 에는 로그인 표가 들어 있어 절대 공개되면 안 됩니다
 5_Gallery/
 _daytest.html
+_packtest.html
+_phonetest.html
+_twinstest.html
+_editlook.html
+
+# 얼굴 사진 꾸러미 — 내려받으면 저장소 뿌리에 떨어집니다.
+# 안에 얼굴 사진이 통째로 들어 있어 공개 저장소에 올라가면 안 됩니다.
+얼굴사진*.json

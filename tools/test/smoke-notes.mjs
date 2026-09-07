@@ -267,7 +267,8 @@ const load = (p, extra = (s) => s) => {
     ' postUrl: () => "#", albumUrl: () => "#", total: () => 0 };');
   s = s.replace(/^import \* as GC from "\.\/gcal\.js[^"]*";$/m,
     'const GC = { ready: () => false, connected: () => false, month: async () => [],' +
-    ' connect: async () => {}, disconnect() {}, addEvent: async () => "" };');
+    ' connect: async () => {}, disconnect() {}, addEvent: async () => "",' +
+    ' deleteEvent: async (id, cal) => { globalThis.__gdel = [id, cal]; return true; } };');
   return import("data:text/javascript;base64," + Buffer.from(extra(s)).toString("base64"));
 };
 
@@ -576,6 +577,43 @@ await check("회의록 PDF 가 없는 폴더는 왜 건너뛰는지 알려 준�
   if (calls.some((c) => c[0] === "insert")) throw new Error("글을 만들었습니다");
   const last = alerts[alerts.length - 1] || "";
   if (!/회의록\.pdf/.test(last)) throw new Error("까닭을 안 알려 줍니다 — " + last);
+});
+
+console.log("─".repeat(60));
+console.log("삭제 단추");
+
+/* 「스케쥴이 삭제를 눌러도 삭제가 안되」 —
+   구글에서 옮겨 온 새 글은 지울 「글」 이 없어 단추가 꺼져 있었습니다.
+   이제 늘 눌리고, 누르면 지울 것이 있으면 지우고 없으면 까닭을 알려 줍니다. */
+await check("새 글에서도 삭제 단추가 눌린다", async () => {
+  await fire("nNew", "click");
+  if (byId("nmDelTop").disabled) throw new Error("아직도 꺼져 있습니다");
+});
+
+await check("아무 데도 저장 안 된 새 글이면 까닭을 알려 준다", async () => {
+  alerts.length = 0;
+  await fire("nNew", "click");
+  await fire("nmDel", "click");
+  const last = alerts[alerts.length - 1] || "";
+  if (!/지울 것이 없습니다/.test(last)) throw new Error("아무 말이 없습니다 — " + last);
+});
+
+/* 앱 달력에서 구글 일정을 눌러 들어오면 「삭제」 가 구글 쪽을 지웁니다 —
+   여기 글은 아직 없으니 그것 말고는 지울 것이 없습니다. */
+await check("구글에서 온 일정은 삭제가 구글 쪽을 지운다", async () => {
+  location.search = "?cat=schedule&new=2026-09-14&gt=%EB%AE%A4%EC%BD%98" +
+                    "&gid=evt777&gc=cal%40group.calendar.google.com&back=app";
+  location.href = "https://skyish.kr/blog.html" + location.search;
+  globalThis.__gdel = null;
+  confirms.length = 0;
+  await M.initNotes("notesapp");
+  await fire("nmDel", "click");
+  if (!confirms.some((c) => /구글 캘린더에서/.test(c)))
+    throw new Error("여쭙지 않았습니다 — " + confirms.join(" / "));
+  if (!globalThis.__gdel || globalThis.__gdel[0] !== "evt777")
+    throw new Error("구글에 지우라고 안 했습니다 — " + JSON.stringify(globalThis.__gdel));
+  if (globalThis.__gdel[1] !== "cal@group.calendar.google.com")
+    throw new Error("어느 캘린더인지 안 넘겼습니다 — " + JSON.stringify(globalThis.__gdel));
 });
 
 console.log("─".repeat(60));

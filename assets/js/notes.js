@@ -7,13 +7,13 @@
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as NF from "./notes-files.js?v=202609051200";
-import * as GC from "./gcal.js?v=202609070900";
+import * as GC from "./gcal.js?v=202609080900";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
-import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609051900";
+import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609080900";
 import * as FT from "./notes-facetag.js?v=202609052100";
 import * as MN from "./notes-minutes.js?v=202609061000";
 import * as CD from "./notes-cards.js?v=202609051200";
@@ -521,6 +521,9 @@ export async function initNotes(mountId = "notesapp") {
     location.replace("app.html?r=" + Date.now());
   };
   let rows = [], cur = isAdmin ? "all" : MEMBER_CATS[0], editing = null;
+  /* 구글에서 옮겨 온 새 글이면 어느 일정에서 왔는지 — 「삭제」 가 이것을 봅니다 */
+  let fromG = null;
+  const NLm = String.fromCharCode(10);
   let gEvents = [];   // 구글에서 받아 온 일정
   /* 달력에 그릴 구글 일정 — 내가 여기서 쓴 글이 구글로 넘어간 것은 걷어 냅니다.
      안 걷으면 글 하나가 달력에 두 번 그려집니다.
@@ -2121,6 +2124,10 @@ export async function initNotes(mountId = "notesapp") {
   /* 구글 일정을 새 글로 옮깁니다 — Schedule 갈래로, 날짜·장소를 채워서 */
   function fromGoogle(e) {
     open(null);
+    /* 어느 구글 일정에서 왔는지 기억해 둡니다 —
+       아직 저장 안 한 새 글이라 지울 「글」 은 없지만, 사람이 지우고 싶은 것은
+       구글 쪽 일정입니다. 「삭제」 를 누르면 그것을 지울 수 있게 합니다. */
+    fromG = { gid: e.gid || "", calId: e.calId || "", title: e.title || "", date: e.date || "" };
     mCat.value = "schedule";
     syncTag();
     document.getElementById("nmT").value = e.title || "";
@@ -2131,7 +2138,10 @@ export async function initNotes(mountId = "notesapp") {
     if (e.place) lines.push("장소: " + e.place);
     if (e.cal) lines.push("캘린더: " + e.cal);
     document.getElementById("nmB").value = lines.join(String.fromCharCode(10));
-    msg.textContent = "구글 일정을 옮겨 왔습니다. 고쳐서 저장하세요.";
+    /* 아래 「지우기」 도 내놓습니다 — 구글 쪽 일정을 지울 수 있으니까요 */
+    document.getElementById("nmDel").hidden = false;
+    msg.textContent = "구글 일정을 옮겨 왔습니다. 고쳐서 저장하세요." +
+      (fromG.gid ? " (「삭제」 를 누르면 구글 쪽 일정을 지웁니다)" : "");
   }
 
   /* ── 아래 칸 → 본문 자동 반영 ──────────────────────────────
@@ -2175,6 +2185,7 @@ export async function initNotes(mountId = "notesapp") {
   /** row 를 고칠 때는 그 글로, 새 글이면 day(2026-08-26)가 있으면 그날로 엽니다 */
   function open(row, day) {
     editing = row || null;
+    fromG = null;                        // 새로 여니 「구글에서 옮겨 옴」 표시를 지웁니다
     dirty = false;                       // 새로 여는 것이므로 고친 것이 없습니다
     document.getElementById("nDetail").classList.remove("on");   // 위에 덮인 창을 걷습니다
     document.getElementById("nmTitle").textContent = row ? "글 고치기" : "새 글";
@@ -2184,8 +2195,10 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmDel").hidden = !row;
     const delTop = document.getElementById("nmDelTop");
     delTop.hidden = false;
-    delTop.disabled = !row;
-    delTop.title = row ? "이 글을 지웁니다" : "새 글은 아직 지울 것이 없습니다";
+    /* 늘 누를 수 있게 둡니다 — 꺼 두었더니 「눌러도 안 된다」 는 말씀이 잦았습니다.
+       누르면 지울 것이 있으면 지우고, 없으면 왜 없는지 알려 드립니다. */
+    delTop.disabled = false;
+    delTop.title = row ? "이 글을 지웁니다" : "구글에서 옮겨 온 일정이면 구글 쪽을 지웁니다";
     fillCats(row ? row.category : "");     // 그 글의 갈래에 자리를 내어 줍니다
     mCat.value = row ? row.category
                      : ((cur === "all" || BROWSE_CATS.indexOf(cur) >= 0) ? "schedule" : cur);
@@ -2976,10 +2989,37 @@ export async function initNotes(mountId = "notesapp") {
   });
 
   document.getElementById("nmDel").addEventListener("click", async () => {
-    if (!editing) return;
-    if (!await removePost(editing)) return;
-    close();
-    if (fromApp) backToApp();                          // 앱에서 왔으면 앱 달력으로
+    /* ① 저장돼 있는 글이면 그 글을 지웁니다 */
+    if (editing) {
+      if (!await removePost(editing)) return;
+      close();
+      if (fromApp) backToApp();                        // 앱에서 왔으면 앱 달력으로
+      return;
+    }
+    /* ② 구글에서 옮겨 온 새 글이면 — 지울 「글」 은 없고, 구글 쪽 일정이 있습니다.
+       구글 달력에서 지우는 것은 되돌릴 수 없으므로 반드시 여쭙습니다. */
+    if (fromG && fromG.gid) {
+      const what = (fromG.date ? fromG.date + " " : "") + (fromG.title || "이 일정");
+      if (!confirm("구글 캘린더에서 「" + what + "」 을 지웁니다." + NLm +
+                   "되돌릴 수 없습니다. 지울까요?")) return;
+      try {
+        msg.textContent = "구글에서 지우는 중…";
+        await GC.deleteEvent(fromG.gid, fromG.calId);
+        gEvents = gEvents.filter((x) => x.gid !== fromG.gid);
+        fromG = null;
+        close();
+        if (fromApp) { backToApp(); return; }
+        drawCal();
+        draw();
+        alert("구글 캘린더에서 지웠습니다.");
+      } catch (err) {
+        msg.textContent = "지우지 못했습니다 — " + friendly((err && err.message) || err);
+      }
+      return;
+    }
+    /* ③ 그 밖 — 아직 아무 데도 저장되지 않았습니다 */
+    alert("아직 저장하지 않은 새 글이라 지울 것이 없습니다." + NLm +
+          "창을 닫으시려면 「취소」 를 누르세요.");
   });
 
   /* ── 달력 켜고 끄기 · 엑셀 ── */
@@ -3185,7 +3225,14 @@ export async function initNotes(mountId = "notesapp") {
         const gp = qs.get("gp");
         if (gp) document.getElementById("nmP").value = gp.slice(0, 120);
       }
-      tidy(["new", "gt", "gtm", "gp"]);
+      /* 구글에서 온 일정이면 그 번호를 쥐고 있습니다 —
+         「삭제」 를 누르면 구글 쪽 일정을 지웁니다 (아직 여기 글은 없으니까요). */
+      const gid = qs.get("gid");
+      if (gid) {
+        fromG = { gid: gid, calId: qs.get("gc") || "", title: gt || "", date: day };
+        document.getElementById("nmDel").hidden = false;
+      }
+      tidy(["new", "gt", "gtm", "gp", "gid", "gc"]);
       return true;
     }
     const want = qs.get("id");

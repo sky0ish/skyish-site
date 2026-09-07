@@ -8,9 +8,18 @@
 
 /* addressbook.js 는 auth/auth.js 를 들여옵니다 — 시늉으로 막습니다 */
 import { readFileSync } from "fs";
+/* addr-pack.js 는 진짜를 씁니다 (셈 자체는 tools/test/addr-pack.mjs 가 봅니다).
+   data: 꼴 안에서는 상대 경로가 풀리지 않아, 그 파일을 통째로 심어 넣습니다.
+   addr-pack.js 는 아무것도 들여오지 않아 이렇게 해도 됩니다. */
+const packUrl = "data:text/javascript;base64," + Buffer.from(
+  readFileSync(new URL("../../assets/js/addr-pack.js", import.meta.url), "utf8"), "utf8")
+  .toString("base64");
 const src = readFileSync(new URL("../../assets/js/addressbook.js", import.meta.url), "utf8")
   .replace(/^import \{[^}]*\} from "\.\.\/\.\.\/auth\/auth\.js";$/m,
-    "const currentUser = async () => null; const myProfile = async () => null;");
+    "const currentUser = async () => null; const myProfile = async () => null;")
+  /* 들여오기가 여러 줄로 접혀 있어도 잡습니다 */
+  .replace(/^(import \{[\s\S]*?\} from )"\.\/addr-pack\.js[^"]*";$/m,
+    (all, head) => head + JSON.stringify(packUrl) + ";");
 const AB = await import(
   "data:text/javascript;base64," + Buffer.from(src, "utf8").toString("base64"));
 
@@ -85,21 +94,61 @@ const f = (name) => ({ kind: "file", name });
 const d = (name, kids) => Object.assign(dirOf(kids), { kind: "directory", name });
 
 console.log("\n── 9.FACE 폴더 훑기 ──");
+/* 파일 이름의 밑줄·괄호 뒤는 **소속**입니다.
+   전에는 그것을 버리고 이름만 열쇠로 썼습니다. 그래서 「NT로봇 대표 김경환」 의
+   얼굴이 「경기도청 김경환」 께 붙었습니다. 이제 소속까지 열쇠에 담습니다. */
 const face = d("9.FACE", [
-  f("현병천.jpg"),
-  f("서민호_국토연구원.png"),          // 밑줄 뒤는 메모
-  f("김고은(부연구위원).jpeg"),         // 괄호 뒤도 메모
+  f("현병천.jpg"),                      // 소속 없음 — 누구에게나 붙는 옛 꼴
+  f("서민호_국토연구원.png"),          // 밑줄 뒤는 소속
+  f("김고은(부연구위원).jpeg"),         // 괄호 안도 소속
   f("읽어주세요.txt"),                 // 그림이 아닌 것
   f("이석준.JPG"),                     // 대문자 확장자
   d("경기도청", [f("홍길동.webp")]),    // 하위 폴더도 한 겹
 ]);
 const m = await AB.collectPhotos(face);
 eq("그림만 골라낸다", [...m.keys()].sort(),
-   ["김고은", "서민호", "이석준", "현병천", "홍길동"]);
+   ["김고은|부연구위원", "서민호|국토연구원", "이석준", "현병천", "홍길동"]);
 eq("파일까지 들고 온다", m.get("현병천").name, "현병천.jpg");
-eq("밑줄 뒤는 뗀다", m.get("서민호").name, "서민호_국토연구원.png");
+eq("밑줄 뒤는 소속으로", m.get("서민호|국토연구원").name, "서민호_국토연구원.png");
+eq("괄호 안도 소속으로", m.get("김고은|부연구위원").name, "김고은(부연구위원).jpeg");
 eq("대문자 확장자도", m.get("이석준").name, "이석준.JPG");
 eq("하위 폴더 것도", m.get("홍길동").name, "홍길동.webp");
+
+console.log("\n── 폴더의 그림을 정말로 지웁니다 ──");
+/* 전에는 브라우저 안 사본만 지워, 「사진 지우기」 를 눌러도 폴더에서 다시 읽혀
+   얼굴이 그대로 돌아왔습니다. 지우려면 그 파일이 어느 폴더에 있는지 알아야 합니다. */
+{
+  const del = { done: [] };
+  const one = {
+    kind: "directory", name: "9.FACE",
+    values: async function* () { yield f("이석준_경기연구원.jpg"); },
+    queryPermission: async () => "granted",
+    requestPermission: async () => "granted",
+    removeEntry: async (nm) => { del.done.push(nm); },
+  };
+  const mm = await AB.collectPhotos(one);
+  const it = mm.get("이석준|경기연구원");
+  eq("어느 폴더의 것인지 적어 둔다", !!(it && it.dir), true);
+  eq("파일 이름도 적어 둔다", it && it.name, "이석준_경기연구원.jpg");
+  eq("파일 손잡이도 그대로", !!(it && it.fh), true);
+  /* 정말로 폴더에서 지웁니다 */
+  eq("지운 파일 이름을 돌려준다", await AB.deleteFolderEntry(it), "이석준_경기연구원.jpg");
+  eq("그 파일을 지웠다", del.done, ["이석준_경기연구원.jpg"]);
+}
+
+console.log("\n── 쓰기를 허락 안 하시면 안 지웁니다 ──");
+{
+  const no = { done: [] };
+  const it = { name: "가나.jpg", dir: {
+    queryPermission: async () => "prompt",
+    requestPermission: async () => "denied",
+    removeEntry: async (n) => { no.done.push(n); },
+  } };
+  eq("빈 글자를 돌려준다", await AB.deleteFolderEntry(it), "");
+  eq("아무것도 안 지웠다", no.done, []);
+  eq("아무것도 아닌 것", [await AB.deleteFolderEntry(null),
+                          await AB.deleteFolderEntry({ name: "x" })], ["", ""]);
+}
 
 console.log("\n── 없는 폴더·험한 것 ──");
 eq("폴더가 없으면 빈 표", (await AB.collectPhotos(null)).size, 0);

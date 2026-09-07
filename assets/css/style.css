@@ -3042,6 +3042,36 @@ body.diary-on #notesapp > *:not(.ndiary) {
 
 /* ── 주소록 얼굴 사진 ─────────────────────────────────────── */
 /* 이름 오른쪽에 작게 */
+.ahint--how { flex-basis: 100%; margin: 4px 0 0; font-size: .8rem; line-height: 1.5;
+  opacity: .75; }
+
+/* 주소록 — 일련번호 칸 */
+.nimp__tbl td.ano { width: 3.2em; text-align: right; padding-right: 10px;
+  color: #9a9284; font-variant-numeric: tabular-nums; font-size: .86em; white-space: nowrap; }
+.nimp__tbl th.ano { width: 3.2em; text-align: right; padding-right: 10px;
+  color: #9a9284; font-weight: 600; }
+
+/* 동명이인이 나눠 쓰는 사진이라는 알림 */
+.aphoto__warn { margin: 0 0 6px; font-size: .8rem; line-height: 1.4;
+  color: #a4553a; background: rgba(200, 120, 80, .1);
+  border-radius: 8px; padding: 6px 8px; }
+
+/* 명함 받아 내용 더하기 */
+.aedit__note { margin: 0 0 10px; font-size: .82rem; line-height: 1.5; opacity: .8; }
+.aedit { display: grid; grid-template-columns: 5.4em 1fr; align-items: center;
+  gap: 8px; margin-bottom: 6px; }
+.aedit > b { font-weight: 600; font-size: .86rem; opacity: .75; }
+.aedit input, .aedit textarea { width: 100%; font: inherit; padding: 7px 8px;
+  border: 1px solid rgba(95, 88, 80, .3); border-radius: 8px;
+  background: var(--card, #fff); color: inherit; }
+.aedit--memo { align-items: start; }
+.aedit textarea { resize: vertical; line-height: 1.45; }
+.aedit__foot { display: flex; gap: 6px; margin-top: 12px; }
+.aedit__foot .nbtn { flex: 1; }
+@media (max-width: 560px) {
+  .aedit { grid-template-columns: 1fr; gap: 3px; }
+}
+
 .afaceimg { display:inline-block; vertical-align:middle; width:30px; height:30px;
   border-radius:50%; object-fit:cover; margin:-2px 0 -2px 8px;
   border:1px solid var(--line); background:#f2efe6; }

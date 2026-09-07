@@ -55,6 +55,16 @@ eq("장소가 없으면 장소도 안 붙인다",
    q(linkTo({ t: "종일 일정" }, "2026-09-07", false)).gp, undefined);
 eq("제목에 &·? 가 섞여도 주소가 깨지지 않는다",
    q(linkTo({ t: "가&나?다=라" }, "2026-09-07", false)).gt, "가&나?다=라");
+/* 구글이 매긴 번호도 함께 — 「삭제」 가 이것으로 구글 쪽 일정을 지웁니다 */
+const gd = q(linkTo({ t: "뮤콘", gid: "abc123", calId: "x@group.calendar.google.com" },
+                    "2026-09-07", true));
+eq("일정 번호를 실어 보낸다", gd.gid, "abc123");
+eq("어느 캘린더인지도", gd.gc, "x@group.calendar.google.com");
+eq("번호가 없으면 안 붙인다",
+   [q(linkTo({ t: "무언가" }, "2026-09-07", false)).gid,
+    q(linkTo({ t: "무언가" }, "2026-09-07", false)).gc], [undefined, undefined]);
+eq("내 글에는 번호를 안 붙인다",
+   q(linkTo({ id: "9", cat: "schedule", gid: "abc" }, "2026-09-07", false)).gid, undefined);
 
 console.log("\n── 날짜가 없거나 이상하면 ──");
 /* 날짜를 못 믿으면 새 글 창을 열 수 없습니다 — 일정 게시판으로만 보냅니다 */

@@ -346,6 +346,7 @@ export async function month(year, mon0) {
           allDay: !!s.date,
           time: s.dateTime ? s.dateTime.slice(11, 16) : "",
           cal: c.name,
+          calId: c.id,          // 지울 때 씁니다 (이름이 아니라 번호로 부릅니다)
           color: c.color,
         };
       }).filter((x) => x.date);
@@ -363,6 +364,31 @@ export async function month(year, mon0) {
   }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 }
 
+
+/** 구글 캘린더에서 일정 하나를 지웁니다.
+ *  되돌릴 수 없습니다 — 부르는 쪽에서 반드시 사람에게 물은 뒤에 부르십시오.
+ *  @param id    구글이 매긴 일정 번호 (month() 가 주는 gid)
+ *  @param calId 어느 캘린더의 것인지 (없으면 내 캘린더)
+ */
+export async function deleteEvent(id, calId) {
+  if (!id) throw new Error("어느 일정인지 알 수 없습니다.");
+  const t = await useToken();
+  const r = await fetch(
+    "https://www.googleapis.com/calendar/v3/calendars/" +
+      encodeURIComponent(calId || "primary") + "/events/" + encodeURIComponent(id),
+    { method: "DELETE", headers: { Authorization: "Bearer " + t } });
+  /* 410 은 「이미 지워졌다」 입니다 — 바라던 결과이므로 성공으로 봅니다 */
+  if (r.ok || r.status === 410 || r.status === 204) return true;
+  if (r.status === 401 || r.status === 403) {
+    if (await authFail(r)) {
+      disconnect();
+      throw new Error("구글이 지우기를 막았습니다 — 「구글 달력 잇기」 를 다시 눌러 주세요.");
+    }
+    throw new Error("구글이 잠시 바쁩니다 — 조금 뒤에 다시 해 주세요.");
+  }
+  if (r.status === 404) throw new Error("그 일정을 찾지 못했습니다 (이미 지워졌을 수 있습니다).");
+  throw new Error("구글에서 지우지 못했습니다 (" + r.status + ")");
+}
 
 /* ── 일정 하나를 구글 「내 캘린더(primary)」 에 넣습니다 ──
    @param {date:"2026-09-02", time:"14:00"|"" , title, place}

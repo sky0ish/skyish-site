@@ -44,7 +44,11 @@ export function linkTo(x, day, app) {
   return "blog.html?cat=schedule&new=" + d +
          "&gt=" + e((x && x.t) || "") +
          ((x && x.time) ? "&gtm=" + e(x.time) : "") +
-         ((x && x.place) ? "&gp=" + e(x.place) : "") + back;
+         ((x && x.place) ? "&gp=" + e(x.place) : "") +
+         /* 구글이 매긴 번호도 실어 보냅니다 — 「삭제」 를 누르면 구글 쪽 일정을
+            지울 수 있어야 합니다. 번호가 없으면 지울 것을 못 찾습니다. */
+         ((x && x.gid) ? "&gid=" + e(x.gid) : "") +
+         ((x && x.calId) ? "&gc=" + e(x.calId) : "") + back;
 }
 
 /** 그날 새로 쓰기 — 게시판을 골라 갑니다 */

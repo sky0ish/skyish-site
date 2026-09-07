@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My WAY">
 <link rel="icon" href="assets/img/app/icon-192.png">
-<link rel="stylesheet" href="assets/css/style.css?v=202609070900">
+<link rel="stylesheet" href="assets/css/style.css?v=202609080900">
 
 <style>
   /* 앱 화면만의 옷 — 폰에 맞춰 한 손 거리 안에 큼직하게 */
@@ -123,10 +123,10 @@
 </style>
   <!-- 달력이 쓸 것들을 미리 받아 둡니다 — 안 그러면 파일을 줄줄이 하나씩 받느라
        1초를 그냥 씁니다 (문서 → home-cal → auth → gcal → supabase 순서로 기다림) -->
-  <link rel="modulepreload" href="assets/js/home-cal.js?v=202609070900">
+  <link rel="modulepreload" href="assets/js/home-cal.js?v=202609080900">
   <link rel="modulepreload" href="auth/auth.js">
   <link rel="modulepreload" href="auth/config.js">
-  <link rel="modulepreload" href="assets/js/gcal.js?v=202609070900">
+  <link rel="modulepreload" href="assets/js/gcal.js?v=202609080900">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://qmdovjlxfvinknuizelw.supabase.co" crossorigin>
   <link rel="preconnect" href="https://accounts.google.com">
@@ -179,7 +179,7 @@
      여기서 미리 손에 쥐어 둡니다. 단추를 누른 뒤에 불러오면 그 사이
      「사람이 눌렀다」 는 효력이 만료돼 브라우저가 창을 막습니다. */
   let GC = null;
-  import("./assets/js/gcal.js?v=202609070900")
+  import("./assets/js/gcal.js?v=202609080900")
     .then((m) => { GC = m; if (m.warm) m.warm(); }).catch(() => {});
 
   // 구글 달력 잇기 — 눌러 허용하면 구글 일정이 달력에 얹히고,
@@ -217,7 +217,7 @@
   document.getElementById("goSched").href = "blog.html?cat=schedule&new=" + ymd + "&back=app";
 
   // 달력 — 첫 화면 것을 그대로. 관리자가 아니면 스스로 사라집니다.
-  import("./assets/js/home-cal.js?v=202609070900")
+  import("./assets/js/home-cal.js?v=202609080900")
     .then((m) => m.initHomeCal("hocal"))
     .catch(() => {});
 </script>
