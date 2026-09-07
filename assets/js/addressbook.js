@@ -16,7 +16,7 @@
 //    그래서 절대 한 칸에 합치지 않습니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import { IMG_EXT, photoKey, nameFromFile, packText, readPack, packFileName, dataUrlType, sortPicked,
-         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609081200";
+         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609081500";
 
 /** 주인 이메일 — 이 사람만 주소록을 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];

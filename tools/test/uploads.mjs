@@ -2,7 +2,7 @@
 //
 //   돌리는 법 :  node tools/test/uploads.mjs
 
-import { fileRows, pickFiles, matchFile, counts, summary, groupOf, duplicates, byBoard }
+import { fileRows, pickFiles, matchFile, counts, summary, groupOf, duplicates, byBoard, GROUPS }
   from "../../assets/js/notes-uploads.js";
 
 /* 자료는 Schedule·회의록·일상 등 여러 게시판에서 올라옵니다 */
@@ -94,7 +94,27 @@ eq("개최개요 낱말들",
     "프로그램.pdf", "식순.hwp", "일정표.xlsx", "안내문.pdf"]
      .map((n) => groupOf("file", n)),
    ["brief", "brief", "brief", "brief", "brief", "brief", "brief", "brief"]);
-eq("분류마다 셈", counts(items), { all: 5, minutes: 0, brief: 2, pic: 0, doc: 3 });
+eq("분류마다 셈", counts(items), { all: 5, minutes: 0, brief: 2, doc: 3 });
+
+/* 사진은 이 화면에 안 나옵니다 —
+   「Upload에는 사진은 안보이게해줘. 자료만 빨리 찾을때 금방 찾도록」 */
+const PICS = [
+  { id: "p", title: "사진 있는 글", category: "schedule", event_date: "2026-09-08",
+    files: [
+      { name: "단체.jpg", path: "notes/p1.jpg", type: "image", size: 100 },
+      { name: "IMG_0007.PNG", path: "notes/p2.png", type: "file", size: 100 },
+      { name: "보고서.pdf", path: "notes/p3.pdf", type: "pdf", size: 100 },
+      { name: "20260908_회의록.png", path: "notes/p4.png", type: "image", size: 100 },
+    ] },
+];
+console.log("\n── 사진은 안 보입니다 ──");
+const noPic = fileRows(PICS, CAT_NAME);
+eq("사진은 빠진다", noPic.map((x) => x.name).sort(),
+   ["20260908_회의록.png", "보고서.pdf"]);
+eq("이름으로 회의록인 그림은 남는다",
+   noPic.some((x) => x.name === "20260908_회의록.png"), true);
+eq("Pictures 단추는 없다", GROUPS.map(([k]) => k).includes("pic"), false);
+eq("분류는 넷", GROUPS.map(([k]) => k), ["all", "minutes", "brief", "doc"]);
 
 console.log("\n── 거르기 ──");
 eq("자료만", pickFiles(items, "doc", "").map((x) => x.name).sort(),

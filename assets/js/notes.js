@@ -13,12 +13,12 @@ import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
-import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609081200";
+import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609081500";
 import * as FT from "./notes-facetag.js?v=202609052100";
-import * as MN from "./notes-minutes.js?v=202609081200";
-import * as PP from "./notes-photo-pick.js?v=202609081200";
+import * as MN from "./notes-minutes.js?v=202609081500";
+import * as PP from "./notes-photo-pick.js?v=202609081500";
 import * as CD from "./notes-cards.js?v=202609051200";
-import * as UP from "./notes-uploads.js?v=202609061000";
+import * as UP from "./notes-uploads.js?v=202609081500";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],

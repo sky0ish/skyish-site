@@ -14,9 +14,13 @@ export const GROUPS = [
   ["all",     "전체"],
   ["minutes", "회의록"],
   ["brief",   "개최개요"],
-  ["pic",     "Pictures"],
   ["doc",     "자료"],
 ];
+
+/* 사진은 이 화면에 내놓지 않습니다 —
+   「Upload에는 사진은 안보이게해줘. 자료만 빨리 찾을때 금방 찾도록」
+   사진은 글마다 본문 아래에 그대로 펼쳐집니다. */
+export const HIDDEN = "pic";
 
 /* 이름만 보고도 알 수 있는 것들 — 파일 꼴보다 이름이 먼저입니다 */
 const RE_MINUTES = /(_회의록|회의록|회의\s*결과|녹취|받아쓰기)/;
@@ -59,6 +63,8 @@ export function fileRows(rows, catName) {
     const list = Array.isArray(r && r.files) ? r.files : [];
     list.forEach((f) => {
       if (!f || !f.path) return;
+      /* 사진은 빼고 셉니다 — 자료를 찾는 화면이라 그림이 섞이면 눈에 걸립니다 */
+      if (groupOf(f.type, f.name) === HIDDEN) return;
       const k = r.id + "|" + f.path;
       if (seen.has(k)) return;            // 같은 글에 같은 파일이 두 번 적혀 있으면 한 번만
       seen.add(k);
