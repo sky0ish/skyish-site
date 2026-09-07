@@ -135,12 +135,22 @@ const fakeFile = (name) => ({
   }),
 });
 globalThis.window = globalThis;      // notes.js 가 window.showDirectoryPicker 를 봅니다
+/* 회의 폴더 안에 「pictures」 폴더를 두고 싶으면
+   globalThis.__pics 에 {폴더이름: [사진이름…]} 을 넣습니다. */
 globalThis.showDirectoryPicker = async () => ({
   async *values() {
     for (const [dname, files] of Object.entries(globalThis.__dirs || {})) {
+      const pics = (globalThis.__pics || {})[dname] || [];
       yield {
         kind: "directory", name: dname,
-        async *values() { for (const f of files) yield fakeFile(f); },
+        async *values() {
+          for (const f of files) yield fakeFile(f);
+          if (!pics.length) return;
+          yield {
+            kind: "directory", name: "pictures",
+            async *values() { for (const p of pics) yield fakeFile(p); },
+          };
+        },
       };
     }
   },
@@ -197,7 +207,9 @@ const load = (p, extra = (s) => s) => {
     ' mergePeople: (cur, add) => { const have = String(cur || "").split(/\s*,\s*/).filter(Boolean);' +
     ' (add || []).forEach((n) => { if (!have.includes(n)) have.push(n); }); return have.join(", "); },' +
     ' extract: async () => ({ total: 0, mine: [], head: [], people: [], event: "" }),' +
-    ' asText: () => "", filesFrom: () => [], upload: async () => ({}),' +
+    ' asText: () => "", filesFrom: () => [],' +
+    /* 올린 파일의 이름·경로를 진짜처럼 돌려줍니다 — 이것이 글의 붙임이 됩니다 */
+    ' upload: async (f) => ({ name: (f && f.name) || "", path: "notes/" + ((f && f.name) || ""), type: "file", size: 10 }),' +
     ' signedUrl: async () => "x", downloadUrl: async () => "x",' +
     ' remove: async () => {}, fileFromStore: async () => ({}) };');
   /* 올린 자료 모으기도 진짜를 씁니다 — 셈 자체는 tools/test/uploads.mjs 가 봅니다.
@@ -265,6 +277,18 @@ const load = (p, extra = (s) => s) => {
     'const UT = { me: async () => null, signIn: async () => {}, signOut: async () => {},' +
     ' dayRecords: async () => ({ posts: [], comments: [], photos: [] }),' +
     ' postUrl: () => "#", albumUrl: () => "#", total: () => 0 };');
+  /* 단체사진 고르기 — 고르는 규칙(pickBest)은 진짜를 쓰고,
+     얼굴 세기만 시늉합니다 (globalThis.__faces 에 {사진이름: 얼굴수}). */
+  const ppUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-photo-pick.js", "utf8")).toString("base64");
+  s = s.replace(/^import \* as PP from "\.\/notes-photo-pick\.js[^"]*";$/m,
+    "const PPreal = await import(" + JSON.stringify(ppUrl) + ");" +
+    "const PP = { ...PPreal, bestPhoto: async (cand) => {" +
+    "  globalThis.__cand = cand.map((c) => c.name);" +
+    "  const list = cand.map((c) => ({ name: c.name, file: c.file," +
+    "    faces: (globalThis.__faces || {})[c.name] ?? -1, w: 100, h: 100 }));" +
+    "  return { best: PPreal.pickBest(list), list };" +
+    "} };");
   s = s.replace(/^import \* as GC from "\.\/gcal\.js[^"]*";$/m,
     'const GC = { ready: () => false, connected: () => false, month: async () => [],' +
     ' connect: async () => {}, disconnect() {}, addEvent: async () => "",' +
@@ -566,6 +590,85 @@ await check("같은 날 회의가 둘이면 글은 하나에 두 건", async () 
   for (const who of ["강은호", "김병규"])
     if (!(v.people || "").includes(who))
       throw new Error(who + " 이 만난 사람에 없습니다 — " + v.people);
+});
+
+/* 「사진중에 얼굴개수가 가장 많은 단체사진만 1장 올리면 되」 */
+await check("사진 폴더가 있으면 단체사진 한 장을 함께 올린다", async () => {
+  globalThis.__dirs = { "20260831_비스트로미_이소라": ["20260831_비스트로미_이소라_회의록.pdf"] };
+  globalThis.__pics = { "20260831_비스트로미_이소라": ["혼자.jpg", "단체.jpg", "둘이.jpg"] };
+  globalThis.__faces = { "혼자.jpg": 1, "단체.jpg": 7, "둘이.jpg": 2 };
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const names = (v.files || []).map((f) => f.name);
+  if (names.length !== 2)
+    throw new Error("붙임이 " + names.length + "개입니다 (회의록 + 사진 둘이어야 합니다) — " + names);
+  if (!names.some((n) => /회의록\.pdf$/.test(n)))
+    throw new Error("회의록이 없습니다 — " + names);
+  if (!names.includes("단체.jpg"))
+    throw new Error("얼굴이 가장 많은 사진이 아닙니다 — " + names);
+});
+
+await check("사진 폴더에 그림이 아닌 것이 섞여도 안 올린다", async () => {
+  globalThis.__dirs = { "20260903_어디_아무개": ["20260903_어디_아무개_회의록.pdf"] };
+  globalThis.__pics = { "20260903_어디_아무개": ["메모.txt", "녹음.m4a", "단체.jpg"] };
+  globalThis.__faces = { "단체.jpg": 4 };
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const names = (v.files || []).map((f) => f.name);
+  if (names.some((n) => /\.(txt|m4a)$/.test(n)))
+    throw new Error("그림이 아닌 것이 올라갔습니다 — " + names);
+  if (!names.includes("단체.jpg")) throw new Error("사진이 안 올라갔습니다 — " + names);
+  /* 고르는 자리까지도 그림만 와야 합니다 — 아니면 큰 txt 가 뽑힐 수 있습니다 */
+  const cand = globalThis.__cand || [];
+  if (cand.some((n) => /\.(txt|m4a)$/.test(n)))
+    throw new Error("그림이 아닌 것이 고르기까지 왔습니다 — " + cand);
+});
+
+await check("발표자료(final)도 함께 올린다", async () => {
+  globalThis.__dirs = { "20260902_발표_서민호": [
+    "20260902_발표_서민호_회의록.pdf",
+    "자문회의 개최건의(9월2일).pdf",
+    "환승역세권과 주거공급_260902_final.pdf",
+  ] };
+  globalThis.__pics = {};
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const names = (v.files || []).map((f) => f.name);
+  if (!names.some((n) => /_회의록\.pdf$/.test(n)))
+    throw new Error("회의록이 없습니다 — " + names);
+  if (!names.includes("환승역세권과 주거공급_260902_final.pdf"))
+    throw new Error("발표자료가 없습니다 — " + names);
+  if (names.some((n) => /개최건의/.test(n)))
+    throw new Error("개최건의까지 올라갔습니다 — " + names);
+});
+
+await check("사진 폴더가 없으면 회의록만 올린다", async () => {
+  globalThis.__dirs = { "20260901_어디_아무개": ["20260901_어디_아무개_회의록.pdf"] };
+  globalThis.__pics = {};
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  if ((v.files || []).length !== 1)
+    throw new Error("붙임이 " + (v.files || []).length + "개입니다 — " + JSON.stringify(v.files));
+});
+
+await check("어느 사진을 왜 골랐는지 알려 준다", async () => {
+  globalThis.__dirs = { "20260902_어디_아무개": ["20260902_어디_아무개_회의록.pdf"] };
+  globalThis.__pics = { "20260902_어디_아무개": ["가.jpg", "나.jpg"] };
+  globalThis.__faces = { "가.jpg": 2, "나.jpg": 9 };
+  alerts.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const last = alerts[alerts.length - 1] || "";
+  if (!/단체사진/.test(last) || !/나\.jpg/.test(last) || !/9명/.test(last))
+    throw new Error("까닭이 없습니다 — " + last);
 });
 
 await check("회의록 PDF 가 없는 폴더는 왜 건너뛰는지 알려 준다", async () => {

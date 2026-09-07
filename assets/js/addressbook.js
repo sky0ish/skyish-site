@@ -1,8 +1,10 @@
 // ─── 주소록 ────────────────────────────────────────────────
 //
-//  ※ 이 화면은 자료를 어디로도 보내지 않습니다.
+//  ※ 명함 자료는 어디로도 보내지 않습니다.
 //     내 컴퓨터의 엑셀을 브라우저가 직접 읽어 화면에만 그립니다.
 //     GitHub 에도 Supabase 에도 한 글자도 올라가지 않습니다.
+//     (「그날 일정」 을 찾을 때만 Supabase 에 묻는데, 보내는 것은 **날짜 하나**
+//      뿐입니다 — 이름도 회사도 나가지 않습니다.)
 //     새로고침하면 사라지고, 다시 열려면 파일을 다시 고르면 됩니다.
 //
 //  읽는 것
@@ -12,9 +14,9 @@
 //  두 파일의 「부서」는 뜻이 다릅니다 —
 //    명함첩의 부서 = 다니는 회사의 팀,  동문 명부의 Department = 동경대 학부.
 //    그래서 절대 한 칸에 합치지 않습니다.
-import { currentUser, myProfile } from "../../auth/auth.js";
+import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import { IMG_EXT, photoKey, nameFromFile, packText, readPack, packFileName, dataUrlType, sortPicked,
-         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem } from "./addr-pack.js?v=202609080900";
+         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609081200";
 
 /** 주인 이메일 — 이 사람만 주소록을 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -853,6 +855,65 @@ export async function importPhotos(files, onStep, known) {
   return { n, people: hit.size, skipped };
 }
 
+/* ── 그날 일정 ──────────────────────────────────────────
+   「리멤버 명함집에서 들어오는 정보들은 언제 명함을 등록했는지 나와있어..
+     그날의 스케쥴을 칼렌다에서 불러와서 그 밑에 적어주면
+     언제 무슨 모임에서 만났는지 알수있어」
+
+   명함 등록일로 그날 게시판 일정을 찾아 옵니다. 보내는 것은 날짜 하나뿐입니다.
+   그날 아무것도 없으면 아무것도 안 보입니다 — 옛 명함은 대개 그렇습니다. */
+
+const dayCache = new Map();              // 날짜 → 그날 글들
+const gMonth = new Map();                // 「2026-09」 → 그달 구글 일정 (한 번만 받습니다)
+
+/** 그날의 구글 일정 — 이어져 있을 때만. 못 받아도 조용히 넘어갑니다.
+ *  구글에는 날짜 범위만 묻습니다 — 명함 자료는 한 글자도 나가지 않습니다. */
+async function dayGoogle(ymd) {
+  try {
+    const GC = await import("./gcal.js?v=202609081200");
+    if (!GC.ready() || !GC.connected()) return [];
+    const key = ymd.slice(0, 7);
+    if (!gMonth.has(key)) {
+      const [y, m] = key.split("-");
+      gMonth.set(key, await GC.month(+y, +m - 1).catch(() => []));
+    }
+    return (gMonth.get(key) || []).filter((e) => e.date === ymd);
+  } catch (e) { return []; }
+}
+
+/** 그날의 일정·일기를 찾아 옵니다 (게시판에 적어 두신 것).
+ *  @returns [{id, title, category, place, people, event, time}]
+ */
+export async function daySchedule(ymd) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(ymd || ""))) return [];
+  if (dayCache.has(ymd)) return dayCache.get(ymd);
+  let out = [];
+  try {
+    const r = await sb.from("notes")
+      .select("id,title,category,event_date,event_time,place,people,event,tag")
+      .eq("event_date", ymd)
+      .limit(20);
+    if (!r.error) out = r.data || [];
+  } catch (e) { /* 못 받아도 명함은 그대로 보입니다 */ }
+  /* 구글 달력에 있는 것도 함께 — 모임은 대개 이쪽에 있습니다 */
+  try {
+    (await dayGoogle(ymd)).forEach((e) => {
+      out.push({ g: 1, title: e.title, place: e.place, event_time: e.time,
+                 people: "", event: "", cal: e.cal, gid: e.gid, calId: e.calId });
+    });
+  } catch (e) {}
+  dayCache.set(ymd, out);
+  return out;
+}
+
+/** 그 일정에 이 사람 이름이 적혀 있는가 — 「만난 사람」 칸을 봅니다 */
+export function metThere(row, name) {
+  const n = photoKey(name);
+  if (!n) return false;
+  return photoKey([row && row.people, row && row.title, row && row.event].join(" "))
+    .indexOf(n) >= 0;
+}
+
 /* ── 나중에 채워 넣은 내용 ──────────────────────────────
    「주소록은 나중에 명함받으면 상세내용을 더 추가할수있도록 해줘」 */
 
@@ -1259,6 +1320,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
             line("이메일", r.email) + line("주소", r.addr) +
             line("지역", r.city) + line("꼬리표", r.tag) + line("명함 등록", r.at) +
             line("메모", r.memo) +
+            /* 명함 등록일의 일정 — 「언제 무슨 모임에서 만났는지」.
+               그날 적어 두신 것이 없으면 아무것도 안 그립니다. */
+            '<div class="aday" id="abDay" hidden></div>' +
           "</div>" +
           /* 사진 — 붙여넣기(Ctrl+V) · 끌어놓기 · 눌러서 고르기 */
           '<div class="aphoto" id="abPhoto" tabindex="0" ' +
@@ -1288,8 +1352,42 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
        조용히 죽지 말고 무엇이 잘못됐는지 알려 줍니다. */
     try { wirePhoto(r, box); }
     catch (e) { say("사진 칸을 붙이지 못했습니다 — " + (e && e.message)); }
+    fillDay(r).catch(() => {});          // 그날 일정은 천천히 채웁니다
     const edit = document.getElementById("abEdit");
     if (edit) edit.addEventListener("click", () => editForm(r, box));
+  }
+
+  /* 명함 등록일의 일정을 찾아 명함 아래에 적습니다.
+     그날 적어 두신 것이 없으면 그냥 비워 둡니다 — 옛 명함은 대개 그렇습니다.
+     앞으로 만난 날 바로 찍어 두시면 등록일과 행사일이 맞아떨어집니다. */
+  async function fillDay(r) {
+    const box = document.getElementById("abDay");
+    if (!box) return;
+    const day = atDate(r.at);
+    if (!day) return;
+    const list = await daySchedule(day);
+    if (!list.length || document.getElementById("abDay") !== box) return;
+    /* 이 사람 이름이 적힌 일정을 앞에 둡니다 */
+    const sorted = list.slice().sort((a, b) =>
+      (metThere(b, r.name) ? 1 : 0) - (metThere(a, r.name) ? 1 : 0));
+    box.hidden = false;
+    box.innerHTML =
+      '<b class="aday__h">그날 일정 — ' + esc(day.replace(/-/g, ".")) + "</b>" +
+      sorted.map((x) => {
+        const cat = x.category === "diary" ? "diary" : "schedule";
+        const bits = [x.event, x.place, x.cal].filter(Boolean).join(" · ");
+        /* 내 글이면 그 글로, 구글에서 온 것이면 그날 새 일정 창으로 */
+        const href = x.g
+          ? "blog.html?cat=schedule&new=" + esc(day) + "&gt=" + encodeURIComponent(x.title || "") +
+            (x.event_time ? "&gtm=" + encodeURIComponent(x.event_time) : "") +
+            (x.place ? "&gp=" + encodeURIComponent(x.place) : "")
+          : "blog.html?cat=" + cat + "&id=" + esc(x.id);
+        return '<a class="aday__i" href="' + href + '">' +
+          (metThere(x, r.name) ? '<i class="aday__me" title="이 분이 적혀 있습니다">●</i>' : "") +
+          "<span>" + (x.event_time ? esc(x.event_time) + " " : "") + esc(x.title) +
+          (bits ? '<small>' + esc(bits) + "</small>" : "") + "</span>" +
+          (x.g ? '<em class="aday__g" title="구글 달력">G</em>' : "") + "</a>";
+      }).join("");
   }
 
   /* ── 명함 내용 더하기 ──

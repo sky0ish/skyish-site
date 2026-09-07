@@ -4,7 +4,7 @@
 //
 // 진짜 폴더 이름을 그대로 씁니다 (파일은 안 읽습니다).
 
-import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas }
+import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide }
   from "../../assets/js/notes-minutes.js";
 
 let bad = 0;
@@ -104,6 +104,22 @@ console.log("\n── 험한 것 ──");
 eq("빈 목록", plan([]).jobs, []);
 eq("아무것도 아닌 것", plan(null).jobs, []);
 eq("이름 없는 줄", plan([{ files: [] }]).jobs, []);
+
+console.log("\n── 발표자료 고르기 ──");
+/* 「final 의 발표자료도 올려주고」 */
+const SL = ["20260902_회의록.pdf", "자문회의 개최건의(9월2일).pdf",
+            "환승역세권과 주거공급_260902_final.pdf",
+            "환승역세권과 주거공급_260902_final.pptx", "메모.txt"];
+eq("final PDF 를 고른다", pickFiles(SL, "20260902").slide,
+   "환승역세권과 주거공급_260902_final.pdf");
+eq("회의록은 발표자료가 아니다", pickSlide(["20260902_회의록.pdf"]), "");
+eq("개최건의도 아니다", pickSlide(["자문회의 개최건의(9월2일).pdf"]), "");
+eq("PDF 가 없으면 pptx 라도", pickSlide(["가_final.pptx", "나.pptx"]), "가_final.pptx");
+eq("PDF 가 pptx 보다 먼저", pickSlide(["가.pptx", "나.pdf"]), "나.pdf");
+eq("final 이 없으면 먼저 있는 것", pickSlide(["가.pdf", "나.pdf"]), "가.pdf");
+eq("최종 이라고 적어도 알아본다", pickSlide(["가.pdf", "나_최종.pdf"]), "나_최종.pdf");
+eq("발표자료가 없으면 빈 글자", pickSlide(["20260902_회의록.pdf", "메모.txt"]), "");
+eq("아무것도 아닌 것", [pickSlide([]), pickSlide(null)], ["", ""]);
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

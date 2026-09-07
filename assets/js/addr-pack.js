@@ -80,6 +80,30 @@ export function splitFileName(fname) {
   return { name: base.trim(), org: "" };
 }
 
+/** 명함 등록일을 날짜로 — 「2021년 01월 29일」 → 「2021-01-29」.
+ *  리멤버가 내보내는 꼴이 여럿이라 흔한 것을 모두 받습니다.
+ *  날짜가 아니면 빈 글자입니다.
+ *
+ *  이것으로 그날의 일정을 찾아 명함 아래에 붙입니다 —
+ *  「언제 무슨 모임에서 만났는지」 가 보이게.
+ */
+export function atDate(s) {
+  const t = String(s == null ? "" : s).trim();
+  if (!t) return "";
+  const p = (y, m, d) => {
+    const Y = +y, M = +m, D = +d;
+    if (!(Y >= 1900 && Y <= 2999) || !(M >= 1 && M <= 12) || !(D >= 1 && D <= 31)) return "";
+    return Y + "-" + String(M).padStart(2, "0") + "-" + String(D).padStart(2, "0");
+  };
+  let m = t.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/);
+  if (m) return p(m[1], m[2], m[3]);
+  m = t.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if (m) return p(m[1], m[2], m[3]);
+  m = t.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m) return p(m[1], m[2], m[3]);
+  return "";
+}
+
 /** 9.FACE 에 되돌려 저장할 파일 이름의 앞부분 — 「이름_소속」.
  *  되읽었을 때 같은 사람으로 돌아와야 합니다. 그래서 소속에서
  *  괄호 덩이(㈜·(주) 따위)와 밑줄을 미리 걷어 냅니다 —

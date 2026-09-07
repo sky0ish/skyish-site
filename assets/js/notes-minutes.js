@@ -8,6 +8,7 @@
 //          20260824_…_회의록내용.json     ← 있으면 제목을 여기서 가져옵니다
 //          20260824_….txt                 ← 있으면 요약을 본문에 담습니다
 //          음성 260824_114513.m4a          ← 올리지 않습니다 (녹음은 내 컴퓨터에만)
+//          pictures/ (또는 사진/)          ← 있으면 얼굴이 가장 많은 한 장만 함께
 //
 //  폴더 이름이 곧 자료입니다 — 날짜 · 기관/장소 · 만난 사람.
 //
@@ -70,7 +71,27 @@ export function pickFiles(names, folder) {
     pdf: pick(/_회의록\.pdf$/i),
     json: pick(/_회의록내용\.json$/i),
     txt: pick(/\.txt$/i),
+    slide: pickSlide(L),
   };
+}
+
+/* 발표자료가 아닌 것들 — 회의록·개최건의·요약은 따로 다룹니다 */
+const NOT_SLIDE = /(_회의록|회의록내용|개최\s*건의|개최\s*개요|자문회의)/;
+
+/** 발표자료 한 개 — 「…final.pdf」 를 가장 먼저 봅니다.
+ *  PDF 가 없으면 pptx 라도 씁니다 (게시판에서는 PDF 가 보기 좋습니다).
+ *  「final 의 발표자료도 올려주고」 */
+export function pickSlide(names) {
+  const L = (Array.isArray(names) ? names : []).filter(Boolean).filter((n) => !NOT_SLIDE.test(n));
+  const rank = (n) => {
+    const pdf = /\.pdf$/i.test(n), ppt = /\.pptx?$/i.test(n);
+    if (!pdf && !ppt) return -1;
+    return (pdf ? 2 : 0) + (/final|최종/i.test(n) ? 1 : 0);
+  };
+  const best = L.map((n, i) => [n, rank(n), i])
+    .filter(([, r]) => r >= 0)
+    .sort((a, b) => b[1] - a[1] || a[2] - b[2])[0];
+  return best ? best[0] : "";
 }
 
 /** 글 제목 — 회의록내용.json 의 title 이 가장 좋습니다.
@@ -91,8 +112,9 @@ export const alreadyHas = (files, name) =>
   (Array.isArray(files) ? files : []).some((f) => f && f.name === name);
 
 /** 여러 폴더를 훑어 할 일 목록으로.
- *  @param folders [{name, files:[이름…]}]
- *  @returns [{date, place, people, when, title, pdf, json, txt, raw}]
+ *  @param folders [{name, files:[이름…], pics:[이름…]}]
+ *         pics 는 그 회의 폴더 안 「pictures(사진)」 폴더의 그림들입니다.
+ *  @returns [{date, place, people, when, title, pdf, json, txt, pics, raw}]
  *           날짜가 없거나 회의록 PDF 가 없는 폴더는 왜 건너뛰는지 함께 담습니다.
  */
 export function plan(folders) {
@@ -104,7 +126,9 @@ export function plan(folders) {
     if (!info.date) { skip.push({ name: d.name, why: "이름이 날짜로 시작하지 않습니다" }); return; }
     const f = pickFiles(d.files, d.name);
     if (!f.pdf) { skip.push({ name: d.name, why: "「…_회의록.pdf」 가 없습니다" }); return; }
-    jobs.push({ ...info, ...f, title: "" });
+    /* 사진 폴더가 있으면 이름만 실어 둡니다 —
+       어느 것이 단체사진인지는 그림을 열어 봐야 알 수 있어 notes.js 가 고릅니다. */
+    jobs.push({ ...info, ...f, pics: (Array.isArray(d.pics) ? d.pics : []).slice(), title: "" });
   });
   jobs.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   return { jobs, skip };

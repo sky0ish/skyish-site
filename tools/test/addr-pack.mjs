@@ -9,7 +9,7 @@
 import { IMG_EXT, photoKey, nameFromFile, isPack, packFileName,
          packText, readPack, dataUrlType, sortPicked,
          orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, EXTRA_FIELDS,
-         candidateKeys, faceFileStem }
+         candidateKeys, faceFileStem, atDate }
   from "../../assets/js/addr-pack.js";
 
 let bad = 0;
@@ -199,6 +199,25 @@ const SVG = "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=";
 eq("안 담긴다", JSON.parse(packText([{ key: "누구", data: SVG }])).n, 0);
 eq("안 풀린다", readPack(JSON.stringify({ photos: { 누구: SVG } })).length, 0);
 eq("보통 그림은 그대로", readPack(JSON.stringify({ photos: { 누구: D("ok") } })).length, 1);
+
+console.log("\n── 명함 등록일을 날짜로 ──");
+/* 「리멤버 명함집에서 들어오는 정보들은 언제 명함을 등록했는지 나와있어..
+    그날의 스케쥴을 칼렌다에서 불러와서 그 밑에 적어주면
+    언제 무슨 모임에서 만났는지 알수있어」 */
+eq("리멤버 꼴", atDate("2021년 01월 29일"), "2021-01-29");
+eq("한 자리 달·날도", atDate("2026년 9월 8일"), "2026-09-08");
+eq("뒤에 시각이 붙어도", atDate("2021년 1월 29일 오전 10:12"), "2021-01-29");
+eq("줄표·점·빗금", [atDate("2026-09-08"), atDate("2026.9.8"), atDate("2026/09/08")],
+   ["2026-09-08", "2026-09-08", "2026-09-08"]);
+eq("여덟 자리", atDate("20260908"), "2026-09-08");
+eq("앞뒤 빈칸", atDate("  2026-09-08  "), "2026-09-08");
+eq("날짜가 아니면 빈 글자",
+   [atDate(""), atDate(null), atDate("아무거나"), atDate("2026")], ["", "", "", ""]);
+/* 있지도 않은 날짜로 게시판에 묻지 않게 */
+eq("달이 13이면", atDate("2026년 13월 1일"), "");
+eq("날이 0이거나 32면", [atDate("2026-09-00"), atDate("2026-09-32")], ["", ""]);
+eq("해가 너무 옛날이면", atDate("1899-01-01"), "");
+eq("여덟 자리인 척하는 전화번호", atDate("01012345678"), "");
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

@@ -3042,6 +3042,19 @@ body.diary-on #notesapp > *:not(.ndiary) {
 
 /* ── 주소록 얼굴 사진 ─────────────────────────────────────── */
 /* 이름 오른쪽에 작게 */
+/* 명함 등록일의 그날 일정 — 「언제 무슨 모임에서 만났는지」 */
+.aday { margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid rgba(95, 88, 80, .18); }
+.aday__h { display: block; font-size: .84rem; opacity: .7; margin-bottom: 4px; }
+.aday__i { display: flex; align-items: baseline; gap: 6px; padding: 6px 6px;
+  border-radius: 8px; text-decoration: none; color: inherit; line-height: 1.4; }
+.aday__i:hover { background: rgba(95, 88, 80, .1); }
+.aday__i span { flex: 1; min-width: 0; }
+.aday__i small { display: block; opacity: .6; font-size: .82em; }
+.aday__me { color: #4f9d92; font-style: normal; flex: none; }
+.aday__g { flex: none; font-style: normal; font-size: .7em; font-weight: 700;
+  color: #4285f4; opacity: .8; }
+
 .ahint--how { flex-basis: 100%; margin: 4px 0 0; font-size: .8rem; line-height: 1.5;
   opacity: .75; }
 

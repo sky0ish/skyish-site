@@ -13,9 +13,10 @@ import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
-import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609080900";
+import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609081200";
 import * as FT from "./notes-facetag.js?v=202609052100";
-import * as MN from "./notes-minutes.js?v=202609061000";
+import * as MN from "./notes-minutes.js?v=202609081200";
+import * as PP from "./notes-photo-pick.js?v=202609081200";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609061000";
 
@@ -2615,16 +2616,26 @@ export async function initNotes(mountId = "notesapp") {
        녹음(m4a)과 한글 원본은 올리지 않습니다 — 회의록 PDF 만 갑니다. */
     const folders = [];
     const handles = new Map();              // 폴더이름 → {파일이름: 손잡이}
+    const picHandles = new Map();           // 폴더이름 → {사진이름: 손잡이}
     try {
       for await (const e of dir.values()) {
         if (e.kind !== "directory") continue;
-        const names = [], hs = {};
+        const names = [], hs = {}, pics = [], ph = {};
         for await (const f of e.values()) {
-          if (f.kind !== "file") continue;
-          names.push(f.name); hs[f.name] = f;
+          if (f.kind === "file") { names.push(f.name); hs[f.name] = f; continue; }
+          /* 회의 폴더 안 「pictures(사진)」 — 그날 찍은 사진들입니다.
+             그 가운데 얼굴이 가장 많은 한 장만 골라 함께 올립니다. */
+          if (f.kind !== "directory" || !PP.isPicDir(f.name)) continue;
+          try {
+            for await (const g of f.values()) {
+              if (g.kind !== "file" || !PP.IMG_RE.test(g.name)) continue;
+              pics.push(g.name); ph[g.name] = g;
+            }
+          } catch (x) { /* 못 읽는 폴더가 섞여도 회의록은 붙입니다 */ }
         }
-        folders.push({ name: e.name, files: names });
+        folders.push({ name: e.name, files: names, pics: pics });
         handles.set(e.name, hs);
+        picHandles.set(e.name, ph);
       }
     } catch (err) {
       alert("폴더를 읽지 못했습니다 — " + (err && err.message));
@@ -2639,8 +2650,11 @@ export async function initNotes(mountId = "notesapp") {
           skip.map((x) => "· " + x.name + " — " + x.why).join(String.fromCharCode(10)) : ""));
       return;
     }
+    const nPic = jobs.filter((j) => (j.pics || []).length).length;
     if (!confirm("회의록 " + jobs.length + "건을 그날 Schedule 글에 붙입니다." +
       String.fromCharCode(10) + "그날 글이 없으면 새로 만듭니다." +
+      (nPic ? String.fromCharCode(10) +
+        "사진 폴더가 있는 " + nPic + "건은 얼굴이 가장 많은 단체사진 한 장도 함께 올립니다." : "") +
       String.fromCharCode(10) + "녹음과 한글 원본은 올리지 않습니다. 계속할까요?")) return;
 
     const recBtn = document.getElementById("nRec");
@@ -2649,7 +2663,7 @@ export async function initNotes(mountId = "notesapp") {
     recBtn.textContent = "붙이는 중…";
     try {
 
-    const done = [], failed = skip.map((x) => x.name + " — " + x.why);
+    const done = [], picNote = [], failed = skip.map((x) => x.name + " — " + x.why);
 
     /* 날짜별로 묶습니다 — 하루에 회의가 둘이어도(오전·오후) 그날 글은
        한 번만 씁니다. 하나씩 쓰면 뒤엣것이 앞엣것의 붙임과 본문을
@@ -2709,6 +2723,46 @@ export async function initNotes(mountId = "notesapp") {
 
           ups.push(await NF.upload(await pdfH.getFile()));
           any = true;
+
+          /* 발표자료 — 「…final.pdf」 가 있으면 함께 올립니다.
+             회의록·개최건의는 빼고 봅니다 (그것들은 따로 다룹니다). */
+          if (job.slide && hs[job.slide] &&
+              !(row && MN.alreadyHas(row.files, job.slide)) &&
+              !ups.some((u) => u.name === job.slide)) {
+            try { ups.push(await NF.upload(await hs[job.slide].getFile())); }
+            catch (e) { failed.push(job.slide + " — 발표자료를 올리지 못했습니다"); }
+          }
+
+          /* 그날 사진 폴더(pictures·사진)에서 **단체사진 한 장**만 함께 올립니다.
+             얼굴이 가장 많은 것을 고릅니다. 얼굴 세는 일은 이 브라우저 안에서만
+             일어나고, 고른 한 장만 글의 붙임 파일로 올라갑니다. */
+          if ((job.pics || []).length) {
+            /* 지난번에 이미 한 장 올렸으면 또 올리지 않습니다 */
+            const had = row && job.pics.some((nm) => MN.alreadyHas(row.files, nm));
+            if (!had) {
+              try {
+                const ph = picHandles.get(job.raw) || {};
+                const cand = [];
+                for (const nm of job.pics) {
+                  if (ph[nm]) cand.push({ name: nm, file: await ph[nm].getFile() });
+                }
+                if (cand.length) {
+                  const { best } = await PP.bestPhoto(cand, (i, n) => {
+                    recBtn.textContent = "사진 고르는 중… " + i + "/" + n;
+                  });
+                  recBtn.textContent = "붙이는 중…";
+                  if (best && !ups.some((u) => u.name === best.name)) {
+                    ups.push(await NF.upload(best.file));
+                    picNote.push(job.raw + " → " + PP.whyPicked(best, cand.length));
+                  }
+                }
+              } catch (e) {
+                recBtn.textContent = "붙이는 중…";
+                failed.push(job.raw + " — 사진을 고르지 못했습니다 (" +
+                            ((e && e.message) || "까닭 모름") + ")");
+              }
+            }
+          }
           /* mergeBlock 은 「━ 파일이름」 으로 시작하는 줄로 덩이를 찾습니다.
              머리글 없이 넘기면 다시 찾지 못해, 같은 요약이 두 번 쌓이거나
              앞 덩이를 갈아 끼울 때 통째로 지워집니다. */
@@ -2753,7 +2807,8 @@ export async function initNotes(mountId = "notesapp") {
     await load();
     const NL = String.fromCharCode(10);
     alert((done.length ? "붙였습니다:" + NL + done.join(NL) : "") +
-      (done.length && failed.length ? NL + NL : "") +
+      (picNote.length ? NL + NL + "단체사진:" + NL + picNote.join(NL) : "") +
+      ((done.length || picNote.length) && failed.length ? NL + NL : "") +
       (failed.length ? "건너뜀:" + NL + failed.join(NL) : ""));
     } finally {
       recBusy = false; recBtn.disabled = false; recBtn.textContent = recWas;
