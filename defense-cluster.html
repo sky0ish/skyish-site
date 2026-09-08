@@ -81,7 +81,7 @@
           <a class="btn btn--ghost" href="pictures.html">← 목록으로</a>
         </p>
 
-        <!-- ① 겹쳐 보기 — 아래 두 지도를 한 장에 -->
+        <!-- ① 기업체와 연구장비를 한 장에 -->
         <section class="fb-fig" id="fig0">
           <div class="fb-fig__head">
             <span class="fb-fig__no">①</span>
@@ -89,7 +89,7 @@
             <span class="fb-fig__src" id="dc-both-src">—</span>
           </div>
           <p class="fb-fig__desc">
-            아래 두 지도를 한 장에 포갠 것입니다. 체크를 <strong>끄고 켜서</strong>
+            기업체와 연구장비를 한 장에 포갠 것입니다. 체크를 <strong>끄고 켜서</strong>
             기업만, 장비만, 또는 둘을 겹쳐 보실 수 있고, 기업은 <strong>분야별로도</strong> 고를 수 있습니다.
             큰 반투명 원이 연구장비(원의 크기가 장비 수), 그 위 작은 점이 기업입니다.
           </p>
@@ -121,58 +121,10 @@
           </div>
         </section>
 
-        <!-- ② 방산기업 -->
-        <section class="fb-fig" id="fig1">
-          <div class="fb-fig__head">
-            <span class="fb-fig__no">②</span>
-            <h2>방위산업 기업체 — 분야별 분포</h2>
-            <span class="fb-fig__src" id="dc-co-src">—</span>
-          </div>
-          <p class="fb-fig__desc" id="dc-co-note"></p>
-
-          <div class="fb-controls" id="dc-co-layers">
-            <span class="fb-fig__src">자료를 불러오는 중…</span>
-          </div>
-
-          <div class="fb-mapbox">
-            <div class="fb-map" id="dc-map1"></div>
-            <div class="fb-legend" id="dc-legend1"></div>
-            <div class="fb-busy" id="dc-busy1">자료를 불러오는 중입니다…</div>
-          </div>
-        </section>
-
-        <!-- ③ 연구장비 -->
-        <section class="fb-fig" id="fig2">
-          <div class="fb-fig__head">
-            <span class="fb-fig__no">③</span>
-            <h2>연구장비 보유기관 — 장비 수에 비례한 원</h2>
-            <span class="fb-fig__src" id="dc-eq-src">—</span>
-          </div>
-          <p class="fb-fig__desc" id="dc-eq-note"></p>
-
-          <div class="fb-controls">
-            <fieldset>
-              <legend>보여줄 자료</legend>
-              <button type="button" class="chip" data-eq="all">연구장비 전체</button>
-              <button type="button" class="chip" data-eq="def">방산 관련 장비만</button>
-            </fieldset>
-            <fieldset>
-              <legend>겹쳐 보기</legend>
-              <label class="fb-check"><input type="checkbox" id="dc-eq-co"> 방산기업 함께 표시</label>
-            </fieldset>
-          </div>
-
-          <div class="fb-mapbox">
-            <div class="fb-map" id="dc-map2"></div>
-            <div class="fb-legend" id="dc-legend2"></div>
-            <div class="fb-busy" id="dc-busy2">자료를 불러오는 중입니다…</div>
-          </div>
-        </section>
-
-        <!-- ④ 네트워크 -->
+        <!-- ② 네트워크 -->
         <section class="fb-fig" id="fig4">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">④</span>
+            <span class="fb-fig__no">②</span>
             <h2>기업 × 연구장비 네트워크 — 어디서 시험할 수 있나</h2>
             <span class="fb-fig__src" id="dc-net-src">—</span>
           </div>
@@ -220,10 +172,10 @@
           </div>
         </section>
 
-        <!-- ⑤ 통계 -->
+        <!-- ③ 통계 -->
         <section class="fb-fig" id="fig3">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">⑤</span>
+            <span class="fb-fig__no">③</span>
             <h2>숫자로 보기</h2>
             <span class="fb-fig__src">기업 분야 · 장비 분야 · 시군별</span>
           </div>
@@ -262,7 +214,7 @@
         <!-- 기업 명단은 표가 넓어 따로 큰 화면에서 봅니다 -->
         <section class="fb-fig" id="fig5">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">⑥</span>
+            <span class="fb-fig__no">④</span>
             <h2>수도권 방산기업 리스트</h2>
             <span class="fb-fig__src">경기 · 인천 · 서울과 그 밖 249개사</span>
           </div>
@@ -290,7 +242,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-cluster.js?v=202609091200" defer></script>
+  <script src="assets/js/defense-cluster.js?v=202609091300" defer></script>
   <script src="assets/js/defense-cluster-network.js?v=202609091300" defer></script>
 </body>
 </html>

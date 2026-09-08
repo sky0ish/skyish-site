@@ -11,17 +11,14 @@
 
   var DATA_URL = "assets/data/defense/points.json";
   var EQ_COLOR = "#f59e0b", EQ_EDGE = "#92400e";
-  var DEF_COLOR = "#dc2626", DEF_EDGE = "#7f1d1d";
+  var DEF_COLOR = "#dc2626";        // 방산 관련 장비 — ③ 막대에 씁니다
   var GG_CENTER = [37.42, 127.1], GG_ZOOM = 9;
 
   var doc = null;
-  var map0 = null, map1 = null, map2 = null;
+  var map0 = null;
   var bothEq = null;                  // 지도① 연구장비 겹
   var bothCat = {};                   // 지도① 기업 분야별 겹
   var bothOn = {};                    // 그 가운데 지금 켜 둔 분야
-  var coLayers = {};          // 지도② 분야별 레이어
-  var eqLayer = null, defLayer = null, coOverlay = null;
-  var eqMode = "all";
   var sggKey = "co", sggDir = -1;     // 시군별 표 — 기본은 기업 많은 곳부터
 
   /* ---------- 유틸 ---------- */
@@ -47,61 +44,14 @@
     L.control.scale({ imperial: false }).addTo(m);
     return m;
   }
-  function fitTo(map, items) {
-    if (!items.length) return;
-    map.fitBounds(L.latLngBounds(items.map(function (d) { return [d.lat, d.lon]; })).pad(0.06));
-  }
-
-  /* ---------- 지도 ② 방산기업 ---------- */
+  /* ---------- 사람에게 보여 줄 말 ---------- */
   function coPopup(d) {
     return "<strong>" + esc(d.name) + "</strong><br>" +
            '<span style="color:#6b6360">' + esc(d.cat) + "</span><br>" +
            esc(d.addr || [d.si, d.sgg, d.emd].filter(Boolean).join(" "));
   }
 
-  function buildCompanies() {
-    var c = doc.companies, colorOf = {};
-    c.cats.forEach(function (x) { colorOf[x.key] = x.color; });
-
-    document.getElementById("dc-co-src").textContent = "기업 " + num(c.n) + "개사";
-    document.getElementById("dc-co-note").textContent = c.note;
-
-    c.cats.forEach(function (cat) {
-      var items = c.items.filter(function (d) { return d.cat === cat.key; });
-      var g = L.featureGroup(items.map(function (d) {
-        return L.circleMarker([d.lat, d.lon], {
-          radius: 6, color: "#fff", weight: 1.2, opacity: 1,
-          fillColor: cat.color, fillOpacity: 0.92
-        }).bindPopup(coPopup(d));
-      }));
-      coLayers[cat.key] = g;
-      g.addTo(map1);
-    });
-    fitTo(map1, c.items);
-
-    document.getElementById("dc-co-layers").innerHTML =
-      '<fieldset><legend>기업 분야</legend>' + c.cats.map(function (cat) {
-        return '<label class="fb-check"><input type="checkbox" data-cat="' + esc(cat.key) + '" checked>' +
-               '<span class="sw" style="border-radius:50%;background:' + cat.color + '"></span>' +
-               esc(cat.key) + ' <span style="color:#8b8280">' + num(cat.n) + "</span></label>";
-      }).join("") + "</fieldset>";
-
-    document.querySelectorAll("[data-cat]").forEach(function (cb) {
-      cb.addEventListener("change", function () {
-        var g = coLayers[cb.dataset.cat];
-        if (!g) return;
-        if (cb.checked) g.addTo(map1); else map1.removeLayer(g);
-      });
-    });
-
-    document.getElementById("dc-legend1").innerHTML = c.cats.map(function (cat) {
-      return '<div><i style="background:' + cat.color + '"></i>' + esc(cat.key) + "</div>";
-    }).join("");
-
-    busy("dc-busy1", null);
-  }
-
-  /* ---------- 지도 ③ 연구장비 ---------- */
+  /* ---------- 원 크기와 알림창 ---------- */
   function rOf(n) { return Math.max(4, Math.min(26, Math.sqrt(n) * 2.4)); }
 
   function eqPopup(d) {
@@ -109,17 +59,6 @@
            "장비 " + num(d.n) + "대" + (d.orgs > 1 ? " · 기관 " + d.orgs + "곳" : "") +
            (d.field ? " · " + esc(d.field) : "") + "<br>" + esc(d.addr);
   }
-  function defPopup(d) {
-    var by = Object.keys(d.by || {}).map(function (k) {
-      return esc(k) + " " + d.by[k];
-    }).join("<br>");
-    return "<strong>" + esc(d.org) + "</strong><br>" +
-           "방산 관련 장비 " + num(d.n) + "대<br>" +
-           '<span style="color:#6b6360">' + esc(d.cat) + "</span>" +
-           (by ? "<hr style='border:0;border-top:1px solid #eee;margin:.4rem 0'>" + by : "") +
-           "<br>" + esc(d.addr);
-  }
-
   function markerGroup(items, color, edge, popup) {
     return L.featureGroup(items.map(function (d) {
       return L.circleMarker([d.lat, d.lon], {
@@ -129,61 +68,14 @@
     }));
   }
 
-  function buildEquip() {
-    var e = doc.equip, f = doc.defense;
-    eqLayer = markerGroup(e.items, EQ_COLOR, EQ_EDGE, eqPopup);
-    defLayer = markerGroup(f.items, DEF_COLOR, DEF_EDGE, defPopup);
-
-    coOverlay = L.featureGroup(doc.companies.items.map(function (d) {
-      var col = (doc.companies.cats.filter(function (x) { return x.key === d.cat; })[0] || {}).color || "#78716c";
-      return L.circleMarker([d.lat, d.lon], {
-        radius: 4, color: "#fff", weight: 1, fillColor: col, fillOpacity: 0.95
-      }).bindPopup(coPopup(d));
-    }));
-
-    setEqMode("all");
-    fitTo(map2, e.items);
-    busy("dc-busy2", null);
-  }
-
-  function setEqMode(mode) {
-    eqMode = mode;
-    var e = doc.equip, f = doc.defense;
-    if (map2.hasLayer(eqLayer)) map2.removeLayer(eqLayer);
-    if (map2.hasLayer(defLayer)) map2.removeLayer(defLayer);
-    (mode === "all" ? eqLayer : defLayer).addTo(map2);
-    if (coOverlay && map2.hasLayer(coOverlay)) coOverlay.bringToFront();
-
-    var cur = mode === "all" ? e : f;
-    document.getElementById("dc-eq-src").textContent =
-      cur.n + "곳 · 장비 " + num(cur.total) + "대";
-    document.getElementById("dc-eq-note").textContent = cur.note;
-
-    var col = mode === "all" ? EQ_COLOR : DEF_COLOR;
-    var edge = mode === "all" ? EQ_EDGE : DEF_EDGE;
-    document.getElementById("dc-legend2").innerHTML =
-      '<div><span class="sz" style="width:9px;height:9px;background:' + col + '88;border-color:' + edge + '"></span>' +
-        (mode === "all" ? "장비 5대" : "장비 3대") + " 안팎</div>" +
-      '<div><span class="sz" style="width:17px;height:17px;background:' + col + '88;border-color:' + edge + '"></span>' +
-        (mode === "all" ? "50대" : "20대") + " 안팎</div>" +
-      '<div><span class="sz" style="width:26px;height:26px;background:' + col + '88;border-color:' + edge + '"></span>' +
-        (mode === "all" ? "120대 이상" : "60대 이상") + "</div>";
-
-    document.querySelectorAll("[data-eq]").forEach(function (b) {
-      var on = b.dataset.eq === mode;
-      b.classList.toggle("active", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-  }
-
-  /* ---------- 지도 ① 겹쳐 보기 ----------
-     아래 두 지도(②기업 · ③장비)를 한 장에 포갠 것입니다.
-     Leaflet 레이어는 지도 한 곳에만 붙일 수 있어 여기서 따로 만듭니다. */
+  /* ---------- 지도 ① 기업체 × 연구장비 ----------
+     기업 점과 연구장비 원을 한 장에 포갭니다. 기업은 분야마다 따로 담아
+     하나씩 끄고 켤 수 있게 하고, 큰 원에 묻히지 않도록 늘 위로 올립니다. */
   function buildBoth() {
     if (!map0) return;
     var c = doc.companies, e = doc.equip;
 
-    /* 기업 — 지도②와 같은 분야 색. 분야마다 따로 담아 하나씩 끄고 켭니다 */
+    /* 기업 — 분야마다 따로 담아 하나씩 끄고 켭니다 */
     c.cats.forEach(function (cat) {
       bothCat[cat.key] = L.featureGroup(
         c.items.filter(function (d) { return d.cat === cat.key; }).map(function (d) {
@@ -194,7 +86,7 @@
         }));
       bothOn[cat.key] = true;
     });
-    /* 연구장비 — 큰 반투명 원, 지도③과 같은 크기 규칙 */
+    /* 연구장비 — 큰 반투명 원, 반지름이 √장비수 */
     bothEq = markerGroup(e.items, EQ_COLOR, EQ_EDGE, eqPopup);
     bothEq.addTo(map0);
 
@@ -214,8 +106,7 @@
       }).join(",") + ")";
     }
 
-    /* 분야별 체크상자 — data-bcat 으로 짓습니다.
-       지도②가 data-cat 을 쓰고 있어 이름이 같으면 서로 남의 지도를 건드립니다. */
+    /* 분야별 체크상자 */
     document.getElementById("dc-both-cats").innerHTML =
       '<fieldset><legend>기업 분야</legend>' + c.cats.map(function (cat) {
         return '<label class="fb-check"><input type="checkbox" data-bcat="' + esc(cat.key) + '" checked>' +
@@ -241,7 +132,7 @@
       '<div><span class="sz" style="width:26px;height:26px"></span>120대 이상</div>';
 
     syncCo();
-    /* 여기서는 fitTo 를 쓰지 않습니다 — 대전·전주·광주에 있는 여섯 곳(대전 기업 4,
+    /* 자료에 맞춰 넓히지 않습니다 — 대전·전주·광주에 있는 여섯 곳(대전 기업 4,
        한국전자기술연구원 지역본부 2)까지 담으려다 지도가 남한 전체로 벌어집니다.
        처음에는 경기도가 꽉 차게 두고, 그 여섯 곳은 축소하면 나옵니다. */
     map0.setView(GG_CENTER, GG_ZOOM);
@@ -285,7 +176,7 @@
     syncCo();          // 기업 점을 다시 위로 올립니다
   }
 
-  /* ---------- ⑤ 통계 ---------- */
+  /* ---------- ③ 통계 ---------- */
   function bars(mountId, rows, color) {
     var max = Math.max.apply(null, rows.map(function (r) { return r.n; })) || 1;
     document.getElementById(mountId).innerHTML = rows.map(function (r) {
@@ -363,14 +254,9 @@
 
   /* ---------- 시작 ---------- */
   function start() {
-    if (!document.getElementById("dc-map1")) return;
-    if (document.getElementById("dc-map0")) map0 = baseMap("dc-map0");
-    map1 = baseMap("dc-map1");
-    map2 = baseMap("dc-map2");
-
+    if (!document.getElementById("dc-map0")) return;
+    map0 = baseMap("dc-map0");
     busy("dc-busy0", "자료를 불러오는 중입니다…");
-    busy("dc-busy1", "자료를 불러오는 중입니다…");
-    busy("dc-busy2", "자료를 불러오는 중입니다…");
 
     // 비공개 보관함(analysis)에서 받습니다 — 승인된 분만 열 수 있습니다
     import("../../auth/auth.js")
@@ -378,15 +264,13 @@
       .then(function (j) {
         doc = j;
         buildBoth();
-        buildCompanies();
-        buildEquip();
         buildStats();
       })
       .catch(function (err) {
         console.error(err);
         var msg = "자료를 불러오지 못했습니다: " + err.message +
                   (location.protocol === "file:" ? " — 웹서버(preview.cmd)로 열어 주세요." : "");
-        busy("dc-busy0", msg); busy("dc-busy1", msg); busy("dc-busy2", msg);
+        busy("dc-busy0", msg);
       });
 
     var mCo = document.getElementById("dc-both-co");
@@ -400,16 +284,6 @@
       });
     });
 
-    document.querySelectorAll("[data-eq]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        if (b.dataset.eq !== eqMode) setEqMode(b.dataset.eq);
-      });
-    });
-    document.getElementById("dc-eq-co").addEventListener("change", function () {
-      if (!coOverlay) return;
-      if (this.checked) { coOverlay.addTo(map2); coOverlay.bringToFront(); }
-      else map2.removeLayer(coOverlay);
-    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
