@@ -104,6 +104,8 @@
 
   function draw() {
     head();
+    grips();
+    cols();
     var list = rows();
     document.getElementById("dl-body").innerHTML = list.map(function (r) {
       return "<tr>" + doc.cols.map(function (c) { return cell(r, c); }).join("") + "</tr>";
@@ -171,6 +173,109 @@
     document.getElementById("dl-body").innerHTML =
       '<tr><td style="padding:2rem;text-align:center;color:#8b8280">' +
       "위 안내를 봐 주세요.</td></tr>";
+  }
+
+
+  /* ── 칸 너비 조절 ──────────────────────────────────────────
+     머리글 사이를 끌어 너비를 바꿉니다. 정한 너비는 이 브라우저에 담아 두어
+     다시 오셔도 그대로입니다.
+
+     표를 table-layout:fixed 로 두어야 끄는 대로 정확히 따라옵니다.
+     그래서 칸마다 너비가 있어야 하고, 처음 값은 아래 표에서 가져옵니다. */
+  var WKEY = "skyish-dl-w";
+  var W0 = {                       // 처음 너비 (px)
+    no: 52, region: 54, name: 170, cat: 132, sub: 128, field: 300,
+    rnd: 260, tech: 300, isDef: 74, where: 168, motie: 90, innov: 132,
+    assoc: 122, skku: 88, listed: 150, partner: 170, award: 150,
+    staff: 76, founded: 96, site: 96,
+  };
+  var wid = {};
+
+  function loadW() {
+    wid = {};
+    try {
+      var got = JSON.parse(localStorage.getItem(WKEY) || "{}");
+      Object.keys(got).forEach(function (k) {
+        var n = parseInt(got[k], 10);
+        if (n > 30 && n < 1400) wid[k] = n;
+      });
+    } catch (e) { /* 못 읽어도 처음 너비로 갑니다 */ }
+  }
+  function saveW() {
+    try { localStorage.setItem(WKEY, JSON.stringify(wid)); } catch (e) {}
+  }
+  function wOf(k) { return wid[k] || W0[k] || 120; }
+
+  /** <colgroup> 을 다시 그리고, 붙어 있는 첫 세 칸의 자리를 맞춥니다 */
+  function cols() {
+    var cg = document.getElementById("dl-cols");
+    var tbl = document.getElementById("dl-table");
+    if (!cg || !tbl || !doc) return;
+    cg.innerHTML = doc.cols.map(function (c) {
+      return '<col style="width:' + wOf(c.key) + 'px">';
+    }).join("");
+    var total = doc.cols.reduce(function (n, c) { return n + wOf(c.key); }, 0);
+    tbl.style.width = total + "px";
+    /* 왼쪽에 붙여 둔 칸(번호·지역·기업명)의 자리는 앞 칸 너비의 합입니다 */
+    var w1 = wOf(doc.cols[0].key), w2 = wOf(doc.cols[1].key);
+    tbl.style.setProperty("--l2", w1 + "px");
+    tbl.style.setProperty("--l3", (w1 + w2) + "px");
+  }
+
+  /** 머리글마다 오른쪽 끝에 끌 손잡이를 답니다 */
+  function grips() {
+    var head = document.getElementById("dl-head");
+    if (!head) return;
+    [].forEach.call(head.children, function (th, i) {
+      if (i >= doc.cols.length - 1) return;      // 마지막 칸은 끌 것이 없습니다
+      var g = document.createElement("span");
+      g.className = "dl-grip";
+      g.title = "끌어서 칸 너비 조절";
+      g.dataset.gk = doc.cols[i].key;
+      th.appendChild(g);
+    });
+  }
+
+  function wireGrip() {
+    var head = document.getElementById("dl-head");
+    if (!head) return;
+    head.addEventListener("mousedown", function (e) {
+      var g = e.target.closest ? e.target.closest(".dl-grip") : null;
+      if (!g) return;
+      e.preventDefault();
+      var key = g.dataset.gk;
+      var x0 = e.clientX, w0 = wOf(key);
+      g.classList.add("on");
+      document.body.classList.add("dl-sizing");
+      var move = function (ev) {
+        var w = Math.max(44, Math.min(900, w0 + (ev.clientX - x0)));
+        wid[key] = Math.round(w);
+        cols();
+      };
+      var up = function () {
+        document.removeEventListener("mousemove", move);
+        document.removeEventListener("mouseup", up);
+        g.classList.remove("on");
+        document.body.classList.remove("dl-sizing");
+        saveW();
+        if (xbarSync) xbarSync();
+      };
+      document.addEventListener("mousemove", move);
+      document.addEventListener("mouseup", up);
+    });
+    /* 손잡이를 두 번 누르면 그 칸만 처음 너비로 */
+    head.addEventListener("dblclick", function (e) {
+      var g = e.target.closest ? e.target.closest(".dl-grip") : null;
+      if (!g) return;
+      delete wid[g.dataset.gk];
+      cols(); saveW();
+      if (xbarSync) xbarSync();
+    });
+    var rs = document.getElementById("dl-wreset");
+    if (rs) rs.addEventListener("click", function () {
+      wid = {}; saveW(); cols();
+      if (xbarSync) xbarSync();
+    });
   }
 
   /* ── 가로 이동 바 ──────────────────────────────────────────
@@ -251,8 +356,10 @@
         .then(function (j) {
           doc = j;
           document.getElementById("dl-note").textContent = j.meta.note;
+          loadW();
           tabs();
           draw();
+          wireGrip();
           xbar();
           document.getElementById("dl-q").addEventListener("input", draw);
         })

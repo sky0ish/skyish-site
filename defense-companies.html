@@ -63,13 +63,30 @@
     /* 첫 세 칸(번호·지역·기업명)은 가로로 밀어도 붙어 있게 */
     .dl-table th:nth-child(-n+3),.dl-table td:nth-child(-n+3){position:sticky;background:var(--white)}
     .dl-table thead th:nth-child(-n+3){background:var(--paper-2);z-index:4}
-    .dl-table th:nth-child(1),.dl-table td:nth-child(1){left:0;width:3.2rem;
+    /* 붙어 있는 첫 세 칸 — 왼쪽 자리는 칸 너비에 따라 JS 가 넣습니다 */
+    .dl-table th:nth-child(1),.dl-table td:nth-child(1){left:0;
               text-align:right;color:#8b8280;font-variant-numeric:tabular-nums}
-    .dl-table th:nth-child(2),.dl-table td:nth-child(2){left:3.2rem;width:3.4rem}
-    .dl-table th:nth-child(3),.dl-table td:nth-child(3){left:6.6rem;min-width:10rem;font-weight:600}
+    .dl-table th:nth-child(2),.dl-table td:nth-child(2){left:var(--l2,3.2rem)}
+    .dl-table th:nth-child(3),.dl-table td:nth-child(3){left:var(--l3,6.6rem);font-weight:600}
     .dl-table tbody tr:hover td{background:#faf7f4}
-    .dl-table td.long{max-width:26rem;white-space:normal;line-height:1.45}
-    .dl-table td.mid{max-width:15rem;white-space:normal;line-height:1.45}
+    .dl-table td{white-space:normal;line-height:1.45;overflow-wrap:anywhere}
+    .dl-table thead th{white-space:nowrap}
+
+    /* 칸 너비 조절 — 머리글 사이를 끕니다 */
+    .dl-table{table-layout:fixed}
+    .dl-table th{position:relative}
+    .dl-grip{position:absolute;top:0;right:-4px;width:9px;height:100%;cursor:col-resize;
+             z-index:6;touch-action:none}
+    .dl-grip::after{content:"";position:absolute;top:20%;bottom:20%;left:4px;width:1px;
+                    background:var(--line);transition:background .12s}
+    .dl-grip:hover::after,.dl-grip.on::after{background:var(--teal);width:2px;left:3px}
+    .dl-table th:last-child .dl-grip{display:none}
+    body.dl-sizing{cursor:col-resize;user-select:none}
+    .dl-wreset{all:unset;cursor:pointer;flex:none;font-size:.76rem;color:var(--mauve);
+               border:1px solid var(--line);border-radius:6px;padding:.18rem .5rem;
+               background:var(--white);white-space:nowrap;box-shadow:var(--shadow-sm)}
+    .dl-wreset:hover{border-color:var(--teal);color:var(--teal-text)}
+    .dl-wreset:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
 
     .dl-sort{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem;
              font:inherit;color:inherit;white-space:nowrap}
@@ -121,11 +138,14 @@
             <button type="button" class="dl-xgo" id="dl-xl" data-x="l" title="왼쪽 끝으로">◀</button>
             <div class="dl-xtrack" id="dl-xtrack"><div id="dl-xin"></div></div>
             <button type="button" class="dl-xgo" id="dl-xr" data-x="r" title="오른쪽 끝으로">▶</button>
+            <button type="button" class="dl-wreset" id="dl-wreset"
+                    title="칸 너비를 처음으로 되돌립니다">칸 너비 되돌리기</button>
           </div>
         </div>
 
         <div class="dl-scroll">
-          <table class="dl-table">
+          <table class="dl-table" id="dl-table">
+            <colgroup id="dl-cols"></colgroup>
             <thead><tr id="dl-head"></tr></thead>
             <tbody id="dl-body"></tbody>
           </table>
@@ -143,6 +163,6 @@
   <div id="site-footer"></div>
 
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-companies.js?v=202609091600" defer></script>
+  <script src="assets/js/defense-companies.js?v=202609091700" defer></script>
 </body>
 </html>
