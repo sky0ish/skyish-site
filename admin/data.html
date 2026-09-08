@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>분석 자료 올리기 — Jee-Hyun NAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="../assets/css/style.css?v=202609091200">
+  <style>
+    .asec { margin:1.6rem 0 .8rem; font-size:.72rem; font-weight:700; letter-spacing:.08em;
+            color:var(--mauve); }
+    .dz { display:block; border:2px dashed var(--line); border-radius:var(--radius-md);
+          background:#fff; padding:2.2rem 1.4rem; text-align:center; cursor:pointer;
+          transition:.18s var(--ease); }
+    .dz:hover, .dz.on { border-color:var(--teal); background:#f4faf9; }
+    .dz b { display:block; font-size:1rem; color:var(--ink); margin-bottom:.35rem; }
+    .dz span { font-size:.84rem; color:var(--mauve); line-height:1.7; }
+    .dz.busy { opacity:.6; cursor:progress; }
+
+    .flist { border:1px solid var(--line); border-radius:var(--radius-md);
+             background:#fff; overflow:hidden; }
+    .flist table { width:100%; border-collapse:collapse; font-size:.86rem; }
+    .flist th, .flist td { padding:.55rem .8rem; border-bottom:1px solid var(--line-soft);
+                           text-align:left; }
+    .flist th { font-size:.74rem; color:var(--mauve); font-weight:600; background:var(--paper-2); }
+    .flist td.num { text-align:right; font-variant-numeric:tabular-nums; color:var(--mauve);
+                    white-space:nowrap; }
+    .flist tr:last-child td { border-bottom:0; }
+    .flist .want { font-weight:700; color:var(--teal-text); }
+    .flist .stray { background:#fdf3f0; }
+    .fdel { all:unset; cursor:pointer; color:#b3543b; font-size:.8rem;
+            text-decoration:underline; text-underline-offset:2px; }
+    .fdel:hover { color:#8e3b2c; }
+    .fdel[disabled] { opacity:.4; cursor:default; }
+    .amsg { margin:.8rem 0 0; font-size:.86rem; line-height:1.8; white-space:pre-wrap; }
+    .amsg.ok { color:var(--teal-text); }
+    .amsg.err { color:#8e3b2c; }
+    .anote { font-size:.85rem; color:var(--mauve); line-height:1.8; margin:.5rem 0 0; }
+    .anote code { background:var(--paper-2); padding:.05rem .3rem; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section" style="padding-top:7rem">
+      <div class="container">
+        <span class="eyebrow">Admin</span>
+        <h1 class="fb-title" style="margin-bottom:.4rem">분석 자료 올리기</h1>
+        <p class="anote">
+          방산·침수 화면이 읽는 자료를 <b>analysis</b> 보관함에 올립니다.
+          파일을 끌어다 놓으면 <b>알맞은 폴더에 정확히 덮어씁니다</b> —
+          Supabase 화면에 들어가실 일이 없습니다.
+        </p>
+        <p class="fb-crumb" style="margin-top:1rem">
+          <a class="btn btn--ghost" href="index.html">← 운영 관리</a>
+        </p>
+        <div id="aapp"><p class="anote">확인하는 중…</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="../assets/js/main.js?v=202609010300" defer></script>
+  <script type="module" src="../assets/js/admin-data.js?v=202609091300"></script>
+</body>
+</html>
