@@ -3115,6 +3115,26 @@ body.diary-on #notesapp > *:not(.ndiary) {
   .aphoto__box { width:140px; height:168px; margin:0 auto; }
 }
 /* 사진이 있는지 — 표 맨 끝 칸 */
+/* 지우기 ✕ — 평소에는 흐리게 두었다가 그 줄에 마우스를 올리면 또렷해집니다.
+   손가락으로 쓰는 화면에서는 마우스 올림이 없으니 늘 보이게 둡니다. */
+.nimp__tbl th.adel, .nimp__tbl td.adel { width:34px; text-align:center; padding:0; }
+.adel__x { all:unset; cursor:pointer; display:inline-flex; align-items:center;
+           justify-content:center; width:26px; height:26px; border-radius:50%;
+           color:#c9bfa6; font-size:.82rem; opacity:.35; transition:opacity .15s, color .15s; }
+.nimp__tbl tr:hover .adel__x { opacity:1; }
+.adel__x:hover { color:#b3261e; background:rgba(179,38,30,.08); }
+.adel__x:focus-visible { outline:2px solid var(--teal); outline-offset:1px; opacity:1; }
+.adel__x[disabled] { opacity:.3; cursor:default; }
+@media (hover: none) { .adel__x { opacity:.8; } }
+
+/* 지운 분 되돌리기 */
+.aundo { margin:-.6rem 0 1rem; font-size:.82rem; color:var(--mauve); }
+.aundo[hidden] { display:none; }
+.alink { all:unset; cursor:pointer; color:var(--teal-text); text-decoration:underline;
+         text-underline-offset:2px; }
+.alink:hover { color:var(--teal); }
+.alink:focus-visible { outline:2px solid var(--teal); outline-offset:2px; border-radius:3px; }
+
 .ahas { text-align:center; font-weight:700; font-size:.82rem; width:52px; }
 .ahas.yes { color:#3f6a3a; }
 .ahas.no  { color:#c9bfa6; font-weight:500; }

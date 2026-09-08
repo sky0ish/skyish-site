@@ -16,7 +16,7 @@
 //    그래서 절대 한 칸에 합치지 않습니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import { IMG_EXT, photoKey, nameFromFile, packText, readPack, packFileName, dataUrlType, sortPicked,
-         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609081800";
+         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609091200";
 
 /** 주인 이메일 — 이 사람만 주소록을 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -185,6 +185,74 @@ export function dedupePeople(rows) {
     if (at(r) > at(cur) || (at(r) === at(cur) && filled(r) > filled(cur))) best.set(key, r);
   });
   return order.map((k) => best.get(k));
+}
+
+
+/* ── 완전히 같은 분을 한 줄로 ──────────────────────────────
+   「완전히 같은건 데이타 베이스에서 아예 삭제해주고」
+
+   같은 분이 명함첩과 동문 명부에 나란히 실리는 일이 있습니다.
+   위 dedupePeople 은 **같은 출처 안에서만** 묶으므로 그런 줄은 둘로 남습니다.
+
+   여기서는 **이름과 소속이 같고, 연락처(휴대폰·회사 전화·이메일) 가운데
+   하나라도 똑같을 때만** 같은 분으로 봅니다.
+   · 연락처가 하나도 안 겹치면 합치지 않습니다 — 동명이인이 같은 회사에
+     다닐 수 있고, 둘 다 연락처가 비어 있다고 같은 사람이라 할 수 없습니다.
+   · 소속이 다르면 합치지 않습니다 — 「시미즈 건설 고동희」 와
+     「삼성물산 고동희」 는 옮기신 것일 수도, 다른 분일 수도 있어
+     보시고 고르셔야 합니다.
+   합칠 때는 지우지 않고 **빈 칸을 서로 채웁니다** — 동문 명부에만 있는
+   전공·학부가 사라지면 안 되기 때문입니다. */
+const norm = (v) => String(v == null ? "" : v).replace(/\s+/g, "").toLowerCase();
+
+/** 이 두 줄이 「완전히 같은 분」 인가 */
+export function samePerson(a, b) {
+  if (!a || !b) return false;
+  if (!norm(a.name) || norm(a.name) !== norm(b.name)) return false;
+  if (norm(a.company) !== norm(b.company)) return false;
+  const touch = ["mobile", "phone", "email"];
+  return touch.some((f) => norm(a[f]) && norm(a[f]) === norm(b[f]));
+}
+
+export function mergeSame(rows) {
+  const L = (Array.isArray(rows) ? rows : []).filter(Boolean);
+  const out = [];
+  L.forEach((r) => {
+    /* 같은 이름·소속끼리만 견주면 되므로 뒤에서부터 조금만 훑습니다 */
+    const hit = out.find((x) => samePerson(x, r));
+    if (!hit) { out.push({ ...r }); return; }
+    Object.keys(r).forEach((f) => {
+      if (f === "src" || f === "kind") return;
+      if (!String(hit[f] == null ? "" : hit[f]).trim() && String(r[f] == null ? "" : r[f]).trim()) {
+        hit[f] = r[f];
+      }
+    });
+    /* 출처는 명함첩을 남깁니다 — 내가 직접 받은 쪽이 더 새것입니다 */
+    if (hit.src !== "card" && r.src === "card") { hit.src = r.src; hit.kind = r.kind; }
+    hit.__merged = true;
+  });
+  return out;
+}
+
+
+/* ── 손으로 지운 줄 ────────────────────────────────────────
+   「내가보고 불필요한 옛날것은 삭제하게해줘」
+
+   엑셀은 손대지 않습니다 (원본이니까요). 대신 「이 줄은 안 보이게」 를
+   이 브라우저에 담아 두고, 엑셀을 다시 읽을 때마다 걸러 냅니다.
+   지운 것은 되돌릴 수 있습니다 — 한 번 누르면 끝인 문은 만들지 않습니다. */
+
+/** 이 줄을 가리키는 열쇠 — 엑셀을 다시 읽어도 같은 줄이면 같은 값입니다 */
+export function rowKey(r) {
+  if (!r) return "";
+  return ["name", "company", "title", "mobile", "phone", "email"]
+    .map((f) => norm(r[f])).join("|");
+}
+
+/** 지운 줄을 걸러 냅니다 */
+export function dropHidden(rows, keys) {
+  if (!keys || !keys.size) return rows || [];
+  return (rows || []).filter((r) => !keys.has(rowKey(r)));
 }
 
 
@@ -831,7 +899,9 @@ export async function buildPhotoPack(onStep) {
   /* 나중에 채워 넣으신 내용도 함께 담습니다 — 폰에서도 그대로 보이게 */
   const extras = await allExtras();
   const blob = new Blob([packText(items, extras)], { type: "application/json" });
-  return { blob, n: items.length, nExtra: extras.size };
+  /* 지움 목록도 꾸러미에 함께 갑니다(폰에서도 같은 줄이 안 보이게).
+     다만 「채워 넣은 내용」 을 셀 때는 빼야 숫자가 맞습니다. */
+  return { blob, n: items.length, nExtra: extras.size - (extras.has(DEL_KEY) ? 1 : 0) };
 }
 
 /** 고르신 파일들을 이 브라우저에 담습니다 —
@@ -1012,6 +1082,49 @@ export async function saveExtra(name, org, data) {
     extraCache = null;
     return true;
   } catch (e) { return false; }
+}
+
+/* ── 지운 줄 담아 두기 ──
+   자료방 판(version)을 올리면 다른 창이 열어 둔 사이에 멈춰 버립니다
+   (전에 「이어서 열기」 가 사라진 일이 그것이었습니다).
+   그래서 새 칸을 만들지 않고 덧쓰기 칸에 함께 담습니다.
+   열쇠에 빈칸이 들어 있어 personKey(빈칸을 지웁니다) 와는 절대 겹치지 않습니다. */
+const DEL_KEY = "__지움 목록__";
+
+/** 지운 줄의 열쇠들 */
+export async function hiddenKeys() {
+  const got = (await allExtras()).get(DEL_KEY);
+  return new Set(Array.isArray(got && got.keys) ? got.keys : []);
+}
+
+async function putHidden(keys) {
+  try {
+    const db = await openDb();
+    await new Promise((ok, no) => {
+      const t = db.transaction(EXTRA_STORE, "readwrite");
+      const st = t.objectStore(EXTRA_STORE);
+      if (keys.size) st.put({ keys: [...keys], at: Date.now() }, DEL_KEY);
+      else st.delete(DEL_KEY);
+      t.oncomplete = ok; t.onerror = () => no(t.error);
+    });
+    db.close();
+    extraCache = null;
+    return true;
+  } catch (e) { return false; }
+}
+
+/** 이 줄을 안 보이게 합니다 */
+export async function hideRow(r) {
+  const k = rowKey(r);
+  if (!k || k === "|||||") return false;
+  const keys = await hiddenKeys();
+  keys.add(k);
+  return putHidden(keys);
+}
+
+/** 지운 것을 모두 되돌립니다 */
+export async function unhideAll() {
+  return putHidden(new Set());
 }
 
 /** 엑셀에서 읽은 줄 위에 덧쓴 것을 얹습니다 — 덧쓴 쪽이 이깁니다 */
@@ -1206,6 +1319,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       "</div>" +
       '<nav class="ntabs" id="abTabs"></nav>' +
       '<p class="ncount" id="abCount"></p>' +
+      '<p class="aundo" id="abUndo" hidden></p>' +
       '<div class="nimp__scroll"><table class="nimp__tbl" id="abTbl">' +
         '<thead><tr>' +
           /* 맨 앞은 일련번호 — 줄 세우는 칸이 아닙니다 */
@@ -1216,6 +1330,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
             .map(([k, label]) =>
               `<th class="asort" data-s="${k}" title="눌러서 줄 세우기">` +
               `${label}<i></i></th>`).join("") +
+          /* 맨 끝은 지우기 — 줄 세우는 칸이 아닙니다 */
+          '<th class="adel" title="더 이상 안 볼 줄 지우기"></th>' +
         "</tr></thead>" +
         "<tbody></tbody></table></div>" +
       '<p class="nempty" id="abEmpty" hidden></p>' +
@@ -1289,6 +1405,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
             return '<td class="ahas ' + (yes ? "yes" : "no") + '" data-n="' +
                    esc(r.name) + '">' + (yes ? "O" : "X") + "</td>";
           })() +
+          /* 옛 직장 명함처럼 더 이상 안 볼 줄을 지웁니다 —
+             엑셀은 그대로 두고 이 브라우저에서만 감춥니다. 되돌릴 수 있습니다. */
+          '<td class="adel"><button type="button" class="adel__x" ' +
+            'data-del="' + esc(rowKey(r)) + '" title="이 줄 지우기">✕</button></td>' +
         "</tr>").join("");
 
       /* 사진이 있는지 알아 두었다가 「사진」 칸으로 줄 세울 때 씁니다.
@@ -1300,6 +1420,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         `<button type="button" class="nbtn" id="abMoreBtn">더 보기 · ${l.length - shownCount}명 남음</button>`;
       const mb = document.getElementById("abMoreBtn");
       if (mb) mb.addEventListener("click", () => { shownCount += PAGE; paint(); });
+      if (typeof drawUndo === "function") drawUndo();
     }
 
     /* 어느 칸으로 세워 두었는지 화살표로 보입니다.
@@ -1328,10 +1449,49 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       }));
 
     // 줄 하나하나에 듣는 이를 붙이면 무겁습니다 — 표 하나에만 걸고 되짚습니다
-    tbody.addEventListener("click", (e) => {
+    tbody.addEventListener("click", async (e) => {
+      /* 지우기 ✕ — 줄을 여는 것보다 먼저 봅니다 */
+      const x = e.target.closest("[data-del]");
+      if (x) {
+        e.stopPropagation();
+        const tr = x.closest("tr");
+        const r = tr ? rows[+tr.dataset.i] : null;
+        if (!r) return;
+        if (!confirm(r.name + (r.company ? " (" + r.company + ")" : "") +
+                     " 를 주소록에서 지울까요?" + NL +
+                     "엑셀 원본은 그대로 두고 이 화면에서만 감춥니다 — 되돌릴 수 있습니다.")) return;
+        x.disabled = true;
+        if (await hideRow(r)) {
+          rows = rows.filter((y) => y !== r);
+          shownCount = Math.max(PAGE, shownCount - 1);
+          paint();
+        } else {
+          x.disabled = false;
+          say("지우지 못했습니다 — 새로고침한 뒤 다시 해 보세요.");
+        }
+        return;
+      }
       const tr = e.target.closest("tr");
       if (tr) detail(rows[+tr.dataset.i]);
     });
+
+    /* 지운 분이 있으면 되돌릴 수 있게 알려 둡니다 — 한 번 누르면 끝인 문은 안 만듭니다 */
+    async function drawUndo() {
+      const box = document.getElementById("abUndo");
+      if (!box) return;
+      const keys = await hiddenKeys();
+      box.hidden = !keys.size;
+      if (!keys.size) return;
+      box.innerHTML = "지운 분 " + keys.size + "명 " +
+        '<button type="button" class="alink" id="abUndoGo">되돌리기</button>';
+      document.getElementById("abUndoGo").addEventListener("click", async () => {
+        if (!confirm("지운 " + keys.size + "명을 모두 되살릴까요?")) return;
+        await unhideAll();
+        say("되살렸습니다 — 엑셀을 다시 읽습니다.");
+        location.reload();
+      });
+    }
+    drawUndo();
 
     repaint = paint;                 // 바깥(사진 가져오기·폴더 고르기)에서도 다시 그리게
     const run = () => { shownCount = PAGE; paint(); };
@@ -1700,7 +1860,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     try {
       /* 나중에 명함 받아 채워 넣으신 것을 엑셀 위에 얹습니다 —
          엑셀을 새로 읽어도 손수 고친 것은 그대로 남습니다. */
-      rows = applyExtras(dedupePeople(await loadFromFiles(files, say)), await allExtras());
+      rows = dropHidden(
+        applyExtras(mergeSame(dedupePeople(await loadFromFiles(files, say))), await allExtras()),
+        await hiddenKeys());
     } catch (e) {
       say("읽지 못했습니다 — " + e.message);
       return;
@@ -1832,7 +1994,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         if (k % 20 === 0) say("얼굴 사진을 담는 중… " + k + "장");
       }, known.size ? known : null);
       /* 꾸러미에는 채워 넣은 내용도 들어 있습니다 — 표에 곧바로 얹습니다 */
-      rows = applyExtras(rows, await allExtras());
+      rows = dropHidden(applyExtras(rows, await allExtras()), await hiddenKeys());
       await refreshPhotoNames();
       repaint();
       const why = skipped.length
@@ -1865,7 +2027,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   if (!FSA) {
     const c = await getCache();
     if (c && Array.isArray(c.rows) && c.rows.length) {
-      rows = applyExtras(c.rows, await allExtras());
+      rows = dropHidden(applyExtras(mergeSame(c.rows), await allExtras()),
+                        await hiddenKeys());
       const nCard = rows.filter((r) => r.src === "card").length;
       say(`담아 둔 명함첩 ${nCard}명 · 동문 ${rows.length - nCard}명 — 이 폰 브라우저에만 있습니다. ` +
           "새 엑셀을 읽히려면 「엑셀 고르기」.");

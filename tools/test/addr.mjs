@@ -219,5 +219,54 @@ eq("이름이 없는 줄이 섞여도",
    AB.sortRows([P({ name: "" }), P({ name: "가" })], "name", 1).map((x) => x.name),
    ["가", ""]);
 
+/* ── 완전히 같은 분을 한 줄로 ──
+   「완전히 같은건 데이타 베이스에서 아예 삭제해주고」
+   같은 분이 명함첩과 동문 명부에 나란히 실릴 때만 합칩니다. */
+console.log("\n── 완전히 같은 분 합치기 ──");
+const 명함 = P({ name: "고동희", company: "삼성물산", title: "담당차장",
+                 mobile: "010-6294-5086", email: "dongh.ko@samsung.com" });
+const 동문 = P({ src: "alum", kind: "alum", name: "고동희", company: "삼성물산",
+                 mobile: "010-6294-5086", majorName: "사회기반학전공",
+                 univDept: "공학부", email: "" });
+const 합침 = AB.mergeSame([동문, 명함]);
+eq("★ 한 줄로 합친다", 합침.length, 1);
+eq("★ 동문 명부의 전공이 안 사라진다", 합침[0].majorName, "사회기반학전공");
+eq("명함첩의 직함도 살아 있다", 합침[0].title, "담당차장");
+eq("빈 이메일은 채워진 쪽으로", 합침[0].email, "dongh.ko@samsung.com");
+eq("출처는 명함첩", 합침[0].src, "card");
+eq("합친 줄임을 표시한다", 합침[0].__merged, true);
+
+/* 실제로 보신 화면 — 소속이 다르면 합치지 않습니다 */
+const 옛직장 = P({ name: "고동희", company: "시미즈 건설글로벌 프로젝트실 부장",
+                   mobile: "010-6294-5086", email: "kodhi@naver.com" });
+eq("★ 소속이 다르면 안 합친다", AB.mergeSame([옛직장, 명함]).length, 2);
+eq("소속이 다르면 같은 분이 아니다", AB.samePerson(옛직장, 명함), false);
+
+/* 연락처가 하나도 안 겹치면 남입니다 — 동명이인이 같은 회사에 있을 수 있습니다 */
+const 갑 = P({ name: "김민수", company: "경기연구원", mobile: "010-1111-1111" });
+const 을 = P({ name: "김민수", company: "경기연구원", mobile: "010-2222-2222" });
+eq("★ 연락처가 다르면 안 합친다", AB.mergeSame([갑, 을]).length, 2);
+const 빈갑 = P({ name: "김민수", company: "경기연구원" });
+const 빈을 = P({ name: "김민수", company: "경기연구원" });
+eq("★ 둘 다 연락처가 비면 안 합친다", AB.mergeSame([빈갑, 빈을]).length, 2);
+eq("이름이 비면 안 합친다", AB.samePerson(P({ mobile: "010-1" }), P({ mobile: "010-1" })), false);
+eq("띄어쓰기가 달라도 같은 곳", AB.samePerson(
+   P({ name: "고동희", company: "삼성 물산", mobile: "010-6294-5086" }), 명함), true);
+eq("빈 목록", AB.mergeSame([]), []);
+eq("아무것도 아닌 것", AB.mergeSame(null), []);
+
+/* ── 손으로 지운 줄 ── */
+console.log("\n── 손으로 지운 줄 ──");
+eq("같은 줄이면 같은 열쇠", AB.rowKey(명함), AB.rowKey({ ...명함 }));
+eq("소속이 다르면 다른 열쇠", AB.rowKey(옛직장) === AB.rowKey(명함), false);
+eq("띄어쓰기·대소문자는 무시", AB.rowKey(P({ name: "고 동희", company: "삼성물산",
+   title: "담당차장", mobile: "010-6294-5086", email: "DongH.Ko@Samsung.com" })),
+   AB.rowKey(명함));
+const 지움 = new Set([AB.rowKey(옛직장)]);
+eq("★ 지운 줄만 빠진다", AB.dropHidden([옛직장, 명함], 지움).map((r) => r.company),
+   ["삼성물산"]);
+eq("지운 것이 없으면 그대로", AB.dropHidden([옛직장, 명함], new Set()).length, 2);
+eq("아무것도 안 넘겨도", AB.dropHidden([옛직장], null).length, 1);
+
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);
