@@ -141,14 +141,18 @@ globalThis.showDirectoryPicker = async () => ({
   async *values() {
     for (const [dname, files] of Object.entries(globalThis.__dirs || {})) {
       const pics = (globalThis.__pics || {})[dname] || [];
+      const pres = (globalThis.__pres || {})[dname] || [];
       yield {
         kind: "directory", name: dname,
         async *values() {
           for (const f of files) yield fakeFile(f);
-          if (!pics.length) return;
-          yield {
+          if (pics.length) yield {
             kind: "directory", name: "pictures",
             async *values() { for (const p of pics) yield fakeFile(p); },
+          };
+          if (pres.length) yield {
+            kind: "directory", name: "presentation",
+            async *values() { for (const p of pres) yield fakeFile(p); },
           };
         },
       };
@@ -648,9 +652,48 @@ await check("발표자료(final)도 함께 올린다", async () => {
     throw new Error("개최건의까지 올라갔습니다 — " + names);
 });
 
+/* 「회의록 폴더에서 presentation 폴더가 있을 경우에 …
+    회의록 파일을 만들어주면서 동시에 presentation파일도 upload로 올려줘」 */
+await check("presentation 폴더의 발표자료도 함께 올린다", async () => {
+  globalThis.__dirs = { "20260908_김병규": ["20260908_김병규_회의록.pdf"] };
+  globalThis.__pics = {};
+  globalThis.__pres = { "20260908_김병규": [
+    "(김병규)(260908)국방_피지컬AI_세미나.pptx",
+    "(김병규)(260908)국방_피지컬AI_세미나.pdf",
+  ] };
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const names = (v.files || []).map((f) => f.name);
+  if (names.length !== 2)
+    throw new Error("붙임이 " + names.length + "개입니다 (회의록 + 발표자료) — " + names);
+  if (!names.includes("(김병규)(260908)국방_피지컬AI_세미나.pdf"))
+    throw new Error("PDF 가 아닙니다 — " + names);
+  if (names.some((n) => /\.pptx$/i.test(n)))
+    throw new Error("pptx 까지 올라갔습니다 — " + names);
+});
+
+await check("발표자료·사진·회의록이 다 있으면 셋 다", async () => {
+  globalThis.__dirs = { "20260909_김병규": ["20260909_김병규_회의록.pdf"] };
+  globalThis.__pics = { "20260909_김병규": ["단체.jpg", "혼자.jpg"] };
+  globalThis.__faces = { "단체.jpg": 6, "혼자.jpg": 1 };
+  globalThis.__pres = { "20260909_김병규": ["발표_final.pdf"] };
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const names = (v.files || []).map((f) => f.name).sort();
+  if (names.length !== 3)
+    throw new Error("붙임이 " + names.length + "개입니다 (셋이어야 합니다) — " + names);
+  for (const want of ["20260909_김병규_회의록.pdf", "단체.jpg", "발표_final.pdf"])
+    if (!names.includes(want)) throw new Error(want + " 가 없습니다 — " + names);
+});
+
 await check("사진 폴더가 없으면 회의록만 올린다", async () => {
   globalThis.__dirs = { "20260901_어디_아무개": ["20260901_어디_아무개_회의록.pdf"] };
   globalThis.__pics = {};
+  globalThis.__pres = {};
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 60));

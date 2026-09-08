@@ -15,8 +15,8 @@ import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609081800";
 import * as FT from "./notes-facetag.js?v=202609052100";
-import * as MN from "./notes-minutes.js?v=202609081500";
-import * as PP from "./notes-photo-pick.js?v=202609081500";
+import * as MN from "./notes-minutes.js?v=202609082100";
+import * as PP from "./notes-photo-pick.js?v=202609082100";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609081500";
 
@@ -2617,25 +2617,40 @@ export async function initNotes(mountId = "notesapp") {
     const folders = [];
     const handles = new Map();              // 폴더이름 → {파일이름: 손잡이}
     const picHandles = new Map();           // 폴더이름 → {사진이름: 손잡이}
+    const presHandles = new Map();          // 폴더이름 → {발표자료이름: 손잡이}
     try {
       for await (const e of dir.values()) {
         if (e.kind !== "directory") continue;
-        const names = [], hs = {}, pics = [], ph = {};
+        const names = [], hs = {}, pics = [], ph = {}, pres = [], rh = {};
         for await (const f of e.values()) {
           if (f.kind === "file") { names.push(f.name); hs[f.name] = f; continue; }
+          if (f.kind !== "directory") continue;
           /* 회의 폴더 안 「pictures(사진)」 — 그날 찍은 사진들입니다.
              그 가운데 얼굴이 가장 많은 한 장만 골라 함께 올립니다. */
-          if (f.kind !== "directory" || !PP.isPicDir(f.name)) continue;
-          try {
-            for await (const g of f.values()) {
-              if (g.kind !== "file" || !PP.IMG_RE.test(g.name)) continue;
-              pics.push(g.name); ph[g.name] = g;
-            }
-          } catch (x) { /* 못 읽는 폴더가 섞여도 회의록은 붙입니다 */ }
+          if (PP.isPicDir(f.name)) {
+            try {
+              for await (const g of f.values()) {
+                if (g.kind !== "file" || !PP.IMG_RE.test(g.name)) continue;
+                pics.push(g.name); ph[g.name] = g;
+              }
+            } catch (x) { /* 못 읽는 폴더가 섞여도 회의록은 붙입니다 */ }
+            continue;
+          }
+          /* 「presentation」 — 발표자료입니다. 같은 이름의 pptx·pdf 가 함께 있으면
+             PDF 한 개만 올립니다 (게시판에서는 PDF 가 보기 좋습니다). */
+          if (MN.isPresDir(f.name)) {
+            try {
+              for await (const g of f.values()) {
+                if (g.kind !== "file") continue;
+                pres.push(g.name); rh[g.name] = g;
+              }
+            } catch (x) {}
+          }
         }
-        folders.push({ name: e.name, files: names, pics: pics });
+        folders.push({ name: e.name, files: names, pics: pics, pres: pres });
         handles.set(e.name, hs);
         picHandles.set(e.name, ph);
+        presHandles.set(e.name, rh);
       }
     } catch (err) {
       alert("폴더를 읽지 못했습니다 — " + (err && err.message));
@@ -2726,10 +2741,13 @@ export async function initNotes(mountId = "notesapp") {
 
           /* 발표자료 — 「…final.pdf」 가 있으면 함께 올립니다.
              회의록·개최건의는 빼고 봅니다 (그것들은 따로 다룹니다). */
-          if (job.slide && hs[job.slide] &&
+          const slideH = job.presFolder
+            ? (presHandles.get(job.raw) || {})[job.slide]
+            : hs[job.slide];
+          if (job.slide && slideH &&
               !(row && MN.alreadyHas(row.files, job.slide)) &&
               !ups.some((u) => u.name === job.slide)) {
-            try { ups.push(await NF.upload(await hs[job.slide].getFile())); }
+            try { ups.push(await NF.upload(await slideH.getFile())); }
             catch (e) { failed.push(job.slide + " — 발표자료를 올리지 못했습니다"); }
           }
 

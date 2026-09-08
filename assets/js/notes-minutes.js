@@ -9,6 +9,7 @@
 //          20260824_….txt                 ← 있으면 요약을 본문에 담습니다
 //          음성 260824_114513.m4a          ← 올리지 않습니다 (녹음은 내 컴퓨터에만)
 //          pictures/ (또는 사진/)          ← 있으면 얼굴이 가장 많은 한 장만 함께
+//          presentation/                   ← 있으면 발표자료 한 개도 함께 (PDF 먼저)
 //
 //  폴더 이름이 곧 자료입니다 — 날짜 · 기관/장소 · 만난 사람.
 //
@@ -75,6 +76,13 @@ export function pickFiles(names, folder) {
   };
 }
 
+/** 발표자료가 담긴 하위 폴더 이름 */
+export const PRES_DIRS = ["presentation", "발표자료", "발표", "slides", "ppt"];
+
+/** 이 폴더가 발표자료 폴더인가 */
+export const isPresDir = (name) =>
+  PRES_DIRS.some((d) => d.toLowerCase() === String(name || "").trim().toLowerCase());
+
 /* 발표자료가 아닌 것들 — 회의록·개최건의·요약은 따로 다룹니다 */
 const NOT_SLIDE = /(_회의록|회의록내용|개최\s*건의|개최\s*개요|자문회의)/;
 
@@ -128,7 +136,16 @@ export function plan(folders) {
     if (!f.pdf) { skip.push({ name: d.name, why: "「…_회의록.pdf」 가 없습니다" }); return; }
     /* 사진 폴더가 있으면 이름만 실어 둡니다 —
        어느 것이 단체사진인지는 그림을 열어 봐야 알 수 있어 notes.js 가 고릅니다. */
-    jobs.push({ ...info, ...f, pics: (Array.isArray(d.pics) ? d.pics : []).slice(), title: "" });
+    /* 사진·발표자료 폴더가 있으면 이름만 실어 둡니다 —
+       어느 것이 단체사진인지는 그림을 열어 봐야 알 수 있어 notes.js 가 고릅니다. */
+    const pres = Array.isArray(d.pres) ? d.pres.slice() : [];
+    jobs.push({ ...info, ...f,
+      pics: (Array.isArray(d.pics) ? d.pics : []).slice(),
+      pres: pres,
+      /* 폴더 안 발표자료가 있으면 그것이 먼저입니다 (같은 이름의 pptx·pdf 중 PDF) */
+      slide: pres.length ? pickSlide(pres) : f.slide,
+      presFolder: pres.length > 0,
+      title: "" });
   });
   jobs.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   return { jobs, skip };

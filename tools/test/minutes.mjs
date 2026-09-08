@@ -4,7 +4,7 @@
 //
 // 진짜 폴더 이름을 그대로 씁니다 (파일은 안 읽습니다).
 
-import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide }
+import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide, isPresDir }
   from "../../assets/js/notes-minutes.js";
 
 let bad = 0;
@@ -120,6 +120,32 @@ eq("final 이 없으면 먼저 있는 것", pickSlide(["가.pdf", "나.pdf"]), "
 eq("최종 이라고 적어도 알아본다", pickSlide(["가.pdf", "나_최종.pdf"]), "나_최종.pdf");
 eq("발표자료가 없으면 빈 글자", pickSlide(["20260902_회의록.pdf", "메모.txt"]), "");
 eq("아무것도 아닌 것", [pickSlide([]), pickSlide(null)], ["", ""]);
+
+console.log("\n── presentation 폴더 ──");
+/* 「회의록 폴더에서 presentation 폴더가 있을 경우에 …
+    회의록 파일을 만들어주면서 동시에 presentation파일도 upload로 올려줘」 */
+eq("발표자료 폴더를 알아본다",
+   [isPresDir("presentation"), isPresDir("Presentation"), isPresDir("발표자료")],
+   [true, true, true]);
+eq("사진 폴더는 아니다", [isPresDir("pictures"), isPresDir("사진"), isPresDir("")],
+   [false, false, false]);
+const withPres = plan([{
+  name: "20260908_김병규",
+  files: ["20260908_김병규_회의록.pdf", "자문회의 개최건의(9월8일).pdf"],
+  pres: ["(김병규)(260908)국방_피지컬AI_세미나.pptx",
+         "(김병규)(260908)국방_피지컬AI_세미나.pdf"],
+}]).jobs[0];
+eq("같은 이름이면 PDF 를 고른다", withPres.slide,
+   "(김병규)(260908)국방_피지컬AI_세미나.pdf");
+eq("폴더에서 온 것임을 표시한다", withPres.presFolder, true);
+const noPres = plan([{
+  name: "20260908_김병규",
+  files: ["20260908_김병규_회의록.pdf", "바깥발표_final.pdf"],
+}]).jobs[0];
+eq("폴더가 없으면 회의 폴더의 것", noPres.slide, "바깥발표_final.pdf");
+eq("그때는 폴더 표시가 없다", noPres.presFolder, false);
+eq("둘 다 없으면 빈 글자",
+   plan([{ name: "20260908_김병규", files: ["20260908_김병규_회의록.pdf"] }]).jobs[0].slide, "");
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);
