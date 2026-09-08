@@ -20,10 +20,11 @@
     .dl-wrap{padding-top:calc(76px + 1rem);padding-bottom:2rem}
     .dl-wrap .container--wide{max-width:min(2200px,96vw)}
 
+    .dl-top{position:sticky;top:64px;z-index:60;background:var(--paper);
+           padding-top:.4rem;margin-bottom:.7rem}
     .dl-bar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;
             padding:.7rem .9rem;background:var(--white);border:1px solid var(--line-soft);
-            border-radius:var(--radius-md);box-shadow:var(--shadow-sm);margin-bottom:.7rem;
-            position:sticky;top:64px;z-index:60}
+            border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
     .dl-bar input[type=search]{flex:1 1 240px;min-width:180px;padding:.42rem .7rem;
             border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit}
     .dl-bar .chip{font-size:.84rem;padding:.3rem .75rem;cursor:pointer}
@@ -31,8 +32,7 @@
     .dl-bar .chip.active .n{color:rgba(255,255,255,.7)}
 
     /* 가로 이동 바 — 화면에 붙어 다닙니다 */
-    .dl-xbar{position:sticky;top:112px;z-index:59;display:flex;align-items:center;gap:.4rem;
-             margin-bottom:.4rem}
+    .dl-xbar{display:flex;align-items:center;gap:.4rem;margin-top:.4rem}
     .dl-xbar[hidden]{display:none}
     .dl-xgo{all:unset;cursor:pointer;flex:none;width:26px;height:20px;display:grid;
             place-items:center;border:1px solid var(--line);border-radius:6px;
@@ -52,7 +52,7 @@
     .dl-xtrack::-webkit-scrollbar-track{background:transparent}
     .dl-xtrack{scrollbar-width:thin}
 
-    .dl-scroll{overflow:auto;max-height:calc(100vh - 210px);
+    .dl-scroll{overflow:auto;max-height:calc(100vh - 240px);
                border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white)}
     .dl-table{border-collapse:separate;border-spacing:0;font-size:.83rem;width:max-content;min-width:100%}
     .dl-table th,.dl-table td{padding:.42rem .6rem;border-bottom:1px solid var(--line-soft);
@@ -104,19 +104,24 @@
           <a class="btn btn--ghost" href="defense-cluster.html">← 기업체와 연구장비 지도</a>
         </p>
 
-        <div class="dl-bar">
-          <input type="search" id="dl-q" autocomplete="off"
-                 placeholder="기업명 · 분야 · 기술 · 소재지로 찾기">
-          <span id="dl-tabs"></span>
-          <span class="fb-fig__src" id="dl-count"></span>
-        </div>
+        <!-- 찾기줄과 가로 이동 바를 한 덩이로 묶어 화면 위에 붙여 둡니다.
+             따로 두면 스크롤할 때 가로 바가 찾기줄 뒤로 숨고,
+             페이지 맨 아래에서는 표 밑으로 내려가 버립니다. -->
+        <div class="dl-top">
+          <div class="dl-bar">
+            <input type="search" id="dl-q" autocomplete="off"
+                   placeholder="기업명 · 분야 · 기술 · 소재지로 찾기">
+            <span id="dl-tabs"></span>
+            <span class="fb-fig__src" id="dl-count"></span>
+          </div>
 
-        <!-- 가로 이동 — 표가 스무 칸이 넘어 오른쪽이 화면 밖으로 나갑니다.
-             표 안쪽 스크롤바는 표 맨 아래에 있어 손이 안 닿아, 위에 붙여 둡니다. -->
-        <div class="dl-xbar" id="dl-xbar" hidden>
-          <button type="button" class="dl-xgo" id="dl-xl" data-x="l" title="왼쪽 끝으로">◀</button>
-          <div class="dl-xtrack" id="dl-xtrack"><div id="dl-xin"></div></div>
-          <button type="button" class="dl-xgo" id="dl-xr" data-x="r" title="오른쪽 끝으로">▶</button>
+          <!-- 표가 스무 칸이 넘어 오른쪽이 화면 밖으로 나갑니다.
+               표 안쪽 스크롤바는 표 맨 아래에 있어 손이 안 닿습니다. -->
+          <div class="dl-xbar" id="dl-xbar" hidden>
+            <button type="button" class="dl-xgo" id="dl-xl" data-x="l" title="왼쪽 끝으로">◀</button>
+            <div class="dl-xtrack" id="dl-xtrack"><div id="dl-xin"></div></div>
+            <button type="button" class="dl-xgo" id="dl-xr" data-x="r" title="오른쪽 끝으로">▶</button>
+          </div>
         </div>
 
         <div class="dl-scroll">
@@ -138,6 +143,6 @@
   <div id="site-footer"></div>
 
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-companies.js?v=202609091500" defer></script>
+  <script src="assets/js/defense-companies.js?v=202609091600" defer></script>
 </body>
 </html>
