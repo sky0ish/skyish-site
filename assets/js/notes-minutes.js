@@ -169,6 +169,37 @@ export function briefFromRow(row, info) {
   return 쓸모 ? out : null;
 }
 
+/* 「만난 곳」 처럼 보이는 꼬리말 — 폴더 이름에서 장소를 갈음할 때 씁니다.
+   받아쓰기.py 의 곳꼬리 와 같은 목록입니다. */
+const PLACE_TAIL =
+  /(연구원|연구소|대학교|대학|시청|도청|군청|구청|청|공사|공단|센터|캠퍼스|회관|호텔|본부|지사|사무소|병원|학교)$/;
+
+/** 폴더 이름의 기관 가운데 「만난 곳」 같은 것 —
+ *  「스타트업캠퍼스 워크숍」 → 스타트업캠퍼스, 「평택역개발 BT」 → 빈 글자 */
+export function placeLike(text) {
+  return String(text || "").split(/\s+/).find((w) => PLACE_TAIL.test(w)) || "";
+}
+
+/** 일정 글이 아예 없을 때 — 폴더 이름만으로 개최개요를 만듭니다.
+ *  「여러 방식으로도 회의관련 내용을 채울수있으면 회의록 작성해줘」
+ *  받아쓰기.py 도 폴더 이름을 보지만, 여기서 놓아 두면 사람이 열어 고칠 수 있습니다. */
+export function briefFromFolder(info) {
+  if (!info || !info.date) return null;
+  const out = {};
+  const when = whenText(info.date, "");
+  if (when) out["일시"] = when;
+  const place = placeLike(info.place);
+  if (place) out["장소"] = place;
+  if ((info.people || []).length) {
+    out["외부"] = info.people.join(", ");
+    out["인원"] = String(info.people.length + 1);
+  }
+  if (info.place) out["회의내용"] = info.place;
+  out["출처"] = "폴더 이름 — " + (info.raw || "");
+  const 쓸모 = ["장소", "외부", "회의내용"].some((k) => out[k]);
+  return 쓸모 ? out : null;
+}
+
 /** 폴더에 이미 개최개요가 있는가 (PDF 든 우리가 놓아 둔 json 이든) */
 export function hasBrief(names) {
   return (Array.isArray(names) ? names : []).some((n) =>

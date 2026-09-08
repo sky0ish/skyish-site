@@ -193,15 +193,22 @@ globalThis.__rows = [{
   files: [],
 }];
 const sbStub = `export const sb = {
-  from: () => { const q = {
+  from: (tbl) => { const q = {
     select: () => q, order: () => q, eq: () => q,
+    limit: () => q, single: () => q, in: () => q, is: () => q, or: () => q,
     insert: (v) => { globalThis.__calls.push(["insert", v]); return q; },
     update: (v) => { globalThis.__calls.push(["update", v]); return q; },
     delete: () => { globalThis.__calls.push(["delete"]); return q; },
-    then: (res) => Promise.resolve({ data: globalThis.__rows, error: null, count: 0 }).then(res),
+    then: (res) => Promise.resolve({
+      /* 앨범 표는 따로 — notes 의 글을 앨범인 줄 알면 안 됩니다 */
+      data: /^gallery_/.test(String(tbl || "")) ? (globalThis.__albums || []) : globalThis.__rows,
+      error: null, count: 0,
+    }).then(res),
   }; return q; },
   rpc: async () => ({ data: true, error: null }),
-  storage: { from: () => ({ upload: async () => ({ error: null }),
+  storage: { from: (b) => ({
+    upload: async (p) => { (globalThis.__gal ||= []).push(b + "/" + p); return { error: null }; },
+    getPublicUrl: (p) => ({ data: { publicUrl: "https://x/" + p } }),
     download: async () => ({ data: null, error: null }),
     createSignedUrl: async () => ({ data: { signedUrl: "x" }, error: null }),
     remove: async () => ({}) }) },
@@ -726,6 +733,21 @@ await check("개최개요가 없으면 일정에서 만들어 폴더에 놓는�
   if (!/2026년 9월8일/.test(v["일시"] || "")) throw new Error("일시가 다릅니다 — " + w);
 });
 
+await check("일정 글이 없어도 폴더 이름으로 개최개요를 만든다", async () => {
+  globalThis.__rows = [];                       // 그날 일정 글이 없습니다
+  globalThis.__dirs = { "20260907_한국건설기술연구원_김인호_차용운": ["음성 260907.m4a"] };
+  globalThis.__pics = {}; globalThis.__pres = {};
+  globalThis.__wrote = {};
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const w = globalThis.__wrote["20260907_한국건설기술연구원_김인호_차용운/개최개요.json"];
+  if (!w) throw new Error("개최개요를 안 놓았습니다 — " + JSON.stringify(globalThis.__wrote));
+  const v = JSON.parse(w);
+  if (v["장소"] !== "한국건설기술연구원") throw new Error("장소가 " + v["장소"]);
+  if (!/김인호/.test(v["외부"] || "")) throw new Error("참석자가 " + v["외부"]);
+  if (!/폴더 이름/.test(v["출처"] || "")) throw new Error("출처가 " + v["출처"]);
+});
+
 await check("개최개요가 이미 있으면 손대지 않는다", async () => {
   globalThis.__dirs = { "20260908_평택역개발_BT": [
     "음성 260908.m4a", "회의개최개요.pdf",
@@ -753,6 +775,40 @@ await check("회의록 게시판에도 따로 모인다", async () => {
   const m = ins.find((v) => v.category === "minutes");
   if (!(m.files || []).some((f) => /_회의록\.pdf$/.test(f.name)))
     throw new Error("회의록 파일이 안 붙었습니다 — " + JSON.stringify(m.files));
+});
+
+/* 「pictures에 사진이 많은건 앨범에 자동으로 넣어줘. 앨범 이름은 폴더명으로」 */
+await check("사진이 많으면 앨범에도 담고 이름은 폴더 이름", async () => {
+  globalThis.__rows = [];
+  globalThis.__dirs = { "20260911_어디_아무개": ["20260911_어디_아무개_회의록.pdf"] };
+  globalThis.__pics = { "20260911_어디_아무개": ["가.jpg", "나.jpg", "다.jpg", "라.jpg"] };
+  globalThis.__faces = { "가.jpg": 2, "나.jpg": 7, "다.jpg": 1, "라.jpg": 3 };
+  globalThis.__pres = {}; globalThis.__gal = [];
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 120));
+  const al = calls.filter((c) => c[0] === "insert" && c[1] && c[1].title === "20260911_어디_아무개");
+  if (!al.length) throw new Error("앨범을 안 만들었습니다");
+  if ((globalThis.__gal || []).length !== 4)
+    throw new Error("앨범에 담은 사진이 " + (globalThis.__gal || []).length + "장입니다");
+  /* 일정 글에는 단체사진 한 장만 */
+  const v = lastInsert("schedule");
+  const names = (v.files || []).map((f) => f.name);
+  if (names.filter((n) => /\.jpg$/.test(n)).length !== 1)
+    throw new Error("일정 글에 사진이 여러 장 붙었습니다 — " + names);
+  if (!names.includes("나.jpg")) throw new Error("단체사진이 아닙니다 — " + names);
+});
+
+await check("사진이 적으면 앨범은 안 만든다", async () => {
+  globalThis.__dirs = { "20260912_어디_아무개": ["20260912_어디_아무개_회의록.pdf"] };
+  globalThis.__pics = { "20260912_어디_아무개": ["가.jpg", "나.jpg"] };
+  globalThis.__faces = { "가.jpg": 2, "나.jpg": 5 };
+  globalThis.__gal = [];
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 80));
+  if ((globalThis.__gal || []).length)
+    throw new Error("앨범에 담았습니다 — " + globalThis.__gal.join(","));
 });
 
 await check("사진 폴더가 없으면 회의록만 올린다", async () => {

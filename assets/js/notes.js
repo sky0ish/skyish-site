@@ -15,10 +15,15 @@ import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609081800";
 import * as FT from "./notes-facetag.js?v=202609052100";
-import * as MN from "./notes-minutes.js?v=202609090900";
+import * as MN from "./notes-minutes.js?v=202609091200";
 import * as PP from "./notes-photo-pick.js?v=202609082100";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609081500";
+
+/** 사진이 이만큼 넘게 있으면 앨범에도 통째로 담습니다 */
+const ALBUM_MIN = 3;
+/** 회의 사진이 들어갈 앨범 갈래 (사진첩의 「ETC」) */
+const ALBUM_CAT = "etc";
 
 export const CATS = [
   ["schedule", "Schedule", "#4f9d92"],
@@ -2676,7 +2681,9 @@ export async function initNotes(mountId = "notesapp") {
       if (!info.date || MN.hasBrief(f.files)) continue;
       const row = rows.find((r) =>
         r.category === "schedule" && (r.event_date || "").slice(0, 10) === info.date);
-      const got = MN.briefFromRow(row, info);
+      /* 채울 거리를 여러 곳에서 찾습니다 —
+         ① 그날 일정 글  ② 없으면 폴더 이름 (기관·만난 사람) */
+      const got = MN.briefFromRow(row, info) || MN.briefFromFolder(info);
       if (!got) continue;
       try {
         const fh = await dirHandles.get(f.name).getFileHandle("개최개요.json", { create: true });
@@ -2709,7 +2716,7 @@ export async function initNotes(mountId = "notesapp") {
     recBtn.textContent = "붙이는 중…";
     try {
 
-    const done = [], picNote = [], minutesJobs = [];
+    const done = [], picNote = [], minutesJobs = [], albumJobs = [], albumDone = [];
     const failed = skip.map((x) => x.name + " — " + x.why);
 
     /* 날짜별로 묶습니다 — 하루에 회의가 둘이어도(오전·오후) 그날 글은
@@ -2807,6 +2814,10 @@ export async function initNotes(mountId = "notesapp") {
                     ups.push(await NF.upload(best.file));
                     picNote.push(job.raw + " → " + PP.whyPicked(best, cand.length));
                   }
+                  /* 사진이 여러 장이면 앨범에도 통째로 담습니다 —
+                     「pictures에 사진이 많은건 앨범에 자동으로 넣어줘.
+                       앨범 이름은 폴더명으로 하면되」 */
+                  if (cand.length >= ALBUM_MIN) albumJobs.push({ job: job, pics: cand });
                 }
               } catch (e) {
                 recBtn.textContent = "붙이는 중…";
@@ -2856,6 +2867,45 @@ export async function initNotes(mountId = "notesapp") {
         failed.push(date + " — " + ((err && err.message) || "실패"));
       }
     }
+    /* ── 사진이 많으면 앨범에도 통째로 ──
+       앨범 이름은 폴더 이름 그대로입니다. 같은 이름의 앨범이 있으면 건너뜁니다. */
+    for (const a of albumJobs) {
+      try {
+        const had = await sb.from("gallery_albums").select("id").eq("title", a.job.raw).limit(1);
+        if (had.error) throw had.error;
+        if (had.data && had.data.length) continue;      // 이미 만들어 두셨습니다
+        const made = await sb.from("gallery_albums").insert({
+          category: ALBUM_CAT, title: a.job.raw, event_date: a.job.date,
+          owner_admin: true, created_by: user.id,
+        }).select().single();
+        if (made.error) throw made.error;
+        let n = 0;
+        for (let i = 0; i < a.pics.length; i++) {
+          recBtn.textContent = "앨범에 담는 중… " + (i + 1) + "/" + a.pics.length;
+          try {
+            const path = user.id + "/" + Date.now() + "_" + i + "_" +
+                         a.pics[i].name.replace(/[^\w.\-가-힣]/g, "_");
+            const up = await sb.storage.from("gallery").upload(path, a.pics[i].file,
+                                                               { cacheControl: "3600" });
+            if (up.error) throw up.error;
+            const url = sb.storage.from("gallery").getPublicUrl(path).data.publicUrl;
+            const r3 = await sb.from("gallery_photos").insert({
+              album_id: made.data.id, image_url: url, storage_path: path, sort: i,
+              owner_name: "", created_by: user.id,
+            });
+            if (r3.error) throw r3.error;
+            n++;
+          } catch (e) { /* 한 장이 안 들어가도 나머지는 담습니다 */ }
+        }
+        recBtn.textContent = "붙이는 중…";
+        albumDone.push(a.job.raw + " — " + n + "장");
+      } catch (e) {
+        recBtn.textContent = "붙이는 중…";
+        failed.push(a.job.raw + " — 앨범에 못 담았습니다 (" +
+                    ((e && e.message) || "까닭 모름") + ")");
+      }
+    }
+
     /* ── 회의록 게시판에도 따로 모읍니다 ──
        「우선 calendar에 회의록 업로드해주고, 게시판의 회의록에도 따로 모아지도록」
        일정 글과 따로 올립니다 — 한쪽 글을 지워도 다른 쪽 파일이 사라지지 않게. */
@@ -2892,6 +2942,9 @@ export async function initNotes(mountId = "notesapp") {
       (done.length ? "붙였습니다:" + NL + done.join(NL) : "") +
       (minuteDone.length
         ? NL + NL + "회의록 게시판에도 모았습니다:" + NL + minuteDone.join(NL) : "") +
+      (albumDone.length
+        ? NL + NL + "앨범에도 담았습니다 (앨범 이름은 폴더 이름):" + NL +
+          albumDone.join(NL) : "") +
       (picNote.length ? NL + NL + "단체사진:" + NL + picNote.join(NL) : "") +
       ((done.length || picNote.length) && failed.length ? NL + NL : "") +
       (failed.length ? "건너뜀:" + NL + failed.join(NL) : ""));

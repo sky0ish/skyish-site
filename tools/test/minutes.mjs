@@ -5,7 +5,7 @@
 // 진짜 폴더 이름을 그대로 씁니다 (파일은 안 읽습니다).
 
 import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide, isPresDir,
-         whenText, peopleCount, briefFromRow, hasBrief }
+         whenText, peopleCount, briefFromRow, hasBrief, briefFromFolder, placeLike }
   from "../../assets/js/notes-minutes.js";
 
 let bad = 0;
@@ -188,6 +188,26 @@ eq("우리가 놓아 둔 json", hasBrief(["개최개요.json"]), true);
 eq("녹음만 있으면 없다", hasBrief(["음성 260908.m4a"]), false);
 eq("회의록 PDF 는 개최개요가 아니다", hasBrief(["20260908_회의록.pdf"]), false);
 eq("빈 것", [hasBrief([]), hasBrief(null)], [false, false]);
+
+console.log("\n── 일정 글이 없으면 폴더 이름으로 ──");
+/* 「같은 방식으로 여러 방식으로도 회의관련 내용을 채울수있으면 회의록 작성해줘」 */
+eq("만난 곳처럼 보이는 말만",
+   [placeLike("한국건설기술연구원"), placeLike("스타트업캠퍼스 워크숍"),
+    placeLike("평택역개발 BT 평택1구역재개발정비사업조합")],
+   ["한국건설기술연구원", "스타트업캠퍼스", ""]);
+eq("빈 것", [placeLike(""), placeLike(null)], ["", ""]);
+
+const F = briefFromFolder(parseFolder("20260907_한국건설기술연구원_김인호_차용운_이동윤"));
+eq("폴더 이름에서 장소", F["장소"], "한국건설기술연구원");
+eq("폴더 이름에서 참석자", F["외부"], "김인호, 차용운, 이동윤");
+eq("인원도", F["인원"], "4");
+eq("어디서 왔는지", /폴더 이름/.test(F["출처"]), true);
+const F2 = briefFromFolder(parseFolder("20260908_평택역개발_BT_평택1구역재개발정비사업조합"));
+eq("장소 같지 않으면 비운다", F2["장소"], undefined);
+eq("그래도 회의내용은 담는다", /평택역개발/.test(F2["회의내용"]), true);
+eq("날짜가 없으면 안 만든다", briefFromFolder(parseFolder("사업계획서")), null);
+eq("아무것도 아닌 것", briefFromFolder(null), null);
+eq("사람도 기관도 없으면 안 만든다", briefFromFolder(parseFolder("20260908")), null);
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);
