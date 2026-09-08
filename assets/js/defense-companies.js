@@ -114,6 +114,14 @@
       "찾으시는 기업이 없습니다.</td></tr>";
     document.getElementById("dl-count").textContent =
       num(list.length) + "개사" + (list.length === doc.rows.length ? "" : " / 전체 " + num(doc.rows.length));
+    var sv = document.getElementById("dl-save");
+    if (sv) {
+      sv.textContent = "⤓ 엑셀로 내려받기 (" + num(list.length) + "개사)";
+      sv.disabled = !list.length;
+      sv.title = list.length === doc.rows.length
+        ? "지금 표에 있는 " + num(list.length) + "개사를 CSV 로 내려받습니다"
+        : "지금 걸러 놓으신 " + num(list.length) + "개사만 내려받습니다";
+    }
     document.querySelectorAll("[data-reg]").forEach(function (b) {
       var on = b.dataset.reg === region;
       b.classList.toggle("active", on);
@@ -175,6 +183,42 @@
       "위 안내를 봐 주세요.</td></tr>";
   }
 
+
+
+  /* ── 내려받기 ──────────────────────────────────────────────
+     지금 화면에 보이는 그대로(지역 탭·찾기말·줄 세운 차례) 내보냅니다.
+     엑셀에서 한글이 깨지지 않도록 맨 앞에 BOM 을 붙입니다. */
+  function save() {
+    var list = rows();
+    var q = function (v) {
+      return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+    };
+    var head = doc.cols.map(function (c) { return c.label; });
+    /* 조사로 채운 칸은 눈으로 가릴 수 있게 표시를 남깁니다 */
+    var line = function (r) {
+      return doc.cols.map(function (c) {
+        var v = val(r, c.key);
+        if (v && r._fill && r._fill[c.key]) v += "  [확인필요]";
+        return q(v);
+      }).join(",");
+    };
+    var body = [head.map(q).join(",")].concat(list.map(line)).join("\r\n");
+
+    var d = new Date();
+    var pad = function (n) { return String(n).padStart(2, "0"); };
+    var day = String(d.getFullYear()) + pad(d.getMonth() + 1) + pad(d.getDate());
+    var 어디 = region === "all" ? "전체" : region;
+    var name = "방산기업_" + 어디 + "_" + list.length + "개사_" + day + ".csv";
+
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["\ufeff" + body],
+      { type: "text/csv;charset=utf-8" }));
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+  }
 
   /* ── 칸 너비 조절 ──────────────────────────────────────────
      머리글 사이를 끌어 너비를 바꿉니다. 정한 너비는 이 브라우저에 담아 두어
@@ -361,6 +405,8 @@
           draw();
           wireGrip();
           xbar();
+          var sv = document.getElementById("dl-save");
+          if (sv) sv.addEventListener("click", save);
           document.getElementById("dl-q").addEventListener("input", draw);
         })
         .catch(function (err) { console.error(err); why(m, err); });

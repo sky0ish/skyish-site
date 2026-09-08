@@ -72,6 +72,14 @@
     .dl-table td{white-space:normal;line-height:1.45;overflow-wrap:anywhere}
     .dl-table thead th{white-space:nowrap}
 
+    .dl-save{all:unset;cursor:pointer;flex:none;margin-left:auto;white-space:nowrap;
+             font-size:.82rem;color:var(--teal-text);background:var(--white);
+             border:1px solid var(--teal);border-radius:var(--radius-sm);
+             padding:.3rem .7rem;box-shadow:var(--shadow-sm)}
+    .dl-save:hover{background:var(--teal);color:#fff}
+    .dl-save:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+    .dl-save[disabled]{opacity:.45;cursor:default}
+
     /* 칸 너비 조절 — 머리글 사이를 끕니다 */
     .dl-table{table-layout:fixed}
     .dl-table th{position:relative}
@@ -130,6 +138,7 @@
                    placeholder="기업명 · 분야 · 기술 · 소재지로 찾기">
             <span id="dl-tabs"></span>
             <span class="fb-fig__src" id="dl-count"></span>
+            <button type="button" class="dl-save" id="dl-save">⤓ 엑셀로 내려받기</button>
           </div>
 
           <!-- 표가 스무 칸이 넘어 오른쪽이 화면 밖으로 나갑니다.
@@ -163,6 +172,6 @@
   <div id="site-footer"></div>
 
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-companies.js?v=202609091700" defer></script>
+  <script src="assets/js/defense-companies.js?v=202609091800" defer></script>
 </body>
 </html>
