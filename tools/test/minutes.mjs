@@ -4,7 +4,8 @@
 //
 // 진짜 폴더 이름을 그대로 씁니다 (파일은 안 읽습니다).
 
-import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide, isPresDir }
+import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide, isPresDir,
+         whenText, peopleCount, briefFromRow, hasBrief }
   from "../../assets/js/notes-minutes.js";
 
 let bad = 0;
@@ -146,6 +147,47 @@ eq("폴더가 없으면 회의 폴더의 것", noPres.slide, "바깥발표_final
 eq("그때는 폴더 표시가 없다", noPres.presFolder, false);
 eq("둘 다 없으면 빈 글자",
    plan([{ name: "20260908_김병규", files: ["20260908_김병규_회의록.pdf"] }]).jobs[0].slide, "");
+
+console.log("\n── 개최개요가 없을 때, 일정에서 ──");
+/* 「음성파일만있고, 개최개요가 없을 경우, 내가 schedule상에 참석자 명단을
+    적어줬다면, 개최개요를 니가 확인해서 sample대로 회의록 작성」 */
+eq("날짜와 시각을 한글로", whenText("2026-09-08", "14:00"), "2026년 9월8일(화요일) 14:00");
+eq("시각이 없으면 날짜만", whenText("2026-09-08", ""), "2026년 9월8일(화요일)");
+eq("날짜가 아니면 빈 글자", [whenText("아무거나", ""), whenText("", "")], ["", ""]);
+eq("사람 수를 센다", peopleCount("김병규, 김성일, 박현호"), 3);
+eq("가운뎃점도 나눔", peopleCount("김병규·김성일"), 2);
+eq("빈 것", [peopleCount(""), peopleCount(null)], [0, 0]);
+
+const B = briefFromRow({
+  title: "평택역개발 BT", event_date: "2026-09-08", event_time: "14:00",
+  place: "평택시청", people: "김병규, 김성일, 박현호",
+  event: "평택1구역 재개발 정비계획",
+});
+eq("받아쓰기.py 가 읽는 열쇠로", Object.keys(B).sort(),
+   ["외부", "인원", "일시", "장소", "출처", "회의내용"].sort());
+eq("참석자를 그대로", B["외부"], "김병규, 김성일, 박현호");
+/* 받아쓰기.py 는 「인원 - 1」 을 바깥 사람 수로 봅니다 (안쪽 한 사람) */
+eq("인원은 바깥 + 안쪽 한 사람", B["인원"], "4");
+eq("행사명을 회의내용으로", B["회의내용"], "평택1구역 재개발 정비계획");
+eq("행사명이 없으면 제목으로",
+   briefFromRow({ title: "그냥 회의", event_date: "2026-09-08", people: "가" })["회의내용"],
+   "그냥 회의");
+eq("어디서 왔는지 적어 둔다", /일정 게시판/.test(B["출처"]), true);
+eq("일정이 없으면 안 만든다", briefFromRow(null), null);
+eq("적힌 것이 없으면 안 만든다", briefFromRow({ event_date: "2026-09-08" }), null);
+eq("일정에 사람이 없으면 폴더 이름에서",
+   briefFromRow({ title: "회의", event_date: "2026-09-08" },
+                { people: ["김인호", "차용운"] })["외부"], "김인호, 차용운");
+
+console.log("\n── 개최개요가 이미 있는가 ──");
+/* 「회의개최개요로도 개최건의, 자문회의 의 역할을 할수잇게」 */
+eq("자문회의 개최건의", hasBrief(["자문회의 개최건의(9월8일).pdf"]), true);
+eq("회의개최개요", hasBrief(["회의개최개요.pdf"]), true);
+eq("개최개요", hasBrief(["개최개요.pdf"]), true);
+eq("우리가 놓아 둔 json", hasBrief(["개최개요.json"]), true);
+eq("녹음만 있으면 없다", hasBrief(["음성 260908.m4a"]), false);
+eq("회의록 PDF 는 개최개요가 아니다", hasBrief(["20260908_회의록.pdf"]), false);
+eq("빈 것", [hasBrief([]), hasBrief(null)], [false, false]);
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

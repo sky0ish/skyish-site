@@ -15,7 +15,7 @@ import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609081800";
 import * as FT from "./notes-facetag.js?v=202609052100";
-import * as MN from "./notes-minutes.js?v=202609082100";
+import * as MN from "./notes-minutes.js?v=202609090900";
 import * as PP from "./notes-photo-pick.js?v=202609082100";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609081500";
@@ -2608,7 +2608,9 @@ export async function initNotes(mountId = "notesapp") {
     }
     let dir;
     try {
-      dir = await window.showDirectoryPicker({ id: "skyish-rec", mode: "read" });
+      /* readwrite — 개최개요가 없는 폴더에 「개최개요.json」 을 놓아 두려면
+         쓰기가 있어야 합니다. 그 파일 말고는 아무것도 건드리지 않습니다. */
+      dir = await window.showDirectoryPicker({ id: "skyish-rec", mode: "readwrite" });
     } catch (err) { return; }               // 고르다 닫으신 것
 
     /* 1.회의록 안은 회의 하나가 폴더 하나입니다.
@@ -2618,6 +2620,7 @@ export async function initNotes(mountId = "notesapp") {
     const handles = new Map();              // 폴더이름 → {파일이름: 손잡이}
     const picHandles = new Map();           // 폴더이름 → {사진이름: 손잡이}
     const presHandles = new Map();          // 폴더이름 → {발표자료이름: 손잡이}
+    const dirHandles = new Map();           // 폴더이름 → 그 폴더 손잡이 (개최개요를 놓을 때)
     try {
       for await (const e of dir.values()) {
         if (e.kind !== "directory") continue;
@@ -2648,6 +2651,7 @@ export async function initNotes(mountId = "notesapp") {
           }
         }
         folders.push({ name: e.name, files: names, pics: pics, pres: pres });
+        dirHandles.set(e.name, e);
         handles.set(e.name, hs);
         picHandles.set(e.name, ph);
         presHandles.set(e.name, rh);
@@ -2655,6 +2659,33 @@ export async function initNotes(mountId = "notesapp") {
     } catch (err) {
       alert("폴더를 읽지 못했습니다 — " + (err && err.message));
       return;
+    }
+
+    /* 일정을 한 번 새로 읽습니다 — 방금 참석자 명단을 적으셨을 수 있고,
+       폴더를 고르는 동안 다른 창에서 바뀌었을 수도 있습니다. */
+    try { await load(); } catch (e) {}
+
+    /* ── 개최개요가 없는 폴더에 그날 일정을 놓아 둡니다 ──
+       「음성파일만있고, 개최개요가 없을 경우, 내가 schedule상에 참석자 명단을
+         적어줬다면, 개최개요를 니가 확인해서 sample대로 회의록 작성」
+       받아쓰기.py 가 이 파일을 개최건의 대신 읽습니다.
+       이미 있으면(PDF 든 json 이든) 손대지 않습니다. */
+    const brief = [];
+    for (const f of folders) {
+      const info = MN.parseFolder(f.name);
+      if (!info.date || MN.hasBrief(f.files)) continue;
+      const row = rows.find((r) =>
+        r.category === "schedule" && (r.event_date || "").slice(0, 10) === info.date);
+      const got = MN.briefFromRow(row, info);
+      if (!got) continue;
+      try {
+        const fh = await dirHandles.get(f.name).getFileHandle("개최개요.json", { create: true });
+        const w = await fh.createWritable();
+        await w.write(JSON.stringify(got, null, 1));
+        await w.close();
+        f.files.push("개최개요.json");
+        brief.push(f.name + " ← " + (got["회의내용"] || got["출처"]));
+      } catch (e) { /* 못 써도 회의록 붙이기는 그대로 갑니다 */ }
     }
 
     const { jobs, skip } = MN.plan(folders);
@@ -2678,7 +2709,8 @@ export async function initNotes(mountId = "notesapp") {
     recBtn.textContent = "붙이는 중…";
     try {
 
-    const done = [], picNote = [], failed = skip.map((x) => x.name + " — " + x.why);
+    const done = [], picNote = [], minutesJobs = [];
+    const failed = skip.map((x) => x.name + " — " + x.why);
 
     /* 날짜별로 묶습니다 — 하루에 회의가 둘이어도(오전·오후) 그날 글은
        한 번만 씁니다. 하나씩 쓰면 뒤엣것이 앞엣것의 붙임과 본문을
@@ -2738,6 +2770,8 @@ export async function initNotes(mountId = "notesapp") {
 
           ups.push(await NF.upload(await pdfH.getFile()));
           any = true;
+          /* 회의록 게시판에도 따로 모읍니다 — 아래에서 한꺼번에 올립니다 */
+          minutesJobs.push({ job: job, h: pdfH, title: MN.titleOf(job, jsonTitle) });
 
           /* 발표자료 — 「…final.pdf」 가 있으면 함께 올립니다.
              회의록·개최건의는 빼고 봅니다 (그것들은 따로 다룹니다). */
@@ -2822,9 +2856,42 @@ export async function initNotes(mountId = "notesapp") {
         failed.push(date + " — " + ((err && err.message) || "실패"));
       }
     }
+    /* ── 회의록 게시판에도 따로 모읍니다 ──
+       「우선 calendar에 회의록 업로드해주고, 게시판의 회의록에도 따로 모아지도록」
+       일정 글과 따로 올립니다 — 한쪽 글을 지워도 다른 쪽 파일이 사라지지 않게. */
+    const minuteDone = [];
+    for (const m of minutesJobs) {
+      try {
+        const has = rows.some((r) => r.category === "minutes" &&
+          MN.alreadyHas(r.files, m.job.pdf));
+        if (has) continue;
+        const up = await NF.upload(await m.h.getFile());
+        const r2 = await sb.from("notes").insert({
+          category: "minutes", tag: "", title: (m.title || m.job.raw).slice(0, 200),
+          body: "", event_date: m.job.date, place: m.job.place || null,
+          people: (m.job.people || []).join(", ") || null,
+          files: [up], created_by: user.id,
+        }).select();
+        if (r2.error) { await NF.remove(up.path); throw r2.error; }
+        const made = (r2.data && r2.data[0]) || null;
+        if (made) rows.unshift(made);
+        minuteDone.push(m.job.pdf);
+      } catch (e) {
+        failed.push(m.job.pdf + " — 회의록 게시판에 못 올렸습니다 (" +
+                    ((e && e.message) || "까닭 모름") + ")");
+      }
+    }
+
     await load();
     const NL = String.fromCharCode(10);
-    alert((done.length ? "붙였습니다:" + NL + done.join(NL) : "") +
+    alert((brief.length
+        ? "개최개요를 일정에서 만들어 폴더에 놓았습니다 —" + NL +
+          "이제 받아쓰기를 돌리시면 회의록이 그 내용으로 채워집니다." + NL +
+          brief.join(NL) + NL + NL
+        : "") +
+      (done.length ? "붙였습니다:" + NL + done.join(NL) : "") +
+      (minuteDone.length
+        ? NL + NL + "회의록 게시판에도 모았습니다:" + NL + minuteDone.join(NL) : "") +
       (picNote.length ? NL + NL + "단체사진:" + NL + picNote.join(NL) : "") +
       ((done.length || picNote.length) && failed.length ? NL + NL : "") +
       (failed.length ? "건너뜀:" + NL + failed.join(NL) : ""));

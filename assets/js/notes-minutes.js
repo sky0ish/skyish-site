@@ -115,6 +115,67 @@ export function titleOf(info, jsonTitle) {
   return info.raw || "회의록";
 }
 
+/* ── 개최개요가 없을 때 — 일정 게시판에서 가져옵니다 ──────────
+   「음성파일만있고, 개최개요가 없을 경우, 내가 schedule상에 참석자 명단을
+     적어줬다면, 개최개요를 니가 확인해서 sample대로 회의록 작성가능해?」
+
+   1.회의록 의 받아쓰기.py 는 「개최건의 PDF」 에서 아래 값을 읽어
+   sample.hwpx 를 채웁니다. PDF 가 없으면 그날 일정 글에서 같은 값을 만들어
+   폴더에 「개최개요.json」 으로 놓아 둡니다. 받아쓰기.py 가 그것을 읽습니다. */
+
+const WEEK7 = ["일", "월", "화", "수", "목", "금", "토"];
+
+/** 「2026-09-08」 + 「14:00」 → 「2026년 9월8일(화요일) 14:00」 */
+export function whenText(ymd, time) {
+  const m = String(ymd || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return "";
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  if (isNaN(d.getTime())) return "";
+  const t = String(time || "").trim();
+  return m[1] + "년 " + (+m[2]) + "월" + (+m[3]) + "일(" + WEEK7[d.getDay()] + "요일)" +
+         (t ? " " + t : "");
+}
+
+/** 만난 사람 칸을 사람 수로 — 「김병규, 김성일 교수」 → 2 */
+export const peopleCount = (s) =>
+  String(s || "").split(/[,·\n]/).map((x) => x.trim()).filter(Boolean).length;
+
+/** 그날 일정 글 → 받아쓰기.py 가 읽는 개최개요.
+ *  받아쓰기.py 의 개최건의() 가 돌려주는 것과 **같은 열쇠**를 씁니다 —
+ *  사업명 · 일시 · 장소 · 인원 · 외부 · 회의내용 · 출처.
+ *  @param row  일정 글 {title, event_date, event_time, place, people, event, tag}
+ *  @param info 폴더 이름에서 읽은 것 (사람 이름이 일정에 없을 때 갈음합니다)
+ */
+export function briefFromRow(row, info) {
+  if (!row) return null;
+  const r = row;
+  const 사람 = String(r.people || "").trim() ||
+               ((info && (info.people || []).join(", ")) || "");
+  const out = {};
+  const when = whenText(r.event_date, r.event_time);
+  if (when) out["일시"] = when;
+  if (String(r.place || "").trim()) out["장소"] = String(r.place).trim();
+  if (사람) {
+    out["외부"] = 사람;
+    /* 받아쓰기.py 는 「인원 - 1」 을 바깥 사람 수로 봅니다 (안쪽 한 사람) */
+    out["인원"] = String(peopleCount(사람) + 1);
+  }
+  const 내용 = String(r.event || "").trim() || String(r.title || "").trim();
+  if (내용) out["회의내용"] = 내용;
+  out["출처"] = "일정 게시판" + (r.title ? " — " + String(r.title).trim() : "");
+  /* 날짜만 있는 것은 개최개요라 할 수 없습니다 —
+     장소·참석자·회의내용 가운데 하나라도 있어야 놓아 둡니다. */
+  const 쓸모 = ["장소", "외부", "회의내용"].some((k) => out[k]);
+  return 쓸모 ? out : null;
+}
+
+/** 폴더에 이미 개최개요가 있는가 (PDF 든 우리가 놓아 둔 json 이든) */
+export function hasBrief(names) {
+  return (Array.isArray(names) ? names : []).some((n) =>
+    /개최\s*개요\.json$/i.test(n) ||
+    (/\.pdf$/i.test(n) && /(개최\s*건의|개최\s*개요|자문회의)/.test(n)));
+}
+
 /** 붙임 파일에 이미 같은 것이 있는가 */
 export const alreadyHas = (files, name) =>
   (Array.isArray(files) ? files : []).some((f) => f && f.name === name);

@@ -144,6 +144,14 @@ globalThis.showDirectoryPicker = async () => ({
       const pres = (globalThis.__pres || {})[dname] || [];
       yield {
         kind: "directory", name: dname,
+        /* 개최개요.json 을 놓아 두는 길 — 무엇을 썼는지 기억해 둡니다 */
+        getFileHandle: async (nm) => ({
+          name: nm,
+          createWritable: async () => ({
+            write: async (v) => { (globalThis.__wrote ||= {})[dname + "/" + nm] = v; },
+            close: async () => {},
+          }),
+        }),
         async *values() {
           for (const f of files) yield fakeFile(f);
           if (pics.length) yield {
@@ -307,6 +315,13 @@ const fire = async (id, ev, arg) => {
   const fns = [...(listeners.get(id + "|" + ev) || [])];   // 도는 사이에 늘어도 끝나게
   if (!fns.length) throw new Error(`${id} 의 ${ev} 를 아무도 듣고 있지 않습니다`);
   for (const fn of fns) await fn(arg || { target: byId(id), currentTarget: byId(id), preventDefault() {} });
+};
+
+/* 마지막으로 그 갈래에 넣은 글 — 이제 회의록 게시판에도 함께 넣으므로
+   그냥 마지막 insert 를 집으면 엉뚱한 글을 봅니다. */
+const lastInsert = (cat) => {
+  const v = calls.filter((c) => c[0] === "insert" && c[1] && c[1].category === cat).pop();
+  return (v || [])[1] || {};
 };
 
 let bad = 0;
@@ -555,7 +570,7 @@ await check("회의록 폴더를 훑어 그날 글에 붙인다", async () => {
   await new Promise((r) => setTimeout(r, 50));
   const ins = calls.filter((c) => c[0] === "insert");
   if (!ins.length) throw new Error("아무것도 안 넣었습니다 — " + alerts[alerts.length - 1]);
-  const v = ins[ins.length - 1][1];
+  const v = lastInsert("schedule");
   if (v.event_date !== "2026-09-01") throw new Error("날짜가 " + v.event_date);
   if (v.category !== "schedule") throw new Error("갈래가 " + v.category);
   if (v.tag !== "업무회의") throw new Error("말머리가 " + v.tag);
@@ -572,7 +587,7 @@ await check("요약 덩이에 「━ 파일이름」 머리글이 붙는다", as
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 50));
-  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const v = lastInsert("schedule");
   if (!/━ 20260904_어디_아무개_회의록\.pdf/.test(v.body || ""))
     throw new Error("머리글이 없습니다 — " + JSON.stringify(v.body));
 });
@@ -585,9 +600,9 @@ await check("같은 날 회의가 둘이면 글은 하나에 두 건", async () 
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 50));
-  const ins = calls.filter((c) => c[0] === "insert");
+  const ins = calls.filter((c) => c[0] === "insert" && c[1] && c[1].category === "schedule");
   if (ins.length !== 1)
-    throw new Error(ins.length + "개의 글을 만들었습니다 (하루에 하나여야 합니다)");
+    throw new Error(ins.length + "개의 일정 글을 만들었습니다 (하루에 하나여야 합니다)");
   const v = ins[0][1];
   if ((v.files || []).length !== 2)
     throw new Error("붙임이 " + (v.files || []).length + "개입니다 (둘이어야 합니다)");
@@ -604,7 +619,7 @@ await check("사진 폴더가 있으면 단체사진 한 장을 함께 올린다
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 60));
-  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name);
   if (names.length !== 2)
     throw new Error("붙임이 " + names.length + "개입니다 (회의록 + 사진 둘이어야 합니다) — " + names);
@@ -621,7 +636,7 @@ await check("사진 폴더에 그림이 아닌 것이 섞여도 안 올린다", 
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 60));
-  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name);
   if (names.some((n) => /\.(txt|m4a)$/.test(n)))
     throw new Error("그림이 아닌 것이 올라갔습니다 — " + names);
@@ -642,7 +657,7 @@ await check("발표자료(final)도 함께 올린다", async () => {
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 60));
-  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name);
   if (!names.some((n) => /_회의록\.pdf$/.test(n)))
     throw new Error("회의록이 없습니다 — " + names);
@@ -664,7 +679,7 @@ await check("presentation 폴더의 발표자료도 함께 올린다", async () 
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 60));
-  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name);
   if (names.length !== 2)
     throw new Error("붙임이 " + names.length + "개입니다 (회의록 + 발표자료) — " + names);
@@ -682,12 +697,62 @@ await check("발표자료·사진·회의록이 다 있으면 셋 다", async ()
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 60));
-  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name).sort();
   if (names.length !== 3)
     throw new Error("붙임이 " + names.length + "개입니다 (셋이어야 합니다) — " + names);
   for (const want of ["20260909_김병규_회의록.pdf", "단체.jpg", "발표_final.pdf"])
     if (!names.includes(want)) throw new Error(want + " 가 없습니다 — " + names);
+});
+
+/* 「음성파일만있고, 개최개요가 없을 경우, 내가 schedule상에 참석자 명단을
+    적어줬다면, 개최개요를 니가 확인해서 sample대로 회의록 작성」 */
+await check("개최개요가 없으면 일정에서 만들어 폴더에 놓는다", async () => {
+  globalThis.__rows = [{
+    id: "s1", category: "schedule", title: "평택역개발 BT",
+    event_date: "2026-09-08", event_time: "14:00", place: "평택시청",
+    people: "김병규, 김성일, 박현호", event: "평택1구역 재개발 정비계획", files: [],
+  }];
+  globalThis.__dirs = { "20260908_평택역개발_BT": ["음성 260908.m4a"] };
+  globalThis.__pics = {}; globalThis.__pres = {};
+  globalThis.__wrote = {};
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const w = globalThis.__wrote["20260908_평택역개발_BT/개최개요.json"];
+  if (!w) throw new Error("개최개요를 안 놓았습니다 — " + JSON.stringify(globalThis.__wrote));
+  const v = JSON.parse(w);
+  if (v["외부"] !== "김병규, 김성일, 박현호") throw new Error("참석자가 다릅니다 — " + w);
+  if (v["장소"] !== "평택시청") throw new Error("장소가 다릅니다 — " + w);
+  if (!/2026년 9월8일/.test(v["일시"] || "")) throw new Error("일시가 다릅니다 — " + w);
+});
+
+await check("개최개요가 이미 있으면 손대지 않는다", async () => {
+  globalThis.__dirs = { "20260908_평택역개발_BT": [
+    "음성 260908.m4a", "회의개최개요.pdf",
+  ] };
+  globalThis.__wrote = {};
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  if (Object.keys(globalThis.__wrote).length)
+    throw new Error("덮어썼습니다 — " + JSON.stringify(globalThis.__wrote));
+});
+
+await check("회의록 게시판에도 따로 모인다", async () => {
+  globalThis.__rows = [];
+  globalThis.__dirs = { "20260910_어디_아무개": ["20260910_어디_아무개_회의록.pdf"] };
+  globalThis.__pics = {}; globalThis.__pres = {}; globalThis.__wrote = {};
+  calls.length = 0;
+  await fire("nRec", "click");
+  await new Promise((r) => setTimeout(r, 80));
+  const ins = calls.filter((c) => c[0] === "insert").map((c) => c[1]);
+  const cats = ins.map((v) => v.category).sort();
+  if (!cats.includes("minutes"))
+    throw new Error("회의록 게시판에 안 올렸습니다 — " + JSON.stringify(cats));
+  if (!cats.includes("schedule"))
+    throw new Error("일정에 안 올렸습니다 — " + JSON.stringify(cats));
+  const m = ins.find((v) => v.category === "minutes");
+  if (!(m.files || []).some((f) => /_회의록\.pdf$/.test(f.name)))
+    throw new Error("회의록 파일이 안 붙었습니다 — " + JSON.stringify(m.files));
 });
 
 await check("사진 폴더가 없으면 회의록만 올린다", async () => {
@@ -697,7 +762,7 @@ await check("사진 폴더가 없으면 회의록만 올린다", async () => {
   calls.length = 0;
   await fire("nRec", "click");
   await new Promise((r) => setTimeout(r, 60));
-  const v = (calls.filter((c) => c[0] === "insert").pop() || [])[1] || {};
+  const v = lastInsert("schedule");
   if ((v.files || []).length !== 1)
     throw new Error("붙임이 " + (v.files || []).length + "개입니다 — " + JSON.stringify(v.files));
 });
