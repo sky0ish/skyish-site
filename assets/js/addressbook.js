@@ -16,7 +16,7 @@
 //    그래서 절대 한 칸에 합치지 않습니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import { IMG_EXT, photoKey, nameFromFile, packText, readPack, packFileName, dataUrlType, sortPicked,
-         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609081500";
+         orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609081800";
 
 /** 주인 이메일 — 이 사람만 주소록을 봅니다 */
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
@@ -207,8 +207,41 @@ const openDb = () => new Promise((ok, no) => {
     if (!d.objectStoreNames.contains(PHOTO_STORE)) d.createObjectStore(PHOTO_STORE);
     if (!d.objectStoreNames.contains(EXTRA_STORE)) d.createObjectStore(EXTRA_STORE);
   };
-  r.onsuccess = () => ok(r.result);
+  r.onsuccess = () => {
+    const d = r.result;
+    /* 다른 탭이 판을 올리려 하면 이 연결을 스스로 닫습니다.
+       안 닫으면 그 탭이 영영 막혀(blocked) 「이어서 열기」 가 안 나옵니다. */
+    d.onversionchange = () => { try { d.close(); } catch (e) {} };
+    ok(d);
+  };
   r.onerror = () => no(r.error);
+  /* 다른 탭이 옛 판을 붙잡고 있으면 여기서 멈춥니다.
+     멈춘 채로 두면 화면이 반만 그려진 채 끝나 버립니다 —
+     실제로 판을 3에서 4로 올릴 때 「이어서 열기」 단추가 사라졌습니다. */
+  r.onblocked = () => no(new Error(
+    "다른 창에서 이 홈페이지를 열어 두셔서 자료방을 못 엽니다 — 다른 창을 닫고 새로고침해 주세요."));
+  /* 그래도 답이 없으면 기다리다 끝냅니다 */
+  if (typeof setTimeout === "function") {
+    setTimeout(() => no(new Error("자료방이 답하지 않습니다 — 새로고침해 주세요.")), 3000);
+  }
+});
+
+/** 판을 올리지 않고 「지금 있는 그대로」 엽니다.
+ *  다른 창이 옛 판을 붙잡고 있어 판 올리기가 막혔을 때에도
+ *  폴더 손잡이는 읽을 수 있어야 합니다 —
+ *  그래야 「이어서 열기」 단추가 사라지지 않습니다. */
+const openDbAny = () => new Promise((ok, no) => {
+  const r = indexedDB.open(DB);            // 판 번호를 안 적으면 있는 그대로 엽니다
+  r.onsuccess = () => {
+    const d = r.result;
+    d.onversionchange = () => { try { d.close(); } catch (e) {} };
+    ok(d);
+  };
+  r.onerror = () => no(r.error);
+  r.onblocked = () => no(new Error("자료방이 막혀 있습니다"));
+  if (typeof setTimeout === "function") {
+    setTimeout(() => no(new Error("자료방이 답하지 않습니다")), 3000);
+  }
 });
 
 /* 읽은 주소록을 이 브라우저 안에 담아 둡니다 — 어디로도 나가지 않습니다.
@@ -247,17 +280,29 @@ async function putHandle(h) {
   } catch (e) { /* 기억 못 해도 쓰는 데 지장 없습니다 */ }
 }
 async function getHandle() {
-  try {
-    const db = await openDb();
-    const v = await new Promise((ok, no) => {
-      const r = db.transaction(STORE, "readonly").objectStore(STORE).get(KEY);
-      r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
-    });
-    db.close();
-    return v || null;
-  } catch (e) { return null; }
+  /* 있는 그대로 여는 쪽을 **먼저** 봅니다.
+     손잡이를 읽는 데는 새 판이 필요 없습니다. 판 올리기를 먼저 걸면,
+     다른 창이 옛 판을 붙잡고 있을 때 거기서 막혀 뒤엣것까지 못 갑니다 —
+     그래서 「이어서 열기」 단추가 통째로 사라졌습니다. */
+  for (const open of [openDbAny, openDb]) {
+    try {
+      const db = await open();
+      if (!db.objectStoreNames.contains(STORE)) { db.close(); continue; }
+      const v = await new Promise((ok, no) => {
+        const r = db.transaction(STORE, "readonly").objectStore(STORE).get(KEY);
+        r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
+      });
+      db.close();
+      if (v) return v;
+    } catch (e) { /* 다음 길로 */ }
+  }
+  return null;
 }
 
+
+/** 지난번에 고르신 폴더 손잡이 — 「이어서 열기」 가 이것으로 나옵니다.
+ *  (시험에서도 이 길로 확인합니다.) */
+export const readFolderHandle = () => getHandle();
 
 /* ── 폴더에서 엑셀 두 개 찾아 읽기 ───────────────────────── */
 async function readWorkbook(file, XLSX) {
@@ -1844,10 +1889,20 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
        권한을 다시 물어야 하면(prompt) → 창은 사람이 누른 순간에만 뜰 수 있어
                                        「이어서 열기」 단추를 내놓습니다 */
   if (FSA) {
-    const h = await getHandle();
+    /* 여기서 멈추면 「이어서 열기」 단추가 영영 안 나옵니다 —
+       자료방이 답을 안 하더라도 화면은 끝까지 그려져야 합니다. */
+    let h = null;
+    try { h = await getHandle(); }
+    catch (e) { say("지난번 폴더를 되살리지 못했습니다 — " + ((e && e.message) || "")); }
+    if (h && typeof h.queryPermission !== "function") {
+      /* 성치 않은 손잡이 — 여기서 터지면 화면이 통째로 죽습니다 */
+      say("지난번 폴더를 되살리지 못했습니다 — 폴더를 다시 골라 주세요.");
+      h = null;
+    }
     if (h) {
       const btn = document.getElementById("abAgain");
-      const st = await h.queryPermission({ mode: "read" }).catch(() => "prompt");
+      let st = "prompt";
+      try { st = await h.queryPermission({ mode: "read" }); } catch (e) { st = "prompt"; }
       if (st === "granted") {
         btn.hidden = false;
         btn.textContent = "🔄 " + h.name + " 다시 읽기";
