@@ -175,6 +175,146 @@
       }).join("") + "</ul>";
   }
 
+  /* ══════════════════════════════════════════════════════════
+     텍스트마이닝 — 장비 이름에서 뽑은 「기능 키워드」로 본 연결
+
+       기업 ──(분야가 필요로 하는 시험)── 기관 ──(가진 장비의 이름)── 키워드
+
+     키워드는 장비의 한글·영문 이름과 활용분야 글에서 뽑았습니다.
+     자료는 network.json 의 kw 칸에 들어 있습니다 (build_defense_network.py).
+     ══════════════════════════════════════════════════════════ */
+  var tmKw = null, tmSite = null;
+
+  function tmData() { return doc && doc.kw ? doc.kw : null; }
+
+  /** 그 키워드 장비를 가진 기관들 — 장비 많은 곳부터 */
+  function tmSites(key) {
+    var kw = tmData(); if (!kw) return [];
+    return doc.sites.filter(function (s) {
+      var b = kw.bySite[s.id];
+      return b && b[key];
+    }).sort(function (a, b) {
+      return kw.bySite[b.id][key] - kw.bySite[a.id][key] ||
+             String(a.name).localeCompare(String(b.name), "ko");
+    });
+  }
+
+  /** 그 기관들과 이어진 기업 — 가까운 것부터. 같은 기업은 한 번만. */
+  function tmCos(sites) {
+    var want = {}, out = [], seen = {};
+    sites.forEach(function (s) { want[s.id] = 1; });
+    arcs.filter(function (a) { return want[a.s.id]; })
+        .sort(function (a, b) { return a.e.km - b.e.km; })
+        .forEach(function (a) {
+          if (seen[a.c.id]) return;
+          seen[a.c.id] = 1;
+          out.push({ co: a.c, site: a.s, km: a.e.km });
+        });
+    return out;
+  }
+
+  function tmChips() {
+    var kw = tmData();
+    var box = document.getElementById("dc-tm-chips");
+    if (!box) return;
+    if (!kw) {
+      box.innerHTML = '<span class="fb-fig__src">장비 키워드 자료가 없습니다 — ' +
+        'network.json 을 새로 올려 주세요.</span>';
+      var note0 = document.getElementById("dc-tm-note");
+      if (note0) note0.textContent =
+        "이 칸은 network.json 의 kw 자료가 있어야 그려집니다.";
+      return;
+    }
+    box.innerHTML = '<fieldset><legend>장비 기능</legend>' +
+      kw.groups.map(function (g) {
+        return '<button type="button" class="chip" data-kw="' + esc(g.key) + '"' +
+               (g.key === tmKw ? ' aria-pressed="true"' : ' aria-pressed="false"') + '>' +
+               esc(g.label) + ' <span class="n">' + num(g.n) + "</span></button>";
+      }).join("") + "</fieldset>";
+    box.querySelectorAll("[data-kw]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        tmKw = (tmKw === b.dataset.kw) ? null : b.dataset.kw;
+        tmSite = null;
+        tmDraw();
+      });
+    });
+    var note = document.getElementById("dc-tm-note");
+    if (note) note.textContent = kw.note;
+  }
+
+  function tmDraw() {
+    var kw = tmData(); if (!kw) return;
+    document.querySelectorAll("[data-kw]").forEach(function (b) {
+      var on = b.dataset.kw === tmKw;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    var elS = document.getElementById("dc-tm-sites");
+    var elC = document.getElementById("dc-tm-cos");
+    var elE = document.getElementById("dc-tm-eq");
+    var nS = document.getElementById("dc-tm-sn");
+    var nC = document.getElementById("dc-tm-cn");
+    var nE = document.getElementById("dc-tm-en");
+
+    if (!tmKw) {
+      nS.textContent = nC.textContent = nE.textContent = "위에서 장비 기능을 하나 골라 주세요.";
+      elS.innerHTML = elC.innerHTML = elE.innerHTML = "";
+      return;
+    }
+    var lab = (kw.groups.filter(function (g) { return g.key === tmKw; })[0] || {}).label || tmKw;
+    var sites = tmSites(tmKw);
+    if (tmSite && !sites.some(function (s) { return s.id === tmSite; })) tmSite = null;
+
+    /* ① 기관 */
+    nS.textContent = esc(lab) + " 장비를 가진 " + sites.length + "곳";
+    elS.innerHTML = sites.map(function (s) {
+      return '<li class="' + (s.id === tmSite ? "on" : "") + '">' +
+             '<button type="button" data-tsite="' + esc(s.id) + '">' +
+             "<b>" + esc(s.name) + "</b>" +
+             (s.gg === "N" ? ' <span class="tag-out">경기도 밖</span>' : "") +
+             '<span class="km">' + num(kw.bySite[s.id][tmKw]) + "대</span><br>" +
+             /* 같은 이름의 기관이 주소만 다르게 여럿 있습니다 (예: 키엘연구원 두 곳) —
+                소재지가 비면 주소를 보여 주어야 어느 쪽인지 알 수 있습니다 */
+             '<span class="fb-sub">' + esc(s.si || s.addr || "") +
+             " · 이어진 기업 " + num(s.deg) + "개사</span></button></li>";
+    }).join("");
+    elS.querySelectorAll("[data-tsite]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        tmSite = (tmSite === b.dataset.tsite) ? null : b.dataset.tsite;
+        tmDraw();
+      });
+    });
+
+    /* ② 기업 — 기관을 고르면 그 한 곳과 이어진 기업만 */
+    var pick = tmSite ? sites.filter(function (s) { return s.id === tmSite; }) : sites;
+    var cos = tmCos(pick);
+    nC.textContent = tmSite
+      ? (pick[0] ? esc(pick[0].name) + " 와 이어진 " + cos.length + "개사" : "")
+      : esc(lab) + " 로 이어지는 " + cos.length + "개사";
+    elC.innerHTML = cos.map(function (x) {
+      return "<li><b>" + esc(x.co.name) + "</b>" +
+             '<span class="km">' + x.km + "km</span><br>" +
+             '<span class="fb-sub"><span class="dot" style="display:inline-block;' +
+             "background:" + (colorOf[x.co.cat] || "#94a3b8") + '"></span> ' +
+             esc(x.co.rawCat || x.co.cat) +
+             (tmSite ? "" : " → " + esc(x.site.name)) + "</span></li>";
+    }).join("") || '<li class="hd">이어진 기업이 없습니다.</li>';
+
+    /* ③ 장비 — 그 키워드로 걸린 실제 장비 이름 */
+    var names = [];
+    pick.forEach(function (s) {
+      ((kw.eg[s.id] || {})[tmKw] || []).forEach(function (nm) {
+        names.push({ nm: nm, site: s.name });
+      });
+    });
+    nE.textContent = esc(lab) + " 로 걸린 장비 " + names.length + "대";
+    elE.innerHTML = names.map(function (x) {
+      return "<li><b>" + esc(x.nm) + "</b>" +
+             (tmSite ? "" : '<br><span class="fb-sub">' + esc(x.site) + "</span>") + "</li>";
+    }).join("") || '<li class="hd">장비 이름이 없습니다.</li>';
+  }
+
   /* ---------- 조작 UI ---------- */
   function controls() {
     var m = doc.meta;
@@ -243,6 +383,8 @@
         draw();
         refresh();
         panel();
+        tmChips();
+        tmDraw();
         busy(null);
       })
       .catch(function (err) {

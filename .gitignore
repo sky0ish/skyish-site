@@ -113,3 +113,7 @@ _editlook.html
 *.hwpx
 *.hwpx.bak
 _dbtest.html
+_gallerytest.html
+_dcview.html
+_dcstub.js
+tools/defense/companies_fill.json

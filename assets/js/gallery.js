@@ -58,6 +58,91 @@ async function whoAmI() {
   };
 }
 
+/* ── 사진은 로그인한 분만 볼 수 있습니다 ──────────────────
+   전에는 공개 주소(getPublicUrl)로 그렸습니다. 주소만 알면 로그인 없이도
+   열렸다는 뜻입니다. 회의 사진에는 다른 분들 얼굴이 담깁니다.
+   이제 보관함을 비공개로 두고, 볼 때마다 **서명된 주소**를 받아 그립니다.
+   서명된 주소는 한동안만 살아 있고, 로그인한 분에게만 나옵니다. */
+const SIGN_SEC = 60 * 60 * 4;         // 네 시간짜리 주소
+const signCache = new Map();          // 경로 → {url, till}
+
+/** 그 경로의 서명된 주소 — 못 받으면 빈 글자 */
+export async function signed(path) {
+  const p = String(path || "");
+  if (!p) return "";
+  const now = Date.now();
+  const had = signCache.get(p);
+  if (had && had.till > now) return had.url;
+  try {
+    const r = await sb.storage.from("gallery").createSignedUrl(p, SIGN_SEC);
+    if (r.error || !r.data) return "";
+    signCache.set(p, { url: r.data.signedUrl, till: now + (SIGN_SEC - 300) * 1000 });
+    return r.data.signedUrl;
+  } catch (e) { return ""; }
+}
+
+/** 여러 경로를 한 번에 — 사진첩 하나를 펼 때 씁니다 */
+export async function signedMany(paths) {
+  const want = [...new Set((paths || []).filter(Boolean).map(String))];
+  const out = new Map();
+  const 남은 = [];
+  const now = Date.now();
+  want.forEach((p) => {
+    const had = signCache.get(p);
+    if (had && had.till > now) out.set(p, had.url); else 남은.push(p);
+  });
+  if (남은.length) {
+    try {
+      const r = await sb.storage.from("gallery").createSignedUrls(남은, SIGN_SEC);
+      (r.data || []).forEach((x) => {
+        if (x && x.path && x.signedUrl) {
+          signCache.set(x.path, { url: x.signedUrl, till: now + (SIGN_SEC - 300) * 1000 });
+          out.set(x.path, x.signedUrl);
+        }
+      });
+    } catch (e) { /* 못 받으면 그 사진만 안 보입니다 */ }
+  }
+  return out;
+}
+
+/* 서명된 주소가 올 때까지 잠깐 자리를 지킬 투명한 점 하나.
+   src 를 빈 글자로 두면 브라우저가 **지금 보는 쪽을 그림으로 다시 받아 오려** 합니다. */
+const 빈그림 = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+/** 옛 공개 주소에서 보관함 안 경로만 도로 꺼냅니다.
+    storage_path 칸이 비어 있는 옛 사진도 이렇게 하면 그려집니다.
+    (…/storage/v1/object/public/gallery/<경로>  →  <경로>) */
+export function pathFromUrl(u) {
+  const m = /\/storage\/v1\/object\/(?:public|sign)\/gallery\/([^?#]+)/.exec(String(u || ""));
+  if (!m) return "";
+  try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+}
+
+/** 로그인·승인 안 된 분께 보여 드릴 안내.
+    화면을 막는 것은 guard.js 가 하고, 진짜 자물쇠는 Supabase 쪽 규칙입니다.
+    이것은 gallery.js 만 따로 불려 왔을 때를 위한 마지막 그물입니다. */
+function 잠김(user) {
+  const back = encodeURIComponent("../" + location.pathname.split("/").pop() + location.search);
+  return user
+    ? '<b>승인을 기다리고 있습니다.</b><br>운영자가 승인하면 사진첩을 보실 수 있습니다. ' +
+      '<a href="auth/mypage.html">내 정보 →</a>'
+    : '<b>사진첩은 로그인하신 분만 보실 수 있습니다.</b><br>' +
+      '<a href="auth/login.html?next=' + back + '">로그인 →</a>';
+}
+
+/** 그림 하나가 그려진 뒤 서명된 주소로 갈아 끼웁니다 */
+function 그림채우기(root) {
+  const els = [...(root || document).querySelectorAll("img[data-sp]")]
+    .filter((e) => e.dataset.sp);
+  if (!els.length) return;
+  signedMany(els.map((e) => e.dataset.sp)).then((m) => {
+    els.forEach((e) => {
+      const u = m.get(e.dataset.sp);
+      if (u) e.src = u;
+    });
+  });
+}
+
 /** 사진첩과 사진을 한꺼번에 읽어 옵니다 */
 async function loadAll() {
   const [al, ph] = await Promise.all([
@@ -77,7 +162,11 @@ async function loadAll() {
   }
   const albums = (al.data || []).map((a) => {
     const ps = byAlbum.get(a.id) || [];
-    return { ...a, photos: ps, cover: a.cover_url || (ps[0] && ps[0].image_url) || "" };
+    /* 표지는 ① 따로 정해 두신 것 ② 없으면 첫 사진.
+       보관함이 비공개라 주소가 아니라 **경로**가 있어야 그립니다. */
+    const coverPath = pathFromUrl(a.cover_url) ||
+      (ps[0] && (ps[0].storage_path || pathFromUrl(ps[0].image_url))) || "";
+    return { ...a, photos: ps, cover: a.cover_url || "", coverPath };
   });
   // 행사 날짜가 최신인 것부터. 날짜가 없으면 만든 때로.
   albums.sort((a, b) =>
@@ -85,12 +174,16 @@ async function loadAll() {
   return albums;
 }
 
-/** 사진 한 장을 보관함에 올리고 공개 주소를 돌려줍니다 */
+/** 사진 한 장을 보관함에 올립니다 — 주소는 볼 때마다 새로 서명해 받습니다 */
 async function upload(file, catKey) {
   const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   const path = `gallery/${catKey}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const up = await sb.storage.from("gallery").upload(path, file, { cacheControl: "3600" });
   if (up.error) throw up.error;
+  /* image_url 칸은 비워 둘 수 없어(not null) 예전과 같은 꼴의 주소를 적어 둡니다.
+     보관함이 비공개라 이 주소로는 안 열립니다 — 화면은 storage_path 로
+     그때그때 서명된 주소를 받아 그립니다. 서명된 주소는 얼마 뒤 죽으므로
+     **표에 적어 두지 않습니다**. */
   return { url: sb.storage.from("gallery").getPublicUrl(path).data.publicUrl, path };
 }
 
@@ -301,6 +394,16 @@ export async function initGallery(mountId = "galapp") {
   const { canAdd, isAdmin, user, me } = await whoAmI();
   document.getElementById("gNew").classList.toggle("on", canAdd);
 
+  /* 사진첩에는 다른 분들 얼굴이 담깁니다 — 승인된 회원만 봅니다 */
+  if (!canAdd) {
+    grid.innerHTML = "";
+    tabs.innerHTML = "";
+    countEl.textContent = "";
+    empty.hidden = false;
+    empty.innerHTML = 잠김(user);
+    return;
+  }
+
   try {
     albums = await loadAll();
   } catch (e) {
@@ -357,14 +460,15 @@ export async function initGallery(mountId = "galapp") {
     empty.hidden = true;
     grid.innerHTML = list.map((a) => `
       <a class="alb" href="album.html?a=${encodeURIComponent(a.id)}">
-        <span class="alb__sq">${a.cover
-          ? `<img src="${esc(a.cover)}" alt="${esc(a.title)}" loading="lazy">`
+        <span class="alb__sq">${a.coverPath
+          ? `<img data-sp="${esc(a.coverPath)}" src="${빈그림}" alt="${esc(a.title)}" loading="lazy">`
           : '<span class="alb__none">사진 없음</span>'}</span>
         <span class="alb__cp">
           <b>${esc(a.title)}</b>
           <small>${ymd(a.event_date) || ymd(a.created_at)} · 사진 ${a.photos.length}장</small>
         </span>
       </a>`).join("");
+    그림채우기(grid);
   }
 
   q.addEventListener("input", draw);
@@ -490,6 +594,7 @@ export async function initAlbum(mountId = "albapp") {
   if (!id) { mount.innerHTML = '<p class="gempty">사진첩을 찾을 수 없습니다.</p>'; return; }
 
   const { canAdd, isAdmin, user, me } = await whoAmI();
+  if (!canAdd) { mount.innerHTML = `<p class="gempty">${잠김(user)}</p>`; return; }
 
   let album = null;
   try {
@@ -578,10 +683,11 @@ export async function initAlbum(mountId = "albapp") {
     emptyEl.hidden = photos.length > 0;
     grid.innerHTML = photos.map((p) => `
       <figure data-id="${p.id}">
-        <img src="${esc(p.image_url)}" alt="${esc(p.caption || album.title)}" loading="lazy">
+        <img data-sp="${esc(p.storage_path || pathFromUrl(p.image_url))}" src="${빈그림}" alt="${esc(p.caption || album.title)}" loading="lazy">
         ${(user && p.created_by === user.id) || isAdmin
           ? `<button class="albx" data-id="${p.id}" title="이 사진 지우기">✕</button>` : ""}
       </figure>`).join("");
+    그림채우기(grid);
 
     if (canEdit && photos.length > 1) wireDrag();
 

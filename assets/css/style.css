@@ -1630,7 +1630,9 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
 .fb-bar { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr) 3.6rem; align-items: center; gap: .6rem; font-size: .85rem; }
 .fb-bar__name { color: #4a4442; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fb-bar__track { height: 13px; border-radius: 7px; background: var(--paper-2); overflow: hidden; }
-.fb-bar__fill { height: 100%; border-radius: 7px; background: var(--teal); }
+/* display:block 이 빠지면 span 이 인라인으로 남아 width·height 가 먹지 않습니다.
+   막대가 통째로 안 보이던 까닭입니다 (칸은 보이는데 색이 안 차던 일). */
+.fb-bar__fill { display: block; height: 100%; border-radius: 7px; background: var(--teal); }
 .fb-bar__val { text-align: right; font-variant-numeric: tabular-nums; color: var(--mauve); }
 
 /* 지도 위 원 크기 안내 */

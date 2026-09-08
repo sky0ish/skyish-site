@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수도권 방산기업 리스트 — Jee-Hyun NAM</title>
+  <meta name="description" content="경기·인천·서울과 그 밖 지역의 방위산업 관련 기업 명단. 항목마다 눌러 정렬할 수 있습니다.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css?v=202609091200">
+  <!-- 로그인·승인된 사람만 열람 -->
+  <script type="module" src="assets/js/guard.js?v=202609010300"></script>
+  <style>
+    /* 표가 넓어 창을 꽉 채워 씁니다 */
+    .dl-wrap{padding-top:calc(76px + 1rem);padding-bottom:2rem}
+    .dl-wrap .container--wide{max-width:min(2200px,96vw)}
+
+    .dl-bar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;
+            padding:.7rem .9rem;background:var(--white);border:1px solid var(--line-soft);
+            border-radius:var(--radius-md);box-shadow:var(--shadow-sm);margin-bottom:.7rem;
+            position:sticky;top:64px;z-index:60}
+    .dl-bar input[type=search]{flex:1 1 240px;min-width:180px;padding:.42rem .7rem;
+            border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit}
+    .dl-bar .chip{font-size:.84rem;padding:.3rem .75rem;cursor:pointer}
+    .dl-bar .n{color:#8b8280;font-variant-numeric:tabular-nums}
+    .dl-bar .chip.active .n{color:rgba(255,255,255,.7)}
+
+    .dl-scroll{overflow:auto;max-height:calc(100vh - 210px);
+               border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white)}
+    .dl-table{border-collapse:separate;border-spacing:0;font-size:.83rem;width:max-content;min-width:100%}
+    .dl-table th,.dl-table td{padding:.42rem .6rem;border-bottom:1px solid var(--line-soft);
+                              text-align:left;vertical-align:top}
+    .dl-table thead th{position:sticky;top:0;z-index:3;background:var(--paper-2);
+                       white-space:nowrap;font-weight:600;color:#4a4442;
+                       box-shadow:inset 0 -1px 0 var(--line)}
+    /* 첫 세 칸(번호·지역·기업명)은 가로로 밀어도 붙어 있게 */
+    .dl-table th:nth-child(-n+3),.dl-table td:nth-child(-n+3){position:sticky;background:var(--white)}
+    .dl-table thead th:nth-child(-n+3){background:var(--paper-2);z-index:4}
+    .dl-table th:nth-child(1),.dl-table td:nth-child(1){left:0;width:3.2rem;
+              text-align:right;color:#8b8280;font-variant-numeric:tabular-nums}
+    .dl-table th:nth-child(2),.dl-table td:nth-child(2){left:3.2rem;width:3.4rem}
+    .dl-table th:nth-child(3),.dl-table td:nth-child(3){left:6.6rem;min-width:10rem;font-weight:600}
+    .dl-table tbody tr:hover td{background:#faf7f4}
+    .dl-table td.long{max-width:26rem;white-space:normal;line-height:1.45}
+    .dl-table td.mid{max-width:15rem;white-space:normal;line-height:1.45}
+
+    .dl-sort{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem;
+             font:inherit;color:inherit;white-space:nowrap}
+    .dl-sort:hover{color:var(--teal-text)}
+    .dl-sort:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px}
+    .dl-sort__a{font-size:.7em;color:#c3bcb8}
+    th[aria-sort] .dl-sort{color:var(--teal-text);font-weight:700}
+    th[aria-sort] .dl-sort__a{color:var(--teal)}
+
+    /* 비어 있던 칸을 공개 자료로 채운 것 — 눈에 띄게 두어 확인하실 수 있게 */
+    .dl-fill{border-bottom:2px dotted var(--teal);cursor:help}
+    .dl-fill::after{content:"✚";font-size:.7em;color:var(--teal);vertical-align:super;margin-left:.15em}
+
+    .dl-reg{font-size:.72rem;border-radius:999px;padding:.05rem .45rem;
+            background:var(--paper-2);color:#6b6360;white-space:nowrap}
+    .dl-yes{color:var(--teal-text);font-weight:700}
+    .dl-empty{color:#c3bcb8}
+    .dl-note{color:#4a4442;font-size:.9rem;margin:.4rem 0 1rem;max-width:92ch}
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <article class="section dl-wrap">
+      <div class="container container--wide">
+
+        <span class="eyebrow">Data Analysis</span>
+        <h1 class="fb-title">수도권 방산기업 리스트</h1>
+        <p class="dl-note" id="dl-note">자료를 불러오는 중입니다…</p>
+        <p class="fb-crumb">
+          <a class="btn btn--ghost" href="defense-cluster.html">← 기업체와 연구장비 지도</a>
+        </p>
+
+        <div class="dl-bar">
+          <input type="search" id="dl-q" autocomplete="off"
+                 placeholder="기업명 · 분야 · 기술 · 소재지로 찾기">
+          <span id="dl-tabs"></span>
+          <span class="fb-fig__src" id="dl-count"></span>
+        </div>
+
+        <div class="dl-scroll">
+          <table class="dl-table">
+            <thead><tr id="dl-head"></tr></thead>
+            <tbody id="dl-body"></tbody>
+          </table>
+        </div>
+        <p class="placeholder-note" lang="ko" style="margin-top:1.2rem">
+          ✎ 대표·담당자 연락처는 이 화면에 담지 않았습니다.
+          <span class="dl-fill">이렇게 표시된 칸</span>은 원본 표에 비어 있던 것을
+          공개된 자료로 채운 것이니, 쓰시기 전에 확인해 주세요.
+        </p>
+
+      </div>
+    </article>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/main.js?v=202609051200" defer></script>
+  <script src="assets/js/defense-companies.js?v=202609091200" defer></script>
+</body>
+</html>

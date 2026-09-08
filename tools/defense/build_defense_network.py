@@ -22,7 +22,12 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.dirname(os.path.dirname(HERE))
-DATA = r'D:\Google_drive_20260726\1.EDU\2_geocoding\1_방산클러스터\result_data'
+# 원본 자료가 있는 곳 — 구글 드라이브가 D: 에서 G: 로 옮겨 다녀 둘 다 봅니다
+DATA_CANDIDATES = [
+    r'G:\내 드라이브\1.EDU\2_geocoding\1_방산클러스터\result_data',
+    r'D:\Google_drive_20260726\1.EDU\2_geocoding\1_방산클러스터\result_data',
+]
+DATA = next((d for d in DATA_CANDIDATES if os.path.isdir(d)), DATA_CANDIDATES[0])
 OUTDIR = os.path.join(SITE, 'assets', 'data', 'defense')
 
 K = 3                      # 기업 한 곳이 연결할 장비 기관 수 (가까운 순)
@@ -89,6 +94,88 @@ def km(lat1, lon1, lat2, lon2):
     """경기도 규모에서 충분한 정확도의 평면 근사(km)."""
     k = math.cos(math.radians(37.4))
     return math.hypot((lat1 - lat2) * 111.32, (lon1 - lon2) * 111.32 * k)
+
+
+LEXICON = os.path.join(HERE, 'equip_keywords.json')
+
+
+def keywords(sites):
+    """장비 이름·활용분야 글에서 「기능 키워드」를 뽑아 기관별로 셉니다.
+
+    사전(equip_keywords.json)은 무리마다 match(찾을 낱말)와 not(빼야 할 낱말)을
+    가집니다. 한글·영문 이름과 활용분야를 이어 붙인 글자열에 **대소문자를 가리지 않고
+    부분일치**로 찾습니다. 형태소 분석기를 쓰지 않는 까닭은, 연구장비 이름이
+    「유압식만능재료시험기」처럼 붙여 쓴 복합명사라 사전 쪽이 훨씬 정확하기 때문입니다.
+
+    돌려주는 것은 network.json 의 kw 칸에 그대로 들어갑니다.
+    """
+    if not os.path.exists(LEXICON):
+        print('  (사전이 없어 키워드는 건너뜁니다: %s)' % LEXICON, flush=True)
+        return None
+    lex = json.load(open(LEXICON, encoding='utf-8'))
+    groups = lex['groups']
+
+    eq = csv('09_방산관련_장비목록.csv')
+
+    def akey(v):
+        """주소를 맞대 볼 열쇠. 장비목록 쪽 주소 여덟 곳에 꼬리 「/」 가 붙어 있어
+           그냥 맞대면 279대 가운데 136대가 기관을 못 찾습니다."""
+        return ' '.join(str(v or '').replace('/', ' ').split())
+
+    by_addr = {}
+    for s in sites:
+        by_addr.setdefault(akey(s['addr']), s['id'])
+
+    def hit(g, text):
+        if any(w.lower() in text for w in g.get('not', [])):
+            return False
+        return any(w.lower() in text for w in g['match'])
+
+    bySite, eg, gn = {}, {}, {}
+    miss_addr, uncovered = 0, []
+    for _, r in eq.iterrows():
+        sid = by_addr.get(akey(r.get('주소')))
+        if not sid:
+            miss_addr += 1
+            continue
+        name = clean(r.get('한글장비명')) or clean(r.get('영문장비명')) or '(이름 없음)'
+        text = ' '.join(filter(None, [
+            clean(r.get('한글장비명')), clean(r.get('영문장비명')), clean(r.get('활용분야'))
+        ])).lower()
+        found = [g['key'] for g in groups if hit(g, text)]
+        if not found:
+            uncovered.append(name)
+            continue
+        for k in found:
+            gn[k] = gn.get(k, 0) + 1
+            bySite.setdefault(sid, {})
+            bySite[sid][k] = bySite[sid].get(k, 0) + 1
+            eg.setdefault(sid, {}).setdefault(k, [])
+            if name not in eg[sid][k]:
+                eg[sid][k].append(name)
+
+    out = []
+    for g in groups:
+        n = gn.get(g['key'], 0)
+        if not n:
+            continue
+        out.append({
+            'key': g['key'], 'label': g['label'], 'n': n,
+            'sites': sum(1 for v in bySite.values() if v.get(g['key'])),
+        })
+    out.sort(key=lambda x: -x['n'])
+
+    print('  키워드 무리 %d개 · 걸린 장비 %d대 / %d대 (못 걸린 것 %d대, 주소 못 맞춘 것 %d대)'
+          % (len(out), len(eq) - len(uncovered) - miss_addr, len(eq),
+             len(uncovered), miss_addr), flush=True)
+    if uncovered:
+        print('   못 걸린 보기: ' + ' / '.join(uncovered[:8]), flush=True)
+
+    return {
+        'note': lex.get('note', ''),
+        'groups': out, 'bySite': bySite, 'eg': eg,
+        'nEquip': int(len(eq)), 'nUncovered': len(uncovered),
+    }
 
 
 def main():
@@ -196,6 +283,9 @@ def main():
         'sites': sites,
         'edges': edges,
     }
+    kw = keywords(sites)
+    if kw:
+        doc['kw'] = kw
     p = os.path.join(OUTDIR, 'network.json')
     json.dump(doc, open(p, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('  ', p, f'{os.path.getsize(p)/1024:.0f} KB', flush=True)

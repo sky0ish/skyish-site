@@ -1,0 +1,531 @@
+{
+ "note": "장비의 한글·영문 이름과 활용분야 글에서 「기능 키워드」를 뽑았습니다. 형태소 분석 대신 낱말 사전으로 찾습니다 — 연구장비 이름이 「유압식만능재료시험기」처럼 붙여 쓴 복합명사라 사전 쪽이 더 정확합니다. 기능을 하나 고르면, 그 장비를 가진 기관과 그 기관에 이어진 기업이 함께 나옵니다.",
+ "groups": [
+  {
+   "key": "emc-emission",
+   "label": "전자파 방사·차폐",
+   "match": [
+    "EMI",
+    "전자파 장해",
+    "무반사",
+    "Anechoic",
+    "차폐",
+    "Shielded",
+    "LISN",
+    "안정화 회로망",
+    "안테나",
+    "Antenna",
+    "ANTEMMA",
+    "하모닉",
+    "플리커",
+    "불연속",
+    "Emission",
+    "Basic EMC"
+   ],
+   "not": [
+    "소음",
+    "표면개질",
+    "코팅",
+    "내성",
+    "immunity",
+    "EMS"
+   ]
+  },
+  {
+   "key": "emc-immunity",
+   "label": "전자파 내성·ESD",
+   "match": [
+    "EMS",
+    "ESD",
+    "정전기",
+    "Electrostatic",
+    "Electristatic",
+    "방전",
+    "Discharge",
+    "서지",
+    "Surge",
+    "EFT",
+    "버스트",
+    "Burst",
+    "내성",
+    "immunity",
+    "BCI",
+    "과도전압",
+    "Transient",
+    "전원 Dip",
+    "/Dip",
+    "DIP/",
+    "자기장",
+    "Magnetic Field",
+    "Magnetic immunity",
+    "PFM",
+    "CS simulator",
+    "CS-신호",
+    "신호발생기",
+    "신호 발생기",
+    "Signal Generator",
+    "DECOUPLING"
+   ],
+   "not": []
+  },
+  {
+   "key": "rf-electrical",
+   "label": "고주파·전기 계측",
+   "match": [
+    "고주파",
+    "초고주파",
+    "GHz",
+    "Microwave",
+    "스펙트럼",
+    "Spectrum",
+    "감쇄기",
+    "Attenuator",
+    "증폭기",
+    "Amplifier",
+    "무선 통신",
+    "Radio Communication",
+    "RF Power",
+    "RF Noise",
+    "내전압",
+    "High voltage",
+    "도체저항",
+    "Resistance meter",
+    "저항측정",
+    "임피던스",
+    "Impedance",
+    "타코미터",
+    "tacho",
+    "속도측정"
+   ],
+   "not": [
+    "내성",
+    "LISN",
+    "안정화 회로망",
+    "CS simulator",
+    "번인"
+   ]
+  },
+  {
+   "key": "climate-chamber",
+   "label": "온습도 환경챔버",
+   "match": [
+    "항온",
+    "항습",
+    "온습도",
+    "온/습도",
+    "humidity",
+    "Temperature chamber",
+    "Temperature and Humidity",
+    "Temperature & Humidity",
+    "Temperature&Humidity",
+    "환경챔버",
+    "저기압",
+    "Altitude",
+    "고온시험",
+    "온도 시험"
+   ],
+   "not": [
+    "차폐",
+    "열충격",
+    "Thermal shock",
+    "온도급변",
+    "온도급속",
+    "급속",
+    "Rapid-Rate",
+    "PTC",
+    "HAST",
+    "고온가압",
+    "PCT",
+    "ALT tester",
+    "진동"
+   ]
+  },
+  {
+   "key": "thermal-shock",
+   "label": "열충격·온도급변",
+   "match": [
+    "열충격",
+    "Thermal shock",
+    "온도급변",
+    "온도급속",
+    "급속온도",
+    "Rapid-Rate",
+    "PTC Chamber",
+    "땜내열",
+    "Reflow"
+   ],
+   "not": []
+  },
+  {
+   "key": "reliability-life",
+   "label": "가속수명·신뢰성",
+   "match": [
+    "HAST",
+    "초가속",
+    "Highly Accelerated",
+    "가속수명",
+    "Accelerated Stress",
+    "Accelerated Life",
+    "ALT tester",
+    "번인",
+    "Burn in",
+    "PCT Chamber",
+    "고온가압",
+    "내습",
+    "수명평가",
+    "ON/OFF",
+    "ON-OFF",
+    "이온 마이그레이션",
+    "Ion migration"
+   ],
+   "not": [
+    "Weathering",
+    "내후",
+    "UVA",
+    "UVB",
+    "UVC",
+    "Winchill",
+    "ALTA"
+   ]
+  },
+  {
+   "key": "strength",
+   "label": "인장·강도 시험",
+   "match": [
+    "인장",
+    "tension",
+    "Tensile",
+    "만능재료",
+    "만능 재료",
+    "만능 물성",
+    "Universal Testing",
+    "Universal Material",
+    "UTM",
+    "인열",
+    "Tearing",
+    "Elmendorf",
+    "엘멘도르프",
+    "파열",
+    "Bursting",
+    "가력",
+    "Actuator",
+    "안전벨트",
+    "anchorage",
+    "좌석"
+   ],
+   "not": [
+    "마모",
+    "Abrasion"
+   ]
+  },
+  {
+   "key": "fatigue-durability",
+   "label": "피로·내구 시험",
+   "match": [
+    "피로",
+    "Fatigue",
+    "내구",
+    "Durability",
+    "반복 충격",
+    "캐스터주행",
+    "주행시험",
+    "종합시험기",
+    "종합내구",
+    "안정성 시험기",
+    "Board bend"
+   ],
+   "not": [
+    "만능피로시험기",
+    "LPG",
+    "CNG"
+   ]
+  },
+  {
+   "key": "vibration-shock",
+   "label": "진동·충격·소음",
+   "match": [
+    "진동",
+    "Vibration",
+    "충격",
+    "Impact",
+    "Shock",
+    "낙하",
+    "Drop",
+    "강구",
+    "다트식",
+    "내진",
+    "Seismic",
+    "샤피",
+    "Charpy",
+    "펜듈럼",
+    "Pendulum",
+    "소음",
+    "Sound level"
+   ],
+   "not": [
+    "열충격",
+    "Thermal shock",
+    "반복 충격",
+    "내구"
+   ]
+  },
+  {
+   "key": "hardness-surface",
+   "label": "경도·마모·표면",
+   "match": [
+    "경도",
+    "Hardness",
+    "비커스",
+    "Vickers",
+    "로크웰",
+    "Rockwell",
+    "마모",
+    "Abrasion",
+    "Taber",
+    "스크래치",
+    "Scratch",
+    "Erichsen",
+    "Sapphire",
+    "접촉각",
+    "Contact Angle",
+    "표면특성",
+    "표면개질"
+   ],
+   "not": [
+    "코팅",
+    "Coating",
+    "연마"
+   ]
+  },
+  {
+   "key": "dimension",
+   "label": "치수·형상 측정",
+   "match": [
+    "3차원",
+    "3D",
+    "Coordinate Measuring",
+    "형상",
+    "Contour",
+    "윤곽",
+    "조도",
+    "거칠기",
+    "Roughness",
+    "Profiler",
+    "원통도",
+    "Roundness",
+    "Cylindricity",
+    "화상 측정기",
+    "Image measur",
+    "다관절",
+    "스캐너",
+    "Scanner",
+    "두께",
+    "단차",
+    "현미경",
+    "Microscope"
+   ],
+   "not": [
+    "X-ray",
+    "엑스선",
+    "탐상",
+    "Laser Profiler 열"
+   ]
+  },
+  {
+   "key": "optics-spectro",
+   "label": "광학·분광 분석",
+   "match": [
+    "분광",
+    "Spectro",
+    "라만",
+    "Raman",
+    "FT-IR",
+    "헤이즈",
+    "Haze",
+    "투과율",
+    "UV-VIS",
+    "UV-NIR",
+    "양자효율",
+    "quantum yield",
+    "전기광학",
+    "Electro-Optic",
+    "광학",
+    "배향막",
+    "Photoelastic",
+    "선경사각",
+    "Pretilt",
+    "셀 간격",
+    "Cell Gap",
+    "액정",
+    "LCD",
+    "가시광선"
+   ],
+   "not": []
+  },
+  {
+   "key": "thermal-analysis",
+   "label": "열분석·열물성",
+   "match": [
+    "열팽창",
+    "Thermomechanical",
+    "시차주사",
+    "Calorimeter",
+    "열중량",
+    "Thermogravimetric",
+    "열변형",
+    "HDT",
+    "VICAT",
+    "용융지수",
+    "Melt Flow",
+    "열분석"
+   ],
+   "not": [
+    "콘칼로리",
+    "화재"
+   ]
+  },
+  {
+   "key": "ndt-thermography",
+   "label": "비파괴·열화상",
+   "match": [
+    "비파괴",
+    "X-ray",
+    "엑스선",
+    "탐상",
+    "열화상",
+    "IR camera",
+    "Infrared Thermal",
+    "적외선 체열",
+    "체열",
+    "열측정",
+    "Kelvin Probe",
+    "캘빈"
+   ],
+   "not": []
+  },
+  {
+   "key": "corrosion-weather",
+   "label": "부식·내후성",
+   "match": [
+    "부식",
+    "Corrosion",
+    "Corrsion",
+    "염수",
+    "Salt spray",
+    "내후",
+    "Weathering",
+    "자외선",
+    "UVA",
+    "UVB",
+    "UVC",
+    "일사",
+    "Solar",
+    "변퇴색",
+    "담가",
+    "Fogging",
+    "광안정",
+    "Photo-stability"
+   ],
+   "not": [
+    "LPG",
+    "UV-VIS",
+    "UV-NIR"
+   ]
+  },
+  {
+   "key": "ingress-fluid",
+   "label": "방수·기밀·가스",
+   "match": [
+    "살수",
+    "Water chamber",
+    "분진",
+    "Dust",
+    "IP TESTER",
+    "IP 시험",
+    "기밀",
+    "수밀",
+    "내풍압",
+    "방수",
+    "방진",
+    "동파",
+    "Frozen",
+    "Leak",
+    "누설",
+    "CNG",
+    "LPG",
+    "압축천연가스",
+    "액화석유가스",
+    "밸브",
+    "Valve",
+    "수압",
+    "유량",
+    "압력"
+   ],
+   "not": [
+    "연기밀도"
+   ]
+  },
+  {
+   "key": "fire",
+   "label": "화재·연소 시험",
+   "match": [
+    "화재",
+    "불연성",
+    "난연",
+    "콘칼로리",
+    "연기밀도",
+    "화염",
+    "산소지수",
+    "UL94",
+    "가스유해성"
+   ],
+   "not": []
+  },
+  {
+   "key": "machining",
+   "label": "가공·시제품 제작",
+   "match": [
+    "머시닝",
+    "Machining",
+    "SMT",
+    "마운터",
+    "Mounter",
+    "휠커터",
+    "Wheel Cutter",
+    "연마기",
+    "Polishing",
+    "환편기",
+    "Knitting",
+    "코팅",
+    "Coating",
+    "시제품",
+    "실장"
+   ],
+   "not": [
+    "스캐너",
+    "Scanner"
+   ]
+  },
+  {
+   "key": "simulation",
+   "label": "해석·시뮬레이션",
+   "match": [
+    "해석",
+    "Simulation",
+    "시뮬레이션",
+    "HFSS",
+    "소프트웨어",
+    "Software",
+    "프로그램",
+    "플랫폼",
+    "ALTA PRO",
+    "Winchill",
+    "수명 예측"
+   ],
+   "not": [
+    "내진",
+    "Seismic"
+   ]
+  }
+ ]
+}

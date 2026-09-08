@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202609081500">
+  <link rel="stylesheet" href="assets/css/style.css?v=202609091200">
   <!-- 로그인·승인된 사람만 열람 -->
   <script type="module" src="assets/js/guard.js?v=202609010300"></script>
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css?v=202609010300">
@@ -30,6 +30,37 @@
     .dc-net-list .km{float:right;color:#8b8280;font-variant-numeric:tabular-nums}
     .tag-out{font-size:.72rem;font-weight:400;color:#92400e;background:#fef3c7;
              border:1px solid #fde68a;border-radius:999px;padding:.02rem .4rem}
+
+    /* ① 겹쳐 보기 — 범례가 기업 분야와 장비 크기 둘을 함께 담아 길어집니다 */
+    .dc-legend-both{max-height:calc(100% - 24px);overflow:auto}
+    .dc-legend-both b{display:block;font-size:.72rem;letter-spacing:.06em;
+                      color:#8b8280;margin:.1rem 0 .05rem;font-weight:700}
+    .dc-legend-both hr{border:0;border-top:1px solid rgba(0,0,0,.1);margin:.4rem 0}
+    /* 기업은 분야마다 색이 달라 한 칸에 띠로 보여 줍니다 (색은 자료에서 채웁니다) */
+    .fb-check .sw--multi{width:16px;border-radius:3px}
+
+    /* ④ 텍스트마이닝 — 기관 · 기업 · 장비 세 칸 */
+    .dc-tm{margin-top:1.6rem}
+    .dc-tm__h{font-family:var(--font-body);font-weight:700;text-transform:none;
+              font-size:clamp(1rem,1.7vw,1.14rem);letter-spacing:0;margin:0}
+    .dc-tm__grid{display:grid;gap:1rem;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+    @media (max-width:900px){.dc-tm__grid{grid-template-columns:minmax(0,1fr)}}
+    .dc-tm__grid .dc-net-list{max-height:340px;overflow:auto}
+    .dc-tm__grid li button{all:unset;cursor:pointer;display:block;width:100%}
+    .dc-tm__grid li button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+    .dc-tm__grid li.on{background:rgba(79,157,146,.09);border-radius:6px}
+    .dc-tm__grid li.on b{color:var(--teal-text)}
+    .dc-tm .chip .n{color:#8b8280;font-variant-numeric:tabular-nums}
+    .dc-tm .chip.active .n{color:rgba(255,255,255,.7)}
+
+    /* 시군별 표 — 머리글을 눌러 차례를 바꿉니다 */
+    .fb-sort{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem;
+             font:inherit;color:inherit;white-space:nowrap}
+    .fb-sort:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px}
+    .fb-sort:hover{color:var(--teal-text)}
+    .fb-sort__a{font-size:.7em;color:#c3bcb8}
+    th[aria-sort] .fb-sort{color:var(--teal-text);font-weight:700}
+    th[aria-sort] .fb-sort__a{color:var(--teal)}
   </style>
 </head>
 <body>
@@ -50,10 +81,50 @@
           <a class="btn btn--ghost" href="pictures.html">← 목록으로</a>
         </p>
 
-        <!-- ① 방산기업 -->
-        <section class="fb-fig" id="fig1">
+        <!-- ① 겹쳐 보기 — 아래 두 지도를 한 장에 -->
+        <section class="fb-fig" id="fig0">
           <div class="fb-fig__head">
             <span class="fb-fig__no">①</span>
+            <h2>방위산업 생태계 분포 — 기업체 × 연구장비</h2>
+            <span class="fb-fig__src" id="dc-both-src">—</span>
+          </div>
+          <p class="fb-fig__desc">
+            아래 두 지도를 한 장에 포갠 것입니다. 체크를 <strong>끄고 켜서</strong>
+            기업만, 장비만, 또는 둘을 겹쳐 보실 수 있고, 기업은 <strong>분야별로도</strong> 고를 수 있습니다.
+            큰 반투명 원이 연구장비(원의 크기가 장비 수), 그 위 작은 점이 기업입니다.
+          </p>
+
+          <div class="fb-controls">
+            <fieldset>
+              <legend>겹쳐 볼 자료</legend>
+              <label class="fb-check">
+                <input type="checkbox" id="dc-both-co" checked>
+                <span class="sw sw--multi" id="dc-both-co-sw"></span>
+                방위산업 기업체 <span class="fb-fig__src" id="dc-both-co-n"></span>
+              </label>
+              <label class="fb-check">
+                <input type="checkbox" id="dc-both-eq" checked>
+                <span class="sw" style="border-radius:50%;background:rgba(245,158,11,.55);border-color:#92400e"></span>
+                연구장비 보유기관 <span class="fb-fig__src" id="dc-both-eq-n"></span>
+              </label>
+            </fieldset>
+          </div>
+
+          <div class="fb-controls" id="dc-both-cats">
+            <span class="fb-fig__src">자료를 불러오는 중…</span>
+          </div>
+
+          <div class="fb-mapbox">
+            <div class="fb-map" id="dc-map0"></div>
+            <div class="fb-legend dc-legend-both" id="dc-legend0"></div>
+            <div class="fb-busy" id="dc-busy0">자료를 불러오는 중입니다…</div>
+          </div>
+        </section>
+
+        <!-- ② 방산기업 -->
+        <section class="fb-fig" id="fig1">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">②</span>
             <h2>방위산업 기업체 — 분야별 분포</h2>
             <span class="fb-fig__src" id="dc-co-src">—</span>
           </div>
@@ -70,10 +141,10 @@
           </div>
         </section>
 
-        <!-- ② 연구장비 -->
+        <!-- ③ 연구장비 -->
         <section class="fb-fig" id="fig2">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">②</span>
+            <span class="fb-fig__no">③</span>
             <h2>연구장비 보유기관 — 장비 수에 비례한 원</h2>
             <span class="fb-fig__src" id="dc-eq-src">—</span>
           </div>
@@ -119,12 +190,40 @@
             </div>
             <div class="fb-card dc-net-side" id="dc-net-info"></div>
           </div>
+
+          <!-- 텍스트마이닝 — 위 그림을 장비 이름으로 풀어 봅니다 -->
+          <div class="dc-tm" id="dc-tm">
+            <h3 class="dc-tm__h">텍스트마이닝 — 장비 이름에서 뽑은 기능 키워드</h3>
+            <p class="fb-fig__desc" id="dc-tm-note">자료를 불러오는 중…</p>
+
+            <div class="fb-controls" id="dc-tm-chips">
+              <span class="fb-fig__src">자료를 불러오는 중…</span>
+            </div>
+
+            <div class="dc-tm__grid">
+              <div class="fb-card">
+                <h3>연구기관</h3>
+                <p class="fb-sub" id="dc-tm-sn">—</p>
+                <ul class="dc-net-list" id="dc-tm-sites"></ul>
+              </div>
+              <div class="fb-card">
+                <h3>이어진 기업</h3>
+                <p class="fb-sub" id="dc-tm-cn">—</p>
+                <ul class="dc-net-list" id="dc-tm-cos"></ul>
+              </div>
+              <div class="fb-card">
+                <h3>그 기능의 장비</h3>
+                <p class="fb-sub" id="dc-tm-en">—</p>
+                <ul class="dc-net-list" id="dc-tm-eq"></ul>
+              </div>
+            </div>
+          </div>
         </section>
 
-        <!-- ③ 통계 -->
+        <!-- ⑤ 통계 -->
         <section class="fb-fig" id="fig3">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">③</span>
+            <span class="fb-fig__no">⑤</span>
             <h2>숫자로 보기</h2>
             <span class="fb-fig__src">기업 분야 · 장비 분야 · 시군별</span>
           </div>
@@ -142,10 +241,15 @@
 
             <div class="fb-card">
               <h3>시군별</h3>
-              <p class="fb-sub">기업 수와 연구장비 수</p>
+              <p class="fb-sub">기업 수와 연구장비 수 · <b>총점 = 기업 × 10 + 연구장비</b></p>
               <div class="fb-scroll">
                 <table class="fb-table">
-                  <thead><tr><th>시군</th><th>기업</th><th>연구장비</th></tr></thead>
+                  <thead><tr>
+                    <th scope="col"><button type="button" class="fb-sort" data-sort="si">시군 <span class="fb-sort__a"></span></button></th>
+                    <th scope="col"><button type="button" class="fb-sort" data-sort="co">기업 <span class="fb-sort__a"></span></button></th>
+                    <th scope="col"><button type="button" class="fb-sort" data-sort="eq">연구장비 <span class="fb-sort__a"></span></button></th>
+                    <th scope="col"><button type="button" class="fb-sort" data-sort="score" title="기업 수 × 10 + 연구장비 수">총점 <span class="fb-sort__a"></span></button></th>
+                  </tr></thead>
                   <tbody id="dc-sgg"></tbody>
                 </table>
               </div>
@@ -153,6 +257,23 @@
               <dl class="fb-meta" id="dc-meta"></dl>
             </div>
           </div>
+        </section>
+
+        <!-- 기업 명단은 표가 넓어 따로 큰 화면에서 봅니다 -->
+        <section class="fb-fig" id="fig5">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">⑥</span>
+            <h2>수도권 방산기업 리스트</h2>
+            <span class="fb-fig__src">경기 · 인천 · 서울과 그 밖 249개사</span>
+          </div>
+          <p class="fb-fig__desc">
+            기업명 · 주요 분야 · 방산기술개발 · 보유기술 · 소재지 같은 항목이 스무 칸이 넘어
+            이 화면에 그대로 담으면 글씨가 너무 작아집니다.
+            <strong>따로 큰 화면</strong>에서 항목마다 눌러 정렬하며 보실 수 있게 했습니다.
+          </p>
+          <p class="fb-crumb">
+            <a class="btn" href="defense-companies.html">기업 리스트 크게 보기 →</a>
+          </p>
         </section>
 
         <p class="placeholder-note" lang="ko" style="margin-top:2rem">
@@ -169,7 +290,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-cluster.js?v=202609010300" defer></script>
+  <script src="assets/js/defense-cluster.js?v=202609091200" defer></script>
   <script src="assets/js/defense-cluster-network.js?v=202609010300" defer></script>
 </body>
 </html>
