@@ -62,6 +62,32 @@
     .dc-shot figcaption{padding:.6rem .9rem;font-size:.82rem;color:var(--mauve);
                         border-top:1px solid var(--line-soft)}
 
+    /* 관계망 찾기 칸 */
+    .dc-g__find{position:relative;display:flex;flex-wrap:wrap;gap:.5rem .7rem;
+                align-items:center;margin-bottom:.6rem}
+    .dc-g__q{flex:1 1 320px;min-width:220px;display:flex;align-items:center;gap:.45rem;
+             background:var(--white);border:1px solid var(--line);
+             border-radius:var(--radius-md);padding:.35rem .7rem;box-shadow:var(--shadow-sm)}
+    .dc-g__q:focus-within{border-color:var(--teal)}
+    .dc-g__qi{color:#c3bcb8;font-size:1rem;line-height:1}
+    .dc-g__q input{flex:1;border:0;outline:0;background:none;font:inherit;font-size:.88rem;
+                   padding:.15rem 0;min-width:0}
+    .dc-g__find .chip{font-size:.78rem;padding:.24rem .6rem;cursor:pointer}
+    .dc-g__sug{position:absolute;top:calc(100% + 4px);left:0;z-index:80;
+               width:min(460px,100%);max-height:280px;overflow:auto;background:var(--white);
+               border:1px solid var(--line);border-radius:var(--radius-md);
+               box-shadow:0 10px 26px rgba(28,26,25,.16)}
+    .dc-g__sug[hidden]{display:none}
+    .dc-g__sug button{all:unset;cursor:pointer;display:block;width:100%;
+                      padding:.45rem .8rem;border-bottom:1px solid var(--line-soft);
+                      font-size:.86rem;box-sizing:border-box}
+    .dc-g__sug button:last-child{border-bottom:0}
+    .dc-g__sug button:hover,.dc-g__sug button:focus-visible{background:#f4faf9}
+    .dc-g__sug .dot{width:9px;height:9px;border-radius:50%;display:inline-block;
+                    margin-right:.45rem;vertical-align:0}
+    .dc-g__sug small{display:block;color:var(--mauve);font-size:.78rem;margin-left:1rem}
+    .dc-g__sug .none{padding:.6rem .8rem;color:var(--mauve);font-size:.85rem}
+
     /* 텍스트마이닝 — 장비 × 기업 관계망 */
     .dc-g{margin:.4rem 0 1.4rem}
     .dc-g__head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 1rem;margin-bottom:.2rem}
@@ -224,6 +250,17 @@
                 휠로 확대·축소, 끌어서 이동합니다.
                 위에서 기능을 고르면 그 기능의 장비만 남습니다.
               </p>
+              <div class="dc-g__find">
+                <label class="dc-g__q">
+                  <span class="dc-g__qi" aria-hidden="true">⌕</span>
+                  <input type="search" id="dc-g-q" autocomplete="off"
+                         placeholder="기업명 · 장비명으로 찾기  (예: 한화, 챔버, 시험기)">
+                </label>
+                <button type="button" class="chip" id="dc-g-qx" hidden>✕ 지우기</button>
+                <span class="fb-fig__src" id="dc-g-qn"></span>
+                <div class="dc-g__sug" id="dc-g-sug" hidden></div>
+              </div>
+
               <div class="dc-g__grid">
                 <div class="dc-g__box">
                   <canvas id="dc-g-canvas"></canvas>
@@ -324,7 +361,7 @@
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609051200" defer></script>
   <script src="assets/js/defense-cluster.js?v=202609091400" defer></script>
-  <script src="assets/js/defense-graph.js?v=202609091400" defer></script>
+  <script src="assets/js/defense-graph.js?v=202609091500" defer></script>
   <script src="assets/js/defense-cluster-network.js?v=202609091400" defer></script>
 </body>
 </html>

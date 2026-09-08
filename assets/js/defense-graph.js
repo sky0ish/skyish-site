@@ -23,6 +23,7 @@
   var nodes = [], links = [], byId = {};
   var view = { x: 0, y: 0, k: 1 };   // 밀고 당김
   var hover = null, picked = null, onlyKw = null;
+  var found = null;                  // 찾기에 걸린 점들 {id:1}
   var near = null;                   // 고른 점에 붙은 것들
 
   function esc(s) {
@@ -206,15 +207,24 @@
       return (a.kind === "co" ? 1 : 0) - (b.kind === "co" ? 1 : 0) || a.deg - b.deg;
     });
     order.forEach(function (d) {
-      var dim = focus && !(near && near[d.id]) && d.id !== focus.id;
+      var hitFind = found && found[d.id];
+      var dim = (focus && !(near && near[d.id]) && d.id !== focus.id) ||
+                (found && !hitFind);
       var r = rOf(d) * Math.max(0.75, Math.min(1.6, view.k));
-      ctx.globalAlpha = dim ? 0.18 : 1;
+      ctx.globalAlpha = dim ? 0.12 : 1;
       ctx.beginPath();
       ctx.arc(sx(d), sy(d), r, 0, Math.PI * 2);
       ctx.fillStyle = d.kind === "co" ? (colorOf[d.cat] || "#94a3b8") : EQ_COLOR;
       ctx.fill();
       if (d.kind === "co") {
         ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.stroke();
+      }
+      /* 찾은 점에는 테를 둘러 눈에 띄게 합니다 */
+      if (hitFind) {
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(sx(d), sy(d), r + 4, 0, Math.PI * 2);
+        ctx.lineWidth = 2; ctx.strokeStyle = "#1c1a19"; ctx.stroke();
       }
     });
 
@@ -226,6 +236,10 @@
     var big = nodes.slice().sort(function (a, b) { return b.deg - a.deg; })
                    .slice(0, view.k > 1.4 ? 40 : 16);
     var show = big.slice();
+    if (found) {
+      show = nodes.filter(function (d) { return found[d.id]; })
+                  .sort(function (a, b) { return b.deg - a.deg; }).slice(0, 30);
+    }
     if (focus) {
       show = nodes.filter(function (d) { return d.id === focus.id || (near && near[d.id]); })
                   .sort(function (a, b) { return b.deg - a.deg; }).slice(0, 26);
@@ -376,11 +390,138 @@
 
     var res = document.getElementById("dc-g-reset");
     if (res) res.addEventListener("click", function () {
-      picked = null; hover = null; setFocus(null); info(null); fit(); paint();
+      picked = null; hover = null; setFocus(null); info(null);
+      clearFind(); fit(); paint();
     });
     window.addEventListener("resize", function () {
       resize(); fit(); paint();
     });
+  }
+
+
+  /* ── 찾기 ────────────────────────────────────────────────
+     기업명·장비명으로 찾습니다. 띄어쓰기와 대소문자는 가리지 않습니다.
+     고르면 그 점으로 지도를 옮기고 이어진 것을 펴 보여 줍니다. */
+  function norm(s) { return String(s == null ? "" : s).replace(/\s+/g, "").toLowerCase(); }
+
+  function search(q) {
+    var k = norm(q);
+    if (k.length < 1) return [];
+    return nodes.filter(function (d) {
+      return norm(d.name).indexOf(k) >= 0 ||
+             (d.kind === "eq" && norm(d.site).indexOf(k) >= 0) ||
+             (d.kind === "co" && norm(d.rawCat || d.cat).indexOf(k) >= 0);
+    }).sort(function (a, b) {
+      /* 이름이 그 말로 시작하는 것을 먼저, 그다음 이어진 수가 많은 것 */
+      var sa = norm(a.name).indexOf(k) === 0 ? 0 : 1;
+      var sb = norm(b.name).indexOf(k) === 0 ? 0 : 1;
+      return sa - sb || b.deg - a.deg;
+    });
+  }
+
+  /** 그 점으로 옮겨 가 고릅니다 */
+  function goTo(d) {
+    if (!d) return;
+    view.k = Math.max(view.k, 1.8);
+    view.x = W / 2 - d.x * view.k;
+    view.y = H / 2 - d.y * view.k;
+    picked = d;
+    setFocus(d);
+    info(d);
+    paint();
+  }
+
+  function drawSug(list, q) {
+    var box = document.getElementById("dc-g-sug");
+    if (!box) return;
+    if (!q) { box.hidden = true; box.innerHTML = ""; return; }
+    box.hidden = false;
+    if (!list.length) {
+      box.innerHTML = '<p class="none">찾으시는 기업·장비가 없습니다.</p>';
+      return;
+    }
+    box.innerHTML = list.slice(0, 30).map(function (d, i) {
+      var col = d.kind === "co" ? (colorOf[d.cat] || "#94a3b8") : EQ_COLOR;
+      return '<button type="button" data-gi="' + i + '">' +
+        '<span class="dot" style="background:' + col + '"></span>' +
+        '<b>' + esc(d.name) + "</b>" +
+        "<small>" + (d.kind === "co"
+          ? esc(d.rawCat || d.cat) + (d.si ? " · " + esc(d.si) : "") +
+            " · 쓸 만한 장비 " + num(d.deg) + "대"
+          : esc(d.site) + " · 이 장비를 쓸 만한 기업 " + num(d.deg) + "개사") +
+        "</small></button>";
+    }).join("");
+    box.querySelectorAll("[data-gi]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var d = list[+b.dataset.gi];
+        box.hidden = true;
+        var inp = document.getElementById("dc-g-q");
+        if (inp) inp.value = d.name;
+        found = {}; found[d.id] = 1;
+        goTo(d);
+        markFind(1);
+      });
+    });
+  }
+
+  function markFind(n) {
+    var el = document.getElementById("dc-g-qn");
+    var x = document.getElementById("dc-g-qx");
+    if (el) el.textContent = found ? n + "개 찾음" : "";
+    if (x) x.hidden = !found;
+  }
+
+  function clearFind() {
+    found = null;
+    var inp = document.getElementById("dc-g-q");
+    if (inp) inp.value = "";
+    var box = document.getElementById("dc-g-sug");
+    if (box) { box.hidden = true; box.innerHTML = ""; }
+    markFind(0);
+    paint();
+  }
+
+  function wireFind() {
+    var inp = document.getElementById("dc-g-q");
+    if (!inp) return;
+    var last = [];
+    var run = function () {
+      var q = inp.value.trim();
+      if (!q) { clearFind(); return; }
+      last = search(q);
+      found = {};
+      last.forEach(function (d) { found[d.id] = 1; });
+      if (!last.length) found = null;
+      picked = null; setFocus(null); info(null);
+      drawSug(last, q);
+      markFind(last.length);
+      paint();
+    };
+    inp.addEventListener("input", run);
+    inp.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { clearFind(); inp.blur(); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (last.length) {
+          var box = document.getElementById("dc-g-sug");
+          if (box) box.hidden = true;
+          found = {}; found[last[0].id] = 1;
+          inp.value = last[0].name;
+          goTo(last[0]);
+          markFind(1);
+        }
+      }
+    });
+    inp.addEventListener("focus", function () {
+      if (inp.value.trim() && last.length) drawSug(last, inp.value.trim());
+    });
+    document.addEventListener("click", function (e) {
+      var box = document.getElementById("dc-g-sug");
+      if (!box || box.hidden) return;
+      if (!e.target.closest || !e.target.closest(".dc-g__find")) box.hidden = true;
+    });
+    var x = document.getElementById("dc-g-qx");
+    if (x) x.addEventListener("click", clearFind);
   }
 
   /* ── 밖에서 부르는 문 ───────────────────────────────────── */
@@ -393,7 +534,7 @@
       ctx = canvas.getContext("2d");
       resize();
       build(null);
-      count(); info(null); paint(); wire();
+      count(); info(null); paint(); wire(); wireFind();
       var b = document.getElementById("dc-busy6");
       if (b) b.hidden = true;
       return true;
@@ -404,6 +545,8 @@
       onlyKw = kwKey || null;
       picked = null; hover = null; near = null;
       build(onlyKw);
+      /* 찾아 둔 것이 이 기능에는 없을 수 있어 비웁니다 */
+      clearFind();
       count(); info(null); paint();
     },
   };
