@@ -30,6 +30,28 @@
     .dl-bar .n{color:#8b8280;font-variant-numeric:tabular-nums}
     .dl-bar .chip.active .n{color:rgba(255,255,255,.7)}
 
+    /* 가로 이동 바 — 화면에 붙어 다닙니다 */
+    .dl-xbar{position:sticky;top:112px;z-index:59;display:flex;align-items:center;gap:.4rem;
+             margin-bottom:.4rem}
+    .dl-xbar[hidden]{display:none}
+    .dl-xgo{all:unset;cursor:pointer;flex:none;width:26px;height:20px;display:grid;
+            place-items:center;border:1px solid var(--line);border-radius:6px;
+            background:var(--white);color:#6b6360;font-size:.66rem;box-shadow:var(--shadow-sm)}
+    .dl-xgo:hover{border-color:var(--teal);color:var(--teal-text)}
+    .dl-xgo:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+    .dl-xgo[disabled]{opacity:.35;cursor:default}
+    .dl-xtrack{flex:1;overflow-x:auto;overflow-y:hidden;height:16px;
+               background:var(--white);border:1px solid var(--line);
+               border-radius:8px;box-shadow:var(--shadow-sm)}
+    .dl-xtrack div{height:1px}
+    /* 바가 늘 보이게 — 맥에서는 기본으로 숨습니다 */
+    .dl-xtrack::-webkit-scrollbar{height:14px}
+    .dl-xtrack::-webkit-scrollbar-thumb{background:#c3bcb8;border-radius:7px;
+                                        border:3px solid var(--white)}
+    .dl-xtrack::-webkit-scrollbar-thumb:hover{background:var(--teal)}
+    .dl-xtrack::-webkit-scrollbar-track{background:transparent}
+    .dl-xtrack{scrollbar-width:thin}
+
     .dl-scroll{overflow:auto;max-height:calc(100vh - 210px);
                border:1px solid var(--line);border-radius:var(--radius-md);background:var(--white)}
     .dl-table{border-collapse:separate;border-spacing:0;font-size:.83rem;width:max-content;min-width:100%}
@@ -89,6 +111,14 @@
           <span class="fb-fig__src" id="dl-count"></span>
         </div>
 
+        <!-- 가로 이동 — 표가 스무 칸이 넘어 오른쪽이 화면 밖으로 나갑니다.
+             표 안쪽 스크롤바는 표 맨 아래에 있어 손이 안 닿아, 위에 붙여 둡니다. -->
+        <div class="dl-xbar" id="dl-xbar" hidden>
+          <button type="button" class="dl-xgo" id="dl-xl" data-x="l" title="왼쪽 끝으로">◀</button>
+          <div class="dl-xtrack" id="dl-xtrack"><div id="dl-xin"></div></div>
+          <button type="button" class="dl-xgo" id="dl-xr" data-x="r" title="오른쪽 끝으로">▶</button>
+        </div>
+
         <div class="dl-scroll">
           <table class="dl-table">
             <thead><tr id="dl-head"></tr></thead>
@@ -108,6 +138,6 @@
   <div id="site-footer"></div>
 
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-companies.js?v=202609091300" defer></script>
+  <script src="assets/js/defense-companies.js?v=202609091500" defer></script>
 </body>
 </html>

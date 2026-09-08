@@ -117,6 +117,8 @@
       b.classList.toggle("active", on);
       b.setAttribute("aria-pressed", on ? "true" : "false");
     });
+    /* 줄이 바뀌면 칸 폭도 바뀝니다 — 바 길이를 다시 맞춥니다 */
+    if (xbarSync) xbarSync();
   }
 
   function tabs() {
@@ -171,6 +173,77 @@
       "위 안내를 봐 주세요.</td></tr>";
   }
 
+  /* ── 가로 이동 바 ──────────────────────────────────────────
+     표가 스무 칸이 넘어 오른쪽이 화면 밖으로 나갑니다. 표 안쪽 스크롤바는
+     표 맨 아래에 있어서, 긴 표에서는 끝까지 내려가야 손이 닿습니다.
+     그래서 화면에 붙어 다니는 바를 따로 두고 양쪽을 맞춰 줍니다. */
+  var xbarSync = null;
+
+  function xbar() {
+    var wrap = document.querySelector(".dl-scroll");
+    var bar = document.getElementById("dl-xbar");
+    var track = document.getElementById("dl-xtrack");
+    var inner = document.getElementById("dl-xin");
+    if (!wrap || !bar || !track || !inner) return;
+    var tbl = wrap.querySelector("table");
+
+    var maxX = function () {
+      return tbl ? Math.max(0, tbl.scrollWidth - wrap.clientWidth) : 0;
+    };
+    var ends = function () {
+      var l = document.getElementById("dl-xl");
+      var r = document.getElementById("dl-xr");
+      var max = maxX();
+      if (l) l.disabled = wrap.scrollLeft <= 1;
+      if (r) r.disabled = wrap.scrollLeft >= max - 1;
+    };
+    var sync = function () {
+      var over = maxX();
+      bar.hidden = over <= 4;                    // 넘치지 않으면 바를 감춥니다
+      if (bar.hidden) return;
+      inner.style.width = tbl.scrollWidth + "px";
+      if (Math.abs(track.scrollLeft - wrap.scrollLeft) > 1) track.scrollLeft = wrap.scrollLeft;
+      ends();
+    };
+
+    /* 둘 중 어느 쪽을 움직여도 다른 쪽이 따라옵니다.
+       서로 밀어대며 떨지 않도록 「지금 누가 움직이는 중인가」 를 표시해 둡니다. */
+    var busy = false;
+    track.addEventListener("scroll", function () {
+      if (busy) return;
+      busy = true; wrap.scrollLeft = track.scrollLeft; ends(); busy = false;
+    });
+    wrap.addEventListener("scroll", function () {
+      if (busy) return;
+      busy = true; track.scrollLeft = wrap.scrollLeft; ends(); busy = false;
+    });
+
+    /* 단추는 바 전체에 한 번만 걸어 둡니다 — 표를 다시 그려도 살아 있습니다.
+       scrollTo({behavior:"smooth"}) 는 이 자리에서 듣지 않는 일이 있어
+       값을 바로 넣습니다. 확실히 도는 쪽을 씁니다. */
+    bar.addEventListener("click", function (e) {
+      var b = e.target.closest ? e.target.closest("[data-x]") : null;
+      if (!b) return;
+      var x = b.dataset.x === "r" ? maxX() : 0;
+      busy = true;
+      wrap.scrollLeft = x;
+      track.scrollLeft = x;
+      busy = false;
+      ends();
+    });
+
+    /* Shift+휠로도 가로로 갑니다 — 손이 편합니다 */
+    wrap.addEventListener("wheel", function (e) {
+      if (!e.shiftKey) return;
+      e.preventDefault();
+      wrap.scrollLeft += e.deltaY;
+    }, { passive: false });
+
+    window.addEventListener("resize", sync);
+    xbarSync = sync;
+    sync();
+  }
+
   function start() {
     if (!document.getElementById("dl-body")) return;
     import("../../auth/auth.js").then(function (m) {
@@ -180,6 +253,7 @@
           document.getElementById("dl-note").textContent = j.meta.note;
           tabs();
           draw();
+          xbar();
           document.getElementById("dl-q").addEventListener("input", draw);
         })
         .catch(function (err) { console.error(err); why(m, err); });

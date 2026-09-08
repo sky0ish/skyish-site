@@ -30,12 +30,40 @@ XLSX_CANDIDATES = [
 # 사람이 손으로 채우거나 조사로 채운 보강분 (build_defense_fill.py 가 만듭니다)
 FILL = os.path.join(HERE, 'companies_fill.json')
 
+# 전국 명단 — 수도권 표에 없는 **경기도 밖** 기업만 골라 보탭니다.
+#   「방산기업336개는 전국이야. 여기서는 경기도외 기타자료를 추출해서
+#     지금 만드는 표를 보강해줘. 다른 지역에 겹치지 않는 기업들만 추가해서 넣어주면되」
+NATION = os.path.join(OUTDIR, '방산기업_336.xlsx')
+
 # 절대 내보내지 않는 칸 — 개인정보
 DROP = {'대표 이메일', '대표 번호', '담당자', '담당자 메일', '담당자 전화번호',
         '분담', '방문', 'Unnamed: 0'}
 
-# 시트 이름 → 화면에 쓸 지역
+# 시트 이름 → 화면에 쓸 지역 (본사 소재지가 비었을 때만 씁니다)
 REGION = {'경기도_134': '경기', '인천_11': '인천', '서울_81': '서울', '기타_22': '기타'}
+
+
+def region_of(where, sheet):
+    """지역은 **본사 소재지 기준**입니다.
+
+    원본 엑셀은 시트로 나뉘어 있지만 시트와 실제 소재지가 어긋난 곳이 많습니다 —
+    「기타」 시트에 경기도 기업 다섯 곳(군포·성남·안양·용인·부천)이 들어 있었고,
+    「경기도」 시트에는 서울 7곳·경남 2곳·경북 1곳·대전 1곳·인천 1곳이 섞여 있었습니다.
+    그래서 시트가 아니라 주소를 보고 가릅니다.
+
+    「충청남도 천안시(본사) 서울시 광진구(사무소)」 처럼 둘이 적힌 곳은
+    **(본사)** 라고 적힌 쪽을 봅니다.
+    """
+    w = clean(where)
+    if not w:
+        return REGION.get(sheet, '기타')
+    i = w.find('(본사)')
+    head = (w[:i + 4] if i >= 0 else w).split()[0]
+    head = head.split('(')[0]
+    for key in ('경기', '서울', '인천'):
+        if head.startswith(key):
+            return key
+    return '기타'
 
 # 원본 칸 이름 → 내보낼 이름 (시트마다 이름이 조금씩 달라 하나로 맞춥니다)
 RENAME = {
@@ -91,6 +119,16 @@ COLS = [
 FILLABLE = ['field', 'rnd', 'tech']
 
 
+def samename(v):
+    """이름을 맞대 볼 열쇠 — 띄어쓰기·㈜·꼬리 괄호를 떼고 봅니다.
+       「덕산넵코어스㈜ (용인)」 과 「덕산넵코어스」 를 같은 곳으로 보아야
+       같은 기업이 두 줄로 들어오지 않습니다."""
+    t = clean(v).replace('㈜', '').replace('(주)', '').replace('주식회사', '')
+    while t.endswith(')') and '(' in t:                 # 꼬리에 붙은 (용인) 같은 것
+        t = t[:t.rfind('(')].strip()
+    return t.replace(' ', '').lower()
+
+
 def clean(v):
     if v is None or (isinstance(v, float) and math.isnan(v)):
         return ''
@@ -117,14 +155,13 @@ def main():
     x = pd.ExcelFile(src)
     rows, dropped = [], set()
     for sheet in x.sheet_names:
-        region = REGION.get(sheet, sheet)
         d = x.parse(sheet)
         d = d[d['기업명'].notna()]
         for c in d.columns:
             if c in DROP or str(c).startswith('Unnamed'):
                 dropped.add(str(c))
         for _, r in d.iterrows():
-            row = {'region': region}
+            row = {'region': region_of(r.get('본사 소재지 (시/군)'), sheet)}
             for src_col, key in RENAME.items():
                 if src_col in d.columns and not row.get(key):
                     row[key] = clean(r.get(src_col))
@@ -132,15 +169,39 @@ def main():
                 row.setdefault(k, '')
             rows.append(row)
 
-    # 같은 기업이 여러 시트에 겹쳐 들어온 경우 한 번만
-    seen, uniq = set(), []
+    # 같은 기업이 여러 시트에 겹쳐 들어온 경우 한 줄로 합칩니다.
+    #   시트가 달라 지역이 다르게 붙은 곳이 있습니다 — 빅텍㈜(경기 성남 / 인천 연수),
+    #   솔빛시스템(경기 안양 / 서울 송파)처럼 본사와 지사가 따로 적힌 것들입니다.
+    #   채워진 칸이 많은 쪽을 바탕으로 두고 빈 칸을 서로 채웁니다.
+    #   주소는 둘 다 남겨 어느 쪽이 본사인지 보고 판단하실 수 있게 합니다.
+    def 채움(r):
+        return sum(1 for k, _ in COLS if str(r.get(k) or '').strip())
+
+    best, order = {}, []
     for r in rows:
-        k = (r['name'], r['region'])
-        if k in seen:
+        k = samename(r['name'])
+        if k not in best:
+            best[k] = r
+            order.append(k)
             continue
-        seen.add(k)
-        uniq.append(r)
-    rows = uniq
+        a, b = best[k], r
+        # 「(본사」 라고 적힌 줄이 있으면 그쪽이 바탕입니다 — 지역이 그 줄을 따릅니다
+        ha = '본사' in clean(a.get('where'))
+        hb = '본사' in clean(b.get('where'))
+        if (hb and not ha) or (hb == ha and 채움(b) > 채움(a)):
+            a, b = b, a
+        for f, _ in COLS:
+            if not str(a.get(f) or '').strip() and str(b.get(f) or '').strip():
+                a[f] = b[f]
+        # 주소는 둘 다 남기되 같은 것을 두 번 적지 않습니다
+        part = []
+        for w in clean(a.get('where')).split(' / ') + clean(b.get('where')).split(' / '):
+            w = w.strip()
+            if w and w not in part:
+                part.append(w)
+        a['where'] = ' / '.join(part)
+        best[k] = a
+    rows = [best[k] for k in order]
 
     # ── 빈 칸 채우기 ────────────────────────────────────────────
     nfill = {k: 0 for k in FILLABLE}
@@ -157,6 +218,40 @@ def main():
         if src_mark:
             r['_fill'] = src_mark
 
+    # ── 전국 명단에서 경기도 밖 기업 보태기 ──────────────────────
+    n_add, n_gg_skip = 0, 0
+    if os.path.exists(NATION):
+        have = {samename(r['name']) for r in rows}
+        nd = pd.read_excel(NATION)
+        nd = nd[nd['기업명'].notna()]
+        for _, r in nd.iterrows():
+            reg = region_of(r.get('본사 소재지 (시/군)'), '')
+            if reg == '경기':
+                if samename(r['기업명']) not in have:
+                    n_gg_skip += 1          # 경기도 것은 이번에 안 넣습니다
+                continue
+            key = samename(r['기업명'])
+            if not key or key in have:
+                continue
+            have.add(key)
+            row = {'region': reg}
+            for src_col, k in RENAME.items():
+                if src_col in nd.columns and not row.get(k):
+                    row[k] = clean(r.get(src_col))
+            for k, _lab in COLS:
+                row.setdefault(k, '')
+            rows.append(row)
+            n_add += 1
+        print('전국 명단(%s)에서 경기도 밖 %d개사를 보탰습니다.'
+              % (os.path.basename(NATION), n_add), flush=True)
+        if n_gg_skip:
+            print('  (경기도인데 표에 없는 %d개사는 말씀대로 넣지 않았습니다)'
+                  % n_gg_skip, flush=True)
+
+    # 이름순으로 다시 세워 번호를 붙입니다 — 지역 안에서 가나다순
+    rows.sort(key=lambda r: (['경기', '서울', '인천', '기타'].index(r['region'])
+                             if r['region'] in ('경기', '서울', '인천', '기타') else 9,
+                             r['name']))
     for i, r in enumerate(rows, 1):
         r['no'] = i
 
