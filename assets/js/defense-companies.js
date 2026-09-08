@@ -87,6 +87,7 @@
   function cell(r, c) {
     var v = val(r, c.key);
     var filled = r._fill && r._fill[c.key];
+    var mine = r._mine && r._mine[c.key];
     var cls = LONG[c.key] ? "long" : (MID[c.key] ? "mid" : "");
     var inner;
     if (!v) inner = '<span class="dl-empty">–</span>';
@@ -95,11 +96,13 @@
       inner = '<a href="' + esc(v) + '" target="_blank" rel="noopener">홈페이지 →</a>';
     else if (v === "O") inner = '<span class="dl-yes">O</span>';
     else inner = esc(v);
-    if (v && filled) {
+    if (v && mine) {
+      inner = '<span class="dl-mine" title="손으로 고친 칸입니다.">' + inner + "</span>";
+    } else if (v && filled) {
       inner = '<span class="dl-fill" title="원본 표에 비어 있던 칸입니다 — ' +
               esc(filled) + '. 확인 뒤 쓰세요.">' + inner + "</span>";
     }
-    return '<td class="' + cls + '">' + inner + "</td>";
+    return '<td class="' + cls + '" data-k="' + esc(c.key) + '">' + inner + "</td>";
   }
 
   function draw() {
@@ -108,7 +111,8 @@
     cols();
     var list = rows();
     document.getElementById("dl-body").innerHTML = list.map(function (r) {
-      return "<tr>" + doc.cols.map(function (c) { return cell(r, c); }).join("") + "</tr>";
+      return '<tr data-i="' + doc.rows.indexOf(r) + '">' +
+             doc.cols.map(function (c) { return cell(r, c); }).join("") + "</tr>";
     }).join("") ||
       '<tr><td colspan="' + doc.cols.length + '" style="padding:2rem;text-align:center;color:#8b8280">' +
       "찾으시는 기업이 없습니다.</td></tr>";
@@ -184,6 +188,246 @@
   }
 
 
+
+
+  /* ══════════════════════════════════════════════════════════
+     고치기 · 더하기 — 관리자로 들어오셨을 때만
+
+       「내 아이디로 로그인햇을 때 칸을 추가해서 내용을 수정하거나
+         더 넣을수도 있게해줘」
+
+     원본 엑셀은 건드리지 않습니다. 고치신 것은 같은 보관함의
+     defense/companies-edits.json 에 **따로** 담고, 볼 때마다 원본 위에 얹습니다.
+     그래서 엑셀로 companies.json 을 새로 만들어 올려도 고치신 것은 그대로 남습니다.
+     원본과 고친 것이 다르면 **고치신 쪽이 이깁니다.**
+     ══════════════════════════════════════════════════════════ */
+  var EDIT_PATH = "defense/companies-edits.json";
+  var sb = null, canEdit = false, editing = false;
+  var over = { edits: {}, added: [] };      // 원본 위에 얹는 것
+  var dirty = false;
+
+  /** 이름을 맞대 볼 열쇠 — 파이썬 쪽 samename() 과 같은 규칙입니다 */
+  function keyOf(name) {
+    var t2 = String(name == null ? "" : name).trim()
+      .replace(/㈜/g, "").replace(/\(주\)/g, "").replace(/주식회사/g, "");
+    while (/\)$/.test(t2) && t2.indexOf("(") >= 0) {
+      t2 = t2.slice(0, t2.lastIndexOf("(")).trim();
+    }
+    return t2.replace(/\s+/g, "").toLowerCase();
+  }
+
+  function emsg(text, kind) {
+    var el = document.getElementById("dl-editmsg");
+    if (!el) return;
+    el.hidden = !text;
+    el.className = "dl-editmsg" + (kind ? " " + kind : "");
+    el.textContent = text || "";
+  }
+
+  /** 원본 줄 위에 고치신 것을 얹습니다 */
+  function applyOver() {
+    var add = (over.added || []).map(function (r) {
+      var row = { _new: true };
+      doc.cols.forEach(function (c) { row[c.key] = r[c.key] || ""; });
+      return row;
+    });
+    doc.rows = doc.rows.filter(function (r) { return !r._new; }).concat(add);
+    doc.rows.forEach(function (r) {
+      var e = (over.edits || {})[keyOf(r.name)];
+      if (!e) { delete r._mine; return; }
+      var mine = {};
+      Object.keys(e).forEach(function (f) {
+        if (f === "_at") return;
+        r[f] = e[f];
+        mine[f] = 1;
+      });
+      r._mine = mine;
+    });
+    /* 지역은 본사 소재지를 따릅니다 — 주소를 고치시면 탭도 따라 움직입니다 */
+    doc.rows.forEach(function (r) {
+      var w = String(r.where || "").trim();
+      if (!w) return;
+      var i = w.indexOf("(본사)");
+      var head = (i >= 0 ? w.slice(0, i + 4) : w).split(/\s+/)[0].split("(")[0];
+      var got = ["경기", "서울", "인천"].filter(function (k) {
+        return head.indexOf(k) === 0;
+      })[0];
+      r.region = got || "기타";
+    });
+    doc.meta.byRegion = {};
+    doc.rows.forEach(function (r) {
+      doc.meta.byRegion[r.region] = (doc.meta.byRegion[r.region] || 0) + 1;
+    });
+  }
+
+  async function loadOver(m) {
+    try {
+      var got = await m.loadAnalysisJson(EDIT_PATH);
+      if (got && typeof got === "object") {
+        over.edits = got.edits || {};
+        over.added = got.added || [];
+      }
+    } catch (e) { /* 아직 고친 것이 없으면 없는 것이 맞습니다 */ }
+  }
+
+  /** 담기 — 읽어서 합친 뒤 올립니다. 남이 고친 것을 덮지 않으려는 것입니다. */
+  async function saveOver() {
+    if (!sb) { emsg("보관함을 열 수 없습니다.", "err"); return false; }
+    emsg("담는 중…");
+    try {
+      /* 올리기 직전에 다시 읽어 남의 손질과 합칩니다 */
+      var cur = { edits: {}, added: [] };
+      try {
+        var r0 = await sb.storage.from("analysis").download(EDIT_PATH);
+        if (r0.data) {
+          var j = JSON.parse(await r0.data.text());
+          cur.edits = j.edits || {};
+          cur.added = j.added || [];
+        }
+      } catch (e) {}
+      Object.keys(over.edits).forEach(function (k) { cur.edits[k] = over.edits[k]; });
+      var 있는이름 = {};
+      cur.added.forEach(function (a) { 있는이름[keyOf(a.name)] = a; });
+      over.added.forEach(function (a) { 있는이름[keyOf(a.name)] = a; });
+      cur.added = Object.keys(있는이름).map(function (k) { return 있는이름[k]; });
+      cur.at = new Date().toISOString();
+
+      var body = new Blob([JSON.stringify(cur, null, 1)], { type: "application/json" });
+      var up = await sb.storage.from("analysis").upload(EDIT_PATH, body, {
+        upsert: true, cacheControl: "0", contentType: "application/json",
+      });
+      if (up.error) throw up.error;
+      over.edits = cur.edits; over.added = cur.added;
+      dirty = false;
+      emsg("담았습니다 — 고친 칸 " + Object.keys(cur.edits).length +
+           "개사, 더한 기업 " + cur.added.length + "개사.", "ok");
+      return true;
+    } catch (e) {
+      emsg("담지 못했습니다 — " + String((e && e.message) || e), "err");
+      return false;
+    }
+  }
+
+  /** 칸 하나를 고칠 수 있게 엽니다 */
+  function openCell(td) {
+    if (!editing || td.dataset.k === "no" || td.dataset.k === "region") return;
+    if (td.getAttribute("contenteditable") === "true") return;
+    var tr = td.closest("tr");
+    var row = doc.rows[+tr.dataset.i];
+    if (!row) return;
+    var was = String(row[td.dataset.k] || "");
+    td.textContent = was;
+    td.setAttribute("contenteditable", "true");
+    td.focus();
+    /* 커서를 글 끝에 둡니다 */
+    var sel = window.getSelection(), rg = document.createRange();
+    rg.selectNodeContents(td); rg.collapse(false);
+    sel.removeAllRanges(); sel.addRange(rg);
+
+    var done = function (keep) {
+      td.removeAttribute("contenteditable");
+      td.removeEventListener("blur", onBlur);
+      td.removeEventListener("keydown", onKey);
+      var now = td.textContent.trim();
+      if (!keep || now === was) { draw(); return; }
+      var k = keyOf(row.name);
+      if (row._new) {
+        var a = (over.added || []).filter(function (x) {
+          return keyOf(x.name) === k;
+        })[0];
+        if (a) a[td.dataset.k] = now;
+      } else {
+        over.edits[k] = over.edits[k] || {};
+        over.edits[k][td.dataset.k] = now;
+      }
+      row[td.dataset.k] = now;
+      dirty = true;
+      applyOver();
+      tabs();
+      draw();
+      emsg("고쳤습니다 — 「담기」 를 눌러야 남습니다.", "");
+    };
+    var onBlur = function () { done(true); };
+    var onKey = function (e) {
+      if (e.key === "Escape") { e.preventDefault(); done(false); }
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); td.blur(); }
+    };
+    td.addEventListener("blur", onBlur);
+    td.addEventListener("keydown", onKey);
+  }
+
+  function setEditing(on) {
+    editing = !!on;
+    document.body.classList.toggle("dl-editing", editing);
+    var b = document.getElementById("dl-editmode");
+    var a = document.getElementById("dl-add");
+    if (b) {
+      b.classList.toggle("on", editing);
+      b.textContent = editing ? "✓ 담기" : "✎ 고치기";
+      b.title = editing ? "고친 것을 보관함에 담습니다" : "칸을 눌러 고칠 수 있게 합니다";
+    }
+    if (a) a.hidden = !editing;
+    emsg(editing
+      ? "칸을 눌러 고치세요. Enter 로 마치고 Esc 로 되돌립니다. " +
+        "다 하시면 「담기」 를 눌러 주세요 — 그래야 남습니다."
+      : "", "");
+  }
+
+  function addRow() {
+    var name = prompt("더할 기업 이름을 적어 주세요.");
+    if (!name || !name.trim()) return;
+    name = name.trim();
+    if (doc.rows.some(function (r) { return keyOf(r.name) === keyOf(name); })) {
+      emsg("이미 있는 기업입니다: " + name, "err");
+      return;
+    }
+    var row = { name: name };
+    doc.cols.forEach(function (c) { row[c.key] = row[c.key] || ""; });
+    row.where = (prompt("본사 소재지 (예: 경기도 성남시)", "") || "").trim();
+    over.added = (over.added || []).concat([row]);
+    dirty = true;
+    applyOver();
+    tabs();
+    /* 새로 더한 기업이 바로 보이게 이름으로 찾아 둡니다 */
+    var q2 = document.getElementById("dl-q");
+    if (q2) q2.value = name;
+    region = "all";
+    draw();
+    emsg("더했습니다 — 칸을 눌러 내용을 채우신 뒤 「담기」 를 눌러 주세요.", "ok");
+  }
+
+  function wireEdit() {
+    var b = document.getElementById("dl-editmode");
+    var a = document.getElementById("dl-add");
+    if (!b) return;
+    b.hidden = false;
+    b.addEventListener("click", async function () {
+      if (!editing) { setEditing(true); return; }
+      if (dirty) {
+        b.disabled = true;
+        var ok = await saveOver();
+        b.disabled = false;
+        /* 못 담았으면 고치기를 끄지 않습니다 — 끄면 고치신 것이 조용히 사라집니다 */
+        if (!ok) return;
+      }
+      var was = document.getElementById("dl-editmsg");
+      var keep = was ? was.textContent : "";
+      setEditing(false);
+      if (keep) emsg(keep, "ok");
+    });
+    if (a) a.addEventListener("click", addRow);
+    var body = document.getElementById("dl-body");
+    if (body) body.addEventListener("click", function (e) {
+      var td = e.target.closest ? e.target.closest("td") : null;
+      if (td) openCell(td);
+    });
+    /* 담지 않고 나가시려 하면 붙잡습니다 */
+    window.addEventListener("beforeunload", function (e) {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = "";
+    });
+  }
 
   /* ── 내려받기 ──────────────────────────────────────────────
      지금 화면에 보이는 그대로(지역 탭·찾기말·줄 세운 차례) 내보냅니다.
@@ -396,10 +640,14 @@
   function start() {
     if (!document.getElementById("dl-body")) return;
     import("../../auth/auth.js").then(function (m) {
+      sb = m.sb;
       return m.loadAnalysisJson("defense/companies.json")
-        .then(function (j) {
+        .then(async function (j) {
           doc = j;
           document.getElementById("dl-note").textContent = j.meta.note;
+          /* 고치신 것을 원본 위에 얹습니다 */
+          await loadOver(m);
+          applyOver();
           loadW();
           tabs();
           draw();
@@ -408,6 +656,15 @@
           var sv = document.getElementById("dl-save");
           if (sv) sv.addEventListener("click", save);
           document.getElementById("dl-q").addEventListener("input", draw);
+          /* 관리자면 고치기·더하기를 켭니다 */
+          try {
+            var me = await m.myProfile();
+            var u = await m.currentUser();
+            var OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
+            canEdit = !!(me && me.is_admin) ||
+              OWNERS.indexOf((((u || {}).email) || "").toLowerCase()) >= 0;
+            if (canEdit) wireEdit();
+          } catch (e) { /* 못 알아보면 그냥 보기만 합니다 */ }
         })
         .catch(function (err) { console.error(err); why(m, err); });
     }).catch(function (err) {

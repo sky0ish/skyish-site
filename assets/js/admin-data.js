@@ -22,6 +22,7 @@ const WHERE = {
   "network.json":   { dir: "defense", what: "방산 — 네트워크와 장비 키워드" },
   "companies.json": { dir: "defense", what: "방산 — 수도권 기업 명단" },
   "equip-map.png":  { dir: "defense", what: "방산 — 연구장비 시군 분포 그림" },
+  "companies-edits.json": { dir: "defense", what: "방산 — 화면에서 손으로 고친 것" },
   "flood.json":     { dir: "flood",   what: "침수 — 지하공간 자료" },
 };
 const DIRS = [...new Set(Object.values(WHERE).map((x) => x.dir))];

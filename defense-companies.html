@@ -79,6 +79,26 @@
     .dl-back:hover{border-color:var(--ink);background:var(--ink);color:#fff}
     .dl-back:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 
+    /* 고치기 — 관리자만 */
+    .dl-edit{all:unset;cursor:pointer;flex:none;white-space:nowrap;font-size:.82rem;
+             color:var(--mauve);background:var(--white);border:1px solid var(--line);
+             border-radius:var(--radius-sm);padding:.3rem .7rem;box-shadow:var(--shadow-sm)}
+    .dl-edit:hover{border-color:var(--teal);color:var(--teal-text)}
+    .dl-edit:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+    .dl-edit.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+    body.dl-editing .dl-table td{cursor:text}
+    body.dl-editing .dl-table tbody td:hover{outline:1px dashed var(--teal);outline-offset:-1px}
+    .dl-table td[contenteditable="true"]{outline:2px solid var(--teal);outline-offset:-2px;
+                                         background:#f4faf9;white-space:pre-wrap}
+    /* 손으로 고친 칸 — 조사로 채운 칸(점선)과 구별되게 실선으로 */
+    .dl-mine{border-bottom:2px solid var(--teal)}
+    .dl-mine::after{content:"✎";font-size:.7em;color:var(--teal);vertical-align:super;
+                    margin-left:.15em}
+    .dl-editmsg{margin:.6rem 0 0;font-size:.86rem;line-height:1.8;white-space:pre-wrap}
+    .dl-editmsg.ok{color:var(--teal-text)}
+    .dl-editmsg.err{color:#8e3b2c}
+    .dl-editmsg[hidden]{display:none}
+
     .dl-save{all:unset;cursor:pointer;flex:none;margin-left:auto;white-space:nowrap;
              font-size:.82rem;color:var(--teal-text);background:var(--white);
              border:1px solid var(--teal);border-radius:var(--radius-sm);
@@ -144,6 +164,9 @@
             <span id="dl-tabs"></span>
             <span class="fb-fig__src" id="dl-count"></span>
             <button type="button" class="dl-save" id="dl-save">⤓ 엑셀로 내려받기</button>
+            <!-- 아래 둘은 관리자로 들어오셨을 때만 보입니다 -->
+            <button type="button" class="dl-edit" id="dl-editmode" hidden>✎ 고치기</button>
+            <button type="button" class="dl-edit" id="dl-add" hidden>＋ 기업 추가</button>
           </div>
 
           <!-- 표가 스무 칸이 넘어 오른쪽이 화면 밖으로 나갑니다.
@@ -164,6 +187,8 @@
             <tbody id="dl-body"></tbody>
           </table>
         </div>
+        <p class="dl-editmsg" id="dl-editmsg" hidden></p>
+
         <p class="placeholder-note" lang="ko" style="margin-top:1.2rem">
           ✎ 대표·담당자 연락처는 이 화면에 담지 않았습니다.
           <span class="dl-fill">이렇게 표시된 칸</span>은 원본 표에 비어 있던 것을
@@ -177,6 +202,6 @@
   <div id="site-footer"></div>
 
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-companies.js?v=202609091900" defer></script>
+  <script src="assets/js/defense-companies.js?v=202609092000" defer></script>
 </body>
 </html>
