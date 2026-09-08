@@ -252,32 +252,35 @@
       "<dt>지오코딩</dt><dd>카카오·네이버 주소 검색 결과(도로명 우선, 실패 시 지번)</dd>";
   }
 
-  /* ---------- ② 그려 둔 그림 ----------
-     이 그림도 다른 방산 자료와 같이 비공개 보관함(analysis)에 둡니다.
+  /* ---------- ② 「원본 그림 보기」 고리 ----------
+     ② 는 이제 확대되는 파이 지도입니다. 파이썬이 그린 원본 그림(시군구·읍면동
+     경계까지 담긴 것)은 그 아래 고리로 엽니다.
+     이 그림도 다른 방산 자료와 같이 비공개 보관함(analysis)에 둡니다 —
      assets/img/ 에 두면 주소만 알면 로그인 없이도 열립니다. */
   function 그림(m) {
-    var img = document.getElementById("dc-shot-img");
     var a = document.getElementById("dc-shot-a");
-    var cap = document.getElementById("dc-shot-cap");
-    if (!img) return;
+    var cap = document.getElementById("dc-shot-cap");   // 지금은 없습니다
+    if (!a && !cap) return;
+    var 안됨 = function (why) {
+      if (cap) cap.textContent = why;
+      else if (a) a.remove();          // 못 여는 고리는 아예 감춥니다
+    };
     /* 네 시간짜리 주소 — 로그인한 분에게만 나옵니다 */
     var box = m.sb && m.sb.storage && m.sb.storage.from("analysis");
     if (!box || typeof box.createSignedUrl !== "function") {
-      cap.textContent = "그림을 불러오지 못했습니다 — 보관함을 열 수 없습니다.";
+      안됨("그림을 불러오지 못했습니다 — 보관함을 열 수 없습니다.");
       return;
     }
     box.createSignedUrl("defense/equip-map.png", 60 * 60 * 4)
       .then(function (r) {
         if (r.error || !r.data) throw (r.error || new Error("주소를 못 받았습니다"));
-        img.src = r.data.signedUrl;
-        a.href = r.data.signedUrl;
-        cap.textContent = "2025 경기도 연구장비 중 방위산업 관련 " +
+        if (a) a.href = r.data.signedUrl;
+        if (cap) cap.textContent = "2025 경기도 연구장비 중 방위산업 관련 " +
           "(활용분야·제조사 기준 추출) · 시군구 경계 31 · 읍면동 경계 562";
       })
       .catch(function (e) {
-        cap.textContent = "그림을 불러오지 못했습니다 — analysis 보관함의 " +
-          "defense 폴더에 equip-map.png 를 올려 주세요. (" +
-          String((e && e.message) || e) + ")";
+        안됨("그림을 불러오지 못했습니다 — analysis 보관함의 defense 폴더에 " +
+             "equip-map.png 를 올려 주세요. (" + String((e && e.message) || e) + ")");
       });
   }
 

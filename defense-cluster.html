@@ -61,7 +61,25 @@
     .dc-shot img:not([src]){min-height:320px;background:var(--paper-2)}
     .dc-shot figcaption{padding:.6rem .9rem;font-size:.82rem;color:var(--mauve);
                         border-top:1px solid var(--line-soft)}
-    .dc-shot__zoom{color:var(--mauve)}
+
+    /* 텍스트마이닝 — 장비 × 기업 관계망 */
+    .dc-g{margin:.4rem 0 1.4rem}
+    .dc-g__head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 1rem;margin-bottom:.2rem}
+    .dc-g__head h4{margin:0;font-size:.98rem;font-family:var(--font-body);font-weight:700;
+                   text-transform:none;letter-spacing:0}
+    .dc-g__head .chip{font-size:.78rem;padding:.24rem .6rem;cursor:pointer;margin-left:auto}
+    .dc-g__grid{display:grid;gap:1rem;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr)}
+    @media (max-width:900px){.dc-g__grid{grid-template-columns:minmax(0,1fr)}}
+    .dc-g__box{position:relative;height:min(62vh,620px);min-height:380px;
+               border:1px solid var(--line);border-radius:var(--radius-md);
+               background:#faf8f6;overflow:hidden;box-shadow:var(--shadow-sm)}
+    .dc-g__box canvas{display:block;cursor:grab;touch-action:none}
+
+    /* ② 파이 지도 — 조각난 원을 divIcon 으로 그립니다 */
+    .dc-pie{background:none;border:0}
+    .dc-pie svg{display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+    .dc-legend-both .pie{display:inline-block;width:12px;height:12px;border-radius:50%;
+                         margin-right:.45rem;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}
 
     /* 시군별 표 — 머리글을 눌러 차례를 바꿉니다 */
     .fb-sort{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem;
@@ -140,16 +158,24 @@
           </div>
           <p class="fb-fig__desc">
             원의 넓이가 그 지점의 <strong>방산 관련 장비 수</strong>, 파이 조각이
-            <strong>시험 유형별 구성비</strong>입니다. 안산시가 100건으로 가장 많습니다.
-            <span class="dc-shot__zoom">그림을 누르면 크게 열립니다.</span>
+            <strong>시험 유형별 구성비</strong>입니다.
+            휠로 <strong>확대</strong>하면 겹쳐 있던 기관이 갈라지고, 원을 누르면 내역이 나옵니다.
+            시험 유형을 끄면 그 조각을 뺀 나머지로 다시 그립니다.
           </p>
-          <figure class="dc-shot">
+
+          <div class="fb-controls" id="dc-pie-cats">
+            <span class="fb-fig__src">자료를 불러오는 중…</span>
+          </div>
+
+          <div class="fb-mapbox">
+            <div class="fb-map" id="dc-map5"></div>
+            <div class="fb-legend dc-legend-both" id="dc-legend5"></div>
+            <div class="fb-busy" id="dc-busy5">자료를 불러오는 중입니다…</div>
+          </div>
+          <p class="fb-fig__src" style="margin-top:.5rem">
             <a id="dc-shot-a" href="#" target="_blank" rel="noopener">
-              <img id="dc-shot-img" alt="2025 경기도 연구장비 중 방위산업 관련 장비의 시군별 분포.
-                   원의 넓이가 장비 수, 파이 조각이 활용분야별 구성비입니다." loading="lazy">
-            </a>
-            <figcaption id="dc-shot-cap">그림을 불러오는 중입니다…</figcaption>
-          </figure>
+              같은 자료로 그린 원본 그림 보기 (시군구·읍면동 경계 포함) →</a>
+          </p>
         </section>
 
         <!-- ③ 네트워크 -->
@@ -181,6 +207,30 @@
 
             <div class="fb-controls" id="dc-tm-chips">
               <span class="fb-fig__src">자료를 불러오는 중…</span>
+            </div>
+
+            <!-- 관계망 그림 — 회색 점이 장비, 색 점이 기업 -->
+            <div class="dc-g">
+              <div class="dc-g__head">
+                <h4>장비 × 기업 관계망</h4>
+                <span class="fb-fig__src" id="dc-g-src">—</span>
+                <button type="button" class="chip" id="dc-g-reset">처음 크기로</button>
+              </div>
+              <p class="fb-fig__desc" style="margin:.3rem 0 .7rem">
+                <b style="color:#8b8280">●</b> 회색 점이 <b>장비</b>,
+                <b style="color:#2563eb">●</b> 색 점이 <b>기업</b>(분야 색은 ①과 같습니다).
+                선은 그 기업이 그 장비를 쓸 만한 사이입니다.
+                점에 마우스를 올리면 이어진 것만 또렷해지고, 누르면 고정됩니다.
+                휠로 확대·축소, 끌어서 이동합니다.
+                위에서 기능을 고르면 그 기능의 장비만 남습니다.
+              </p>
+              <div class="dc-g__grid">
+                <div class="dc-g__box">
+                  <canvas id="dc-g-canvas"></canvas>
+                  <div class="fb-busy" id="dc-busy6">관계망을 그리는 중입니다…</div>
+                </div>
+                <div class="fb-card dc-net-side" id="dc-g-info"></div>
+              </div>
             </div>
 
             <div class="dc-tm__grid">
@@ -273,7 +323,8 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-cluster.js?v=202609091300" defer></script>
-  <script src="assets/js/defense-cluster-network.js?v=202609091300" defer></script>
+  <script src="assets/js/defense-cluster.js?v=202609091400" defer></script>
+  <script src="assets/js/defense-graph.js?v=202609091400" defer></script>
+  <script src="assets/js/defense-cluster-network.js?v=202609091400" defer></script>
 </body>
 </html>

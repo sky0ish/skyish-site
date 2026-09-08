@@ -18,6 +18,7 @@
   var GG_CENTER = [37.42, 127.1], GG_ZOOM = 9;
 
   var doc = null, map = null, canvas = null;
+  var pieMap = null, pieOn = {}, pieMarks = [];   // ② 파이 지도
   var arcs = [], coMarks = {}, stMarks = {};
   var colorOf = {}, active = null, shownCats = null;
 
@@ -265,6 +266,8 @@
         tmKw = (tmKw === b.dataset.kw) ? null : b.dataset.kw;
         tmSite = null;
         tmDraw();
+        /* 아래 목록과 위 관계망을 함께 걸러 줍니다 — 따로 놀면 헷갈립니다 */
+        try { if (window.DC_GRAPH) window.DC_GRAPH.filter(tmKw); } catch (e) { console.error(e); }
       });
     });
     var note = document.getElementById("dc-tm-note");
@@ -385,6 +388,168 @@
         : "");
   }
 
+  /* ══════════════════════════════════════════════════════════
+     ② 방산 관련 연구장비 — 시군별 분포와 시험 유형 (파이 지도)
+
+       원의 **넓이**가 그 지점의 장비 수, 조각이 시험 유형별 구성비입니다.
+       result_py/04_방위산업_관련장비_지도.py 가 그린 그림과 같은 규칙·같은 색인데,
+       여기서는 확대할 수 있고 눌러서 내역을 볼 수 있습니다.
+       자료는 network.json 의 sites — 기관마다 by:{유형:대수} 를 가지고 있습니다.
+     ══════════════════════════════════════════════════════════ */
+
+  /* 색은 그림을 그린 파이썬과 같은 값입니다 (04_방위산업_관련장비_지도.py 의 COLORS).
+     network.json 에 담지 않은 까닭은, 색을 바꾸자고 자료를 다시 올리실 일이
+     없게 하려는 것입니다. */
+  var PIE_COLOR = {
+    A: "#C1272D", B: "#E8833A", C: "#2D6CB5", D: "#3E8E5A",
+    E: "#8B5FBF", F: "#6B7A88", G: "#00868B"
+  };
+  var PIE_KEYS = ["A", "B", "C", "D", "E", "F", "G"];
+
+  /** 「B. 환경내구성 시험」 → "B" */
+  function pieKey(name) {
+    var m = /^([A-G])\./.exec(String(name || "").trim());
+    return m ? m[1] : "";
+  }
+
+  /** 켜 둔 유형만 남긴 내역 — [[열쇠, 대수]…] 과 합계 */
+  function pieParts(site) {
+    var out = [], sum = 0;
+    PIE_KEYS.forEach(function (k) {
+      if (!pieOn[k]) return;
+      var n = 0;
+      Object.keys(site.by || {}).forEach(function (nm) {
+        if (pieKey(nm) === k) n += site.by[nm];
+      });
+      if (n > 0) { out.push([k, n]); sum += n; }
+    });
+    return { parts: out, sum: sum };
+  }
+
+  /** 원 하나를 조각내어 그린 SVG — 한 조각뿐이면 그냥 동그라미 */
+  function pieSvg(parts, sum, r) {
+    var d = r * 2 + 4, c = r + 2;                 // 테두리 몫으로 2px 씩
+    var svg = '<svg width="' + d + '" height="' + d + '" viewBox="0 0 ' + d + ' ' + d + '">';
+    if (parts.length === 1) {
+      svg += '<circle cx="' + c + '" cy="' + c + '" r="' + r +
+             '" fill="' + PIE_COLOR[parts[0][0]] + '" stroke="#fff" stroke-width="1.2"/>';
+    } else {
+      var a0 = -Math.PI / 2;                      // 12시부터 시계 방향
+      parts.forEach(function (pt) {
+        var a1 = a0 + (pt[1] / sum) * Math.PI * 2;
+        var big = (a1 - a0) > Math.PI ? 1 : 0;
+        var x0 = c + r * Math.cos(a0), y0 = c + r * Math.sin(a0);
+        var x1 = c + r * Math.cos(a1), y1 = c + r * Math.sin(a1);
+        svg += '<path d="M' + c + " " + c + " L" + x0.toFixed(2) + " " + y0.toFixed(2) +
+               " A" + r + " " + r + " 0 " + big + " 1 " + x1.toFixed(2) + " " + y1.toFixed(2) +
+               ' Z" fill="' + PIE_COLOR[pt[0]] + '" stroke="#fff" stroke-width="1"/>';
+        a0 = a1;
+      });
+    }
+    svg += '<circle cx="' + c + '" cy="' + c + '" r="' + r +
+           '" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1"/></svg>';
+    return svg;
+  }
+
+  /** 원의 넓이가 장비 수에 비례하도록 — 너무 작아 안 보이지 않게 아래를 받칩니다 */
+  function pieR(n) { return Math.max(6, Math.min(30, 3.1 * Math.sqrt(n))); }
+
+  function piePopup(site, parts, sum) {
+    var lab = doc.catLabel || {};
+    return "<strong>" + esc(site.name) + "</strong>" +
+      (site.gg === "N" ? ' <span class="tag-out">경기도 밖</span>' : "") + "<br>" +
+      "방산 관련 장비 " + num(sum) + "대" +
+      (sum !== site.n ? ' <span style="color:#8b8280">(전체 ' + num(site.n) +
+        "대 중 켜 둔 유형만)</span>" : "") +
+      (site.si ? " · " + esc(site.si) : "") +
+      "<hr style='border:0;border-top:1px solid #eee;margin:.4rem 0'>" +
+      parts.map(function (pt) {
+        return '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;' +
+               "background:" + PIE_COLOR[pt[0]] + ';margin-right:.4rem"></span>' +
+               esc(pt[0] + ". " + (lab[pt[0]] || "")) + " " + num(pt[1]) + "대";
+      }).join("<br>") +
+      (site.addr ? '<br><span style="color:#6b6360">' + esc(site.addr) + "</span>" : "");
+  }
+
+  function pieDraw() {
+    if (!pieMap) return;
+    pieMarks.forEach(function (m) { pieMap.removeLayer(m); });
+    pieMarks = [];
+    var nSite = 0, nUnit = 0;
+    /* 작은 원이 큰 원에 묻히지 않게 큰 것부터 놓습니다 */
+    doc.sites.slice().sort(function (a, b) { return b.n - a.n; }).forEach(function (site) {
+      var got = pieParts(site);
+      if (!got.sum) return;
+      var r = pieR(got.sum);
+      var m = L.marker([site.lat, site.lon], {
+        icon: L.divIcon({
+          className: "dc-pie", html: pieSvg(got.parts, got.sum, r),
+          iconSize: [r * 2 + 4, r * 2 + 4], iconAnchor: [r + 2, r + 2]
+        }),
+        /* 큰 원이 위에 오면 작은 원을 못 누릅니다 — 작을수록 앞으로 */
+        zIndexOffset: Math.round(1000 - r * 10)
+      }).bindPopup(piePopup(site, got.parts, got.sum));
+      m.addTo(pieMap);
+      pieMarks.push(m);
+      nSite++; nUnit += got.sum;
+    });
+    document.getElementById("dc-legend5").innerHTML =
+      "<b>시험 유형 · 조각이 구성비</b>" +
+      PIE_KEYS.filter(function (k) { return pieOn[k]; }).map(function (k) {
+        return '<div><i class="pie" style="background:' + PIE_COLOR[k] + '"></i>' +
+               esc(k + ". " + ((doc.catLabel || {})[k] || "")) + "</div>";
+      }).join("") +
+      "<hr><b>원 넓이 ∝ 장비 수</b>" +
+      [1, 23, 92].map(function (n) {
+        var d = Math.round(pieR(n) * 2);
+        return '<div><span class="sz" style="width:' + d + "px;height:" + d +
+               'px;background:#cfd4da;border-color:#8b8280"></span>' + n + "대</div>";
+      }).join("");
+    var src = document.getElementById("dc-pie-src");
+    if (src) src.textContent = num(nUnit) + "대 · " + nSite + "개 지점";
+  }
+
+  function pieBuild() {
+    var el = document.getElementById("dc-map5");
+    if (!el || !doc || !doc.sites) return;
+    pieMap = L.map("dc-map5", { preferCanvas: false, scrollWheelZoom: true })
+              .setView(GG_CENTER, GG_ZOOM);
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19, attribution: "Esri · HERE · OpenStreetMap contributors"
+    }).addTo(pieMap);
+    L.control.scale({ imperial: false }).addTo(pieMap);
+
+    PIE_KEYS.forEach(function (k) { pieOn[k] = true; });
+
+    /* 유형별 합계는 자료에서 셉니다 — 화면에 적어 둔 숫자가 자료와 어긋나면 안 됩니다 */
+    var tot = {};
+    doc.sites.forEach(function (s2) {
+      Object.keys(s2.by || {}).forEach(function (nm) {
+        var k = pieKey(nm);
+        if (k) tot[k] = (tot[k] || 0) + s2.by[nm];
+      });
+    });
+    var lab = doc.catLabel || {};
+    document.getElementById("dc-pie-cats").innerHTML =
+      '<fieldset><legend>시험 유형</legend>' +
+      PIE_KEYS.filter(function (k) { return tot[k]; }).map(function (k) {
+        return '<label class="fb-check"><input type="checkbox" data-pcat="' + k + '" checked>' +
+               '<span class="sw" style="border-radius:50%;background:' + PIE_COLOR[k] + '"></span>' +
+               esc(k + ". " + (lab[k] || "")) +
+               ' <span style="color:#8b8280">' + num(tot[k]) + "</span></label>";
+      }).join("") + "</fieldset>";
+    document.querySelectorAll("[data-pcat]").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        pieOn[cb.dataset.pcat] = cb.checked;
+        pieDraw();
+      });
+    });
+
+    pieDraw();
+    var b = document.getElementById("dc-busy5");
+    if (b) b.hidden = true;
+  }
+
   /* ---------- 시작 ---------- */
   function start() {
     var el = document.getElementById("dc-map4");
@@ -412,8 +577,16 @@
         draw();
         refresh();
         panel();
+        /* ② 파이 지도도 같은 network.json 을 씁니다.
+           여기서 무슨 일이 나도 아래 네트워크·텍스트마이닝이 멎으면 안 됩니다. */
+        try { pieBuild(); } catch (e) { console.error(e); }
         tmChips();
         tmDraw();
+        /* 관계망 그림 — 같은 network.json 을 씁니다.
+           여기서 무슨 일이 나도 위 지도와 아래 목록은 그대로여야 합니다. */
+        try {
+          if (window.DC_GRAPH) window.DC_GRAPH.init(doc, colorOf);
+        } catch (e) { console.error(e); }
         busy(null);
       })
       .catch(function (err) {
