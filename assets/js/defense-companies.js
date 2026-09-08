@@ -146,8 +146,20 @@
       })
       .catch(function (err) {
         console.error(err);
-        document.getElementById("dl-note").textContent =
-          "자료를 불러오지 못했습니다: " + err.message;
+        var m = String((err && err.message) || "");
+        /* 가장 흔한 까닭은 「아직 안 올림」 입니다 — 무엇을 어디에 올려야 하는지
+           화면에서 바로 알 수 있게 적어 둡니다. */
+        var missing = /not found|없습니다|404|Object not found|Bucket/i.test(m);
+        document.getElementById("dl-note").innerHTML = missing
+          ? '<b>기업 명단 자료가 아직 올라가 있지 않습니다.</b><br>' +
+            'Supabase → Storage → <b>analysis</b> 보관함에 ' +
+            '<code>defense/companies.json</code> 으로 올려 주세요.<br>' +
+            '<span class="dl-empty">만드는 곳: tools/defense/build_defense_companies.py ' +
+            '→ assets/data/defense/companies.json</span>'
+          : "자료를 불러오지 못했습니다: " + esc(m);
+        document.getElementById("dl-body").innerHTML =
+          '<tr><td style="padding:2rem;text-align:center;color:#8b8280">' +
+          (missing ? "자료를 올리시면 여기에 명단이 나옵니다." : esc(m)) + "</td></tr>";
       });
   }
 

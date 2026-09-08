@@ -5,7 +5,8 @@
 // 진짜 폴더 이름을 그대로 씁니다 (파일은 안 읽습니다).
 
 import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide, isPresDir,
-         whenText, peopleCount, briefFromRow, hasBrief, briefFromFolder, placeLike }
+         whenText, peopleCount, briefFromRow, hasBrief, briefFromFolder, placeLike, verOf,
+         pickSlides }
   from "../../assets/js/notes-minutes.js";
 
 let bad = 0;
@@ -208,6 +209,68 @@ eq("그래도 회의내용은 담는다", /평택역개발/.test(F2["회의내�
 eq("날짜가 없으면 안 만든다", briefFromFolder(parseFolder("사업계획서")), null);
 eq("아무것도 아닌 것", briefFromFolder(null), null);
 eq("사람도 기관도 없으면 안 만든다", briefFromFolder(parseFolder("20260908")), null);
+
+/* ── 회의록을 다시 써도 옛것을 덮지 않습니다 ──
+   「회의록의 경우는 새로 만들게 되면 _v1, v2를 넣어서 기존것이 덮어쓰지 않게」
+   받아쓰기.py 가 …_회의록_v2.pdf 로 늘려 놓으면 화면은 **가장 새 판**을 붙여야 합니다. */
+const 폴더 = "20260824_국방연구원_남기헌_강소영_심승배";
+const 판 = pickFiles([
+  폴더 + "_회의록.pdf",
+  폴더 + "_회의록_v2.pdf",
+  폴더 + "_회의록_v3.pdf",
+  폴더 + "_회의록내용.json",
+  폴더 + "_회의록내용_v3.json",
+  "자문회의 개최건의(8월24일).pdf",
+  폴더 + ".txt",
+], 폴더);
+eq("★ 가장 새 회의록 PDF 를 붙인다", 판.pdf, 폴더 + "_회의록_v3.pdf");
+eq("★ 알맹이도 가장 새 판", 판.json, 폴더 + "_회의록내용_v3.json");
+eq("개최건의는 회의록으로 안 본다", 판.pdf.indexOf("개최건의"), -1);
+eq("판 표시가 없으면 1", [verOf("x_회의록.pdf"), verOf("x_회의록_v2.pdf"),
+                          verOf("x_회의록_v12.pdf"), verOf(""), verOf(null)],
+   [1, 2, 12, 1, 1]);
+const 하나 = pickFiles([폴더 + "_회의록.pdf", 폴더 + "_회의록내용.json"], 폴더);
+eq("판이 하나뿐이면 그것을", [하나.pdf, 하나.json],
+   [폴더 + "_회의록.pdf", 폴더 + "_회의록내용.json"]);
+eq("회의록이 없으면 빈 글자", pickFiles(["메모.txt"], 폴더).pdf, "");
+
+/* ── presentation 폴더의 PDF 는 모두 올립니다 ──
+   「presentation 폴더가 있으면 그 안의 pdf자료를 캘린더와 스케쥴게시판에 업로드해줘」
+   탐색기가 확장자를 숨겨 같은 이름 둘로 보이는 것은 pptx + pdf 한 쌍입니다. */
+eq("★ 한 쌍이면 PDF 만",
+   pickSlides(["(김병규)(260908)국방_피지컬AI_세미나.pptx",
+               "(김병규)(260908)국방_피지컬AI_세미나.pdf"]),
+   ["(김병규)(260908)국방_피지컬AI_세미나.pdf"]);
+eq("★ PDF 가 여럿이면 다 올린다",
+   pickSlides(["(김병규)발표.pdf", "(최경석)발표.pdf", "(김병규)발표.pptx"]),
+   ["(김병규)발표.pdf", "(최경석)발표.pdf"]);
+eq("final·최종이 앞으로",
+   pickSlides(["초안.pdf", "발표_final.pdf", "참고.pdf"]),
+   ["발표_final.pdf", "초안.pdf", "참고.pdf"]);
+eq("PDF 가 하나도 없으면 pptx 로",
+   pickSlides(["가.pptx", "나.ppt", "메모.txt"]), ["가.pptx", "나.ppt"]);
+eq("회의록·개최건의는 발표자료가 아니다",
+   pickSlides(["20260908_x_회의록.pdf", "자문회의 개최건의(9월8일).pdf", "발표.pdf"]),
+   ["발표.pdf"]);
+eq("그림·글은 안 올린다", pickSlides(["사진.jpg", "메모.txt"]), []);
+eq("빈 것", [pickSlides([]), pickSlides(null)], [[], []]);
+
+/* plan 이 그 목록을 그대로 실어 보냅니다 */
+const 발표 = plan([{
+  name: "20260908_스타트업캠퍼스_워크숍_김병규_최경석",
+  files: ["20260908_스타트업캠퍼스_워크숍_김병규_최경석_회의록.pdf"],
+  pres: ["(김병규)세미나.pptx", "(김병규)세미나.pdf", "(최경석)세미나.pdf"],
+}]).jobs[0];
+eq("★ 계획에 PDF 둘이 실린다", 발표.slides, ["(김병규)세미나.pdf", "(최경석)세미나.pdf"]);
+eq("발표자료 폴더임을 안다", 발표.presFolder, true);
+eq("예전 이름은 첫 장을 가리킨다", 발표.slide, "(김병규)세미나.pdf");
+
+const 폴더없음 = plan([{
+  name: "20260826_한국건설기술연구원",
+  files: ["20260826_한국건설기술연구원_회의록.pdf", "발표자료_final.pdf"],
+}]).jobs[0];
+eq("폴더가 없으면 회의 폴더 것 하나", 폴더없음.slides, ["발표자료_final.pdf"]);
+eq("발표자료 폴더는 아니다", 폴더없음.presFolder, false);
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

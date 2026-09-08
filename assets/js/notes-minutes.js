@@ -66,14 +66,23 @@ export function pickFiles(names, folder) {
   /* 폴더 이름으로 시작하는 것을 먼저 봅니다 — 남의 날 파일이 섞여 있어도
      제 것을 집게. 없으면 그냥 첫 번째를 씁니다. */
   const pick = (re) => L.filter((n) => re.test(n))
-    .sort((x, y) => (y.indexOf(stem) === 0 ? 1 : 0) - (x.indexOf(stem) === 0 ? 1 : 0))[0] || "";
+    .sort((x, y) => (y.indexOf(stem) === 0 ? 1 : 0) - (x.indexOf(stem) === 0 ? 1 : 0)
+                 || verOf(y) - verOf(x))[0] || "";
   return {
-    /* 「…_회의록.pdf」 만 봅니다. 「자문회의 개최건의….pdf」 같은 것은 아닙니다 */
-    pdf: pick(/_회의록\.pdf$/i),
-    json: pick(/_회의록내용\.json$/i),
+    /* 「…_회의록.pdf」 만 봅니다. 「자문회의 개최건의….pdf」 같은 것은 아닙니다.
+       회의록을 다시 쓰면 옛것을 덮지 않고 「…_회의록_v2.pdf」 로 늘어납니다 —
+       그때는 **가장 새 판**을 붙입니다. */
+    pdf: pick(/_회의록(_v\d+)?\.pdf$/i),
+    json: pick(/_회의록내용(_v\d+)?\.json$/i),
     txt: pick(/\.txt$/i),
     slide: pickSlide(L),
   };
+}
+
+/** 「…_v3.pdf」 의 3. 판 표시가 없으면 1 (처음 것) 로 봅니다. */
+export function verOf(name) {
+  const m = /_v(\d+)\.[a-z0-9]+$/i.exec(String(name || ""));
+  return m ? parseInt(m[1], 10) : 1;
 }
 
 /** 발표자료가 담긴 하위 폴더 이름 */
@@ -100,6 +109,25 @@ export function pickSlide(names) {
     .filter(([, r]) => r >= 0)
     .sort((a, b) => b[1] - a[1] || a[2] - b[2])[0];
   return best ? best[0] : "";
+}
+
+/** presentation 폴더 안의 발표자료를 **모두** — 「그 안의 pdf자료를 …업로드해줘」
+ *
+ *  · PDF 가 하나라도 있으면 **PDF 만** 올립니다.
+ *    같은 발표를 pptx 와 pdf 로 나란히 두시는 일이 많아, 둘 다 올리면 게시판에 겹칩니다.
+ *    (탐색기는 확장자를 숨겨서 같은 이름 둘로 보입니다.)
+ *  · PDF 가 하나도 없으면 그때만 pptx 를 올립니다.
+ *  · 「final·최종」 이 붙은 것을 앞에 둡니다.
+ *  · 회의록·개최건의는 발표자료가 아니라 여기서 빠집니다.
+ */
+export function pickSlides(names) {
+  const L = (Array.isArray(names) ? names : []).filter(Boolean).filter((n) => !NOT_SLIDE.test(n));
+  const pdfs = L.filter((n) => /\.pdf$/i.test(n));
+  const use = pdfs.length ? pdfs : L.filter((n) => /\.pptx?$/i.test(n));
+  return use
+    .map((n, i) => [n, /final|최종/i.test(n) ? 1 : 0, i])
+    .sort((a, b) => b[1] - a[1] || a[2] - b[2])
+    .map(([n]) => n);
 }
 
 /** 글 제목 — 회의록내용.json 의 title 이 가장 좋습니다.
@@ -231,11 +259,14 @@ export function plan(folders) {
     /* 사진·발표자료 폴더가 있으면 이름만 실어 둡니다 —
        어느 것이 단체사진인지는 그림을 열어 봐야 알 수 있어 notes.js 가 고릅니다. */
     const pres = Array.isArray(d.pres) ? d.pres.slice() : [];
+    /* presentation 폴더가 있으면 그 안의 PDF 를 **모두** 올립니다.
+       폴더가 없으면 회의 폴더에 흩어져 있는 발표자료 하나를 씁니다. */
+    const slides = pres.length ? pickSlides(pres) : (f.slide ? [f.slide] : []);
     jobs.push({ ...info, ...f,
       pics: (Array.isArray(d.pics) ? d.pics : []).slice(),
       pres: pres,
-      /* 폴더 안 발표자료가 있으면 그것이 먼저입니다 (같은 이름의 pptx·pdf 중 PDF) */
-      slide: pres.length ? pickSlide(pres) : f.slide,
+      slides: slides,
+      slide: slides[0] || "",          // 예전 이름 — 첫 장을 가리킵니다
       presFolder: pres.length > 0,
       title: "" });
   });

@@ -2704,8 +2704,12 @@ export async function initNotes(mountId = "notesapp") {
       return;
     }
     const nPic = jobs.filter((j) => (j.pics || []).length).length;
+    const nSlide = jobs.reduce((n, j) => n + (j.slides || []).length, 0);
+    const nPres = jobs.filter((j) => j.presFolder).length;
     if (!confirm("회의록 " + jobs.length + "건을 그날 Schedule 글에 붙입니다." +
       String.fromCharCode(10) + "그날 글이 없으면 새로 만듭니다." +
+      (nSlide ? String.fromCharCode(10) + "발표자료 " + nSlide + "개도 함께 올립니다" +
+        (nPres ? " (presentation 폴더가 있는 " + nPres + "건 포함)" : "") + "." : "") +
       (nPic ? String.fromCharCode(10) +
         "사진 폴더가 있는 " + nPic + "건은 얼굴이 가장 많은 단체사진 한 장도 함께 올립니다." : "") +
       String.fromCharCode(10) + "녹음과 한글 원본은 올리지 않습니다. 계속할까요?")) return;
@@ -2780,16 +2784,17 @@ export async function initNotes(mountId = "notesapp") {
           /* 회의록 게시판에도 따로 모읍니다 — 아래에서 한꺼번에 올립니다 */
           minutesJobs.push({ job: job, h: pdfH, title: MN.titleOf(job, jsonTitle) });
 
-          /* 발표자료 — 「…final.pdf」 가 있으면 함께 올립니다.
+          /* 발표자료 — presentation 폴더가 있으면 그 안의 **PDF 를 모두** 올립니다.
+             폴더가 없으면 회의 폴더에 흩어져 있는 발표자료 하나를 올립니다.
              회의록·개최건의는 빼고 봅니다 (그것들은 따로 다룹니다). */
-          const slideH = job.presFolder
-            ? (presHandles.get(job.raw) || {})[job.slide]
-            : hs[job.slide];
-          if (job.slide && slideH &&
-              !(row && MN.alreadyHas(row.files, job.slide)) &&
-              !ups.some((u) => u.name === job.slide)) {
+          const slideBag = job.presFolder ? (presHandles.get(job.raw) || {}) : hs;
+          for (const nm of (job.slides || [])) {
+            const slideH = slideBag[nm];
+            if (!slideH) { failed.push(nm + " — 발표자료를 열지 못했습니다"); continue; }
+            if (row && MN.alreadyHas(row.files, nm)) continue;   // 이미 붙어 있습니다
+            if (ups.some((u) => u.name === nm)) continue;
             try { ups.push(await NF.upload(await slideH.getFile())); }
-            catch (e) { failed.push(job.slide + " — 발표자료를 올리지 못했습니다"); }
+            catch (e) { failed.push(nm + " — 발표자료를 올리지 못했습니다"); }
           }
 
           /* 그날 사진 폴더(pictures·사진)에서 **단체사진 한 장**만 함께 올립니다.
