@@ -141,117 +141,130 @@ def clean(v):
     return ' '.join(s.split())
 
 
+def read_sheet(d, dropped):
+    """엑셀 한 장을 우리 꼴의 줄 목록으로"""
+    out = []
+    for c in d.columns:
+        if c in DROP or str(c).startswith('Unnamed'):
+            dropped.add(str(c))
+    for _, r in d.iterrows():
+        row = {}
+        for src_col, key in RENAME.items():
+            if src_col in d.columns and not row.get(key):
+                row[key] = clean(r.get(src_col))
+        for k, _lab in COLS:
+            row.setdefault(k, '')
+        if row.get('name'):
+            out.append(row)
+    return out
+
+
+def 채움(r):
+    return sum(1 for k, _ in COLS if str(r.get(k) or '').strip())
+
+
+def 합치기(bag, order, row, 덮어쓰기):
+    """같은 기업이면 한 줄로 — 빈 칸을 채우고, 주소는 둘 다 남깁니다.
+
+    @param 덮어쓰기 True 면 새 줄의 값이 이깁니다 (나중 보강본이 더 정확합니다)
+    """
+    k = samename(row['name'])
+    if not k:
+        return
+    if k not in bag:
+        bag[k] = row
+        order.append(k)
+        return
+    a = bag[k]
+    for f, _ in COLS:
+        if f in ('no', 'region', 'where'):
+            continue
+        nv = str(row.get(f) or '').strip()
+        if nv and (덮어쓰기 or not str(a.get(f) or '').strip()):
+            a[f] = row[f]
+    # 이름은 더 갖춰진 쪽으로 (「빅텍」 보다 「빅텍㈜」)
+    if len(clean(row['name'])) > len(clean(a['name'])):
+        a['name'] = row['name']
+    # 주소는 둘 다 남기되 같은 것을 두 번 적지 않습니다.
+    # 「(본사」 라고 적힌 주소를 맨 앞에 둡니다 — 지역은 맨 앞을 따릅니다.
+    part = []
+    for w in clean(a.get('where')).split(' / ') + clean(row.get('where')).split(' / '):
+        w = w.strip()
+        if w and w not in part:
+            part.append(w)
+    part.sort(key=lambda w: 0 if '본사' in w else 1)
+    a['where'] = ' / '.join(part)
+
+
 def main():
-    src = next((p for p in XLSX_CANDIDATES if os.path.exists(p)), None)
-    if not src:
-        raise SystemExit('원본 엑셀을 찾지 못했습니다:\n  ' + '\n  '.join(XLSX_CANDIDATES))
-    print('원본:', src, flush=True)
+    """기초 명단(전국 336) 에서 시작해, 나중에 보강한 수도권 파일로 덧칠합니다.
+
+      「방산기업336개는 전국이야 … 기본 335개인 기초자료에서 시작해서
+        이 나중 파일에 들어간 경기도 자료를 구체적으로 더 보강해줘」
+
+    수도권 파일에만 있는 칸(방산기술개발·방산관련보유기술·홈페이지·직원수·
+    설립일·수상이력)이 있어, 겹치는 기업은 그쪽 값이 이깁니다.
+    """
+    sudo = next((q for q in XLSX_CANDIDATES if os.path.exists(q)), None)
+    if not sudo:
+        raise SystemExit('수도권 엑셀을 찾지 못했습니다:\n  ' + '\n  '.join(XLSX_CANDIDATES))
 
     fill = {}
     if os.path.exists(FILL):
         fill = json.load(open(FILL, encoding='utf-8'))
-        print('보강 자료: %d개사' % len(fill), flush=True)
 
-    x = pd.ExcelFile(src)
-    rows, dropped = [], set()
+    bag, order, dropped = {}, [], set()
+
+    # ── ① 기초: 전국 명단 ────────────────────────────────────────
+    n_base = 0
+    if os.path.exists(NATION):
+        print('기초:', os.path.basename(NATION), flush=True)
+        for row in read_sheet(pd.read_excel(NATION), dropped):
+            합치기(bag, order, row, False)
+            n_base += 1
+        print('  %d줄 → %d개사' % (n_base, len(bag)), flush=True)
+    else:
+        print('(기초 명단이 없습니다: %s)' % NATION, flush=True)
+
+    # ── ② 보강: 나중에 손질한 수도권 파일 ────────────────────────
+    print('보강:', os.path.basename(sudo), flush=True)
+    was = len(bag)
+    n_sudo = 0
+    x = pd.ExcelFile(sudo)
     for sheet in x.sheet_names:
-        d = x.parse(sheet)
-        d = d[d['기업명'].notna()]
-        for c in d.columns:
-            if c in DROP or str(c).startswith('Unnamed'):
-                dropped.add(str(c))
-        for _, r in d.iterrows():
-            row = {'region': region_of(r.get('본사 소재지 (시/군)'), sheet)}
-            for src_col, key in RENAME.items():
-                if src_col in d.columns and not row.get(key):
-                    row[key] = clean(r.get(src_col))
-            for k, _lab in COLS:
-                row.setdefault(k, '')
-            rows.append(row)
+        for row in read_sheet(x.parse(sheet), dropped):
+            합치기(bag, order, row, True)
+            n_sudo += 1
+    print('  %d줄 → 새로 %d개사, 덧칠 %d개사'
+          % (n_sudo, len(bag) - was, n_sudo - (len(bag) - was)), flush=True)
 
-    # 같은 기업이 여러 시트에 겹쳐 들어온 경우 한 줄로 합칩니다.
-    #   시트가 달라 지역이 다르게 붙은 곳이 있습니다 — 빅텍㈜(경기 성남 / 인천 연수),
-    #   솔빛시스템(경기 안양 / 서울 송파)처럼 본사와 지사가 따로 적힌 것들입니다.
-    #   채워진 칸이 많은 쪽을 바탕으로 두고 빈 칸을 서로 채웁니다.
-    #   주소는 둘 다 남겨 어느 쪽이 본사인지 보고 판단하실 수 있게 합니다.
-    def 채움(r):
-        return sum(1 for k, _ in COLS if str(r.get(k) or '').strip())
+    rows = [bag[k] for k in order]
 
-    best, order = {}, []
+    # ── ③ 지역은 본사 소재지 기준 ────────────────────────────────
     for r in rows:
-        k = samename(r['name'])
-        if k not in best:
-            best[k] = r
-            order.append(k)
-            continue
-        a, b = best[k], r
-        # 「(본사」 라고 적힌 줄이 있으면 그쪽이 바탕입니다 — 지역이 그 줄을 따릅니다
-        ha = '본사' in clean(a.get('where'))
-        hb = '본사' in clean(b.get('where'))
-        if (hb and not ha) or (hb == ha and 채움(b) > 채움(a)):
-            a, b = b, a
-        for f, _ in COLS:
-            if not str(a.get(f) or '').strip() and str(b.get(f) or '').strip():
-                a[f] = b[f]
-        # 주소는 둘 다 남기되 같은 것을 두 번 적지 않습니다
-        part = []
-        for w in clean(a.get('where')).split(' / ') + clean(b.get('where')).split(' / '):
-            w = w.strip()
-            if w and w not in part:
-                part.append(w)
-        a['where'] = ' / '.join(part)
-        best[k] = a
-    rows = [best[k] for k in order]
+        r['region'] = region_of(r.get('where'), '')
 
-    # ── 빈 칸 채우기 ────────────────────────────────────────────
+    # ── ④ 조사로 찾아 둔 것으로 남은 빈 칸 채우기 ────────────────
     nfill = {k: 0 for k in FILLABLE}
+    byname = {}
+    for k, v in fill.items():
+        byname[samename(k)] = v
     for r in rows:
-        got = fill.get(r['name'])
+        got = byname.get(samename(r['name']))
         if not got:
             continue
-        src_mark = {}
+        mark = {}
         for k in FILLABLE:
-            if not r.get(k) and got.get(k):
+            if not str(r.get(k) or '').strip() and got.get(k):
                 r[k] = clean(got[k])
-                src_mark[k] = got.get('src') or '조사'
+                mark[k] = got.get('src') or '조사'
                 nfill[k] += 1
-        if src_mark:
-            r['_fill'] = src_mark
+        if mark:
+            r['_fill'] = mark
 
-    # ── 전국 명단에서 경기도 밖 기업 보태기 ──────────────────────
-    n_add, n_gg_skip = 0, 0
-    if os.path.exists(NATION):
-        have = {samename(r['name']) for r in rows}
-        nd = pd.read_excel(NATION)
-        nd = nd[nd['기업명'].notna()]
-        for _, r in nd.iterrows():
-            reg = region_of(r.get('본사 소재지 (시/군)'), '')
-            if reg == '경기':
-                if samename(r['기업명']) not in have:
-                    n_gg_skip += 1          # 경기도 것은 이번에 안 넣습니다
-                continue
-            key = samename(r['기업명'])
-            if not key or key in have:
-                continue
-            have.add(key)
-            row = {'region': reg}
-            for src_col, k in RENAME.items():
-                if src_col in nd.columns and not row.get(k):
-                    row[k] = clean(r.get(src_col))
-            for k, _lab in COLS:
-                row.setdefault(k, '')
-            rows.append(row)
-            n_add += 1
-        print('전국 명단(%s)에서 경기도 밖 %d개사를 보탰습니다.'
-              % (os.path.basename(NATION), n_add), flush=True)
-        if n_gg_skip:
-            print('  (경기도인데 표에 없는 %d개사는 말씀대로 넣지 않았습니다)'
-                  % n_gg_skip, flush=True)
-
-    # 이름순으로 다시 세워 번호를 붙입니다 — 지역 안에서 가나다순
-    rows.sort(key=lambda r: (['경기', '서울', '인천', '기타'].index(r['region'])
-                             if r['region'] in ('경기', '서울', '인천', '기타') else 9,
-                             r['name']))
+    # 지역 안에서 가나다순
+    seq = ['경기', '서울', '인천', '기타']
+    rows.sort(key=lambda r: (seq.index(r['region']) if r['region'] in seq else 9, r['name']))
     for i, r in enumerate(rows, 1):
         r['no'] = i
 
@@ -259,18 +272,20 @@ def main():
     print('기업 %d개사' % len(rows), flush=True)
     print('빼놓은 칸(개인정보 등): ' + ', '.join(sorted(dropped)), flush=True)
     for k in FILLABLE:
-        print('  %s — 채운 것 %d개사 · 아직 빈 곳 %d개사'
+        print('  %s — 조사로 채운 것 %d개사 · 아직 빈 곳 %d개사'
               % (k, nfill[k], empty[k]), flush=True)
 
     doc = {
         'meta': {
-            'label': '수도권 방산기업 리스트',
-            'note': '경기·인천·서울과 그 밖 지역에 있는 방위산업 관련 기업 명단입니다. '
-                    '대표·담당자 연락처는 담지 않았습니다. '
+            'label': '방위산업 기업 리스트',
+            'note': '전국 방위산업 관련 기업 명단입니다 — 전국 기초 명단에 '
+                    '수도권(경기·서울·인천) 보강 자료를 덧칠했습니다. '
+                    '지역은 본사 소재지 기준이며, 본사와 지사가 함께 적힌 곳은 '
+                    '주소를 모두 남겼습니다. 대표·담당자 연락처는 담지 않았습니다. '
                     '「주요 분야」·「방산기술개발」·「방산관련보유기술」 가운데 '
                     '표에 비어 있던 칸을 공개된 자료로 채운 것은 밑줄로 표시했습니다 — '
                     '확인 뒤 쓰시기 바랍니다.',
-            'src': os.path.basename(src),
+            'src': os.path.basename(NATION) + ' + ' + os.path.basename(sudo),
             'n': len(rows),
             'byRegion': {reg: sum(1 for r in rows if r['region'] == reg)
                          for reg in sorted({r['region'] for r in rows})},
@@ -279,9 +294,9 @@ def main():
         'rows': rows,
     }
     os.makedirs(OUTDIR, exist_ok=True)
-    p = os.path.join(OUTDIR, 'companies.json')
-    json.dump(doc, open(p, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-    print(' ', p, '%.0f KB' % (os.path.getsize(p) / 1024), flush=True)
+    q = os.path.join(OUTDIR, 'companies.json')
+    json.dump(doc, open(q, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+    print(' ', q, '%.0f KB' % (os.path.getsize(q) / 1024), flush=True)
 
 
 if __name__ == '__main__':
