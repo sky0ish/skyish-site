@@ -133,34 +133,61 @@
     });
   }
 
+  /** 못 읽었을 때 — 보관함 안을 직접 들여다보고 무엇이 있는지 알려 줍니다.
+   *  「올렸는데 안 나온다」 는 대개 폴더나 이름이 조금 다른 것이라,
+   *  화면이 실제 목록을 보여 주는 편이 훨씬 빠릅니다. */
+  function why(m, err) {
+    var box = document.getElementById("dl-note");
+    var raw = String((err && err.message) || "");
+    box.innerHTML = '<b>기업 명단을 불러오지 못했습니다.</b>' +
+      (raw ? ' <span class="dl-empty">(' + esc(raw) + ')</span>' : "") +
+      '<br><span class="dl-empty">보관함 안을 확인하는 중…</span>';
+    /* analysis 보관함의 defense 폴더에 무엇이 들어 있는지 그대로 보여 줍니다 */
+    m.sb.storage.from("analysis").list("defense", { limit: 100 })
+      .then(function (r) {
+        if (r.error) throw r.error;
+        var names = (r.data || []).map(function (f) { return f.name; });
+        var has = names.indexOf("companies.json") >= 0;
+        box.innerHTML = has
+          ? '<b>파일은 있는데 읽지 못했습니다.</b> <span class="dl-empty">(' +
+            esc(raw) + ')</span><br>' +
+            '올리실 때 <b>덮어쓰기</b>가 제대로 되었는지, 파일이 온전한지 봐 주세요.'
+          : '<b>analysis / defense 폴더에 <code>companies.json</code> 이 없습니다.</b><br>' +
+            '지금 그 폴더에 있는 것: ' +
+            (names.length ? '<code>' + names.map(esc).join("</code> · <code>") + '</code>'
+                          : '<span class="dl-empty">(비어 있음)</span>') + '<br>' +
+            '<span class="dl-empty">이름이 <code>companies.json</code> 인지, ' +
+            'analysis 보관함의 <code>defense</code> 폴더 <b>안</b>인지 봐 주세요. ' +
+            '만드는 곳: tools/defense/build_defense_companies.py</span>';
+      })
+      .catch(function (e2) {
+        box.innerHTML = '<b>기업 명단을 불러오지 못했습니다.</b><br>' +
+          '<span class="dl-empty">보관함도 열어 보지 못했습니다 — ' +
+          esc(String((e2 && e2.message) || raw || "까닭 모름")) +
+          '. 로그인이 풀렸거나 승인 상태가 아닐 수 있습니다.</span>';
+      });
+    document.getElementById("dl-body").innerHTML =
+      '<tr><td style="padding:2rem;text-align:center;color:#8b8280">' +
+      "위 안내를 봐 주세요.</td></tr>";
+  }
+
   function start() {
     if (!document.getElementById("dl-body")) return;
-    import("../../auth/auth.js")
-      .then(function (m) { return m.loadAnalysisJson("defense/companies.json"); })
-      .then(function (j) {
-        doc = j;
-        document.getElementById("dl-note").textContent = j.meta.note;
-        tabs();
-        draw();
-        document.getElementById("dl-q").addEventListener("input", draw);
-      })
-      .catch(function (err) {
-        console.error(err);
-        var m = String((err && err.message) || "");
-        /* 가장 흔한 까닭은 「아직 안 올림」 입니다 — 무엇을 어디에 올려야 하는지
-           화면에서 바로 알 수 있게 적어 둡니다. */
-        var missing = /not found|없습니다|404|Object not found|Bucket/i.test(m);
-        document.getElementById("dl-note").innerHTML = missing
-          ? '<b>기업 명단 자료가 아직 올라가 있지 않습니다.</b><br>' +
-            'Supabase → Storage → <b>analysis</b> 보관함에 ' +
-            '<code>defense/companies.json</code> 으로 올려 주세요.<br>' +
-            '<span class="dl-empty">만드는 곳: tools/defense/build_defense_companies.py ' +
-            '→ assets/data/defense/companies.json</span>'
-          : "자료를 불러오지 못했습니다: " + esc(m);
-        document.getElementById("dl-body").innerHTML =
-          '<tr><td style="padding:2rem;text-align:center;color:#8b8280">' +
-          (missing ? "자료를 올리시면 여기에 명단이 나옵니다." : esc(m)) + "</td></tr>";
-      });
+    import("../../auth/auth.js").then(function (m) {
+      return m.loadAnalysisJson("defense/companies.json")
+        .then(function (j) {
+          doc = j;
+          document.getElementById("dl-note").textContent = j.meta.note;
+          tabs();
+          draw();
+          document.getElementById("dl-q").addEventListener("input", draw);
+        })
+        .catch(function (err) { console.error(err); why(m, err); });
+    }).catch(function (err) {
+      console.error(err);
+      document.getElementById("dl-note").textContent =
+        "자료를 불러오지 못했습니다: " + String((err && err.message) || err);
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

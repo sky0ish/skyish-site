@@ -218,11 +218,40 @@
     var box = document.getElementById("dc-tm-chips");
     if (!box) return;
     if (!kw) {
+      /* 지도는 그려졌는데 kw 만 없다는 것은 **옛 network.json 이 그대로**라는 뜻입니다.
+         「올렸는데 안 나온다」 는 대개 defense 폴더 밖에 올라갔거나 덮어쓰기가
+         안 된 것이라, 보관함 안을 직접 보여 주는 편이 빠릅니다. */
       box.innerHTML = '<span class="fb-fig__src">장비 키워드 자료가 없습니다 — ' +
-        'network.json 을 새로 올려 주세요.</span>';
+        '보관함을 확인하는 중…</span>';
       var note0 = document.getElementById("dc-tm-note");
       if (note0) note0.textContent =
-        "이 칸은 network.json 의 kw 자료가 있어야 그려집니다.";
+        "지금 읽은 network.json 에는 장비 키워드(kw)가 없습니다 — 옛 파일로 보입니다.";
+      import("../../auth/auth.js").then(function (m) {
+        var st = m.sb.storage.from("analysis");
+        return Promise.all([st.list("defense", { limit: 100 }), st.list("", { limit: 100 })])
+          .then(function (r) {
+            var say = function (x) {
+              return (((x || {}).data) || []).map(function (f) { return f.name; });
+            };
+            var 안 = say(r[0]), 밖 = say(r[1]);
+            var code = function (a) {
+              return a.length ? "<code>" + a.map(esc).join("</code> · <code>") + "</code>"
+                              : "(비어 있음)";
+            };
+            box.innerHTML = '<span class="fb-fig__src">' +
+              'analysis / <b>defense</b> 폴더: ' + code(안) + '<br>' +
+              'analysis 맨 위: ' + code(밖) + '<br>' +
+              (밖.indexOf("network.json") >= 0 || 밖.indexOf("companies.json") >= 0
+                ? '<b>파일이 defense 폴더 <u>밖</u>에 올라가 있습니다.</b> ' +
+                  'defense 폴더 안으로 옮겨 주세요.'
+                : '새 network.json 으로 <b>덮어쓰기</b>가 되었는지 봐 주세요.') +
+              "</span>";
+          });
+      }).catch(function (e) {
+        box.innerHTML = '<span class="fb-fig__src">장비 키워드 자료가 없습니다 — ' +
+          'network.json 을 새로 올려 주세요. (보관함은 확인하지 못했습니다: ' +
+          esc(String((e && e.message) || "까닭 모름")) + ")</span>";
+      });
       return;
     }
     box.innerHTML = '<fieldset><legend>장비 기능</legend>' +
