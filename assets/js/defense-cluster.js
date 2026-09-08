@@ -20,6 +20,7 @@
   var bothCat = {};                   // 지도① 기업 분야별 겹
   var bothOn = {};                    // 그 가운데 지금 켜 둔 분야
   var sggKey = "co", sggDir = -1;     // 시군별 표 — 기본은 기업 많은 곳부터
+  var 방 = null;                      // auth 모듈 (⑤ 가 자료를 더 받습니다)
 
   /* ---------- 유틸 ---------- */
   function num(n) { return Number(n).toLocaleString("ko-KR"); }
@@ -284,6 +285,213 @@
       });
   }
 
+  /* ══════════════════════════════════════════════════════════
+     ⑤ 시군별 분포와 전국 대비 강점
+
+       왼쪽 : 경기도 31개 시군마다 방산기업 수 · 연구장비 수 (두 줄 막대)
+       오른쪽 : 전국 대비 경기도가 어느 분야에 몰려 있는가 (특화도)
+
+     기업 수는 companies.json(전국 명단)에서, 장비 수는 points.json 에서
+     가져옵니다. 두 자료를 함께 쓰는 것은 화면에 보이는 숫자가
+     ⑥ 기업 리스트와 어긋나면 안 되기 때문입니다.
+     ══════════════════════════════════════════════════════════ */
+
+  /* 경기도 31개 시군 — 자료에 한 곳도 없는 시군도 「없음」 으로 보여야
+     31개 가운데 어디가 비어 있는지 알 수 있습니다. */
+  var GG31 = ["수원시", "성남시", "의정부시", "안양시", "부천시", "광명시", "평택시",
+              "동두천시", "안산시", "고양시", "과천시", "구리시", "남양주시", "오산시",
+              "시흥시", "군포시", "의왕시", "하남시", "용인시", "파주시", "이천시",
+              "안성시", "김포시", "화성시", "광주시", "양주시", "포천시", "여주시",
+              "연천군", "가평군", "양평군"];
+
+  /* 원본 대분류가 제각각이라 ① 과 같은 일곱 갈래로 모읍니다
+     (build_defense_network.py 의 CAT_MAP 과 같은 규칙) */
+  var CAT_MAP = {
+    "전자/제어/통신/센서": "전자/제어/통신/센서",
+    "하드웨어": "하드웨어/소재", "소재": "하드웨어/소재",
+    "우주/항공/드론": "우주/항공/드론", "드론": "우주/항공/드론",
+    "우주/항공": "우주/항공/드론", "드론/로봇": "우주/항공/드론",
+    "AI": "AI/디지털트윈", "디지털트윈": "AI/디지털트윈",
+    "반도체": "반도체", "로봇": "로봇",
+  };
+  function catOf(v) {
+    var k = String(v == null ? "" : v).trim();
+    if (CAT_MAP[k]) return CAT_MAP[k];
+    /* 「소재(압전소자/진동체), 광학」 처럼 길게 적힌 것은 앞말로 가릅니다 */
+    var keys = Object.keys(CAT_MAP);
+    for (var i = 0; i < keys.length; i++) {
+      if (k.indexOf(keys[i]) === 0) return CAT_MAP[keys[i]];
+    }
+    return "기타";                       // 시험/인증·에너지·건설·물류 등
+  }
+
+  /** 「경기도 성남시 분당구」 → 「성남시」 */
+  function siOf(where) {
+    var w = String(where == null ? "" : where);
+    var i = w.indexOf("(본사)");
+    if (i >= 0) w = w.slice(0, i);
+    for (var j = 0; j < GG31.length; j++) {
+      if (w.indexOf(GG31[j]) >= 0) return GG31[j];
+    }
+    /* 「안성」 처럼 「시」 가 빠진 표기도 받아 줍니다 */
+    for (var k = 0; k < GG31.length; k++) {
+      var bare = GG31[k].replace(/[시군]$/, "");
+      if (bare.length > 1 && w.indexOf(bare) >= 0) return GG31[k];
+    }
+    return "";
+  }
+
+  var siRows = [], siSort = "co", lqRows = [];
+  var siTop = 15;                     // 처음에는 상위 15곳만 (0 이면 모두)
+
+  function buildSi(cos) {
+    /* ① 기업 — 전국 명단에서 경기도 줄만 */
+    var co = {};
+    GG31.forEach(function (n) { co[n] = 0; });
+    (cos && cos.rows ? cos.rows : []).forEach(function (r) {
+      if (r.region !== "경기") return;
+      var si = siOf(r.where);
+      if (si) co[si]++;
+    });
+    /* ② 장비 — points.json 의 시군별 집계 */
+    var eq = {};
+    GG31.forEach(function (n) { eq[n] = 0; });
+    (doc.stats.bySi || []).forEach(function (r) {
+      var si = siOf(r.si) || siOf(String(r.si) + "시");
+      if (si && r.eq) eq[si] += Number(r.eq) || 0;
+    });
+    siRows = GG31.map(function (n) { return { si: n, co: co[n], eq: eq[n] }; });
+
+    var nCo = siRows.reduce(function (a, b) { return a + b.co; }, 0);
+    var nEq = siRows.reduce(function (a, b) { return a + b.eq; }, 0);
+    var 빈곳 = siRows.filter(function (r) { return !r.co && !r.eq; }).length;
+    var el = document.getElementById("dc-si-src");
+    if (el) {
+      el.textContent = "경기 31개 시군 · 기업 " + num(nCo) + "개사 · 연구장비 " +
+                       num(nEq) + "대" + (빈곳 ? " (둘 다 없는 곳 " + 빈곳 + ")" : "");
+    }
+    drawSi();
+  }
+
+  function drawSi() {
+    var box = document.getElementById("dc-si");
+    if (!box) return;
+    var L = siRows.slice();
+    if (siSort === "name") L.sort(function (a, b) { return a.si.localeCompare(b.si, "ko"); });
+    else L.sort(function (a, b) {
+      return b[siSort] - a[siSort] || b.co - a.co ||
+             a.si.localeCompare(b.si, "ko");
+    });
+    /* 잣대는 **자른 뒤가 아니라 31곳 전체**를 기준으로 둡니다 —
+       상위 15곳만 볼 때와 모두 볼 때 막대 길이가 달라지면 헷갈립니다. */
+    var mCo = Math.max.apply(null, siRows.map(function (r) { return r.co; })) || 1;
+    var mEq = Math.max.apply(null, siRows.map(function (r) { return r.eq; })) || 1;
+    var 잘림 = 0;
+    if (siTop && L.length > siTop) { 잘림 = L.length - siTop; L = L.slice(0, siTop); }
+    var bar = function (n, max, color) {
+      return '<div class="dc-si__b"><span class="dc-si__t">' +
+        (n ? '<span class="dc-si__f" style="width:' + (n / max * 100).toFixed(1) +
+             "%;background:" + color + '"></span>' : "") +
+        '</span><span class="dc-si__v">' + (n ? num(n) : "–") + "</span></div>";
+    };
+    box.innerHTML = L.map(function (r) {
+      return '<div class="dc-si__row' + (!r.co && !r.eq ? " dc-si__z" : "") + '"' +
+        ' title="' + esc(r.si) + " — 기업 " + num(r.co) + "개사 · 연구장비 " +
+        num(r.eq) + '대">' +
+        '<span class="dc-si__nm">' + esc(r.si) + "</span>" +
+        '<span class="dc-si__bars">' +
+          bar(r.co, mCo, "#4f9d92") + bar(r.eq, mEq, EQ_COLOR) +
+        "</span></div>";
+    }).join("");
+    if (잘림) {
+      box.innerHTML += '<p class="fb-sub" style="margin:.6rem 0 0">' +
+        "나머지 " + 잘림 + "곳은 「31개 모두」 를 누르시면 나옵니다.</p>";
+    }
+    document.querySelectorAll("[data-sisort]").forEach(function (b) {
+      var on = b.dataset.sisort === siSort;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    document.querySelectorAll("[data-sitop]").forEach(function (b) {
+      var on = Number(b.dataset.sitop) === siTop;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function buildLq(cos) {
+    var rows = (cos && cos.rows ? cos.rows : []);
+    if (!rows.length) return;
+    var tot = {}, gg = {}, N = 0, G = 0;
+    rows.forEach(function (r) {
+      var k = catOf(r.cat);
+      tot[k] = (tot[k] || 0) + 1; N++;
+      if (r.region === "경기") { gg[k] = (gg[k] || 0) + 1; G++; }
+    });
+    var color = {};
+    (doc.companies.cats || []).forEach(function (c) { color[c.key] = c.color; });
+    lqRows = Object.keys(tot).map(function (k) {
+      var lq = (G && tot[k]) ? (((gg[k] || 0) / G) / (tot[k] / N)) : 0;
+      return { key: k, all: tot[k], gg: gg[k] || 0, lq: lq,
+               color: color[k] || "#94a3b8" };
+    }).sort(function (a, b) { return b.lq - a.lq || b.all - a.all; });
+
+    var sub = document.getElementById("dc-lq-sub");
+    if (sub) {
+      sub.textContent = "전국 " + num(N) + "개사 가운데 경기도 " + num(G) +
+                        "개사 (" + (G / N * 100).toFixed(0) + "%)";
+    }
+    var box = document.getElementById("dc-lq");
+    if (!box) return;
+    /* 눈금은 특화도 2.5 까지 — 1.0 자리를 늘 같은 곳에 두어 견주기 쉽게 */
+    var TOP = Math.max(2.5, Math.ceil(Math.max.apply(null,
+      lqRows.map(function (r) { return r.lq; })) * 10) / 10);
+    box.innerHTML = lqRows.map(function (r) {
+      var w = Math.min(100, r.lq / TOP * 100);
+      var 셈 = "경기 " + num(r.gg) + " / 전국 " + num(r.all) +
+               " (" + (r.all ? (r.gg / r.all * 100).toFixed(0) : 0) + "%)";
+      return '<div class="dc-lq__row">' +
+        '<span class="dc-lq__nm" title="' + esc(r.key) + '">' + esc(r.key) + "</span>" +
+        '<span class="dc-lq__t">' +
+          '<span class="dc-lq__f" style="width:' + w.toFixed(1) + "%;background:" +
+            (r.lq >= 1 ? r.color : "#d6d0ca") + '"></span>' +
+          '<i class="dc-lq__one" style="left:' + (1 / TOP * 100).toFixed(1) +
+            '%" title="전국 평균"></i>' +
+        "</span>" +
+        '<span class="dc-lq__v' + (r.lq >= 1 ? " up" : "") + '">' +
+          r.lq.toFixed(2) + "</span>" +
+        '<span class="dc-lq__sub">' + esc(셈) + "</span>" +
+      "</div>";
+    }).join("");
+  }
+
+  /** ⑤ — 기업 명단을 따로 받아 와 그립니다 (⑥ 리스트와 같은 자료) */
+  function buildFive(m) {
+    m.loadAnalysisJson("defense/companies.json")
+      .then(function (cos) { buildSi(cos); buildLq(cos); })
+      .catch(function (e) {
+        var el = document.getElementById("dc-si-src");
+        if (el) el.textContent = "기업 명단을 불러오지 못했습니다 — " +
+          String((e && e.message) || e);
+        /* 장비 쪽만이라도 그립니다 */
+        buildSi(null);
+      });
+    document.querySelectorAll("[data-sisort]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        siSort = b.dataset.sisort;
+        drawSi();
+      });
+    });
+    document.querySelectorAll("[data-sitop]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        siTop = Number(b.dataset.sitop) || 0;
+        /* 가나다순으로 「상위 15」 는 뜻이 없으니 기업 많은 곳으로 돌려 둡니다 */
+        if (siTop && siSort === "name") siSort = "co";
+        drawSi();
+      });
+    });
+  }
+
   /* ---------- 시작 ---------- */
   function start() {
     if (!document.getElementById("dc-map0")) return;
@@ -293,6 +501,7 @@
     // 비공개 보관함(analysis)에서 받습니다 — 승인된 분만 열 수 있습니다
     import("../../auth/auth.js")
       .then(function (m) {
+        방 = m;                          // 뒤에서 ⑤ 가 다시 씁니다
         /* ② 그려 둔 그림은 자료와 따로 받아 옵니다.
            여기서 무슨 일이 나도 아래 지도·통계까지 멎으면 안 됩니다. */
         try { 그림(m); } catch (e) { console.error(e); }
@@ -302,6 +511,9 @@
         doc = j;
         buildBoth();
         buildStats();
+        /* ⑤ 는 기업 명단을 따로 받습니다 — 여기서 무슨 일이 나도
+           위 지도와 ④ 통계는 그대로여야 합니다. */
+        try { buildFive(방); } catch (e) { console.error(e); }
       })
       .catch(function (err) {
         console.error(err);
