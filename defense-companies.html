@@ -22,10 +22,11 @@
 
     .dl-top{position:sticky;top:64px;z-index:60;background:var(--paper);
            padding-top:.4rem;margin-bottom:.7rem}
+    .dl-wrap .dl-note{margin-bottom:.7rem}
     .dl-bar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;
             padding:.7rem .9rem;background:var(--white);border:1px solid var(--line-soft);
             border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
-    .dl-bar input[type=search]{flex:1 1 240px;min-width:180px;padding:.42rem .7rem;
+    .dl-bar input[type=search]{flex:1 1 220px;min-width:160px;padding:.42rem .7rem;
             border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit}
     .dl-bar .chip{font-size:.84rem;padding:.3rem .75rem;cursor:pointer}
     .dl-bar .n{color:#8b8280;font-variant-numeric:tabular-nums}
@@ -71,6 +72,12 @@
     .dl-table tbody tr:hover td{background:#faf7f4}
     .dl-table td{white-space:normal;line-height:1.45;overflow-wrap:anywhere}
     .dl-table thead th{white-space:nowrap}
+
+    .dl-back{flex:none;font-size:.82rem;color:var(--ink);white-space:nowrap;
+             border:1px solid var(--line);border-radius:999px;padding:.28rem .8rem;
+             background:var(--white)}
+    .dl-back:hover{border-color:var(--ink);background:var(--ink);color:#fff}
+    .dl-back:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 
     .dl-save{all:unset;cursor:pointer;flex:none;margin-left:auto;white-space:nowrap;
              font-size:.82rem;color:var(--teal-text);background:var(--white);
@@ -125,15 +132,13 @@
         <span class="eyebrow">Data Analysis</span>
         <h1 class="fb-title">수도권 방산기업 리스트</h1>
         <p class="dl-note" id="dl-note">자료를 불러오는 중입니다…</p>
-        <p class="fb-crumb">
-          <a class="btn btn--ghost" href="defense-cluster.html">← 기업체와 연구장비 지도</a>
-        </p>
-
         <!-- 찾기줄과 가로 이동 바를 한 덩이로 묶어 화면 위에 붙여 둡니다.
              따로 두면 스크롤할 때 가로 바가 찾기줄 뒤로 숨고,
              페이지 맨 아래에서는 표 밑으로 내려가 버립니다. -->
         <div class="dl-top">
           <div class="dl-bar">
+            <!-- 돌아가는 고리를 찾기줄과 한 줄에 둡니다 — 세로 자리를 아낍니다 -->
+            <a class="dl-back" href="defense-cluster.html">← 기업체와 연구장비 지도</a>
             <input type="search" id="dl-q" autocomplete="off"
                    placeholder="기업명 · 분야 · 기술 · 소재지로 찾기">
             <span id="dl-tabs"></span>
@@ -172,6 +177,6 @@
   <div id="site-footer"></div>
 
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-companies.js?v=202609091800" defer></script>
+  <script src="assets/js/defense-companies.js?v=202609091900" defer></script>
 </body>
 </html>
