@@ -252,6 +252,35 @@
       "<dt>지오코딩</dt><dd>카카오·네이버 주소 검색 결과(도로명 우선, 실패 시 지번)</dd>";
   }
 
+  /* ---------- ② 그려 둔 그림 ----------
+     이 그림도 다른 방산 자료와 같이 비공개 보관함(analysis)에 둡니다.
+     assets/img/ 에 두면 주소만 알면 로그인 없이도 열립니다. */
+  function 그림(m) {
+    var img = document.getElementById("dc-shot-img");
+    var a = document.getElementById("dc-shot-a");
+    var cap = document.getElementById("dc-shot-cap");
+    if (!img) return;
+    /* 네 시간짜리 주소 — 로그인한 분에게만 나옵니다 */
+    var box = m.sb && m.sb.storage && m.sb.storage.from("analysis");
+    if (!box || typeof box.createSignedUrl !== "function") {
+      cap.textContent = "그림을 불러오지 못했습니다 — 보관함을 열 수 없습니다.";
+      return;
+    }
+    box.createSignedUrl("defense/equip-map.png", 60 * 60 * 4)
+      .then(function (r) {
+        if (r.error || !r.data) throw (r.error || new Error("주소를 못 받았습니다"));
+        img.src = r.data.signedUrl;
+        a.href = r.data.signedUrl;
+        cap.textContent = "2025 경기도 연구장비 중 방위산업 관련 " +
+          "(활용분야·제조사 기준 추출) · 시군구 경계 31 · 읍면동 경계 562";
+      })
+      .catch(function (e) {
+        cap.textContent = "그림을 불러오지 못했습니다 — analysis 보관함의 " +
+          "defense 폴더에 equip-map.png 를 올려 주세요. (" +
+          String((e && e.message) || e) + ")";
+      });
+  }
+
   /* ---------- 시작 ---------- */
   function start() {
     if (!document.getElementById("dc-map0")) return;
@@ -260,7 +289,12 @@
 
     // 비공개 보관함(analysis)에서 받습니다 — 승인된 분만 열 수 있습니다
     import("../../auth/auth.js")
-      .then(function (m) { return m.loadAnalysisJson("defense/points.json"); })
+      .then(function (m) {
+        /* ② 그려 둔 그림은 자료와 따로 받아 옵니다.
+           여기서 무슨 일이 나도 아래 지도·통계까지 멎으면 안 됩니다. */
+        try { 그림(m); } catch (e) { console.error(e); }
+        return m.loadAnalysisJson("defense/points.json");
+      })
       .then(function (j) {
         doc = j;
         buildBoth();

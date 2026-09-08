@@ -53,6 +53,16 @@
     .dc-tm .chip .n{color:#8b8280;font-variant-numeric:tabular-nums}
     .dc-tm .chip.active .n{color:rgba(255,255,255,.7)}
 
+    /* ② 그려 둔 그림 — 비공개 보관함에서 받아 옵니다 */
+    .dc-shot{margin:0;border:1px solid var(--line);border-radius:var(--radius-md);
+             background:#fff;box-shadow:var(--shadow-sm);overflow:hidden}
+    .dc-shot a{display:block;background:#fff}
+    .dc-shot img{display:block;width:100%;height:auto}
+    .dc-shot img:not([src]){min-height:320px;background:var(--paper-2)}
+    .dc-shot figcaption{padding:.6rem .9rem;font-size:.82rem;color:var(--mauve);
+                        border-top:1px solid var(--line-soft)}
+    .dc-shot__zoom{color:var(--mauve)}
+
     /* 시군별 표 — 머리글을 눌러 차례를 바꿉니다 */
     .fb-sort{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem;
              font:inherit;color:inherit;white-space:nowrap}
@@ -121,10 +131,31 @@
           </div>
         </section>
 
-        <!-- ② 네트워크 -->
-        <section class="fb-fig" id="fig4">
+        <!-- ② 방산 관련 연구장비 시군 분포 (그려 둔 그림) -->
+        <section class="fb-fig" id="fig6">
           <div class="fb-fig__head">
             <span class="fb-fig__no">②</span>
+            <h2>방산 관련 연구장비 — 시군별 분포와 시험 유형</h2>
+            <span class="fb-fig__src">전체 1,602건 중 279건(17.4%) · 47개 지점</span>
+          </div>
+          <p class="fb-fig__desc">
+            원의 넓이가 그 지점의 <strong>방산 관련 장비 수</strong>, 파이 조각이
+            <strong>시험 유형별 구성비</strong>입니다. 안산시가 100건으로 가장 많습니다.
+            <span class="dc-shot__zoom">그림을 누르면 크게 열립니다.</span>
+          </p>
+          <figure class="dc-shot">
+            <a id="dc-shot-a" href="#" target="_blank" rel="noopener">
+              <img id="dc-shot-img" alt="2025 경기도 연구장비 중 방위산업 관련 장비의 시군별 분포.
+                   원의 넓이가 장비 수, 파이 조각이 활용분야별 구성비입니다." loading="lazy">
+            </a>
+            <figcaption id="dc-shot-cap">그림을 불러오는 중입니다…</figcaption>
+          </figure>
+        </section>
+
+        <!-- ③ 네트워크 -->
+        <section class="fb-fig" id="fig4">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">③</span>
             <h2>기업 × 연구장비 네트워크 — 어디서 시험할 수 있나</h2>
             <span class="fb-fig__src" id="dc-net-src">—</span>
           </div>
@@ -172,10 +203,10 @@
           </div>
         </section>
 
-        <!-- ③ 통계 -->
+        <!-- ④ 통계 -->
         <section class="fb-fig" id="fig3">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">③</span>
+            <span class="fb-fig__no">④</span>
             <h2>숫자로 보기</h2>
             <span class="fb-fig__src">기업 분야 · 장비 분야 · 시군별</span>
           </div>
@@ -214,7 +245,7 @@
         <!-- 기업 명단은 표가 넓어 따로 큰 화면에서 봅니다 -->
         <section class="fb-fig" id="fig5">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">④</span>
+            <span class="fb-fig__no">⑤</span>
             <h2>수도권 방산기업 리스트</h2>
             <span class="fb-fig__src">경기 · 인천 · 서울과 그 밖 249개사</span>
           </div>

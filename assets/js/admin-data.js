@@ -21,6 +21,7 @@ const WHERE = {
   "points.json":    { dir: "defense", what: "방산 — 기업·연구장비 좌표" },
   "network.json":   { dir: "defense", what: "방산 — 네트워크와 장비 키워드" },
   "companies.json": { dir: "defense", what: "방산 — 수도권 기업 명단" },
+  "equip-map.png":  { dir: "defense", what: "방산 — 연구장비 시군 분포 그림" },
   "flood.json":     { dir: "flood",   what: "침수 — 지하공간 자료" },
 };
 const DIRS = [...new Set(Object.values(WHERE).map((x) => x.dir))];
@@ -125,7 +126,7 @@ async function draw() {
       "<span>또는 눌러서 고르기 · " +
         Object.keys(WHERE).map((n) => "<code>" + esc(n) + "</code>").join(" · ") +
       "<br>이름을 보고 알맞은 폴더에 <b>덮어씁니다</b>. 다른 이름은 받지 않습니다.</span>" +
-      '<input type="file" id="dzf" accept=".json,application/json" multiple hidden>' +
+      '<input type="file" id="dzf" accept=".json,.png,application/json,image/png" multiple hidden>' +
     "</label>" +
     '<p class="amsg" id="dzm"></p>' +
     (헛것.length
@@ -188,7 +189,8 @@ async function take(files) {
       /* upsert 를 켜야 같은 이름을 덮어씁니다 — 이것이 없으면 조용히 실패하거나
          「network (1).json」 처럼 딴 이름으로 들어갑니다. */
       const r = await sb.storage.from(BUCKET).upload(path, f, {
-        upsert: true, cacheControl: "0", contentType: "application/json",
+        upsert: true, cacheControl: "0",
+        contentType: /\.png$/i.test(f.name) ? "image/png" : "application/json",
       });
       if (r.error) throw r.error;
       done.push(path + " (" + kb(f.size) + ")");
