@@ -9,6 +9,7 @@
 |---|---|
 | `assets/data/defense/points.json` | 기업·연구장비 좌표와 통계 (약 70 KB) |
 | `assets/img/defense-cluster-card.jpg` | 목록 카드 썸네일 |
+| `assets/data/defense/complexes.json` | 경기도 산업단지 157곳 — ① 지도의 「산업단지」 체크상자(별 표시) (약 29 KB) |
 
 ## 원본 자료
 
@@ -27,6 +28,17 @@
 ```bash
 python tools/defense/build_defense_map.py
 ```
+
+### 산업단지 (① 별 표시)
+
+```bash
+python tools/defense/build_defense_complexes.py
+```
+
+원본은 `auth/산업단지/산업입지_display_new.shp` (산업입지정보시스템, 2021.3, 점 자료 157건, `.gitignore`).
+속성의 위도·경도(WGS84)를 그대로 쓰고, 지오코딩이 빗나간 「아산국가산업단지」 한 곳은
+스크립트 안 `FIX` 로 평택 포승읍에 바로잡습니다. 만들어진 `complexes.json` 은
+`admin/data.html` 에 끌어다 놓으면 `analysis/defense/` 에 들어갑니다.
 
 ## 지도 구성
 

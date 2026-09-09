@@ -35,6 +35,7 @@ tools/rail/raw.json
 # 홈페이지에는 defense-cluster.html 로 이미 실려 있고, 그쪽은 로그인 보호가 걸려 있습니다.
 # 이 꾸러미에는 보호가 없어서 함께 올리면 보호가 무의미해집니다.
 /경기도 방산기업정보/
+/auth/산업단지/
 
 # 채택하지 않은 지도 후보
 assets/img/world-b-outline.svg

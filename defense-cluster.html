@@ -38,6 +38,11 @@
     .dc-legend-both hr{border:0;border-top:1px solid rgba(0,0,0,.1);margin:.4rem 0}
     /* 기업은 분야마다 색이 달라 한 칸에 띠로 보여 줍니다 (색은 자료에서 채웁니다) */
     .fb-check .sw--multi{width:16px;border-radius:3px}
+    /* 산업단지 — 체크상자 앞 별 */
+    .fb-check .sw--star{width:auto;height:auto;border:0;font-size:1.05rem;line-height:1;
+                        color:#1e293b;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+    .dc-legend-both svg.star{display:inline-block;vertical-align:-3px;margin-right:.35rem;
+                             filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
 
     /* ⑤ 시군별 · 전국 대비 */
     .dc-two{display:grid;gap:1rem;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
@@ -175,6 +180,9 @@
             기업체와 연구장비를 한 장에 포갠 것입니다. 체크를 <strong>끄고 켜서</strong>
             기업만, 장비만, 또는 둘을 겹쳐 보실 수 있고, 기업은 <strong>분야별로도</strong> 고를 수 있습니다.
             큰 반투명 원이 연구장비(원의 크기가 장비 수), 그 위 작은 점이 기업입니다.
+            <strong>산업단지</strong>를 켜면 경기도 산업단지 157곳이 <strong>별</strong>로 얹힙니다 —
+            별의 크기가 지정면적, 색이 국가·일반·도시첨단·농공 유형이고, 점선 테두리는 아직 조성 중인 곳입니다.
+            방산기업이 어느 단지 안팎에 모여 있는지 견주어 보실 수 있습니다.
           </p>
 
           <div class="fb-controls">
@@ -189,6 +197,11 @@
                 <input type="checkbox" id="dc-both-eq" checked>
                 <span class="sw" style="border-radius:50%;background:rgba(245,158,11,.55);border-color:#92400e"></span>
                 연구장비 보유기관 <span class="fb-fig__src" id="dc-both-eq-n"></span>
+              </label>
+              <label class="fb-check">
+                <input type="checkbox" id="dc-both-ic">
+                <span class="sw sw--star" aria-hidden="true">★</span>
+                산업단지 <span class="fb-fig__src" id="dc-both-ic-n"></span>
               </label>
             </fieldset>
           </div>
@@ -437,7 +450,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/defense-cluster.js?v=202609092100" defer></script>
+  <script src="assets/js/defense-cluster.js?v=202609092200" defer></script>
   <script src="assets/js/defense-graph.js?v=202609091500" defer></script>
   <script src="assets/js/defense-cluster-network.js?v=202609091400" defer></script>
 </body>

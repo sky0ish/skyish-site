@@ -5,6 +5,8 @@
      companies  경기도 소재 방산기업(본사 지오코딩)
      equip      연구장비 보유기관(주소 단위 집계)
      defense    그중 방산 관련 장비만 추린 것
+         assets/data/defense/complexes.json  (tools/defense/build_defense_complexes.py)
+     items      경기도 산업단지 157곳 — ① 에 별로 얹습니다 (기본은 꺼 둠)
    ============================================================= */
 (function () {
   "use strict";
@@ -17,6 +19,8 @@
   var doc = null;
   var map0 = null;
   var bothEq = null;                  // 지도① 연구장비 겹
+  var bothIc = null;                  // 지도① 산업단지 겹 (별)
+  var icDoc = null;                   // complexes.json
   var bothCat = {};                   // 지도① 기업 분야별 겹
   var bothOn = {};                    // 그 가운데 지금 켜 둔 분야
   var sggKey = "co", sggDir = -1;     // 시군별 표 — 기본은 기업 많은 곳부터
@@ -67,6 +71,148 @@
         fillColor: color, fillOpacity: 0.5
       }).bindPopup(popup(d));
     }));
+  }
+
+  /* ---------- 산업단지 — 입체 별 표지 ----------
+     CircleMarker 를 빌려 다섯 꼭지 별을 그립니다. 반지름·클릭 판정은 원 그대로 쓰고
+     그리는 법만 바꿉니다. 캔버스에서는 별을 열 조각으로 나눠 왼쪽 면은 밝게,
+     오른쪽 면은 어둡게 칠하고 그림자를 깔아 입체로 보이게 합니다. (SVG 렌더러로
+     떨어지면 납작한 별 — 이 지도는 preferCanvas 라 캔버스입니다.) */
+  function shade(hex, k) {            // k>0 밝게, k<0 어둡게
+    var n = parseInt(String(hex).replace("#", ""), 16);
+    if (isNaN(n)) return hex;
+    var f = function (c) { return Math.round(k > 0 ? c + (255 - c) * k : c * (1 + k)); };
+    return "rgb(" + f(n >> 16) + "," + f((n >> 8) & 255) + "," + f(n & 255) + ")";
+  }
+  function starPts(p, R) {            // 열 꼭지 — 짝수가 바깥, 홀수가 안쪽
+    var pts = [], r = R * 0.46;
+    for (var i = 0; i < 10; i++) {
+      var a = -Math.PI / 2 + i * Math.PI / 5, d = i % 2 ? r : R;
+      pts.push([p.x + Math.cos(a) * d, p.y + Math.sin(a) * d]);
+    }
+    return pts;
+  }
+  function tracePath(ctx, pts) {
+    ctx.beginPath();
+    pts.forEach(function (q, i) { ctx[i ? "lineTo" : "moveTo"](q[0], q[1]); });
+    ctx.closePath();
+  }
+  L.Canvas.include({
+    _updateStar: function (layer) {
+      if (!this._drawing || layer._empty()) return;
+      var p = layer._point, R = Math.max(Math.round(layer._radius), 3), ctx = this._ctx;
+      var o = layer.options, pts = starPts(p, R), base = o.fillColor || "#64748b";
+      var light = shade(base, 0.5), dark = shade(base, -0.38);
+      ctx.save();
+      ctx.globalAlpha = o.fillOpacity == null ? 1 : o.fillOpacity;
+      /* 바닥 — 그림자는 윤곽 한 번만 */
+      ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = R * 0.35; ctx.shadowOffsetY = R * 0.12;
+      tracePath(ctx, pts); ctx.fillStyle = base; ctx.fill();
+      ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+      /* 열 조각 — 꼭지마다 왼쪽 면 밝게, 오른쪽 면 어둡게 (빛이 왼쪽 위에서) */
+      for (var i = 0; i < 5; i++) {
+        var tip = pts[i * 2], prev = pts[(i * 2 + 9) % 10], next = pts[i * 2 + 1];
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(prev[0], prev[1]); ctx.lineTo(tip[0], tip[1]); ctx.closePath();
+        ctx.fillStyle = light; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(tip[0], tip[1]); ctx.lineTo(next[0], next[1]); ctx.closePath();
+        ctx.fillStyle = dark; ctx.fill();
+      }
+      /* 테두리 — 조성 중은 점선 */
+      if (o.stroke !== false && o.weight) {
+        ctx.globalAlpha = o.opacity == null ? 1 : o.opacity;
+        tracePath(ctx, pts);
+        ctx.lineWidth = o.weight; ctx.strokeStyle = o.color; ctx.lineJoin = "round";
+        if (ctx.setLineDash) ctx.setLineDash(o.dashArray ? String(o.dashArray).split(/[ ,]+/).map(Number) : []);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  });
+  L.SVG.include({
+    _updateStar: function (layer) {
+      var p = layer._point, R = Math.max(Math.round(layer._radius), 3);
+      this._setPath(layer, layer._empty() ? "M0 0" :
+        starPts(p, R).map(function (q, i) { return (i ? "L" : "M") + q[0] + " " + q[1]; }).join("") + "z");
+    }
+  });
+  var StarMarker = L.CircleMarker.extend({
+    _updatePath: function () { this._renderer._updateStar(this); }
+  });
+
+  /* 별 크기 — 지정면적(천㎡) 이 30 부터 15만 까지 자릿수가 달라 로그로 눌러 그립니다.
+     도 전체 축척에서 기업 점을 다 가리지 않을 만큼만 — 7 ~ 22px */
+  function icR(area) {
+    return Math.max(7, Math.min(22, 5 + 2.6 * Math.log(Number(area) / 20 + 1) / Math.LN2));
+  }
+  /** 범례에 쓰는 작은 별 — 지도 위 것과 같은 모양 */
+  function starSvg(color, dashed) {
+    var pts = starPts({ x: 8, y: 8.5 }, 7.5).map(function (q) {
+      return q[0].toFixed(1) + "," + q[1].toFixed(1);
+    }).join(" ");
+    return '<svg class="star" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">' +
+      '<polygon points="' + pts + '" fill="' + (dashed ? "none" : color) + '" stroke="' +
+      (dashed ? "#64748b" : shade(color, -0.55)) + '" stroke-width="1"' +
+      (dashed ? ' stroke-dasharray="2 1.5"' : "") + "/></svg>";
+  }
+  function icPopup(d) {
+    var 면적 = "지정면적 " + num(d.area) + "천㎡";
+    if (d.managed && d.managed !== d.area) 면적 += " · 관리면적 " + num(d.managed) + "천㎡";
+    return "<strong>" + esc(d.name) + "</strong> " +
+           '<span style="color:#6b6360">' + esc(d.type) + "산업단지 · " + esc(d.status) + "</span><br>" +
+           면적 + "<br>" + esc(d.addr || d.si) +
+           (d.note ? '<br><span style="color:#8b8280;font-size:.85em">' + esc(d.note) + "</span>" : "");
+  }
+
+  /** 산업단지 자료를 따로 받아 별로 얹습니다 — 못 받아도 위 지도는 그대로여야 합니다 */
+  function buildIc(m) {
+    var cb = document.getElementById("dc-both-ic"), n = document.getElementById("dc-both-ic-n");
+    if (!cb || !map0) return;
+    cb.disabled = true;
+    m.loadAnalysisJson("defense/complexes.json")
+      .then(function (j) {
+        icDoc = j;
+        var color = {};
+        (j.types || []).forEach(function (t) { color[t.key] = t.color; });
+        bothIc = L.featureGroup((j.items || []).map(function (d) {
+          var base = color[d.type] || "#64748b", 조성중 = d.status !== "완료";
+          return new StarMarker([d.lat, d.lon], {
+            radius: icR(d.area), fillColor: base, fillOpacity: 조성중 ? 0.78 : 1,
+            color: 조성중 ? "#fff" : shade(base, -0.55), weight: 조성중 ? 1.5 : 1,
+            opacity: 1, dashArray: 조성중 ? "3 2" : null
+          }).bindPopup(icPopup(d));
+        }));
+        if (n) n.textContent = "· " + num(j.n) + "곳";
+        cb.disabled = false;
+        /* 범례 — 별 크기와 유형 색, 점선은 조성 중 */
+        var lg = document.getElementById("dc-legend0");
+        if (lg && !document.getElementById("dc-legend0-ic")) {
+          var div = document.createElement("div");
+          div.id = "dc-legend0-ic"; div.hidden = !cb.checked;
+          div.innerHTML = "<hr><b>산업단지 · 별 크기가 지정면적</b>" +
+            (j.types || []).map(function (t) {
+              return "<div>" + starSvg(t.color, false) +
+                     esc(t.key) + ' <span style="color:#8b8280">' + num(t.n) + "</span></div>";
+            }).join("") +
+            "<div>" + starSvg("#64748b", true) + "점선 테두리 — 조성 중</div>";
+          lg.appendChild(div);
+        }
+        toggleIc(cb.checked);
+      })
+      .catch(function (e) {
+        console.error(e);
+        if (n) n.textContent = "· 자료 없음 — complexes.json 을 올려 주세요";
+        cb.checked = false;
+      });
+  }
+
+  /** 산업단지 겹을 켜고 끕니다 */
+  function toggleIc(on) {
+    if (!bothIc || !map0) return;
+    if (on) { if (!map0.hasLayer(bothIc)) bothIc.addTo(map0); }
+    else if (map0.hasLayer(bothIc)) map0.removeLayer(bothIc);
+    var lg = document.getElementById("dc-legend0-ic");
+    if (lg) lg.hidden = !on;
+    syncCo();          // 별은 장비 원 위, 기업 점은 그 위로
   }
 
   /* ---------- 지도 ① 기업체 × 연구장비 ----------
@@ -148,6 +294,8 @@
       if (bothOn[k]) { if (!map0.hasLayer(g)) g.addTo(map0); }
       else if (map0.hasLayer(g)) map0.removeLayer(g);
     });
+    /* 겹 차례 — 장비 원 < 산업단지 별 < 기업 점 */
+    if (bothIc && map0.hasLayer(bothIc)) bothIc.bringToFront();
     Object.keys(bothCat).forEach(function (k) {
       if (map0.hasLayer(bothCat[k])) bothCat[k].bringToFront();
     });
@@ -511,6 +659,8 @@
         doc = j;
         buildBoth();
         buildStats();
+        /* 산업단지 별 — 자료를 따로 받습니다. 없어도 지도는 그대로입니다. */
+        try { buildIc(방); } catch (e) { console.error(e); }
         /* ⑤ 는 기업 명단을 따로 받습니다 — 여기서 무슨 일이 나도
            위 지도와 ④ 통계는 그대로여야 합니다. */
         try { buildFive(방); } catch (e) { console.error(e); }
@@ -526,6 +676,8 @@
     if (mCo) mCo.addEventListener("change", function () { toggleCoAll(mCo.checked); });
     var mEq = document.getElementById("dc-both-eq");
     if (mEq) mEq.addEventListener("change", function () { toggleEq(mEq.checked); });
+    var mIc = document.getElementById("dc-both-ic");
+    if (mIc) mIc.addEventListener("change", function () { toggleIc(mIc.checked); });
 
     document.querySelectorAll("[data-sort]").forEach(function (b) {
       b.addEventListener("click", function () {
