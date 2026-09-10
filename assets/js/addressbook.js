@@ -1044,6 +1044,40 @@ export async function daySchedule(ymd) {
   return out;
 }
 
+/* ── 만난 자리 — 이 사람 이름이 적힌 글 모두 ──
+   「자문회의 개최건의, 회의록이나 세미나 개최개요 등 내가 만난 사람들의 이름이 있는 것들은
+     해당 주소록 명함 속 맨 아래쪽에 만난 자리에 추가해서 넣어줘」
+   게시판(Schedule·회의록·일기 …)의 「만난 사람」·제목·본문·행사명에서 이름을 찾습니다.
+   개최건의·회의록 PDF 는 그 글에 붙어 있으므로, 붙임 이름을 함께 보여 줍니다.
+   서버에 보내는 것은 이름 하나뿐입니다. */
+const metCache = new Map();
+
+/** 이름이 적힌 글들 — [{id, title, category, event_date, place, event, tag, people, files}] 새것부터 */
+export async function metNotes(name) {
+  const n = String(name || "").trim();
+  if (n.length < 2 || /[%_,.()]/.test(n)) return [];
+  if (metCache.has(n)) return metCache.get(n);
+  let out = [];
+  try {
+    const like = "%" + n + "%";
+    const r = await sb.from("notes")
+      .select("id,title,category,event_date,place,people,event,tag,files")
+      .or("people.ilike." + like + ",title.ilike." + like + ",event.ilike." + like + ",body.ilike." + like)
+      .order("event_date", { ascending: false, nullsFirst: false })
+      .limit(40);
+    if (!r.error) out = r.data || [];
+  } catch (e) { /* 못 받아도 명함은 그대로 보입니다 */ }
+  metCache.set(n, out);
+  return out;
+}
+
+/** 붙임 가운데 「어디서 만났는지」 를 말해 주는 것들 — 개최건의·개최개요·회의록·프로그램 */
+export function metFiles(files) {
+  return (Array.isArray(files) ? files : [])
+    .map((f) => String((f && f.name) || ""))
+    .filter((nm) => /(개최\s*건의|개최\s*개요|회의록|프로그램|초청|안내|식순)/.test(nm) && !/회의록내용/.test(nm));
+}
+
 /** 그 일정에 이 사람 이름이 적혀 있는가 — 「만난 사람」 칸을 봅니다 */
 export function metThere(row, name) {
   const n = photoKey(name);
@@ -1551,6 +1585,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
             /* 명함 등록일의 일정 — 「언제 무슨 모임에서 만났는지」.
                그날 적어 두신 것이 없으면 아무것도 안 그립니다. */
             '<div class="aday" id="abDay" hidden></div>' +
+            /* 만난 자리 — 이 사람 이름이 적힌 글 모두 (개최건의·회의록·개최개요가 붙은 글) */
+            '<div class="aday amet" id="abMet" hidden></div>' +
           "</div>" +
           /* 사진 — 붙여넣기(Ctrl+V) · 끌어놓기 · 눌러서 고르기 */
           '<div class="aphoto" id="abPhoto" tabindex="0" ' +
@@ -1581,6 +1617,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     try { wirePhoto(r, box); }
     catch (e) { say("사진 칸을 붙이지 못했습니다 — " + (e && e.message)); }
     fillDay(r).catch(() => {});          // 그날 일정은 천천히 채웁니다
+    fillMet(r).catch(() => {});          // 만난 자리도
     const edit = document.getElementById("abEdit");
     if (edit) edit.addEventListener("click", () => editForm(r, box));
   }
@@ -1615,6 +1652,31 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           "<span>" + (x.event_time ? esc(x.event_time) + " " : "") + esc(x.title) +
           (bits ? '<small>' + esc(bits) + "</small>" : "") + "</span>" +
           (x.g ? '<em class="aday__g" title="구글 달력">G</em>' : "") + "</a>";
+      }).join("");
+  }
+
+  /* 이 사람 이름이 적힌 글을 모두 찾아 「만난 자리」 로 명함 맨 아래에 적습니다. */
+  async function fillMet(r) {
+    const box = document.getElementById("abMet");
+    if (!box) return;
+    const list = await metNotes(r.name);
+    if (!list.length || document.getElementById("abMet") !== box) return;
+    const CAT = { schedule: "일정", minutes: "회의록", diary: "일기", people: "사람들", daily: "일상", contacts: "연락망", etc: "ETC" };
+    box.hidden = false;
+    box.innerHTML =
+      '<b class="aday__h">만난 자리 — ' + list.length + "건</b>" +
+      list.map((x) => {
+        const cat = x.category || "schedule";
+        const day = String(x.event_date || "").slice(0, 10).replace(/-/g, ".");
+        const bits = [x.tag ? "[" + x.tag + "]" : "", x.event, x.place].filter(Boolean).join(" · ");
+        const docs = metFiles(x.files);
+        return '<a class="aday__i" href="blog.html?cat=' + esc(cat) + "&id=" + esc(x.id) + '">' +
+          '<i class="aday__me" title="' + esc(CAT[cat] || cat) + '">●</i>' +
+          "<span>" + (day ? esc(day) + " " : "") + esc(x.title || "(제목 없음)") +
+          (bits ? "<small>" + esc(bits) + "</small>" : "") +
+          (docs.length ? '<small class="amet__docs">📎 ' + esc(docs.join(" · ")) + "</small>" : "") +
+          "</span>" +
+          '<em class="aday__g" title="어느 게시판">' + esc(CAT[cat] || cat) + "</em></a>";
       }).join("");
   }
 

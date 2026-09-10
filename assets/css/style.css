@@ -3074,6 +3074,8 @@ html[data-cp]:not([data-cp="tome"]) .contact-top .contact-grid { display: none; 
 .aday__i span { flex: 1; min-width: 0; }
 .aday__i small { display: block; opacity: .6; font-size: .82em; }
 .aday__me { color: #4f9d92; font-style: normal; flex: none; }
+.amet__docs { color: #6b6360 !important; opacity: .85 !important; }
+.amet .aday__g { font-size: .66em; opacity: .7; }
 .aday__g { flex: none; font-style: normal; font-size: .7em; font-weight: 700;
   color: #4285f4; opacity: .8; }
 
