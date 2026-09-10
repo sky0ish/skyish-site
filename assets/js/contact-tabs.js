@@ -25,6 +25,7 @@ export async function initContactTabs() {
   };
 
   function show(k) {
+    document.documentElement.dataset.cp = k;      // contact.html 머리의 미리 감추기와 짝
     tabs.querySelectorAll("button").forEach((b) =>
       b.classList.toggle("on", b.dataset.p === k));
     Object.entries(panes).forEach(([p, el]) => {
@@ -46,6 +47,12 @@ export async function initContactTabs() {
 
   tabs.querySelectorAll("button").forEach((b) =>
     b.addEventListener("click", () => show(b.dataset.p)));
+
+  /* 주소에 ?p=addr 처럼 갈래가 적혀 오면 **먼저** 그 갈래로 갑니다 —
+     관리자 확인(아래 await)이 끝날 때까지 To Me 화면이 잠깐 떠 있다가 넘어가던 것을 막습니다.
+     관리자가 아니어서 그 갈래가 사라지면 맨 아래에서 To Me 로 되돌립니다. */
+  const first = new URLSearchParams(location.search).get("p");
+  if (first && panes[first]) show(first);
 
   /* 활동기관은 누구나 봅니다 — 바깥을 부르지 않으므로 곧바로 그립니다 */
   const okOrgs = initOrgs();

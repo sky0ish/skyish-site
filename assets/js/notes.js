@@ -14,7 +14,7 @@ import { readBrief } from "./notes-brief.js?v=202609010300";
 import * as ST from "./notes-stats.js?v=202609010300";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609111400";
-import * as FT from "./notes-facetag.js?v=202609052100";
+import * as FT from "./notes-facetag.js?v=202609111500";
 import * as MN from "./notes-minutes.js?v=202609091200";
 import * as PP from "./notes-photo-pick.js?v=202609101300";
 import * as CD from "./notes-cards.js?v=202609051200";
@@ -1519,7 +1519,6 @@ export async function initNotes(mountId = "notesapp") {
           "잠시 뒤 다시 열어 보세요.";
     if (mine && src !== url) host.__revoke = () => URL.revokeObjectURL(src);
     try { cards = await addrCards(); } catch (e) {}
-    const names = cards.map((c) => c.name).filter(Boolean);
     /* 파일 이름을 「이름_소속」 으로 짓기 위해 소속을 찾습니다 */
     const orgOf = (n) => {
       const k = CD.keyOf(n);
@@ -1565,15 +1564,21 @@ export async function initNotes(mountId = "notesapp") {
 
     function showHits(text) {
       const people = typeof getPeople === "function" ? getPeople() : "";
-      const list = FT.nameHints(people, CD.splitPeople, names, text);
+      /* 동명이인이면 소속·직함을 같이 보여 골라 잡게 합니다 */
+      const list = FT.nameHints(people, CD.splitPeople, cards, text);
       hits.innerHTML = list.length
         ? list.map((x, i) =>
-            '<button type="button" class="fthit' + (x.here ? " here" : "") +
+            '<button type="button" class="fthit' + (x.here ? " here" : "") + (x.twin ? " twin" : "") +
             '" data-i="' + i + '">' + esc(x.name) +
+            (x.twin && (x.org || x.title)
+              ? "<small>" + esc([x.org, x.title].filter(Boolean).join(" · ")) + "</small>" : "") +
             (x.here ? "<em>이 자리</em>" : "") + "</button>").join("")
         : '<span class="ftnone">치신 이름을 그대로 씁니다 — Enter</span>';
       hits.querySelectorAll(".fthit").forEach((b) =>
-        b.addEventListener("click", () => take(list[+b.dataset.i].name)));
+        b.addEventListener("click", () => {
+          const x = list[+b.dataset.i];
+          take(x.name, x.twin ? x.org : "");
+        }));
     }
     q.addEventListener("input", () => showHits(q.value));
     q.addEventListener("keydown", (e) => {
@@ -1583,17 +1588,18 @@ export async function initNotes(mountId = "notesapp") {
       if (t) take(t);
     });
 
-    async function take(name) {
+    async function take(name, pickedOrg) {
       if (!cur || !name) return;
       const at2 = cur;
       msg.textContent = "자르는 중…";
       ask.hidden = true; sel.hidden = true; cur = null;
       try {
         const blob = await cropFace(img, at2);
-        await addrSavePhoto(name, blob);
+        /* 동명이인을 골라 잡았으면 소속까지 열쇠에 넣어 그분에게만 붙입니다 */
+        await addrSavePhoto(name, blob, pickedOrg || undefined);
         /* 파일 이름은 「이름_소속」 — 동명이인을 눈으로 가릴 수 있게.
            다시 읽을 때는 밑줄 앞만 보므로 같은 사람으로 되찾힙니다. */
-        const org = orgOf(name);
+        const org = pickedOrg || orgOf(name);
         const saved = await addrToFolder(org ? name + "_" + org : name, blob);
         tags.push({ name: name, box: at2 });
         drawMarks();

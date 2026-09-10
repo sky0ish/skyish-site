@@ -73,19 +73,35 @@ export function fitSize(w, h, max) {
  * @param cardNames   명함첩 이름들 (문자열 목록)
  * @param q           지금 치고 있는 글자
  */
-export function nameHints(peopleText, splitPeople, cardNames, q) {
+export function nameHints(peopleText, splitPeople, cards, q) {
   const s = String(q || "").trim().toLowerCase();
+  /* 명함은 이름만(글자)이어도, {name, company, title} 이어도 받습니다.
+     같은 이름이 명함첩에 둘 이상이면(동명이인) 소속·직함을 함께 내놓아 고를 수 있게 합니다 —
+     「동명이인의 경우 사진에서 얼굴 선택시 직업이 같이 나오게 해줘」 */
+  const list = (Array.isArray(cards) ? cards : [])
+    .map((c) => (typeof c === "string" ? { name: c } : c))
+    .filter((c) => c && String(c.name || "").trim());
+  const count = {};
+  list.forEach((c) => { const k = String(c.name).trim(); count[k] = (count[k] || 0) + 1; });
   const seen = new Set();
   const out = [];
-  const put = (n, here) => {
+  const put = (n, org, title, here) => {
     const k = String(n || "").trim();
-    if (!k || seen.has(k)) return;
-    if (s && !k.toLowerCase().includes(s)) return;
-    seen.add(k);
-    out.push({ name: k, here: !!here });
+    if (!k) return;
+    const o = String(org || "").trim(), t = String(title || "").trim();
+    const key = k + "|" + o;
+    if (seen.has(key)) return;
+    if (s && !k.toLowerCase().includes(s) && !o.toLowerCase().includes(s)) return;
+    seen.add(key);
+    out.push({ name: k, org: o, title: t, here: !!here, twin: (count[k] || 0) > 1 });
   };
-  (typeof splitPeople === "function" ? splitPeople(peopleText) : []).forEach((n) => put(n, true));
-  (Array.isArray(cardNames) ? cardNames : []).forEach((n) => put(n, false));
+  (typeof splitPeople === "function" ? splitPeople(peopleText) : []).forEach((n) => {
+    const k = String(n || "").trim();
+    const cs = list.filter((c) => String(c.name).trim() === k);
+    if (cs.length) cs.forEach((c) => put(c.name, c.company || c.org, c.title, true));
+    else put(k, "", "", true);
+  });
+  list.forEach((c) => put(c.name, c.company || c.org, c.title, false));
   return out.slice(0, 20);
 }
 

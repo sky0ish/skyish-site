@@ -2812,6 +2812,8 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .ctabs button.on { background: var(--teal); border-color: var(--teal); color: #fff; }
 .ctabs button[hidden], .ctabs a[hidden] { display: none; }
 .contact-top { padding-top: 6rem; }
+/* 갈래가 정해져 들어오면(html[data-cp]) To Me 격자는 처음부터 안 그립니다 — 모듈이 show() 로 바꿔 줄 때까지 */
+html[data-cp]:not([data-cp="tome"]) .contact-top .contact-grid { display: none; }
 
 /* ── 활동기관 — 몸담고 있는 곳의 배너 ────────────────────────
    기관마다 제 빛깔(--c)을 왼쪽 띠와 마크에 씁니다.
@@ -3183,6 +3185,8 @@ body.diary-on #notesapp > *:not(.ndiary) {
   transition:.16s var(--ease); }
 .fthit:hover { border-color:var(--teal); color:var(--teal); }
 .fthit.here { background:#f2f8f6; border-color:#bcdcd5; }
+.fthit small { margin-left:.35em; font-size:.74em; font-weight:400; color:var(--mauve); }
+.fthit.twin { border-style:dashed; }
 .fthit em { font-style:normal; font-size:.66rem; color:var(--mauve);
   margin-left:5px; }
 .ftnone { font-size:.78rem; color:var(--mauve); }

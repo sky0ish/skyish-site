@@ -67,6 +67,19 @@ eq("같은 이름은 한 번만",
 eq("만난 사람이 비어도 명함첩은 나온다",
    nameHints("", splitPeople, CARDS, "박").map((x) => x.name), ["박영희"]);
 eq("아무것도 없으면", nameHints("", splitPeople, [], ""), []);
+/* 「동명이인의 경우 사진에서 얼굴 선택시 직업이 같이 나오게 해줘」 */
+const OBJ = [{ name: "김형준", company: "ASSETTA", title: "대표이사" },
+             { name: "김형준", company: "한국과학기술원", title: "석좌교수" },
+             { name: "박영희", company: "경기연구원", title: "연구위원" }];
+const H = nameHints("", splitPeople, OBJ, "");
+eq("★ 동명이인은 따로 한 줄씩, 소속·직함과 함께",
+   H.map((x) => [x.name, x.org, x.title, x.twin]),
+   [["김형준", "ASSETTA", "대표이사", true], ["김형준", "한국과학기술원", "석좌교수", true],
+    ["박영희", "경기연구원", "연구위원", false]]);
+eq("소속으로도 좁혀진다", nameHints("", splitPeople, OBJ, "카이스트").length + nameHints("", splitPeople, OBJ, "한국과학").map((x) => x.org).join(), "0한국과학기술원");
+eq("그 자리에 있던 동명이인은 두 줄 다 「이 자리」",
+   nameHints("김형준", splitPeople, OBJ, "").filter((x) => x.name === "김형준").map((x) => x.here), [true, true]);
+eq("글자 명함과 섞여도 된다", nameHints("", splitPeople, ["서민호", { name: "김철수" }], "").map((x) => x.name), ["서민호", "김철수"]);
 
 console.log("\n── 본문에 남길 한 줄 ──");
 eq("이름을 모아 적는다",
@@ -76,4 +89,5 @@ eq("하나도 없으면 빈 줄", tagLine([]), "");
 eq("아무것도 아닌 것", tagLine(null), "");
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
-process.exit(bad ? 1 : 0);
+globalThis.__testBad = bad;
+if (typeof process !== "undefined" && process.exit) process.exit(bad ? 1 : 0);
