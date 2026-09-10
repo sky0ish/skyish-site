@@ -2803,14 +2803,15 @@ body.diary-on #notesapp > *:not(.ndiary) {
 /* ── Contact 세 갈래 ────────────────────────────────────────
    To Me · 주소록 · Sites. 뒤 둘은 관리자에게만 단추가 생깁니다. */
 .ctabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 2rem; }
-.ctabs button {
+.ctabs button, .ctabs a {
   padding: .5em 1.15em; border-radius: 100px; border: 1px solid var(--line);
   background: #fff; color: var(--mauve); font-family: inherit; font-size: .84rem;
-  font-weight: 600; cursor: pointer; transition: .16s var(--ease);
+  font-weight: 600; cursor: pointer; transition: .16s var(--ease); text-decoration: none; line-height: 1.4;
 }
-.ctabs button:hover { border-color: var(--teal); color: var(--teal-text); }
+.ctabs button:hover, .ctabs a:hover { border-color: var(--teal); color: var(--teal-text); }
 .ctabs button.on { background: var(--teal); border-color: var(--teal); color: #fff; }
-.ctabs button[hidden] { display: none; }
+.ctabs button[hidden], .ctabs a[hidden] { display: none; }
+.contact-top { padding-top: 6rem; }
 
 /* ── 활동기관 — 몸담고 있는 곳의 배너 ────────────────────────
    기관마다 제 빛깔(--c)을 왼쪽 띠와 마크에 씁니다.

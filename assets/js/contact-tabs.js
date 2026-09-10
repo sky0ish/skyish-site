@@ -57,6 +57,9 @@ export async function initContactTabs() {
   if (okAddr)  btn("addr").hidden = false;  else btn("addr").remove();
   if (okSites) btn("sites").hidden = false; else btn("sites").remove();
   if (okTodo)  btn("todo").hidden = false;  else btn("todo").remove();
+  /* 여섯째 단추 — 달력(APP 첫 화면)으로 돌아가기. 관리자에게만 (달력이 관리자 것이라). */
+  const cal = document.getElementById("cCal");
+  if (cal) { if (okTodo) cal.hidden = false; else cal.remove(); }
 
   // 주소에 ?p=addr 이 붙어 오면 그 갈래를 폅니다
   const want = new URLSearchParams(location.search).get("p");
