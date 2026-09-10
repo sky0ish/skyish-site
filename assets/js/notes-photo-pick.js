@@ -101,17 +101,21 @@ const EYE_MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmark
 /* 이 값을 넘으면 감은 눈으로 봅니다 (0=완전히 뜸, 1=완전히 감음) */
 const BLINK = 0.5;
 
-let detJob = null;          // 얼굴 찾기 프로그램 — 한 번만 내려받습니다
+let boxJob = null;          // 얼굴 찾기 프로그램 — 한 번만 내려받습니다
 
-/** 얼굴 찾는 이를 준비합니다. 못 하면 null (그때는 큰 사진으로 고릅니다). */
-export function faceFinder() {
-  if (detJob) return detJob;
-  detJob = (async () => {
+/** 얼굴 **자리**를 찾는 이를 준비합니다 — (그림) → [{x, y, w, h}] (그림 픽셀).
+ *  못 하면 null. 회의록 안 얼굴 사진을 그 사람의 주소록 사진으로 자를 때 씁니다. */
+export function faceBoxFinder() {
+  if (boxJob) return boxJob;
+  boxJob = (async () => {
     /* ① 브라우저가 이미 가지고 있으면 그것을 씁니다 (안드로이드 크롬 등) */
     try {
       if (typeof window !== "undefined" && typeof window.FaceDetector === "function") {
         const d = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 64 });
-        const got = async (img) => (await d.detect(img)).length;
+        const got = async (img) => (await d.detect(img)).map((f) => {
+          const b = f.boundingBox || {};
+          return { x: b.x || 0, y: b.y || 0, w: b.width || 0, h: b.height || 0 };
+        });
         await got(new ImageData(8, 8));            // 정말 도는지 한 번 봅니다
         return got;
       }
@@ -126,10 +130,18 @@ export function faceFinder() {
         runningMode: "IMAGE",
         minDetectionConfidence: 0.35,
       });
-      return async (img) => ((det.detect(img) || {}).detections || []).length;
+      return async (img) => ((det.detect(img) || {}).detections || []).map((f) => {
+        const b = f.boundingBox || {};
+        return { x: b.originX || 0, y: b.originY || 0, w: b.width || 0, h: b.height || 0 };
+      });
     } catch (e) { return null; }
   })();
-  return detJob;
+  return boxJob;
+}
+
+/** 얼굴 찾는 이를 준비합니다 — (그림) → 얼굴 수. 못 하면 null (그때는 큰 사진으로 고릅니다). */
+export function faceFinder() {
+  return faceBoxFinder().then((fb) => (fb ? async (img) => (await fb(img)).length : null));
 }
 
 let eyeJob = null;
@@ -170,7 +182,7 @@ export function eyeFinder() {
 }
 
 /** 그림을 적당한 크기로 줄여 그립니다 — 큰 사진을 그대로 넣으면 느립니다 */
-async function toCanvas(blob, max) {
+export async function toCanvas(blob, max) {
   const bmp = await createImageBitmap(blob);
   const s = Math.min(1, (max || 1024) / Math.max(bmp.width, bmp.height));
   const w = Math.max(1, Math.round(bmp.width * s));

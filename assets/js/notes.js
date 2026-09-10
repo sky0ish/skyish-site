@@ -16,9 +16,11 @@ import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609091200";
 import * as FT from "./notes-facetag.js?v=202609052100";
 import * as MN from "./notes-minutes.js?v=202609091200";
-import * as PP from "./notes-photo-pick.js?v=202609082100";
+import * as PP from "./notes-photo-pick.js?v=202609101300";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609081500";
+import * as WS from "./notes-workshop.js?v=202609101300";
+import * as HX from "./hwpx.js?v=202609101300";
 
 /** 사진이 이만큼 넘게 있으면 앨범에도 통째로 담습니다 */
 const ALBUM_MIN = 3;
@@ -406,6 +408,7 @@ export async function initNotes(mountId = "notesapp") {
         'title="0_schedule 폴더를 고르면 행사마다 글을 만들어 드립니다">📁 폴더에서 가져오기' +
         '<input type="file" id="nFolder" webkitdirectory directory multiple hidden></label>' +
       '<button type="button" class="nbtn" id="nRec" title="1.회의록 폴더를 고르세요 — 회의마다 그날 일정에 회의록 PDF 가 붙습니다">🎙 회의록 붙이기</button>' +
+      '<button type="button" class="nbtn" id="nWs" title="1.세미나_토론 폴더(또는 행사 폴더 하나)를 고르세요 — 폴더 이름이 글 제목이 되고, 회의록·자료·사진이 모두 붙습니다">📂 워크샵 올리기</button>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
@@ -2600,6 +2603,245 @@ export async function initNotes(mountId = "notesapp") {
     return { error: null, dropped };
   }
 
+  /* ── 워크샵·세미나 폴더 올리기 ──
+     「워크샵 등의 경우 여기처럼 사진, 회의록이 있는 경우 전부 Schedule 게시판에
+       정보가 올라가게 해줘. 폴더명으로 게시판글 이름으로 해주면되.
+       회의록 아래에 사진이 쭉 붙게 해주면되.」
+     1.세미나_토론 폴더(행사 폴더 여럿)를 고르셔도, 행사 폴더 하나를 고르셔도 됩니다.
+     폴더 이름이 곧 글 제목입니다. 회의록(hwpx)은 안의 글을 본문에, 붙여 넣은
+     사진을 붙임으로 꺼냅니다. 그다음 행사 정보 · 발표자료 · 폴더의 사진이 차례로 붙습니다.
+     회의록에 이름 옆에 얼굴 사진이 붙어 있으면 그 이름의 주소록 사진으로도 갑니다. */
+  let wsBusy = false;
+  async function attachWorkshops(dir) {
+    const NL = String.fromCharCode(10);
+    const folders = [], bag = new Map();          // 폴더이름 → {경로: 손잡이}
+    const walk = async (h, base, out, hs, depth) => {
+      for await (const e of h.values()) {
+        const p = base ? base + "/" + e.name : e.name;
+        if (e.kind === "file") { out.push({ path: p, name: e.name }); hs[p] = e; continue; }
+        if (e.kind === "directory" && depth < 3 && !WS.skipDir(e.name)) {
+          try { await walk(e, p, out, hs, depth + 1); } catch (x) { /* 못 읽는 폴더는 건너뜁니다 */ }
+        }
+      }
+    };
+    try {
+      const one = WS.parseFolder(dir.name).date ? [dir] : [];
+      if (!one.length) {
+        for await (const e of dir.values()) {
+          if (e.kind === "directory" && WS.parseFolder(e.name).date) one.push(e);
+        }
+      }
+      for (const e of one) {
+        const out = [], hs = {};
+        try { await walk(e, "", out, hs, 0); } catch (x) {}
+        folders.push({ name: e.name, files: out });
+        bag.set(e.name, hs);
+      }
+    } catch (err) {
+      alert("폴더를 읽지 못했습니다 — " + (err && err.message));
+      return;
+    }
+    const { jobs, skip } = WS.plan(folders);
+    if (!jobs.length) {
+      alert("올릴 행사 폴더를 못 찾았습니다." + NL +
+        "1.세미나_토론 처럼 「20260910_[참석] …」 꼴 폴더가 든 곳이나, 그 폴더 하나를 골라 주세요." +
+        (skip.length ? NL + NL + skip.map((x) => "· " + x.name + " — " + x.why).join(NL) : ""));
+      return;
+    }
+    const cnt = (k) => jobs.reduce((n, j) => n + (j[k] || []).length, 0);
+    if (!confirm("행사 " + jobs.length + "건을 Schedule 글로 올립니다 — 글 제목은 폴더 이름입니다." + NL +
+      "회의록 " + cnt("minutes") + " · 행사 정보 " + cnt("info") + " · 발표자료 " + cnt("slides") +
+      " · 사진 " + cnt("pics") + "장 (회의록 안에 붙여 넣은 사진은 따로 더 꺼냅니다)" + NL +
+      "같은 제목의 글이 있으면 거기에 이어 붙입니다. 녹음은 올리지 않습니다. 계속할까요?")) return;
+
+    const btn = document.getElementById("nWs");
+    wsBusy = true; btn.disabled = true;
+    const was = btn.textContent;
+    const say = (t) => { btn.textContent = t; };
+    try {
+      try { await load(); } catch (e) {}
+      const done = [], failed = [], faceNote = [];
+      skip.forEach((x) => failed.push(x.name + " — " + x.why));
+      /* 주소록에 있는 이름 — 회의록에 직함 없이 이름만 적혀도 알아보려고 */
+      let known = new Set();
+      try { known = new Set((await addrCards() || []).map((c) => c && c.name).filter(Boolean)); }
+      catch (e) {}
+
+      for (const job of jobs) {
+        const hs = bag.get(job.raw) || {};
+        const ups = [], notes = [];
+        try {
+          say("올리는 중… " + job.raw);
+          const row = rows.find((r) => r.category === "schedule" && WS.sameTitle(r.title, job.raw));
+          const have = row ? (row.files || []) : [];
+          const put = async (file) => {
+            if (!file) return false;
+            if (MN.alreadyHas(have, file.name) || ups.some((u) => u.name === file.name)) return false;
+            if (file.size > WS.MAXSIZE) { notes.push(file.name + " — 20MB 를 넘어 뺍니다"); return false; }
+            ups.push(await NF.upload(file));
+            return true;
+          };
+          const fileAt = async (p) => (hs[p] ? await hs[p].getFile() : null);
+
+          /* ① 회의록 — hwpx 는 안을 열어 글과 사진을 꺼냅니다 */
+          let text = "", paras = [];
+          const inside = [];
+          for (const p of job.minutes) {
+            const f = await fileAt(p);
+            if (!f) continue;
+            if (/\.hwpx$/i.test(f.name)) {
+              try {
+                const r = await HX.readHwpx(f);
+                if (r.text && !text) { text = r.text; paras = r.paras || []; }
+                r.images.forEach((im) => inside.push(im));
+              } catch (e) { notes.push(f.name + " — 안을 읽지 못해 파일만 붙입니다"); }
+            }
+            await put(f);
+          }
+          for (const p of job.text) {
+            const f = await fileAt(p);
+            if (!f) continue;
+            if (!text) { try { text = await f.text(); } catch (e) {} }
+            await put(f);
+          }
+          /* ② 행사 정보 · 발표자료 · 그 밖의 자료 */
+          for (const p of [].concat(job.info, job.slides, job.docs)) await put(await fileAt(p));
+
+          /* ③ 사진 — 회의록 안의 것 먼저 (BMP 는 JPEG 로 줄여서), 그다음 폴더의 것.
+             게시판은 그림을 본문 아래에 펼쳐 보이므로 회의록 아래에 쭉 이어집니다. */
+          const faces = [];
+          let n = 0;
+          for (const im of inside) {
+            n++;
+            say("회의록 사진 꺼내는 중… " + n + "/" + inside.length);
+            try {
+              const raw = new Blob([im.bytes], { type: im.type });
+              const { blob } = await HX.shrinkImage(raw);
+              const ext = blob.type === "image/jpeg" ? "jpg"
+                        : ((im.name.split(".").pop() || "jpg").toLowerCase());
+              const fname = job.date.replace(/-/g, "") + "_회의록_사진" +
+                            String(n).padStart(2, "0") + "." + ext;
+              await put(new File([blob], fname, { type: blob.type }));
+              /* 얼굴 하나짜리면 그 앞에 적힌 사람의 주소록 사진으로 */
+              const who = WS.nameForImage(paras, im.id, known);
+              if (who) {
+                const face = await onlyFace(blob);
+                if (face) faces.push({ who: who, blob: face, from: fname });
+              }
+            } catch (e) {
+              notes.push("회의록 사진 " + n + " — 꺼내지 못했습니다 (" + ((e && e.message) || "") + ")");
+            }
+          }
+          for (const p of job.pics) {
+            const f = await fileAt(p);
+            if (!f) continue;
+            try {
+              const { blob, changed } = await HX.shrinkImage(f);
+              await put(changed
+                ? new File([blob], f.name.replace(/\.[^.]+$/, "") + ".jpg", { type: blob.type })
+                : f);
+            } catch (e) { notes.push(f.name + " — 올리지 못했습니다"); }
+          }
+
+          if (!ups.length && !row) {
+            failed.push(job.raw + " — 올릴 파일이 없습니다" +
+                        (notes.length ? " (" + notes.join(", ") + ")" : ""));
+            continue;
+          }
+
+          /* ④ 글 — 같은 제목이 있으면 이어 붙이고, 없으면 새로 */
+          const body = WS.buildBody(job, text);
+          if (row) {
+            const patch = { files: have.concat(ups) };
+            if (!String(row.body || "").trim()) patch.body = body;
+            if (!row.tag && job.tag) patch.tag = job.tag;
+            if (!row.event_date) patch.event_date = job.date;
+            const r2 = await sb.from("notes").update(patch).eq("id", row.id);
+            if (r2.error) throw r2.error;
+            Object.assign(row, patch);
+            done.push("「" + job.raw + "」 에 " + ups.length + "건 이어 붙였습니다");
+          } else {
+            const fresh = {
+              category: "schedule", tag: job.tag || null, title: job.title,
+              body: body, event_date: job.date, files: ups, created_by: user.id,
+            };
+            const r2 = await sb.from("notes").insert(fresh).select();
+            if (r2.error) throw r2.error;
+            const made = (r2.data && r2.data[0]) || null;
+            if (made) rows.unshift(made);
+            done.push("새 글 「" + job.raw + "」 (" + ups.length + "건)");
+          }
+          notes.forEach((x) => failed.push(job.raw + ": " + x));
+
+          /* ⑤ 회의록 안 얼굴 사진 → 주소록 (이미 사진이 있는 분은 그대로 둡니다) */
+          for (const f of faces) {
+            try {
+              const had = await addrPhoto(f.who.name);
+              if (had) {
+                faceNote.push(f.who.name + " — 이미 사진이 있어 그대로 둡니다 (" + f.from + ")");
+                continue;
+              }
+              await addrSavePhoto(f.who.name, f.blob);
+              const saved = await addrToFolder(f.who.org ? f.who.name + "_" + f.who.org : f.who.name, f.blob);
+              faceNote.push(f.who.name + (f.who.org ? " (" + f.who.org + ")" : "") + " ← " + f.from +
+                            (saved ? " · 9.FACE 에도 " + saved : ""));
+            } catch (e) {
+              faceNote.push(f.who.name + " — 못 넣었습니다 (" + ((e && e.message) || "") + ")");
+            }
+          }
+        } catch (err) {
+          /* 글에 못 붙였으면 올린 파일을 도로 치웁니다 */
+          for (const u of ups) { try { await NF.remove(u.path); } catch (e) {} }
+          failed.push(job.raw + " — " + ((err && err.message) || "실패"));
+        }
+      }
+      await load();
+      alert((done.length ? "올렸습니다:" + NL + done.join(NL) : "올린 것이 없습니다.") +
+        (faceNote.length ? NL + NL + "주소록 사진:" + NL + faceNote.join(NL) : "") +
+        (failed.length ? NL + NL + "건너뜀:" + NL + failed.join(NL) : ""));
+    } finally {
+      wsBusy = false; btn.disabled = false; btn.textContent = was;
+    }
+  }
+
+  /** 얼굴이 **하나**이고 그림에서 꽤 크면(세로의 15% 넘게) 그 둘레를 잘라 돌려줍니다.
+   *  아니면 null (단체사진·발표 화면 사진은 주소록으로 가지 않습니다).
+   *  얼굴 찾기는 이 브라우저 안에서만 돕니다. */
+  async function onlyFace(blob) {
+    if (typeof createImageBitmap !== "function") return null;
+    const find = await PP.faceBoxFinder();
+    if (!find) return null;
+    const { canvas, w, h } = await PP.toCanvas(blob, 1024);
+    const boxes = await find(canvas);
+    if (!boxes || boxes.length !== 1) return null;
+    const b = boxes[0];
+    if (b.h < canvas.height * 0.15) return null;
+    const k = w / canvas.width;                       // 원본 크기로
+    const pad = 0.6;
+    const x0 = Math.max(0, (b.x - b.w * pad) * k), y0 = Math.max(0, (b.y - b.h * pad * 1.2) * k);
+    const x1 = Math.min(w, (b.x + b.w * (1 + pad)) * k), y1 = Math.min(h, (b.y + b.h * (1 + pad)) * k);
+    const bmp = await createImageBitmap(blob);
+    const cw = x1 - x0, ch = y1 - y0;
+    const s = Math.min(1, 480 / Math.max(cw, ch));
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(cw * s)); c.height = Math.max(1, Math.round(ch * s));
+    c.getContext("2d").drawImage(bmp, x0, y0, cw, ch, 0, 0, c.width, c.height);
+    try { bmp.close(); } catch (e) {}
+    return await new Promise((ok) => c.toBlob(ok, "image/jpeg", 0.9));
+  }
+
+  document.getElementById("nWs").addEventListener("click", async () => {
+    if (wsBusy) return;
+    if (typeof window.showDirectoryPicker !== "function") {
+      alert("컴퓨터에서 쓰는 기능입니다 — 자료가 컴퓨터 폴더에 있기 때문입니다.");
+      return;
+    }
+    let dir;
+    try { dir = await window.showDirectoryPicker({ id: "skyish-ws", mode: "read" }); }
+    catch (err) { return; }                 // 고르다 닫으신 것
+    await attachWorkshops(dir);
+  });
+
   /* ── 회의록 붙이기 ──
      1.Record/받아쓰기.py 가 만든 txt(글로바꾼것 폴더)를 골라
      그날 Schedule 글에 합칩니다 — 요약은 본문에, 전문 txt 는 붙임으로.
@@ -2697,6 +2939,15 @@ export async function initNotes(mountId = "notesapp") {
 
     const { jobs, skip } = MN.plan(folders);
     if (!jobs.length) {
+      /* 「…_회의록.pdf」 가 없어도 워크샵 폴더(회의록.hwpx · 사진 · 자료)일 수 있습니다 —
+         그때는 폴더 이름을 제목 삼아 통째로 올리는 쪽으로 넘깁니다. */
+      const wsLike = !!WS.parseFolder(dir.name).date ||
+                     folders.some((f) => WS.parseFolder(f.name).date);
+      if (wsLike && confirm("「…_회의록.pdf」 가 있는 회의 폴더는 없습니다." + String.fromCharCode(10) +
+            "워크샵·세미나 폴더(회의록.hwpx · 자료 · 사진)로 보고, 폴더 이름을 제목 삼아 올릴까요?")) {
+        await attachWorkshops(dir);
+        return;
+      }
       alert("붙일 회의록을 못 찾았습니다." + String.fromCharCode(10) +
         "1.회의록 폴더를 고르셨는지, 회의 폴더 안에 「…_회의록.pdf」 가 있는지 봐 주세요." +
         (skip.length ? String.fromCharCode(10) + String.fromCharCode(10) +

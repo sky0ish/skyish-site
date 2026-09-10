@@ -273,6 +273,19 @@ const load = (p, extra = (s) => s) => {
       "utf8").toString("base64");
   s = s.replace(/^import \* as MN from "\.\/notes-minutes\.js[^"]*";$/m,
     "const MN = await import(" + JSON.stringify(mnUrl) + ");");
+  /* 워크샵 폴더 셈도 진짜를 씁니다 — 셈 자체는 tools/test/workshop.mjs 가 봅니다.
+     notes-brief.js 를 들여오므로 그것도 함께 심어 넣습니다. hwpx 읽기는 들여오는 것이 없습니다. */
+  const wsUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-workshop.js", "utf8")
+      .replace(/^import \{[^}]*\} from "\.\/notes-brief\.js[^"]*";$/m,
+        "const { peopleIn, looksLikeName } = await import(" + JSON.stringify(briefUrl) + ");"),
+      "utf8").toString("base64");
+  s = s.replace(/^import \* as WS from "\.\/notes-workshop\.js[^"]*";$/m,
+    "const WS = await import(" + JSON.stringify(wsUrl) + ");");
+  const hxUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/hwpx.js", "utf8")).toString("base64");
+  s = s.replace(/^import \* as HX from "\.\/hwpx\.js[^"]*";$/m,
+    "const HX = await import(" + JSON.stringify(hxUrl) + ");");
   /* 얼굴 자르기 셈도 진짜를 씁니다 — 셈 자체는 tools/test/facetag.mjs 가 봅니다 */
   const ftUrl = "data:text/javascript;base64," +
     Buffer.from(readFileSync(REPO + "/assets/js/notes-facetag.js", "utf8")).toString("base64");
@@ -710,6 +723,51 @@ await check("발표자료·사진·회의록이 다 있으면 셋 다", async ()
     throw new Error("붙임이 " + names.length + "개입니다 (셋이어야 합니다) — " + names);
   for (const want of ["20260909_김병규_회의록.pdf", "단체.jpg", "발표_final.pdf"])
     if (!names.includes(want)) throw new Error(want + " 가 없습니다 — " + names);
+});
+
+/* 「워크샵 등의 경우 여기처럼 사진, 회의록이 있는 경우 전부 Schedule 게시판에
+    정보가 올라가게 해줘. 폴더명으로 게시판글 이름으로 해주면되.
+    회의록 아래에 사진이 쭉 붙게 해주면되.」 */
+await check("워크샵 폴더는 폴더 이름을 제목 삼아 회의록·자료·사진을 다 붙인다", async () => {
+  const F = "20260910_[참석] WSCE_World Smart City Expo 2026";
+  globalThis.__dirs = { [F]: ["회의록.txt", "사진2.jpg", "사진1.jpg", "안내.pdf", "녹음.m4a"] };
+  globalThis.__pics = {}; globalThis.__pres = {};
+  globalThis.__text = { "회의록.txt": "1.부산 센텀" };
+  calls.length = 0;
+  await fire("nWs", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  const v = lastInsert("schedule");
+  if (!v) throw new Error("아무것도 안 넣었습니다 — " + alerts[alerts.length - 1]);
+  if (v.title !== F) throw new Error("제목이 폴더 이름이 아닙니다 — " + v.title);
+  if (v.event_date !== "2026-09-10") throw new Error("날짜가 " + v.event_date);
+  if (v.tag !== "세미나참석") throw new Error("말머리가 " + v.tag);
+  if (!/1\.부산 센텀/.test(v.body || "")) throw new Error("회의록 글이 본문에 없습니다 — " + v.body);
+  const names = (v.files || []).map((f) => f.name);
+  if (JSON.stringify(names) !== JSON.stringify(["회의록.txt", "안내.pdf", "사진1.jpg", "사진2.jpg"]))
+    throw new Error("붙임 차례가 다릅니다 (회의록 → 자료 → 사진 이름순) — " + names);
+});
+
+await check("같은 제목의 글이 있으면 거기에 이어 붙인다", async () => {
+  const F = "20260911_[참석] 어떤 워크샵";
+  const rowsWere = globalThis.__rows;
+  globalThis.__rows = [{ id: "w1", category: "schedule", title: F, body: "", event_date: "2026-09-11",
+    files: [{ name: "회의록.txt", path: "notes/x.txt", type: "file", size: 1 }] }];
+  await M.initNotes("notesapp");
+  globalThis.__dirs = { [F]: ["회의록.txt", "새사진.jpg"] };
+  globalThis.__text = { "회의록.txt": "메모" };
+  calls.length = 0;
+  await fire("nWs", "click");
+  await new Promise((r) => setTimeout(r, 60));
+  if (calls.some((c) => c[0] === "insert" && c[1] && c[1].category === "schedule"))
+    throw new Error("새 글을 또 만들었습니다");
+  const up = calls.filter((c) => c[0] === "update").pop();
+  if (!up) throw new Error("이어 붙이지 않았습니다 — " + alerts[alerts.length - 1]);
+  const names = (up[1].files || []).map((f) => f.name);
+  if (names.length !== 2 || !names.includes("새사진.jpg"))
+    throw new Error("있던 회의록은 두고 사진만 더해야 합니다 — " + names);
+  if (!/메모/.test(up[1].body || "")) throw new Error("빈 본문을 회의록 글로 채워야 합니다");
+  globalThis.__rows = rowsWere;            // 뒤 시험은 원래 글들을 봅니다
+  await M.initNotes("notesapp");
 });
 
 /* 「음성파일만있고, 개최개요가 없을 경우, 내가 schedule상에 참석자 명단을
