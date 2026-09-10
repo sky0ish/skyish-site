@@ -3276,3 +3276,18 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .fb-sort__a { font-size: .7em; color: #c3bcb8; }
 th[aria-sort] .fb-sort { color: var(--teal-text); font-weight: 700; }
 th[aria-sort] .fb-sort__a { color: var(--teal); }
+
+/* ── 받은 메시지 (Contact → To Me, 관리자) ── */
+.inbox { margin-top: 2.2rem; }
+.inbox[hidden] { display: none !important; }
+.inbox__h { font-family: var(--font-body); font-size: 1rem; font-weight: 700; text-transform: none; letter-spacing: 0; margin-bottom: .8rem; }
+.inbox__h small { color: var(--mauve); font-weight: 400; font-size: .8rem; margin-left: .4rem; }
+.inbox__list { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+.inbox__it { background: #fff; border: 1px solid var(--line-soft); border-radius: 12px; padding: .8rem 1rem; }
+.inbox__it.is-new { border-color: var(--teal); box-shadow: inset 3px 0 0 var(--teal); }
+.inbox__meta { font-size: .82rem; color: var(--mauve); }
+.inbox__meta b { color: var(--ink); }
+.inbox__meta span { margin-left: .4rem; }
+.inbox__sub { font-weight: 700; margin: .3rem 0 .2rem; }
+.inbox__body { font-size: .92rem; line-height: 1.65; white-space: normal; word-break: break-word; }
+.inbox__acts { display: flex; gap: .4rem; justify-content: flex-end; margin-top: .5rem; }

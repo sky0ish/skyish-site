@@ -33,6 +33,12 @@ export async function initContactTabs() {
       if (p === "tome") el.style.display = (k === "tome") ? "" : "none";
       else el.hidden = (k !== p);
     });
+    /* 받은 메시지는 To Me 와 함께 보입니다 (관리자에게만 — 아니면 contact-form.js 가 지웁니다) */
+    const inbox = document.getElementById("inbox");
+    if (inbox) {
+      inbox.dataset.off = (k === "tome") ? "" : "1";
+      inbox.hidden = (k !== "tome");
+    }
     const u = new URL(location.href);
     if (k === "tome") u.searchParams.delete("p"); else u.searchParams.set("p", k);
     history.replaceState(null, "", u.pathname + (u.search || "") );

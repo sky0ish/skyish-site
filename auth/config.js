@@ -15,3 +15,9 @@ export const ANALYSIS_BUCKET = "analysis";
 // (승인된 원본이 skyish.kr 로 묶여 있어 다른 곳에서는 쓸 수 없습니다).
 export const GCAL_CLIENT_ID =
   "837685540720-kfchnbh2f437oct140j7utkdso3626bs.apps.googleusercontent.com";
+
+// ─── Contact 폼을 메일함까지 바로 보내기 ───────────────────
+// Supabase 의 messages 표에는 늘 남깁니다 (auth/messages_setup.sql).
+// 메일함으로도 받으시려면 Formspree(formspree.io) 에서 폼을 하나 만들고
+// 그 주소("https://formspree.io/f/xxxxxxx")를 여기에 적으세요. 비워 두면 표에만 남깁니다.
+export const FORM_ENDPOINT = "";

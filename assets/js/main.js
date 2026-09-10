@@ -1320,6 +1320,8 @@
     if (!form) return;
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      /* contact-form.js 가 바로 보내기를 맡았으면 메일 앱을 열지 않습니다 */
+      if (form.dataset.direct) return;
       var name    = (form.elements.name    || {}).value || "";
       var email   = (form.elements.email   || {}).value || "";
       var subject = (form.elements.subject || {}).value || "Message from your website";
