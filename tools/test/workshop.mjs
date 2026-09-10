@@ -71,6 +71,8 @@ eq("사진은 바닥 → 사진 폴더 → 나머지, 숫자 차례",
 eq("회의록은 새 판 먼저, PDF 먼저",
    orderMinutes(["가_회의록.hwpx", "가_회의록_v2.hwpx", "가_회의록_v2.pdf", "가_회의록.pdf"]),
    ["가_회의록_v2.pdf", "가_회의록_v2.hwpx", "가_회의록.pdf", "가_회의록.hwpx"]);
+eq("★ 보강한 v1 이 현장 원본보다 앞에", orderMinutes(["회의록.hwpx", "회의록_v1.hwpx"]),
+   ["회의록_v1.hwpx", "회의록.hwpx"]);
 
 console.log("\n── 할 일 목록 ──");
 const r = plan([

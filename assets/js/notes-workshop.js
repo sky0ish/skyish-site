@@ -127,10 +127,11 @@ export function orderPics(paths) {
   return L.map((p) => [p, rank(p)]).sort((a, b) => a[1] - b[1] || byName(a[0], b[0])).map(([p]) => p);
 }
 
-/** 회의록이 여럿이면 가장 새 판(_v2, _v3)을 앞에, pdf 와 hwpx 가 짝이면 둘 다 (PDF 먼저) */
+/** 회의록이 여럿이면 가장 새 판(_v1, _v2…)을 앞에, pdf 와 hwpx 가 짝이면 둘 다 (PDF 먼저).
+ *  판 표시가 없는 것(현장에서 적은 원본)은 0 으로 봐서, 보강한 _v1 이 앞에 옵니다. */
 export function orderMinutes(paths) {
   const L = (Array.isArray(paths) ? paths : []).filter(Boolean);
-  const ver = (p) => { const m = /_v(\d+)\.[a-z0-9]+$/i.exec(p); return m ? +m[1] : 1; };
+  const ver = (p) => { const m = /_v(\d+)\.[a-z0-9]+$/i.exec(p); return m ? +m[1] : 0; };
   const ext = (p) => (/\.pdf$/i.test(p) ? 0 : /\.hwpx$/i.test(p) ? 1 : 2);
   return L.slice().sort((a, b) => ver(b) - ver(a) || ext(a) - ext(b) || byName(a, b));
 }

@@ -2689,10 +2689,12 @@ export async function initNotes(mountId = "notesapp") {
           for (const p of job.minutes) {
             const f = await fileAt(p);
             if (!f) continue;
-            if (/\.hwpx$/i.test(f.name)) {
+            /* 가장 새 판(첫 번째) 하나에서만 글과 사진을 꺼냅니다 —
+               v1 과 원본에 같은 사진이 들어 있어, 둘 다 열면 사진이 두 번 붙습니다. */
+            if (/\.hwpx$/i.test(f.name) && !text && !inside.length) {
               try {
                 const r = await HX.readHwpx(f);
-                if (r.text && !text) { text = r.text; paras = r.paras || []; }
+                if (r.text) { text = r.text; paras = r.paras || []; }
                 r.images.forEach((im) => inside.push(im));
               } catch (e) { notes.push(f.name + " — 안을 읽지 못해 파일만 붙입니다"); }
             }
