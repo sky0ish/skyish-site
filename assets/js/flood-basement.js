@@ -228,6 +228,7 @@
       '<div><i style="background:' + COL_OUT + '"></i>침수흔적도 밖<b>' + num(st.outside) + "호</b></div>";
 
     var rows = (source.bySgg[state.set] || []).filter(function (r) { return r.inside > 0; });
+    if (sggSort) { rows = sggSort.sort(rows); sggSort.mark(); }
     document.getElementById("fb-sgg").innerHTML = rows.length
       ? rows.map(function (r) {
           return "<tr><td>" + esc(r.sgg) + "</td><td>" + num(r.total) + "</td><td>" +
@@ -244,6 +245,42 @@
       "<dt>판정</dt><dd>point-in-polygon · 좌표계 EPSG:5179</dd>";
     renderCity();
   }
+
+  /* ---------- 표 머리글을 눌러 차례 바꾸기 ----------
+     같은 칸을 다시 누르면 뒤집고, 다른 칸이면 그 칸에 어울리는 쪽부터 —
+     이름은 가나다순(data-dir="asc"), 숫자는 많은 곳부터. 같은 값이면 이름으로 갈라
+     두 번 눌러도 차례가 흔들리지 않습니다. */
+  function sorter(tableSel, nameKey, defKey, defDir) {
+    var st = { key: defKey, dir: defDir, draw: null };
+    var table = document.querySelector(tableSel);
+    if (table) table.querySelectorAll("[data-sort]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = b.dataset.sort;
+        if (k === st.key) st.dir = -st.dir;
+        else { st.key = k; st.dir = b.dataset.dir === "asc" ? 1 : -1; }
+        if (st.draw) st.draw();
+      });
+    });
+    st.sort = function (rows) {
+      var byName = function (a, b) { return String(a[nameKey]).localeCompare(String(b[nameKey]), "ko"); };
+      return rows.slice().sort(function (a, b) {
+        if (st.key === nameKey) return st.dir * byName(a, b);
+        var x = Number(a[st.key]) || 0, y = Number(b[st.key]) || 0;
+        return (x === y ? 0 : (x < y ? -1 : 1)) * st.dir || byName(a, b);
+      });
+    };
+    st.mark = function () {
+      if (!table) return;
+      table.querySelectorAll("[data-sort]").forEach(function (b) {
+        var on = b.dataset.sort === st.key, th = b.closest("th");
+        if (th) { if (on) th.setAttribute("aria-sort", st.dir < 0 ? "descending" : "ascending"); else th.removeAttribute("aria-sort"); }
+        var ar = b.querySelector(".fb-sort__a");
+        if (ar) ar.textContent = on ? (st.dir < 0 ? "▼" : "▲") : "↕";
+      });
+    };
+    return st;
+  }
+  var sggSort = null, citySort = null;      // start() 에서 만듭니다 (표가 있어야 해서)
 
   /* ---------- ④ 시군별 반지하 · 침수흔적 면적 ----------
      셈은 flood-sgg.js (window.FloodSgg) 에 있고, 여기서는 그리기만 합니다.
@@ -283,11 +320,14 @@
     bars("fb-city-bars1", byIn, "inside", num, COL_IN);
     bars("fb-city-bars2", byAr, "area", km, "#3b82f6");
 
-    document.getElementById("fb-city-table").innerHTML = rows.map(function (r) {
-      var dens = r.area > 0 ? r.inside / (r.area / 1e6) : 0;
+    rows.forEach(function (r) { r.dens = r.area > 0 ? r.inside / (r.area / 1e6) : 0; });
+    var tbl = citySort ? citySort.sort(rows) : rows;
+    if (citySort) citySort.mark();
+    document.getElementById("fb-city-table").innerHTML = tbl.map(function (r) {
       return "<tr><td>" + esc(r.city) + "</td><td>" + num(r.total) + "</td><td>" + num(r.inside) +
              "</td><td>" + r.ratio.toFixed(1) + "%</td><td>" + num(r.polygons) + "</td><td>" +
-             km(r.area) + "</td><td>" + (r.area > 0 ? num(Math.round(dens)) : "—") + "</td></tr>";
+             km(r.area) + "</td><td>" + (r.share != null ? r.share.toFixed(2) + "%" : "—") +
+             "</td><td>" + (r.area > 0 ? num(Math.round(r.dens)) : "—") + "</td></tr>";
     }).join("");
     var attr = rows.reduce(function (n, r) { return n + r.areaSum; }, 0);
     document.getElementById("fb-city-note").textContent =
@@ -597,6 +637,12 @@
 
     map1 = baseMap("fb-map1", [37.42, 127.1], 9);
     ptLayer = new PointLayer().addTo(map1);
+
+    /* 표 머리글 — 누르면 그 항목으로 다시 그립니다 */
+    sggSort = sorter("#fig3 table", "sgg", "inside", -1);
+    sggSort.draw = function () { if (source) renderSide(); };
+    citySort = sorter("#fig4 table", "city", "inside", -1);
+    citySort.draw = function () { if (source) renderCity(); };
 
     map2 = baseMap("fb-map2", [37.42, 127.1], 9);
 

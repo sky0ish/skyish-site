@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202609101400">
+  <link rel="stylesheet" href="assets/css/style.css?v=202609101600">
   <!-- 로그인·승인된 사람만 열람 -->
   <script type="module" src="assets/js/guard.js?v=202609010300"></script>
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css?v=202609010300">
@@ -145,10 +145,10 @@
 
             <div class="fb-card">
               <h3>시군구별</h3>
-              <p class="fb-sub">침수흔적도 안 반지하 수 기준 · 1호 이상인 시군구</p>
+              <p class="fb-sub">침수흔적도 안 반지하 수 기준 · 1호 이상인 시군구 · 머리글을 누르면 그 항목으로 차례가 바뀝니다</p>
               <div class="fb-scroll">
                 <table class="fb-table">
-                  <thead><tr><th>시군구</th><th>반지하</th><th>흔적도 안</th><th>비율</th></tr></thead>
+                  <thead><tr><th scope="col"><button type="button" class="fb-sort" data-sort="sgg" data-dir="asc">시군구 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="total">반지하 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="inside">흔적도 안 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="ratio">비율 <span class="fb-sort__a">↕</span></button></th></tr></thead>
                   <tbody id="fb-sgg"></tbody>
                 </table>
               </div>
@@ -247,10 +247,10 @@
 
           <div class="fb-card" style="margin-top:1.4rem">
             <h3>시군별 표</h3>
-            <p class="fb-sub">흔적도 안 반지하 수 기준 · 마지막 열은 침수흔적 1㎢ 안에 반지하가 몇 호 있는지 (밀도)</p>
+            <p class="fb-sub">흔적도 안 반지하 수 기준 · 「시군 대비」 는 침수흔적 면적이 시군 행정구역 면적(지적통계)에서 차지하는 비율, 마지막 열은 침수흔적 1㎢ 안에 반지하가 몇 호 있는지 (밀도) · 머리글을 누르면 그 항목으로 차례가 바뀝니다</p>
             <div class="fb-scroll">
               <table class="fb-table">
-                <thead><tr><th>시군</th><th>반지하</th><th>흔적도 안</th><th>비율</th><th>침수구역</th><th>면적(㎢)</th><th>호/㎢</th></tr></thead>
+                <thead><tr><th scope="col"><button type="button" class="fb-sort" data-sort="city" data-dir="asc">시군 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="total">반지하 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="inside">흔적도 안 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="ratio">비율 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="polygons">침수구역 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="area">면적(㎢) <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="share">시군 대비 <span class="fb-sort__a">↕</span></button></th><th scope="col"><button type="button" class="fb-sort" data-sort="dens">호/㎢ <span class="fb-sort__a">↕</span></button></th></tr></thead>
                 <tbody id="fb-city-table"></tbody>
               </table>
             </div>
@@ -272,7 +272,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/flood-sgg.js?v=202609101400"></script>
-  <script src="assets/js/flood-basement.js?v=202609101400" defer></script>
+  <script src="assets/js/flood-sgg.js?v=202609101600"></script>
+  <script src="assets/js/flood-basement.js?v=202609101600" defer></script>
 </body>
 </html>

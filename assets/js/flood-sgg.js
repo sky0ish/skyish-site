@@ -28,6 +28,20 @@
     "4180": "연천군", "4182": "가평군", "4183": "양평군"
   };
 
+  /* 시군 행정구역 면적(㎢) — 국토교통부 지적통계(2023) 기준의 어림값.
+     침수흔적이 시군 넓이의 몇 % 를 차지하는지 셀 때 씁니다. */
+  var AREA_KM2 = {
+    "수원시": 121.1, "성남시": 141.7, "의정부시": 81.5, "안양시": 58.5, "부천시": 53.4,
+    "광명시": 38.5, "평택시": 458.1, "동두천시": 95.7, "안산시": 156.0, "고양시": 268.1,
+    "과천시": 35.9, "구리시": 33.3, "남양주시": 458.1, "오산시": 42.7, "시흥시": 139.9,
+    "군포시": 36.4, "의왕시": 54.0, "하남시": 93.0, "용인시": 591.3, "파주시": 672.6,
+    "이천시": 461.4, "안성시": 553.4, "김포시": 276.6, "화성시": 698.5, "광주시": 431.0,
+    "양주시": 310.3, "포천시": 826.7, "여주시": 608.6, "연천군": 676.2, "가평군": 843.5, "양평군": 877.7
+  };
+
+  /** 시군 넓이(㎢) — 모르면 0 */
+  function cityArea(city) { return AREA_KM2[city] || 0; }
+
   /** 시군구 코드 → 시군 이름. 모르면 코드 그대로 */
   function sggOf(code) {
     var c = String(code || "");
@@ -102,8 +116,9 @@
   /** @param source  source-<src>.json
    *  @param set     "est" | "srv"
    *  @param opt     { cellM }
-   *  @returns [{ city, total, inside, ratio, polygons, areaSum, area }] — inside 많은 차례
+   *  @returns [{ city, total, inside, ratio, polygons, areaSum, area, cityArea, share }] — inside 많은 차례
    *           areaSum 은 속성 면적의 합(연도 중복 포함), area 는 겹침 지운 넓이 (둘 다 ㎡)
+   *           cityArea 는 시군 넓이(㎢), share 는 침수흔적이 시군 넓이에서 차지하는 % (넓이를 모르면 null)
    */
   function byCity(source, set, opt) {
     var rows = {};
@@ -127,9 +142,11 @@
       x.area = x.feats.length ? dissolveArea(x.feats, cell).area : 0;
       delete x.feats;
       x.ratio = x.total ? x.inside / x.total * 100 : 0;
+      x.cityArea = cityArea(k);
+      x.share = x.cityArea ? x.area / (x.cityArea * 1e6) * 100 : null;
       return x;
     }).sort(function (a, b) { return b.inside - a.inside || b.area - a.area || a.city.localeCompare(b.city, "ko"); });
   }
 
-  window.FloodSgg = { CITY: CITY, sggOf: sggOf, cityOf: cityOf, dissolveArea: dissolveArea, byCity: byCity };
+  window.FloodSgg = { CITY: CITY, AREA_KM2: AREA_KM2, cityArea: cityArea, sggOf: sggOf, cityOf: cityOf, dissolveArea: dissolveArea, byCity: byCity };
 })();
