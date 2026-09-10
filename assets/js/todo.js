@@ -39,14 +39,26 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
   const readLocal = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch (e) { return []; } };
   const writeLocal = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(rows)); } catch (e) {} };
 
+  let migrated = 0;                    // 이번에 브라우저 저장소에서 표로 옮긴 줄 수
   async function load() {
-    const r = await sb.from("todos").select("*").order("created_at", { ascending: true });
+    let r = await sb.from("todos").select("*").order("created_at", { ascending: true });
     if (r.error) {
       if (!noTable(r.error)) throw r.error;
       local = true; rows = readLocal();
       return;
     }
     local = false; rows = r.data || [];
+    /* 표가 생기기 전에 이 브라우저에 적어 둔 줄이 남아 있으면 저절로 표로 옮깁니다 —
+       전에는 표가 생긴 뒤에 「표로 옮기기」 고리가 사라져 옮길 길이 없었습니다. */
+    if (readLocal().length) {
+      try {
+        migrated = await moveToTable();
+        if (migrated) {
+          r = await sb.from("todos").select("*").order("created_at", { ascending: true });
+          if (!r.error) rows = r.data || [];
+        }
+      } catch (e) { /* 못 옮겨도 표의 것은 보여 줍니다 */ }
+    }
   }
 
   async function add(text, due) {
@@ -172,6 +184,8 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
           alert(n + "줄을 표로 옮겼습니다.");
         } catch (err) { alert("옮기지 못했습니다 — " + (err && err.message)); }
       });
+    } else if (migrated) {
+      say("이 브라우저에 적어 두었던 " + migrated + "줄을 표로 옮겼습니다 — 이제 어느 기기에서나 같이 보입니다.");
     } else say("");
   }
 
