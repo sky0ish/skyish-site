@@ -230,7 +230,9 @@ ul { list-style: none; padding: 0; }
 .brand small { display: block; font-family: var(--font-body); font-weight: 500;
   font-size: .58rem; letter-spacing: .32em; opacity: .8; margin-top: 2px; }
 /* 이름표 + APP 단추 */
-.brandbox { display: flex; align-items: center; gap: .8rem; min-width: 0; }
+/* APP 단추는 아래 줄(ARCHITECTURE · URBAN DESIGN) 끝에 맞춰 놓습니다 */
+.brandbox { display: flex; align-items: flex-end; gap: .55rem; min-width: 0; }
+.brand-app { margin-bottom: 1px; }
 .brand-app { flex: none; font-family: var(--font-body); font-weight: 700; font-size: .7rem; letter-spacing: .14em;
   padding: .38em .8em; border: 1.5px solid rgba(255, 255, 255, .75); border-radius: 100px; color: #fff;
   text-decoration: none; line-height: 1; transition: .2s var(--ease); }
@@ -2053,6 +2055,10 @@ a.tpost__navitem:hover { border-color: var(--teal); background: rgba(79,157,146,
   transition: .18s var(--ease);
 }
 .authbox .authadmin::after { content: none; }
+/* 운영 단추의 승인 대기 수 */
+.authbox .authadmin .abadge { margin-left: .35em; min-width: 1.5em; padding: 0 .35em; border-radius: 100px;
+  background: #d9483b; color: #fff; font-size: .68rem; font-weight: 700; line-height: 1.5em; text-align: center; }
+.authbox .authadmin.has-wait { border-color: #d9483b; }
 .authbox .authadmin:hover { background: var(--navy); border-color: var(--navy); }
 .site-header.is-solid .authbox .authadmin {
   color: var(--navy) !important; background: #eef2fb; border-color: #c6d4ee;
@@ -3246,28 +3252,33 @@ html[data-cp]:not([data-cp="tome"]) .contact-top .contact-grid { display: none; 
 .todo__head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: .9rem; }
 .todo__head h3 { font-family: var(--font-body); font-size: 1.05rem; font-weight: 700; text-transform: none; letter-spacing: 0; margin: 0; }
 .todo__count { color: var(--mauve); font-size: .82rem; margin: 0; }
-.todo__add { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: .5rem; margin-bottom: 1rem; }
-.todo__add input { font: inherit; font-size: .92rem; padding: .55em .8em; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; }
-.todo__add input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(79,157,146,.15); }
-.todo__add input[type="date"] { color: var(--mauve); }
-@media (max-width: 560px) { .todo__add { grid-template-columns: 1fr; } }
+.todo__add { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: .45rem; margin-bottom: 1rem; align-items: stretch; }
+.todo__add input[type="text"] { font: inherit; font-size: .92rem; padding: .55em .8em; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 0; }
+.todo__add input[type="text"]:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(79,157,146,.15); }
+/* 날짜 칸은 숨기고(자리 없음) 📅 단추가 엽니다 — 좁은 폰에서도 한 줄 */
+.todo__duein { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.todo__duebtn { font: inherit; font-size: .9rem; padding: 0 .7em; border: 1px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; color: var(--mauve); white-space: nowrap; }
+.todo__duebtn.has-date { color: var(--teal-text); border-color: var(--teal); font-weight: 700; font-size: .82rem; }
+.todo__addbtn { padding: 0 1em; font-size: 1.05rem; line-height: 1; }
 .todo__hint { font-size: .8rem; color: var(--mauve); background: var(--paper-2); padding: .55rem .8rem; border-radius: 8px; margin: 0 0 .9rem; line-height: 1.6; }
 .todo__hint code { background: #fff; padding: .05em .3em; border-radius: 4px; }
 .todo__list { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
-.td { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto; align-items: center; gap: .5rem;
-      padding: .5rem .7rem; background: #fff; border: 1px solid var(--line-soft); border-radius: 10px; }
+/* 줄 하나 — ✓ ★ | 글(마감은 그 아래) | 작은 단추 2×2.  글이 가로로 넓게 보이게 */
+.td { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: .45rem;
+      padding: .45rem .6rem; background: #fff; border: 1px solid var(--line-soft); border-radius: 10px; }
 .td__chk, .td__star, .td__ic { font: inherit; cursor: pointer; border: 1px solid var(--line); background: #fff; border-radius: 50%;
       width: 26px; height: 26px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; color: #b9b2ad; padding: 0; }
 .td__chk:hover { border-color: var(--teal); color: var(--teal-text); }
 .td__star { border: none; font-size: 1.1rem; color: #d9d3cc; }
 .td__star:hover { color: #e0a800; }
-.td__text { font-size: .95rem; cursor: text; word-break: break-word; line-height: 1.5; }
-.td__due { font-size: .74rem; color: var(--mauve); background: var(--paper-2); padding: .15em .55em; border-radius: 100px; white-space: nowrap; }
+.td__body { min-width: 0; display: flex; flex-direction: column; gap: .15rem; }
+.td__text { font-size: .95rem; cursor: text; word-break: break-word; overflow-wrap: anywhere; line-height: 1.45; }
+.td__due { align-self: flex-start; font-size: .72rem; color: var(--mauve); background: var(--paper-2); padding: .1em .5em; border-radius: 100px; white-space: nowrap; }
 .td.due-today .td__due { background: #fff1c2; color: #7a5a00; }
 .td.due-late .td__due { background: #fde3df; color: #a8443a; }
-.td__acts { display: inline-flex; gap: .25rem; opacity: .35; }
+.td__acts { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; opacity: .55; }
 .td:hover .td__acts, .td:focus-within .td__acts { opacity: 1; }
-.td__ic { font-size: .8rem; }
+.td__ic { width: 22px; height: 22px; font-size: .68rem; }
 .td__ic--del:hover { border-color: #b3453b; color: #b3453b; }
 .td__edit { font: inherit; font-size: .95rem; padding: .25em .5em; border: 1px solid var(--teal); border-radius: 6px; min-width: 0; width: 100%; }
 .td.is-star { border-color: #f1d27a; background: #fffbea; }

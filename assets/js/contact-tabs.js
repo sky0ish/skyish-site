@@ -10,7 +10,7 @@
 import { initAddr } from "./addressbook.js?v=202609111400";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
-import { initTodo } from "./todo.js?v=202609111130";
+import { initTodo } from "./todo.js?v=202609111800";
 
 export async function initContactTabs() {
   const tabs = document.getElementById("cTabs");

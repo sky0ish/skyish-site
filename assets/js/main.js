@@ -140,9 +140,24 @@
       title: "내 정보 (MyPage)"
     }, "MyPage"));
     if (isAdmin) {
-      box.appendChild(el("a", {
+      var adm = el("a", {
         class: "authadmin", href: url("admin/index.html"), title: "운영 관리"
-      }, "운영"));
+      }, "운영");
+      box.appendChild(adm);
+      /* 승인을 기다리는 분이 있으면 「운영 ·2」 처럼 붙여 첫 화면에서 바로 보이게 —
+         「승인대기 몇명인지 첫화면에서 확인가능하게. [운영] 버튼에서 알수있게」 */
+      if (mod && mod.sb) {
+        mod.sb.from("profiles").select("id", { count: "exact", head: true })
+          .eq("analysis_access", false).eq("is_admin", false)
+          .then(function (r) {
+            var n = r && !r.error ? (r.count || 0) : 0;
+            if (!n) return;
+            adm.appendChild(el("b", { class: "abadge" }, String(n)));
+            adm.classList.add("has-wait");
+            adm.title = "승인 대기 " + n + "명 — 눌러서 회원 관리로";
+            adm.setAttribute("href", url("admin/members.html?f=wait"));
+          }).catch(function () {});
+      }
     }
     var out = el("button", {
       class: "authbtn authbtn--in", type: "button",

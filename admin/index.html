@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="../assets/css/style.css?v=202609111600">
+  <link rel="stylesheet" href="../assets/css/style.css?v=202609111800">
   <style>
     .acards { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
       gap:14px; margin:0 0 2rem; }
@@ -29,10 +29,11 @@
       color:var(--mauve); }
     .astat { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
       gap:12px; margin:0 0 2rem; }
-    .astat div { padding:16px 18px; background:#fff; border:1px solid var(--line);
+    .astat div, .astat a { text-decoration:none; display:block; padding:16px 18px; background:#fff; border:1px solid var(--line);
       border-radius:var(--radius-md); }
     .astat b { display:block; font-size:1.6rem; font-weight:700; color:var(--ink);
       font-family:var(--font-display); line-height:1.15; }
+    .astat a:hover { border-color:var(--teal); box-shadow:0 2px 10px rgba(79,157,146,.18); }
     .astat span { font-size:.78rem; color:var(--mauve); }
     .aerr { padding:14px 18px; background:#fdf3f0; border:1px solid #f0cfc6;
       border-radius:10px; font-size:.85rem; color:#8e3b2c; line-height:1.7; margin:0 0 1.4rem; }
@@ -55,7 +56,7 @@
 
   <div id="site-footer"></div>
 
-  <script src="../assets/js/main.js?v=202609111600" defer></script>
+  <script src="../assets/js/main.js?v=202609111700" defer></script>
   <script type="module">
     import { sb, currentUser, myProfile } from "../auth/auth.js";
 
@@ -96,8 +97,11 @@
     if (notes.n  < 0) missing.push("auth/notes_setup.sql");
     const cannotList = prof.n === 1 && /policy|permission/i.test(prof.err || "");
 
-    const stat = (n, label) =>
-      "<div><b>" + (n < 0 ? "—" : n) + "</b><span>" + label + "</span></div>";
+    /* href 가 있으면 눌러서 그 목록으로 갑니다 — 「가입회원 내역 볼수있게」 */
+    const stat = (n, label, href) =>
+      (href ? '<a href="' + href + '" title="목록 보기">' : "<div>") +
+      "<b>" + (n < 0 ? "—" : n) + "</b><span>" + label + "</span>" +
+      (href ? "</a>" : "</div>");
 
     app.innerHTML =
       (missing.length
@@ -111,7 +115,7 @@
 
       '<p class="asec">한눈에</p>' +
       '<div class="astat">' +
-        stat(prof.n, "가입 회원") + stat(wait.n, "승인 대기") +
+        stat(prof.n, "가입 회원", "members.html?f=all") + stat(wait.n, "승인 대기", "members.html?f=wait") +
         stat(places.n, "지도 장소") + stat(albums.n, "사진첩") +
         stat(photos.n, "사진") + stat(notes.n, "기록") +
       "</div>" +

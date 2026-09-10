@@ -125,10 +125,13 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
   mount.innerHTML =
     '<div class="todo">' +
       '<div class="todo__head"><h3 id="tdTitle"></h3><p class="todo__count" id="tdCount"></p></div>' +
+      /* 한 줄 — 글 칸 · 작은 날짜 단추(📅) · 추가.  날짜 칸은 숨겨 두고 단추가 엽니다
+         (「내가 해야할일과 날짜선택이 두줄로 나눠져. 한줄로, 날짜선택을 작은 버튼으로」) */
       '<form class="todo__add" id="tdAdd" autocomplete="off">' +
         '<input type="text" id="tdText" maxlength="300" placeholder="곧 해야 할 일을 적고 Enter" aria-label="할 일">' +
-        '<input type="date" id="tdDue" aria-label="마감" title="마감 (없어도 됩니다)">' +
-        '<button type="submit" class="nbtn nbtn--go">＋ 추가</button>' +
+        '<button type="button" class="todo__duebtn" id="tdDueBtn" title="마감 날짜 (없어도 됩니다)" aria-label="마감 날짜">📅</button>' +
+        '<input type="date" id="tdDue" class="todo__duein" aria-label="마감" tabindex="-1">' +
+        '<button type="submit" class="nbtn nbtn--go todo__addbtn" title="추가">＋</button>' +
       "</form>" +
       '<p class="todo__hint" id="tdHint" hidden></p>' +
       '<ul class="todo__list" id="tdList"></ul>' +
@@ -141,14 +144,29 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
   const $ = (id) => document.getElementById(id);
   const say = (t) => { const h = $("tdHint"); h.hidden = !t; h.innerHTML = t || ""; };
 
+  /* 📅 단추 → 숨은 날짜 칸을 엽니다. 고르면 단추에 「9.18」 처럼 보입니다 */
+  const dueBtn = $("tdDueBtn"), dueIn = $("tdDue");
+  const showDue = () => {
+    const v = dueIn.value;
+    dueBtn.textContent = v ? v.slice(5).replace("-", ".").replace(/^0/, "").replace(/\.0/, ".") : "📅";
+    dueBtn.classList.toggle("has-date", !!v);
+  };
+  dueBtn.addEventListener("click", () => {
+    try { if (typeof dueIn.showPicker === "function") dueIn.showPicker(); else dueIn.click(); }
+    catch (e) { try { dueIn.focus(); dueIn.click(); } catch (x) {} }
+  });
+  dueIn.addEventListener("change", showDue);
+
   function rowHtml(x) {
     const st = TL.dueState(x);
     return '<li class="td' + (x.done ? " is-done" : "") + (x.star ? " is-star" : "") +
              (st ? " due-" + st : "") + '" data-id="' + esc(x.id) + '"' + (x.done ? "" : ' draggable="true"') + ">" +
       '<button type="button" class="td__chk" data-act="done" title="' + (x.done ? "되돌리기" : "완료") + '" aria-pressed="' + !!x.done + '">✓</button>' +
       '<button type="button" class="td__star" data-act="star" title="' + (x.star ? "별표 빼기" : "중요 — 맨 위로") + '" aria-pressed="' + !!x.star + '">★</button>' +
-      '<span class="td__text" data-act="edit" title="눌러서 고치기">' + esc(x.text) + "</span>" +
-      (st ? '<span class="td__due">' + esc(TL.dueLabel(x)) + "</span>" : "") +
+      '<span class="td__body">' +
+        '<span class="td__text" data-act="edit" title="눌러서 고치기">' + esc(x.text) + "</span>" +
+        (st ? '<span class="td__due">' + esc(TL.dueLabel(x)) + "</span>" : "") +
+      "</span>" +
       '<span class="td__acts">' +
         (x.done ? "" :
           '<button type="button" class="td__ic" data-act="up" title="위로">▲</button>' +
@@ -218,7 +236,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     e.preventDefault();
     const t = $("tdText").value, d = $("tdDue").value;
     if (!t.trim()) { $("tdText").focus(); return; }
-    try { await add(t, d); $("tdText").value = ""; $("tdDue").value = ""; render(); $("tdText").focus(); }
+    try { await add(t, d); $("tdText").value = ""; $("tdDue").value = ""; showDue(); render(); $("tdText").focus(); }
     catch (err) { alert("적지 못했습니다 — " + (err && err.message)); }
   });
 
