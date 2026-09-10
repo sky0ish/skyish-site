@@ -4,11 +4,13 @@
 //   활동기관  몸담고 있는 곳 — 누구나
 //   주소록    내 컴퓨터의 명함첩·동문 명부 — 관리자만
 //   Sites    자주 드나드는 곳 — 관리자만
+//   해야할일  오늘의 체크리스트 — 관리자만
 //
-// 관리자가 아니면 뒤의 두 갈래는 단추째 사라집니다.
+// 관리자가 아니면 뒤의 세 갈래는 단추째 사라집니다.
 import { initAddr } from "./addressbook.js?v=202609091200";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
+import { initTodo } from "./todo.js?v=202609101500";
 
 export async function initContactTabs() {
   const tabs = document.getElementById("cTabs");
@@ -19,6 +21,7 @@ export async function initContactTabs() {
     orgs:  document.getElementById("orgsec"),
     addr:  document.getElementById("addrsec"),
     sites: document.getElementById("sitesec"),
+    todo:  document.getElementById("todosec"),
   };
 
   function show(k) {
@@ -43,15 +46,17 @@ export async function initContactTabs() {
 
   /* 주소록·Sites 는 관리자에게만 열립니다.
      각 모듈이 스스로 판단해 아니면 자기 자리를 지웁니다. */
-  const [okAddr, okSites] = await Promise.all([
+  const [okAddr, okSites, okTodo] = await Promise.all([
     initAddr().catch(() => false),
     initSites().catch(() => false),
+    initTodo().catch(() => false),
   ]);
 
   const btn = (k) => tabs.querySelector(`button[data-p="${k}"]`);
   if (!okOrgs) { const b = btn("orgs"); if (b) b.remove(); }
   if (okAddr)  btn("addr").hidden = false;  else btn("addr").remove();
   if (okSites) btn("sites").hidden = false; else btn("sites").remove();
+  if (okTodo)  btn("todo").hidden = false;  else btn("todo").remove();
 
   // 주소에 ?p=addr 이 붙어 오면 그 갈래를 폅니다
   const want = new URLSearchParams(location.search).get("p");
