@@ -6,6 +6,7 @@
    ② 침수흔적도 레이어 지도(경기도)  ①이 읽은 폴리곤을 침수심/시기로 나눔
                                 assets/data/flood/gg-ref-layers.json (참고 레이어)
    ③ 파이차트 — ①의 선택을 그대로 씁니다.
+   ④ 시군별 막대 — ①의 선택을 그대로 쓰고, 셈은 flood-sgg.js 에 있습니다.
 
    ?src=mois     행정안전부_침수흔적도 (safetydata.go.kr OpenAPI)
    ?src=safemap  경기도가 배포한 침수흔적도 SHP
@@ -241,6 +242,58 @@
         "개 구역 · 수록연도 " + yrs + "</dd>" +
       "<dt>반지하</dt><dd>" + esc(s.label) + " · " + num(s.n) + "호<br>" + esc(s.note) + "</dd>" +
       "<dt>판정</dt><dd>point-in-polygon · 좌표계 EPSG:5179</dd>";
+    renderCity();
+  }
+
+  /* ---------- ④ 시군별 반지하 · 침수흔적 면적 ----------
+     셈은 flood-sgg.js (window.FloodSgg) 에 있고, 여기서는 그리기만 합니다.
+     면적은 출처마다 한 번만 재고(cityCache), 반지하 수는 자료(est·srv)에 따라 바꿉니다. */
+  var cityCache = {};
+  function bars(mountId, rows, key, fmt, color) {
+    var max = Math.max.apply(null, rows.map(function (r) { return r[key]; })) || 1;
+    document.getElementById(mountId).innerHTML = rows.map(function (r) {
+      return '<div class="fb-bar"><span class="fb-bar__name" title="' + esc(r.city) + '">' + esc(r.city) + "</span>" +
+             '<span class="fb-bar__track"><span class="fb-bar__fill" style="width:' +
+             (r[key] / max * 100).toFixed(1) + "%;background:" + color + '"></span></span>' +
+             '<span class="fb-bar__val">' + fmt(r[key]) + "</span></div>";
+    }).join("");
+  }
+  function renderCity() {
+    if (!window.FloodSgg || !source || !document.getElementById("fb-city-bars1")) return;
+    var key = state.src + "|" + state.set, rows = cityCache[key];
+    if (!rows) {
+      var t0 = Date.now();
+      rows = window.FloodSgg.byCity(source, state.set, { cellM: 20 });
+      cityCache[key] = rows;
+      cityCache[key + "|ms"] = Date.now() - t0;
+    }
+    var s = points.sets[state.set];
+    var byIn = rows.filter(function (r) { return r.inside > 0; });
+    var byAr = rows.filter(function (r) { return r.area > 0; })
+                   .sort(function (a, b) { return b.area - a.area; });
+    var km = function (v) { return (v / 1e6).toFixed(v >= 1e6 ? 1 : 2); };
+    var totIn = rows.reduce(function (n, r) { return n + r.inside; }, 0);
+    var totAr = rows.reduce(function (n, r) { return n + r.area; }, 0);
+
+    document.getElementById("fb-city-src").textContent = source.label + " 기준";
+    document.getElementById("fb-city-sub1").textContent =
+      s.short + " · 흔적도 안 " + num(totIn) + "호 · " + byIn.length + "개 시군";
+    document.getElementById("fb-city-sub2").textContent =
+      "경기도 합계 " + km(totAr) + "㎢ · 침수구역 " + num(source.polygonCount) + "개 · " + byAr.length + "개 시군";
+    bars("fb-city-bars1", byIn, "inside", num, COL_IN);
+    bars("fb-city-bars2", byAr, "area", km, "#3b82f6");
+
+    document.getElementById("fb-city-table").innerHTML = rows.map(function (r) {
+      var dens = r.area > 0 ? r.inside / (r.area / 1e6) : 0;
+      return "<tr><td>" + esc(r.city) + "</td><td>" + num(r.total) + "</td><td>" + num(r.inside) +
+             "</td><td>" + r.ratio.toFixed(1) + "%</td><td>" + num(r.polygons) + "</td><td>" +
+             km(r.area) + "</td><td>" + (r.area > 0 ? num(Math.round(dens)) : "—") + "</td></tr>";
+    }).join("");
+    var attr = rows.reduce(function (n, r) { return n + r.areaSum; }, 0);
+    document.getElementById("fb-city-note").textContent =
+      "자료의 면적 속성을 그냥 더하면 " + num(Math.round(attr / 1e6)) + "㎢ 가 됩니다 — 같은 침수가 여러 해에 " +
+      "되풀이 기록되고 속성은 그 사건 전체 넓이를 가리키기 때문입니다. 그래서 폴리곤 자체를 겹침 없이 잰 " +
+      km(totAr) + "㎢ 를 씁니다. (셈 " + (cityCache[key + "|ms"] || 0) + "ms)";
   }
 
   function renderFlood() {

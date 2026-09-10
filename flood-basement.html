@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202609091200">
+  <link rel="stylesheet" href="assets/css/style.css?v=202609101400">
   <!-- 로그인·승인된 사람만 열람 -->
   <script type="module" src="assets/js/guard.js?v=202609010300"></script>
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css?v=202609010300">
@@ -219,6 +219,45 @@
           </div>
         </section>
 
+        <!-- ④ 시군별 침수 반지하 · 침수흔적 면적 -->
+        <section class="fb-fig" id="fig4">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">④</span>
+            <h2>시군별 침수 반지하와 침수흔적 면적</h2>
+            <span class="fb-fig__src" id="fb-city-src">행정안전부 침수흔적도 기준</span>
+          </div>
+          <p class="fb-fig__desc">
+            지도 ①에서 고른 출처·반지하 자료를 그대로 씁니다. 구가 있는 시(수원·성남·안양·부천·안산·고양·용인)는 시로 합쳤습니다.
+            침수흔적 면적은 <strong>같은 자리가 해마다 따로 기록된 폴리곤을 겹치지 않게</strong> 잰 넓이입니다
+            (20m 격자에 칠해 세는 방식 · 브라우저에서 바로 셉니다).
+          </p>
+
+          <div class="fb-chart fb-chart--even">
+            <div class="fb-card">
+              <h3>침수흔적도 안 반지하</h3>
+              <p class="fb-sub" id="fb-city-sub1">—</p>
+              <div class="fb-bars" id="fb-city-bars1"></div>
+            </div>
+            <div class="fb-card">
+              <h3>침수흔적 면적 (겹침 지운 ㎢)</h3>
+              <p class="fb-sub" id="fb-city-sub2">—</p>
+              <div class="fb-bars" id="fb-city-bars2"></div>
+            </div>
+          </div>
+
+          <div class="fb-card" style="margin-top:1.4rem">
+            <h3>시군별 표</h3>
+            <p class="fb-sub">흔적도 안 반지하 수 기준 · 마지막 열은 침수흔적 1㎢ 안에 반지하가 몇 호 있는지 (밀도)</p>
+            <div class="fb-scroll">
+              <table class="fb-table">
+                <thead><tr><th>시군</th><th>반지하</th><th>흔적도 안</th><th>비율</th><th>침수구역</th><th>면적(㎢)</th><th>호/㎢</th></tr></thead>
+                <tbody id="fb-city-table"></tbody>
+              </table>
+            </div>
+            <p class="fb-sub" id="fb-city-note" style="margin:.8rem 0 0"></p>
+          </div>
+        </section>
+
         <p class="placeholder-note" lang="ko" style="margin-top:2rem">
           ✎ 반지하 위치는 <strong>주소 지오코딩 결과</strong>라 실제 건물 위치와 수 m~수십 m 차이가 날 수 있습니다.
           침수흔적도는 <strong>기록된 침수 이력</strong>이므로, 흔적도 밖이라고 해서 침수 위험이 없다는 뜻은 아닙니다.
@@ -233,6 +272,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609051200" defer></script>
-  <script src="assets/js/flood-basement.js?v=202609010300" defer></script>
+  <script src="assets/js/flood-sgg.js?v=202609101400"></script>
+  <script src="assets/js/flood-basement.js?v=202609101400" defer></script>
 </body>
 </html>
