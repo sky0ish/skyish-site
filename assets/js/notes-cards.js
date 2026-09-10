@@ -16,7 +16,7 @@
 //
 //  화면이 없는 셈 모듈입니다 — node 로 곧바로 시험할 수 있습니다
 //  (tools/test/cards.mjs).
-import { justName } from "./notes-stats.js?v=202609010300";
+import { justName } from "./notes-stats.js?v=202609112000";
 
 /** 이름을 맞대볼 열쇠로 — 사이 띄기를 없애고 소문자로 */
 export const keyOf = (name) =>

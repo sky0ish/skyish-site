@@ -192,6 +192,39 @@ console.log("\n── 연구 주제 낱말 ──");
   eq("글 하나의 주제들", S.themesOf(rows[1]).join(","), "K컬처,방산");
 }
 
+console.log("\n── 명함·달력에서 더 세기 ──");
+/* 「명함과 캘린더에서 파악할 수 있는 만난 횟수를 모두 업데이트」 */
+eq("날짜 읽기", [S.ymdOf("2023년 01월 04일"), S.ymdOf("2026-09-02"), S.ymdOf("2026.9.2"), S.ymdOf("20260902"), S.ymdOf("언제"), S.ymdOf("")],
+   ["2023-01-04", "2026-09-02", "2026-09-02", "2026-09-02", "", ""]);
+const CM = S.cardMeets([{ name: "박신원", company: "한국토지주택공사", at: "2023년 01월 04일" }, { name: "없음", at: "" }, { name: "", at: "2026-01-01" }]);
+eq("명함 → 만남 줄 (날짜 없는 것은 뺌)", CM.map((r) => [r.people, r.event_date, r.src]), [["박신원 (한국토지주택공사)", "2023-01-04", "card"]]);
+const GM = S.calendarMeets([
+  { date: "2026-09-05", title: "김찬동 교수 동경대 세미나", place: "" },
+  { date: "2026-09-06", title: "치과", place: "" },
+  { date: "2026-09-07", title: "김찬동네 집들이", place: "" },
+  { date: "2026-09-08", title: "회의", place: "박신원 사무실" },
+], ["김찬동", "박신원", "김"]);
+eq("달력 → 아는 이름이 든 일정만 (낱말로 든 것만)", GM.map((r) => [r.event_date, r.people]),
+   [["2026-09-05", "김찬동"], ["2026-09-08", "박신원"]]);
+const base = [{ id: "n1", category: "schedule", event_date: "2026-09-05", people: "김찬동 (동경대)" }];
+const merged = S.mergeMeets(base, GM.concat(CM));
+eq("★ 같은 날 같은 사람이 글에 있으면 두 번 안 센다", merged.map((r) => r.id), ["n1", "gcal:2026-09-08:3", "card:2023-01-04:0"]);
+eq("어디서 온 만남인지", S.srcCounts(merged), { notes: 1, card: 1, gcal: 1 });
+eq("글이 없어도 더한 것은 남는다", S.mergeMeets([], CM).length, 1);
+eq("험한 것", [S.cardMeets(null), S.calendarMeets(null, null), S.mergeMeets(null, null)], [[], [], []]);
+
+console.log("\n── 사람마다 주로 만난 키워드 ──");
+const KM = [
+  { title: "역세권 주택공급 토론", event: "국토도시계획학회", tag: "토론", people: "서민호" },
+  { title: "역세권 복합개발 자문", event: "경기도 역세권", tag: "자문회의", people: "서민호" },
+  { title: "명함 — 국토연구원", tag: "명함", people: "서민호", src: "card" },
+];
+const kw = S.personKeywords(KM, 4);
+eq("주제 낱말이 앞에, 행사 낱말이 뒤에 (명함·달력 꼬리표는 뺌)", kw.includes("역세권") && !kw.includes("명함"), true);
+eq("개수 제한", S.personKeywords(KM, 2).length <= 2, true);
+eq("빈 것", S.personKeywords([], 3), []);
+
 console.log("\n" + "─".repeat(60));
 console.log(bad ? bad + "개가 어긋납니다" : "모두 지나갔습니다");
-process.exit(bad ? 1 : 0);
+globalThis.__testBad = bad;
+if (typeof process !== "undefined" && process.exit) process.exit(bad ? 1 : 0);

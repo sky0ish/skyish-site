@@ -2343,6 +2343,11 @@ button.cev--g:hover { filter:brightness(.94);
   padding: 0; font-family: inherit; text-align: left; cursor: pointer; color: inherit; }
 .ptop__go b { font-size: .88rem; font-weight: 600; }
 .ptop__go:hover b { color: var(--teal-text); text-decoration: underline; }
+.ptop__kw { flex: 1 1 100%; margin-left: 30px; font-size: .74rem; color: var(--mauve); }
+.ptop li { flex-wrap: wrap; row-gap: 2px; }
+.nperson { display: inline-flex; align-items: center; gap: 2px; }
+.nperson__find { border: 0; background: none; cursor: pointer; font-size: .78rem; opacity: .45; padding: 0 2px; }
+.nperson__find:hover { opacity: 1; }
 .ptop__org { display: block; font-size: .7rem; color: var(--mauve);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ptop__bar { flex: 1; height: 7px; background: #f1ede6; border-radius: 100px; overflow: hidden; }

@@ -460,3 +460,109 @@ export function summary(rows, today = new Date()) {
     most: ppl[0] || null,
   };
 }
+
+/* ── 명함·구글 달력에서 더 세기 ──────────────────────────────
+   「명함과 캘린더에서 파악할 수 있는 만난 횟수를 모두 업데이트」
+   글에 적힌 「만난 사람」 만으로는 빠지는 만남이 있습니다 —
+     · 명함을 받은 날(명함 등록일)은 그 사람을 만난 날입니다
+     · 구글 달력의 일정 제목에 아는 이름이 있으면 그날 만난 것입니다
+   이것들을 글과 같은 꼴의 줄로 만들어 셈에 보탭니다. 같은 날 같은 사람이
+   글에도 적혀 있으면 두 번 세지 않습니다. */
+
+/** 「2023년 01월 04일」 「2026-09-02」 「2026.9.2」 → 2026-09-02 (아니면 빈 글자) */
+export function ymdOf(s) {
+  const t = String(s == null ? "" : s).trim();
+  let m = t.match(/(\d{4})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})/);
+  if (!m) m = t.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (!m) return "";
+  const y = +m[1], mo = +m[2], d = +m[3];
+  if (y < 1990 || y > 2100 || mo < 1 || mo > 12 || d < 1 || d > 31) return "";
+  return y + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+}
+
+/** 명함첩 → 만남 줄. cards 는 주소록 명함 [{name, company, title, at}] */
+export function cardMeets(cards) {
+  const out = [];
+  (Array.isArray(cards) ? cards : []).forEach((c, i) => {
+    const name = String((c && c.name) || "").trim();
+    const day = ymdOf(c && c.at);
+    if (!name || !day) return;
+    const org = String((c && c.company) || "").trim();
+    out.push({
+      id: "card:" + day + ":" + i, category: "card", src: "card", tag: "명함",
+      title: "명함 — " + (org || name), event_date: day,
+      people: org ? name + " (" + org + ")" : name, event: "", place: "",
+    });
+  });
+  return out;
+}
+
+/** 이름이 낱말로 들어 있는가 — 「김병규」 는 되고 「김병규네」 안의 것은 아닙니다 */
+const hasName = (text, name) => {
+  if (!name || name.length < 2) return false;
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp("(^|[^가-힣A-Za-z])" + esc + "(?![가-힣A-Za-z])").test(String(text || ""));
+};
+
+/** 구글 달력 일정 → 만남 줄. 제목·장소에 아는 이름이 있는 일정만.
+ *  @param events [{date, title, place, time}]  @param names 아는 이름들 (배열·Set) */
+export function calendarMeets(events, names) {
+  const known = [...(names instanceof Set ? names : new Set(names || []))]
+    .map((n) => String(n || "").trim()).filter((n) => n.length >= 2);
+  const out = [];
+  (Array.isArray(events) ? events : []).forEach((e, i) => {
+    const day = ymdOf(e && e.date);
+    if (!day) return;
+    const hay = [e.title, e.place].filter(Boolean).join(" ");
+    const who = known.filter((n) => hasName(hay, n));
+    if (!who.length) return;
+    out.push({
+      id: "gcal:" + day + ":" + i, category: "gcal", src: "gcal", tag: "구글달력",
+      title: String(e.title || "(제목 없음)"), event_date: day, event_time: e.time || "",
+      people: who.join(", "), event: "", place: String(e.place || ""),
+    });
+  });
+  return out;
+}
+
+/** 글(rows)에 명함·달력 줄(extras)을 보탭니다 — 같은 날 같은 사람이 글에 이미 있으면 그 사람은 빼고,
+ *  아무도 안 남으면 그 줄은 버립니다. 글은 그대로 두고 새 줄만 더합니다. */
+export function mergeMeets(rows, extras) {
+  const base = Array.isArray(rows) ? rows : [];
+  const seen = new Set();
+  base.forEach((r) => {
+    const day = String((r && r.event_date) || "").slice(0, 10);
+    peopleOf(r).forEach((one) => seen.add(day + "|" + splitPerson(one).name));
+  });
+  const kept = [];
+  (Array.isArray(extras) ? extras : []).forEach((x) => {
+    const day = String((x && x.event_date) || "").slice(0, 10);
+    const left = peopleOf(x).filter((one) => !seen.has(day + "|" + splitPerson(one).name));
+    if (!left.length) return;
+    left.forEach((one) => seen.add(day + "|" + splitPerson(one).name));
+    kept.push(Object.assign({}, x, { people: left.join(", ") }));
+  });
+  return base.concat(kept);
+}
+
+/** 어디서 온 만남인지 — {notes, card, gcal} */
+export function srcCounts(rows) {
+  const c = { notes: 0, card: 0, gcal: 0 };
+  (Array.isArray(rows) ? rows : []).forEach((r) => {
+    if (!peopleOf(r).length) return;
+    c[r.src === "card" ? "card" : r.src === "gcal" ? "gcal" : "notes"]++;
+  });
+  return c;
+}
+
+/** 이 사람을 주로 어떤 말로 만났는지 — 연구 주제(사전)를 앞에, 행사 낱말을 뒤에 */
+export function personKeywords(meets, n = 5) {
+  const rs = Array.isArray(meets) ? meets : [];
+  const out = [];
+  themeWords(rs, n).forEach((t) => { if (out.indexOf(t.word) < 0) out.push(t.word); });
+  wordsEvent(rs, n * 3).forEach((w) => {
+    if (out.length >= n) return;
+    if (out.indexOf(w.word) < 0 && !/^(명함|구글달력)$/.test(w.word)) out.push(w.word);
+  });
+  return out.slice(0, n);
+}

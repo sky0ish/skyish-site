@@ -386,13 +386,44 @@ function sheetRows(XLSX, wb, wanted) {
   return { rows, headers: headers.map((h) => txt(h)) };
 }
 
+/* 파일마다 읽은 결과를 이 브라우저(IndexedDB)에 담아 둡니다 — 이름·크기·고친 때가 같으면 다시 풀지 않습니다.
+   엑셀 풀기(xlsx 라이브러리 내려받기 + 3,900줄 해석)가 주소록을 열 때 가장 오래 걸리던 일이라,
+   두 번째부터는 곧바로 뜹니다. 「주소록 들어갈 때 로딩이 느려 — 더 빠르게」 */
+const fileKey = (f) => "file:" + f.name + "|" + (f.size || 0) + "|" + (f.lastModified || 0);
+async function cacheGet(key) {
+  try {
+    const db = await openDb();
+    const v = await new Promise((ok, no) => {
+      const r = db.transaction(CACHE_STORE, "readonly").objectStore(CACHE_STORE).get(key);
+      r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
+    });
+    db.close();
+    return v || null;
+  } catch (e) { return null; }
+}
+async function cachePut(key, val) {
+  try {
+    const db = await openDb();
+    await new Promise((ok, no) => {
+      const t = db.transaction(CACHE_STORE, "readwrite");
+      t.objectStore(CACHE_STORE).put(val, key);
+      t.oncomplete = ok; t.onerror = () => no(t.error);
+    });
+    db.close();
+  } catch (e) {}
+}
+
 export async function loadFromFiles(files, say) {
-  const XLSX = await import(/* @vite-ignore */ XLSX_LIB);
+  let XLSX = null;                                   // 담아 둔 것이 없을 때만 내려받습니다
   let out = [];
   for (const f of files) {
     const n = f.name;
     if (!/\.xlsx?$/i.test(n) || /^~\$/.test(n)) continue;
+    const hit = await cacheGet(fileKey(f));
+    if (hit && Array.isArray(hit.rows)) { out = out.concat(hit.rows); continue; }
     if (say) say(n + " 읽는 중…");
+    if (!XLSX) XLSX = await import(/* @vite-ignore */ XLSX_LIB);
+    const before = out.length;
     const wb = await readWorkbook(f, XLSX);
 
     /* 어느 엑셀인지는 파일 이름이 아니라 「속」을 보고 가립니다.
@@ -410,6 +441,7 @@ export async function loadFromFiles(files, say) {
     } else if (say) {
       say(n + " — 명함첩(remember)도 동문 명부(전체주소록)도 아닌 것 같아 건너뜁니다.");
     }
+    cachePut(fileKey(f), { rows: out.slice(before), at: Date.now() });   // 다음에는 바로
   }
   return out;
 }

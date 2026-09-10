@@ -11,7 +11,7 @@ import * as GC from "./gcal.js?v=202609080900";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
-import * as ST from "./notes-stats.js?v=202609010300";
+import * as ST from "./notes-stats.js?v=202609112000";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609111900";
 import * as FT from "./notes-facetag.js?v=202609111500";
@@ -662,7 +662,7 @@ export async function initNotes(mountId = "notesapp") {
 
   function peopleIndex() {
     const map = new Map();
-    rows.forEach((r) => {
+    statRows().forEach((r) => {
       if (r.category === PEOPLE_CAT) return;     // 그 사람 글 자체는 「만남」이 아닙니다
       String(r.people || "").split(/\s*,\s*/).map((x) => x.trim()).filter(Boolean)
         .forEach((one) => {
@@ -704,6 +704,7 @@ export async function initNotes(mountId = "notesapp") {
   }
 
   function drawPeople() {
+    if (extraRows === null) loadExtraMeets();      // 명함·달력 만남은 천천히 보태고 다시 그립니다
     const s = q.value.trim().toLowerCase();
     const all = peopleIndex();
     /* 이름으로도, 그 사람과 얽힌 글(제목·장소·행사)로도 찾습니다.
@@ -884,7 +885,88 @@ export async function initNotes(mountId = "notesapp") {
   /* 셈과 그림에 넘길 글 — 사람들 글은 뺍니다.
      저절로 만들어진 글이라 「만남」 이 아닌데, people 칸에 이름이 들어 있어
      그냥 두면 한 사람을 두 번 만난 것으로 세어집니다. */
-  const statRows = () => rows.filter((r) => r.category !== PEOPLE_CAT);
+  /* 명함 등록일과 구글 달력 일정에서 찾은 만남을 보탭니다 —
+     「명함과 캘린더에서 파악할 수 있는 만난 횟수를 모두 업데이트」.
+     한 번 모으면(extraRows) 그 뒤로는 그대로 씁니다. */
+  let extraRows = null, extraBusy = false;
+  const statRows = () => ST.mergeMeets(rows.filter((r) => r.category !== PEOPLE_CAT), extraRows || []);
+  async function loadExtraMeets() {
+    if (extraRows !== null || extraBusy) return;
+    extraBusy = true;
+    const got = [];
+    let cards = [];
+    try { cards = (await addrCards()) || []; } catch (e) { cards = []; }
+    try { got.push(...ST.cardMeets(cards)); } catch (e) {}
+    try {
+      if (GC.ready() && GC.connected()) {
+        const names = new Set(ST.byPerson(rows).map((p) => p.key).concat(cards.map((c) => c && c.name)));
+        const now = new Date(), evs = [];
+        for (let k = 0; k < 24; k++) {              // 지난 두 해
+          const d = new Date(now.getFullYear(), now.getMonth() - k, 1);
+          try { evs.push(...(await GC.month(d.getFullYear(), d.getMonth()) || [])); } catch (e) {}
+        }
+        got.push(...ST.calendarMeets(evs, names));
+      }
+    } catch (e) {}
+    extraRows = got; extraBusy = false;
+    if (cur === PEOPLE_CAT) drawPeople();
+  }
+
+  /* 낱말 구름 — 사람 · 기관 · 주제(연구 주제 사전 + 행사 낱말). 사람들 갈래와 네트워크망 갈래가 같이 씁니다.
+     「사람, 기관, 주제키워드 세가지가 모두 알수있는 텍스트마이닝」 */
+  function cloudsHtml(rs) {
+    const cloud = (title, arr, kind) => {
+      const sc = ST.scale(arr);
+      return '<div class="pcloud"><h5>' + esc(title) + "</h5>" +
+        (sc.length
+          ? '<div class="pcloud__in">' + sc.map((w) =>
+              `<button type="button" class="pw" data-kind="${kind}" ` +
+                `data-w="${esc(w.word)}" title="${esc(w.word)} — ${w.n}번" ` +
+                `style="font-size:${(0.78 + w.t * 1.15).toFixed(2)}rem;` +
+                `opacity:${(0.55 + w.t * 0.45).toFixed(2)}">` +
+              esc(w.word) + "</button>").join("") + "</div>"
+          : '<p class="pcloud__no">아직 모인 말이 없습니다.</p>') +
+        "</div>";
+    };
+    const themes = ST.themeWords(rs, 14).map((t) => ({ word: t.word, n: t.n }));
+    const evs = ST.wordsEvent(rs, 40).filter((w) => !themes.some((t) => t.word === w.word));
+    return '<section class="pbox"><h4>말로 본 만남' +
+      '<span class="phint">글자가 클수록 자주 나온 말입니다 · 눌러서 좁혀 보세요</span></h4>' +
+      '<div class="pclouds">' +
+        cloud("① 사람", ST.wordsPeople(rs, 40), "who") +
+        cloud("② 기관", ST.wordsOrg(rs, 40), "org") +
+        cloud("③ 주제 키워드", themes.concat(evs).slice(0, 40), "ev") +
+      "</div></section>";
+  }
+
+  /* 사람들 갈래 맨 위의 셈판 — 한눈에 · 자주 만난 분과 주로 만난 키워드 · 낱말 구름 */
+  function peopleStatsHtml() {
+    const rs = statRows();
+    const sm = ST.summary(rs), sc = ST.srcCounts(rs);
+    const card = (v, k, t) => `<div class="pstat" title="${esc(t || "")}"><b>${esc(v)}</b><span>${esc(k)}</span></div>`;
+    const head = '<div class="pstats">' +
+      card(sm.people + "명", "만난 사람") +
+      card(sm.meets + "번", "만난 자리", "글 " + sc.notes + " · 명함 " + sc.card + " · 구글 달력 " + sc.gcal) +
+      card(sc.card + "번", "명함으로 센 만남", "명함 등록일을 만난 날로 봅니다") +
+      card(sc.gcal + "번", "달력으로 센 만남", "구글 달력 제목에 아는 이름이 있는 일정" + (GC.ready() && GC.connected() ? "" : " — 달력을 이으면 셉니다")) +
+      "</div>";
+    const top = ST.topPeople(rs, 10);
+    const thi = Math.max(1, top.length ? top[0].meets.length : 1);
+    const rank = '<section class="pbox"><h4>자주 만난 분 · 주로 만난 키워드' +
+      '<span class="phint">이름을 누르면 그 분 글을 씁니다</span></h4>' +
+      '<ol class="ptop">' + top.map((p, i) => {
+        const n = p.meets.length, kw = ST.personKeywords(p.meets, 4);
+        return `<li><em>${i + 1}</em>` +
+          `<button type="button" class="ptop__go" data-write="${esc(p.key)}" data-label="${esc(p.label)}">` +
+            `<b>${esc(p.key)}</b>` + (p.org ? `<span class="ptop__org">${esc(p.org)}</span>` : "") +
+          "</button>" +
+          `<span class="ptop__bar"><i style="width:${Math.round(n / thi * 100)}%"></i></span>` +
+          `<span class="ptop__n">${n}번</span>` +
+          (kw.length ? `<span class="ptop__kw">${kw.map(esc).join(" · ")}</span>` : "") +
+          "</li>";
+      }).join("") + "</ol></section>";
+    return head + rank + cloudsHtml(rs);
+  }
 
   /* ── 셈판 ── 요약 · 달마다 · TOP 10 · 낱말 구름 ── */
   function statsHtml() {
@@ -933,6 +1015,7 @@ export async function initNotes(mountId = "notesapp") {
       }).join("") + "</ol></section>";
 
     /* ④ 낱말 구름 — 사람 · 기관 · 행사 */
+    const clouds = cloudsHtml(rs);
     const cloud = (title, arr, kind) => {
       const sc = ST.scale(arr);
       return '<div class="pcloud"><h5>' + esc(title) + "</h5>" +
@@ -946,13 +1029,7 @@ export async function initNotes(mountId = "notesapp") {
           : '<p class="pcloud__no">아직 모인 말이 없습니다.</p>') +
         "</div>";
     };
-    const clouds = '<section class="pbox"><h4>말로 본 한 해' +
-      '<span class="phint">글자가 클수록 자주 나온 말입니다 · 눌러서 좁혀 보세요</span></h4>' +
-      '<div class="pclouds">' +
-        cloud("① 사람", ST.wordsPeople(rs, 40), "who") +
-        cloud("② 기관", ST.wordsOrg(rs, 40), "org") +
-        cloud("③ 행사 낱말", ST.wordsEvent(rs, 40), "ev") +
-      "</div></section>";
+    void cloud;
 
     /* 이 셈이 어느 자료를 다루는지 — 기간·건수·게시판을 밝혀 둡니다.
        기간이 안 적힌 그림은 읽는 사람이 「요즘 것」 으로 오해합니다. */
@@ -1208,6 +1285,7 @@ export async function initNotes(mountId = "notesapp") {
     }
 
     let h = "";
+    if (!s) h += peopleStatsHtml();               // 찾는 중이 아닐 때만 셈판
     if (posts.length) {
       h += '<section class="pbox"><h4>' + (s ? "찾은 글" : "사람마다 적어 둔 글") +
         `<span class="phint">${posts.length}건 · 누르면 본문이 열립니다</span></h4>` +
@@ -1215,16 +1293,19 @@ export async function initNotes(mountId = "notesapp") {
     }
     if (hit.length) {
       h += '<section class="pbox"><h4>' + (s ? "찾은 사람" : "만난 사람 모두") +
-        `<span class="phint">${hit.length}명 · 이름을 누르면 그 사람만 봅니다</span></h4>` +
-        '<div class="npeople">' + hit.map((p) =>
-          '<div class="nperson">' +
-            `<button type="button" class="nperson__name" data-k="${esc(p.key)}" ` +
-              `title="${esc(p.label)}"><b>${esc(ST.justName(p.label || p.key))}</b>` +
+        `<span class="phint">${hit.length}명 · 이름을 누르면 그 분 글을 씁니다 · 🔍 는 그 사람만 보기</span></h4>` +
+        '<div class="npeople">' + hit.map((p) => {
+          const kw = ST.personKeywords(p.meets, 3);
+          return '<div class="nperson">' +
+            `<button type="button" class="nperson__name" data-write="${esc(p.key)}" data-label="${esc(p.label)}" ` +
+              `title="${esc(p.label)}${kw.length ? " — " + esc(kw.join(" · ")) : ""} · 누르면 이 분 글 쓰기">` +
+              `<b>${esc(ST.justName(p.label || p.key))}</b>` +
               `<span class="n">${p.meets.length}</span>` +
               ((p.notes && p.notes.length)
                 ? `<span class="n n--note" title="적어 둔 글">✎${p.notes.length}</span>`
                 : "") + "</button>" +
-          "</div>").join("") + "</div></section>";
+            `<button type="button" class="nperson__find" data-k="${esc(p.key)}" title="이 사람만 보기">🔍</button>` +
+          "</div>"; }).join("") + "</div></section>";
     }
     return h;
   }
@@ -1241,7 +1322,25 @@ export async function initNotes(mountId = "notesapp") {
       if (list.scrollIntoView) list.scrollIntoView({ block: "start", behavior: "smooth" });
     };
     if (peopleTab === "net") drawNet(openPerson);   // 관계망은 그 갈래에서만
-    list.querySelectorAll(".nperson__name").forEach((b) =>
+    /* 이름을 누르면 그 분 글을 씁니다 — 사람들 게시판 글이 있으면 그것을, 없으면 새 글에
+       이름·소속을 채워 엽니다. 「사람이름 박스를 클릭하면 해당 사람에 대한 글을 쓸 수 있도록」 */
+    const writeAbout = (key, label) => {
+      const post = rows.find((r) => r.category === PEOPLE_CAT &&
+        String(r.title || "").trim().split(/\s+/)[0] === key);
+      if (post) { open(post); return; }
+      if (!isAdmin) { openPerson(key); return; }
+      open(null);
+      try {
+        mCat.value = PEOPLE_CAT;
+        mCat.dispatchEvent(new Event("change"));
+        document.getElementById("nmT").value = (label || key).slice(0, 120);
+        const w = document.getElementById("nmW");
+        if (w) w.value = key;
+      } catch (e) {}
+    };
+    list.querySelectorAll("[data-write]").forEach((b) =>
+      b.addEventListener("click", () => writeAbout(b.dataset.write, b.dataset.label)));
+    list.querySelectorAll(".nperson__find").forEach((b) =>
       b.addEventListener("click", () => openPerson(b.dataset.k)));
     /* 위쪽 글 목록도 여느 게시판처럼 눌러 열고 지울 수 있게 */
     list.querySelectorAll(".nrow__open").forEach((b) =>
