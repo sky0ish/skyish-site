@@ -522,6 +522,29 @@ export async function pickFaceFolder() {
   return true;
 }
 
+/** 지난번에 골라 둔 얼굴 사진 폴더의 상태 — { handle, name, state: "none"|"granted"|"prompt"|"denied" } */
+export async function faceFolderState() {
+  const h = await faceHandle();
+  if (!h || typeof h.queryPermission !== "function") return { handle: null, name: "", state: "none" };
+  let st = "prompt";
+  try { st = await h.queryPermission({ mode: "read" }); } catch (e) { st = "prompt"; }
+  return { handle: h, name: h.name || "얼굴 사진 폴더", state: st };
+}
+
+/** 브라우저를 새로 켜면 폴더 읽기 허락이 「prompt」 로 돌아갑니다 — 그러면 사진이 모두 X 로 보였습니다.
+ *  사람이 누른 자리에서 허락을 다시 받고, 담아 둔 사진 목록을 새로 읽습니다. */
+export async function resumeFaceFolder() {
+  const h = await faceHandle();
+  if (!h || typeof h.requestPermission !== "function") return false;
+  let st = "denied";
+  try { st = await h.requestPermission({ mode: "readwrite" }); } catch (e) { st = "denied"; }
+  if (st !== "granted") { try { st = await h.requestPermission({ mode: "read" }); } catch (e) { st = "denied"; } }
+  if (st !== "granted") return false;
+  photoMap = null;                    // 비어 있던 목록을 버리고 다시 읽습니다
+  photoUrls.clear();
+  return true;
+}
+
 async function faceHandle() {
   try {
     const db = await openDb();
@@ -1922,9 +1945,28 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
 
   /* 얼굴 사진 폴더 — 홈피 폴더의 face/ 를 한 번 골라 두시면 기억합니다 */
   const faceBtn = document.getElementById("abFace");
+  const faceBtnNormal = () => {
+    if (!faceBtn) return;
+    delete faceBtn.dataset.resume;
+    faceBtn.textContent = "🙂 얼굴 사진 폴더";
+    faceBtn.classList.remove("nbtn--go");
+  };
   if (faceBtn) faceBtn.addEventListener("click", async () => {
     try {
+      /* 지난번 폴더의 허락만 다시 받으면 되는 경우 — 폴더 고르기 창을 띄우지 않습니다 */
+      if (faceBtn.dataset.resume) {
+        if (await resumeFaceFolder()) {
+          faceBtnNormal();
+          const n0 = await photoCount();
+          say(n0 ? `얼굴 사진 ${n0}장을 다시 읽었습니다.` : "폴더는 열렸지만 그림을 찾지 못했습니다.");
+          await refreshPhotoNames();
+          repaint();
+          return;
+        }
+        /* 허락을 못 받았으면 아래로 — 폴더를 새로 고르게 합니다 */
+      }
       if (!(await pickFaceFolder())) return;
+      faceBtnNormal();
       const n = await photoCount();
       say(n
         ? `얼굴 사진 ${n}장을 찾았습니다. 이름이 같은 분께 붙습니다.`
@@ -2084,6 +2126,20 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         });
       }
     }
+  }
+
+  /* 얼굴 사진 폴더도 마찬가지 — 허락이 「prompt」 로 돌아가 있으면 단추를 「이어서 열기」 로 바꿔 알립니다.
+     전에는 이때 아무 말 없이 사진이 모두 X 로 보여, 사진이 사라진 줄 알게 했습니다. */
+  if (faceBtn) {
+    try {
+      const fs = await faceFolderState();
+      if (fs.state === "prompt") {
+        faceBtn.dataset.resume = "1";
+        faceBtn.textContent = "🙂 " + fs.name + " 이어서 열기";
+        faceBtn.classList.add("nbtn--go");
+        say("얼굴 사진은 폴더(" + fs.name + ") 읽기를 다시 허락해야 보입니다 — 「🙂 " + fs.name + " 이어서 열기」 를 눌러 주세요.");
+      }
+    } catch (e) { /* 폴더 상태를 못 봐도 화면은 그려집니다 */ }
   }
 
   return true;
