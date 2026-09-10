@@ -13,7 +13,7 @@
         the active menu item.
      ----------------------------------------------------------- */
   var SITE = {
-    brand: "Jee-Hyun NAM",
+    brand: "JEEHYUN NAM",
     tagline: "Architecture · Urban Design",
     /* `sub` 가 있으면 마우스를 올렸을 때 펼쳐지는 아래 차림표가 생깁니다.
        `also` 는 그 메뉴에 속한 다른 화면들 — 지금 보고 있는 쪽을 밝혀 줍니다. */
@@ -309,7 +309,13 @@
     }, "<span></span><span></span><span></span>");
     nav.id = "primary-nav";
 
-    bar.appendChild(brand);
+    /* 이름표 오른쪽에 「APP」 — 내 앱(app.html) 으로 곧장. 이름표는 첫 화면으로 그대로. */
+    var brandBox = el("div", { class: "brandbox" });
+    var appBtn = el("a", { href: url("app.html"), class: "brand-app", "aria-label": "My WAY 앱으로",
+                           title: "My WAY 앱" }, "APP");
+    brandBox.appendChild(brand);
+    brandBox.appendChild(appBtn);
+    bar.appendChild(brandBox);
     bar.appendChild(nav);
     bar.appendChild(toggle);
     inner.appendChild(bar);

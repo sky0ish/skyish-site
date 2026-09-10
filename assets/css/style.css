@@ -229,6 +229,14 @@ ul { list-style: none; padding: 0; }
 }
 .brand small { display: block; font-family: var(--font-body); font-weight: 500;
   font-size: .58rem; letter-spacing: .32em; opacity: .8; margin-top: 2px; }
+/* 이름표 + APP 단추 */
+.brandbox { display: flex; align-items: center; gap: .8rem; min-width: 0; }
+.brand-app { flex: none; font-family: var(--font-body); font-weight: 700; font-size: .7rem; letter-spacing: .14em;
+  padding: .38em .8em; border: 1.5px solid rgba(255, 255, 255, .75); border-radius: 100px; color: #fff;
+  text-decoration: none; line-height: 1; transition: .2s var(--ease); }
+.brand-app:hover { background: var(--teal); border-color: var(--teal); color: #fff; }
+.site-header.is-solid .brand-app { color: var(--ink); border-color: var(--line); }
+.site-header.is-solid .brand-app:hover { background: var(--teal); border-color: var(--teal); color: #fff; }
 
 /* 차림표 글자 — 넓은 화면에서만 커집니다.
    1000px 언저리에서는 지금 크기 그대로 두어야 넘치지 않습니다.
