@@ -7,8 +7,9 @@
 //  · 적고 Enter(또는 ＋ 추가) → 줄이 생깁니다. 마감 날짜는 선택입니다.
 //  · ✓ 를 누르면 줄을 긋고 아래로,  ★ 를 누르면 맨 위로
 //  · 글을 누르면 그 자리에서 고칩니다 (Enter 저장 · Esc 취소),  ✕ 는 지우기
+//  · ▲▼ 로 한 칸씩, 또는 줄을 끌어다 놓아 차례를 바꿉니다 (별표끼리 · 보통끼리)
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as TL from "./todo-list.js?v=202609101500";
+import * as TL from "./todo-list.js?v=202609101700";
 
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const LS_KEY = "skyish-todos";
@@ -51,6 +52,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
   async function add(text, due) {
     const it = TL.newItem(text, due);
     if (!it) return;
+    it.sort = TL.nextSort(rows);
     if (local) {
       rows.push(Object.assign({ id: "l" + Date.now() + Math.random().toString(36).slice(2, 6) }, it));
       writeLocal(); return;
@@ -64,6 +66,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     const it = rows.find((x) => x.id === id);
     if (!it) return;
     const p = TL.patchFor(it, change);
+    if ("sort" in change && change.sort !== it.sort) p.sort = change.sort;
     if (!Object.keys(p).length) return;
     if (!local) {
       const r = await sb.from("todos").update(p).eq("id", id);
@@ -82,6 +85,13 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     if (local) writeLocal();
   }
 
+  /** 차례 바꾸기 — dir 은 -1(위) · +1(아래) · 줄 id(그 줄 앞으로) · ""(맨 아래) */
+  async function move(id, dir) {
+    const ch = TL.reorder(rows, id, dir);
+    for (const c of ch) await patch(c.id, { sort: c.sort });
+    return ch.length > 0;
+  }
+
   /** 브라우저에 쌓인 것을 표로 옮깁니다 — SQL 을 돌리신 뒤 한 번 */
   async function moveToTable() {
     const mine = readLocal();
@@ -91,6 +101,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
       const r = await sb.from("todos").insert({
         created_by: user.id, text: it.text, due: it.due || null, done: !!it.done,
         star: !!it.star, done_at: it.done_at || null, created_at: it.created_at || new Date().toISOString(),
+        sort: typeof it.sort === "number" ? it.sort : null,
       });
       if (!r.error) n++;
     }
@@ -121,12 +132,15 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
   function rowHtml(x) {
     const st = TL.dueState(x);
     return '<li class="td' + (x.done ? " is-done" : "") + (x.star ? " is-star" : "") +
-             (st ? " due-" + st : "") + '" data-id="' + esc(x.id) + '">' +
+             (st ? " due-" + st : "") + '" data-id="' + esc(x.id) + '"' + (x.done ? "" : ' draggable="true"') + ">" +
       '<button type="button" class="td__chk" data-act="done" title="' + (x.done ? "되돌리기" : "완료") + '" aria-pressed="' + !!x.done + '">✓</button>' +
       '<button type="button" class="td__star" data-act="star" title="' + (x.star ? "별표 빼기" : "중요 — 맨 위로") + '" aria-pressed="' + !!x.star + '">★</button>' +
       '<span class="td__text" data-act="edit" title="눌러서 고치기">' + esc(x.text) + "</span>" +
       (st ? '<span class="td__due">' + esc(TL.dueLabel(x)) + "</span>" : "") +
       '<span class="td__acts">' +
+        (x.done ? "" :
+          '<button type="button" class="td__ic" data-act="up" title="위로">▲</button>' +
+          '<button type="button" class="td__ic" data-act="down" title="아래로">▼</button>') +
         '<button type="button" class="td__ic" data-act="edit" title="고치기">✎</button>' +
         '<button type="button" class="td__ic td__ic--del" data-act="del" title="지우기">✕</button>' +
       "</span></li>";
@@ -204,12 +218,48 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     try {
       if (act === "done") { await patch(x.id, { done: !x.done }); render(); }
       else if (act === "star") { await patch(x.id, { star: !x.star }); render(); }
+      else if (act === "up" || act === "down") { if (await move(x.id, act === "up" ? -1 : 1)) render(); }
       else if (act === "edit") { startEdit(li, x); }
       else if (act === "del") {
         if (!confirm("지울까요?" + NL + x.text)) return;
         await remove(x.id); render();
       }
     } catch (err) { alert("바꾸지 못했습니다 — " + (err && err.message)); }
+  });
+
+  /* 끌어다 놓기 — 줄을 잡아 다른 줄 위에 놓으면 그 앞으로, 빈 데 놓으면 맨 아래로 */
+  let dragId = null;
+  const list = $("tdList");
+  list.addEventListener("dragstart", (e) => {
+    const li = e.target.closest && e.target.closest("li.td");
+    if (!li || editing) { e.preventDefault(); return; }
+    dragId = li.dataset.id; li.classList.add("is-drag");
+    try { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragId); } catch (x) {}
+  });
+  list.addEventListener("dragover", (e) => {
+    if (!dragId) return;
+    e.preventDefault();
+    list.querySelectorAll(".is-over").forEach((el) => el.classList.remove("is-over"));
+    const li = e.target.closest && e.target.closest("li.td");
+    if (li && li.dataset.id !== dragId) li.classList.add("is-over");
+  });
+  list.addEventListener("dragleave", (e) => {
+    const li = e.target.closest && e.target.closest("li.td");
+    if (li) li.classList.remove("is-over");
+  });
+  list.addEventListener("drop", async (e) => {
+    if (!dragId) return;
+    e.preventDefault();
+    const li = e.target.closest && e.target.closest("li.td");
+    const to = li ? li.dataset.id : "";
+    const id = dragId; dragId = null;
+    if (to === id) { render(); return; }
+    try { await move(id, to); } catch (err) { alert("옮기지 못했습니다 — " + (err && err.message)); }
+    render();
+  });
+  list.addEventListener("dragend", () => {
+    dragId = null;
+    list.querySelectorAll(".is-drag, .is-over").forEach((el) => el.classList.remove("is-drag", "is-over"));
   });
 
   $("tdClear").addEventListener("click", async () => {

@@ -4,7 +4,7 @@
 //
 // 「완료되면 줄그어서 아래로, 중요한 건 별표로 위로, 항목별로 기입·삭제·편집」
 
-import { sortItems, counts, dueState, dueLabel, newItem, patchFor, todayTitle, ymd }
+import { sortItems, counts, dueState, dueLabel, newItem, patchFor, todayTitle, ymd, reorder, nextSort }
   from "../../assets/js/todo-list.js";
 
 let bad = 0;
@@ -66,6 +66,22 @@ eq("글 고치기", patchFor(base, { text: " 나  다 " }), { text: "나 다" })
 eq("마감 넣고 빼기", [patchFor(base, { due: "2026-09-12" }), patchFor(it("a", { due: "2026-09-12" }), { due: "" })],
    [{ due: "2026-09-12" }, { due: null }]);
 eq("험한 것", [patchFor(null, { done: true }), patchFor(base, null)], [{}, {}]);
+
+console.log("\n── 차례 바꾸기 ──");
+/* 「자유롭게 위아래 순서를 바꿀수있게해줘」 */
+const M = [it("a", { sort: 0 }), it("b", { sort: 1 }), it("c", { sort: 2 }), it("s", { star: true }), it("d", { done: true })];
+eq("손으로 정한 차례가 마감·적은 때보다 먼저", sortItems([it("x", { sort: 1, due: T }), it("y", { sort: 0 })]).map((x) => x.id), ["y", "x"]);
+eq("차례 없는 줄은 뒤로", sortItems([it("n"), it("m", { sort: 5 })]).map((x) => x.id), ["m", "n"]);
+eq("아래로 한 칸 → 바뀐 것만", reorder(M, "a", 1), [{ id: "b", sort: 0 }, { id: "a", sort: 1 }]);
+eq("위로 한 칸", reorder(M, "c", -1), [{ id: "c", sort: 1 }, { id: "b", sort: 2 }]);
+eq("맨 위에서 위로는 그대로", reorder(M, "a", -1), []);
+eq("맨 아래에서 아래로는 그대로", reorder(M, "c", 1), []);
+eq("다른 줄 앞으로 끌어놓기 (c → a 앞)", reorder(M, "c", "a"), [{ id: "c", sort: 0 }, { id: "a", sort: 1 }, { id: "b", sort: 2 }]);
+eq("빈 데 놓으면 맨 아래로", reorder(M, "a", ""), [{ id: "b", sort: 0 }, { id: "c", sort: 1 }, { id: "a", sort: 2 }]);
+eq("별표는 보통 줄과 섞이지 않는다", reorder(M, "s", 1), []);
+eq("완료한 줄은 못 옮긴다", reorder(M, "d", -1), []);
+eq("없는 줄", reorder(M, "없음", 1), []);
+eq("새 줄은 맨 아래 차례", [nextSort(M), nextSort([]), nextSort([it("d", { done: true, sort: 9 })])], [3, 0, 0]);
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 globalThis.__testBad = bad;

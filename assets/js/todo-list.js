@@ -53,15 +53,57 @@ export function sortItems(items, today) {
     const d = String(x.due || "").slice(0, 10);
     return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : "9999-99-99";      // 마감 없는 것은 뒤로
   };
+  /* 손으로 정한 차례(sort)가 있으면 그것이 먼저입니다 — 「자유롭게 위아래 순서를 바꿀 수 있게」.
+     없는 줄은 마감·적은 때 차례로 그 뒤에 섭니다. */
+  const sv = (x) => (typeof x.sort === "number" && isFinite(x.sort) ? x.sort : Infinity);
   return L.slice().sort((a, b) => {
     const r = rank(a) - rank(b);
     if (r) return r;
     if (a.done && b.done) return at(b.done_at) - at(a.done_at) || at(a.created_at) - at(b.created_at);
+    const s = sv(a) - sv(b);
+    if (s) return s;
     const d = dueKey(a).localeCompare(dueKey(b));
     if (d) return d;
     return at(a.created_at) - at(b.created_at);
-  }).map((x) => x);
+  });
   /* t 는 지금은 쓰지 않지만, 「오늘 것만」 거를 때를 위해 받아 둡니다 */
+}
+
+/** 줄 하나를 위(-1)·아래(+1)로 한 칸, 또는 다른 줄 앞(beforeId)으로 옮깁니다.
+ *  같은 묶음(별표끼리 · 보통끼리) 안에서만 움직입니다 — 별표는 늘 위, 완료는 늘 아래니까요.
+ *  @returns 바뀐 줄들의 { id, sort } — 그 묶음 전체에 0,1,2… 를 다시 매겨 흔들리지 않게 합니다
+ */
+export function reorder(items, id, dir, today) {
+  const all = sortItems(items, today);
+  const me = all.find((x) => x.id === id);
+  if (!me || me.done) return [];
+  const group = all.filter((x) => !x.done && !!x.star === !!me.star);
+  const ids = group.map((x) => x.id);
+  const i = ids.indexOf(id);
+  let j;
+  if (typeof dir === "number") {
+    j = i + (dir < 0 ? -1 : 1);
+    if (j < 0 || j >= ids.length) return [];
+  } else {
+    /* dir 이 줄 id 면 「그 줄 앞으로」 — 빈 값이면 맨 아래로 */
+    const k = dir ? ids.indexOf(String(dir)) : ids.length;
+    if (k < 0 || k === i) return [];
+    j = k > i ? k - 1 : k;
+  }
+  ids.splice(i, 1); ids.splice(j, 0, id);
+  const out = [];
+  ids.forEach((x, n) => {
+    const it = group.find((g) => g.id === x);
+    if (it.sort !== n) out.push({ id: x, sort: n });
+  });
+  return out;
+}
+
+/** 새 줄이 설 자리 — 그 묶음의 맨 아래 */
+export function nextSort(items) {
+  const L = (Array.isArray(items) ? items : []).filter((x) => x && !x.done);
+  const m = L.reduce((n, x) => (typeof x.sort === "number" && x.sort > n ? x.sort : n), -1);
+  return m + 1;
 }
 
 /** 남은 것 · 완료 · 별표 · 오늘 마감 셈 */

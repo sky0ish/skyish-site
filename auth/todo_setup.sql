@@ -21,6 +21,7 @@ create table if not exists public.todos (
   star        boolean not null default false,   -- 중요 — 맨 위로
   due         date,                             -- 마감 (없어도 됩니다)
   done_at     timestamptz,                      -- 언제 끝냈는지 (완료 묶음의 차례)
+  sort        integer,                          -- 손으로 정한 차례 (▲▼ · 끌어놓기)
   created_by  uuid,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
@@ -29,8 +30,9 @@ create table if not exists public.todos (
 alter table public.todos add column if not exists due     date;
 alter table public.todos add column if not exists done_at timestamptz;
 alter table public.todos add column if not exists star    boolean not null default false;
+alter table public.todos add column if not exists sort    integer;
 
-create index if not exists todos_order_idx on public.todos (done, star, due, created_at);
+create index if not exists todos_order_idx on public.todos (done, star, sort, due, created_at);
 
 alter table public.todos enable row level security;
 

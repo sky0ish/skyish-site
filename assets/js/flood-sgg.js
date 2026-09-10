@@ -42,6 +42,27 @@
   /** 시군 넓이(㎢) — 모르면 0 */
   function cityArea(city) { return AREA_KM2[city] || 0; }
 
+  /* 구가 있는 시의 구 — 코드와 넓이(㎢, 지적통계 어림값). ③ 시군구별 표에서 씁니다. */
+  var GU = {
+    "수원시 장안구": ["41111", 33.2], "수원시 권선구": ["41113", 47.3], "수원시 팔달구": ["41115", 12.9], "수원시 영통구": ["41117", 27.7],
+    "성남시 수정구": ["41131", 43.7], "성남시 중원구": ["41133", 26.4], "성남시 분당구": ["41135", 69.4],
+    "안양시 만안구": ["41171", 36.5], "안양시 동안구": ["41173", 21.9],
+    "안산시 상록구": ["41271", 57.8], "안산시 단원구": ["41273", 98.2],
+    "고양시 덕양구": ["41281", 165.5], "고양시 일산동구": ["41285", 59.0], "고양시 일산서구": ["41287", 42.8],
+    "용인시 처인구": ["41461", 467.6], "용인시 기흥구": ["41463", 81.7], "용인시 수지구": ["41465", 42.1]
+  };
+
+  /** 시군구 이름 → 그 안의 침수구역 코드들과 넓이(㎢).
+   *  「고양시 덕양구」 는 구 하나, 「부천시」 처럼 구 없이 적힌 시는 앞 4자리가 같은 코드 모두. */
+  function sggCodes(name, codes) {
+    var n = String(name || "").trim();
+    if (GU[n]) return { codes: [GU[n][0]], area: GU[n][1] };
+    var city = cityOf(n), pre = [];
+    Object.keys(CITY).forEach(function (k) { if (CITY[k] === city) pre.push(k); });
+    return { codes: (codes || []).filter(function (c) { return pre.indexOf(String(c).slice(0, 4)) >= 0; }),
+             area: cityArea(city) };
+  }
+
   /** 시군구 코드 → 시군 이름. 모르면 코드 그대로 */
   function sggOf(code) {
     var c = String(code || "");
@@ -148,5 +169,27 @@
     }).sort(function (a, b) { return b.inside - a.inside || b.area - a.area || a.city.localeCompare(b.city, "ko"); });
   }
 
-  window.FloodSgg = { CITY: CITY, AREA_KM2: AREA_KM2, cityArea: cityArea, sggOf: sggOf, cityOf: cityOf, dissolveArea: dissolveArea, byCity: byCity };
+  /** ③ 시군구별 표 — bySgg 의 줄마다 침수흔적 면적과 시군구 넓이 대비 비율을 더합니다.
+   *  @returns [{ sgg, total, inside, ratio, polygons, area(㎡), sggArea(㎢), share(%) }]
+   */
+  function bySggRows(source, set, opt) {
+    var feats = {}, codes = [];
+    (((source.geojson || {}).features) || []).forEach(function (f) {
+      var c = String((f.properties || {}).sgg_cd || "");
+      if (!feats[c]) { feats[c] = []; codes.push(c); }
+      feats[c].push(f);
+    });
+    var cell = (opt && opt.cellM) || 20, areaOf = {};
+    codes.forEach(function (c) { areaOf[c] = dissolveArea(feats[c], cell).area; });
+    return (((source.bySgg || {})[set]) || []).map(function (r) {
+      var x = sggCodes(r.sgg, codes), area = 0, n = 0;
+      /* 겹침은 코드 안에서만 지웁니다 — 코드끼리는 구역이 달라 겹치지 않습니다 */
+      x.codes.forEach(function (c) { area += areaOf[c] || 0; n += (feats[c] || []).length; });
+      return { sgg: r.sgg, total: Number(r.total) || 0, inside: Number(r.inside) || 0,
+               ratio: Number(r.ratio) || 0, polygons: n, area: area, sggArea: x.area,
+               share: x.area ? area / (x.area * 1e6) * 100 : null };
+    });
+  }
+
+  window.FloodSgg = { GU: GU, sggCodes: sggCodes, bySggRows: bySggRows, CITY: CITY, AREA_KM2: AREA_KM2, cityArea: cityArea, sggOf: sggOf, cityOf: cityOf, dissolveArea: dissolveArea, byCity: byCity };
 })();

@@ -227,14 +227,23 @@
         num(st.inside) + "호</b></div>" +
       '<div><i style="background:' + COL_OUT + '"></i>침수흔적도 밖<b>' + num(st.outside) + "호</b></div>";
 
-    var rows = (source.bySgg[state.set] || []).filter(function (r) { return r.inside > 0; });
+    /* 시군구마다 침수흔적 면적과 행정구역 대비 비율도 — 출처마다 한 번만 셉니다 */
+    var key = "sgg|" + state.src + "|" + state.set;
+    if (!sggCache[key]) {
+      sggCache[key] = window.FloodSgg ? window.FloodSgg.bySggRows(source, state.set, { cellM: 20 })
+                                      : (source.bySgg[state.set] || []);
+    }
+    var rows = sggCache[key].filter(function (r) { return r.inside > 0; });
     if (sggSort) { rows = sggSort.sort(rows); sggSort.mark(); }
+    var km2 = function (v) { return v == null ? "—" : (v / 1e6).toFixed(v >= 1e6 ? 1 : 2); };
     document.getElementById("fb-sgg").innerHTML = rows.length
       ? rows.map(function (r) {
           return "<tr><td>" + esc(r.sgg) + "</td><td>" + num(r.total) + "</td><td>" +
-                 num(r.inside) + "</td><td>" + r.ratio.toFixed(1) + "%</td></tr>";
+                 num(r.inside) + "</td><td>" + r.ratio.toFixed(1) + "%</td><td>" +
+                 (r.area != null ? km2(r.area) : "—") + "</td><td>" +
+                 (r.share != null ? r.share.toFixed(2) + "%" : "—") + "</td></tr>";
         }).join("")
-      : '<tr><td colspan="4">해당 없음</td></tr>';
+      : '<tr><td colspan="6">해당 없음</td></tr>';
 
     var yrs = source.years && source.years.length
       ? source.years[0] + "–" + source.years[source.years.length - 1] : "—";
@@ -285,7 +294,7 @@
   /* ---------- ④ 시군별 반지하 · 침수흔적 면적 ----------
      셈은 flood-sgg.js (window.FloodSgg) 에 있고, 여기서는 그리기만 합니다.
      면적은 출처마다 한 번만 재고(cityCache), 반지하 수는 자료(est·srv)에 따라 바꿉니다. */
-  var cityCache = {};
+  var cityCache = {}, sggCache = {};
   function bars(mountId, rows, key, fmt, color) {
     var max = Math.max.apply(null, rows.map(function (r) { return r[key]; })) || 1;
     document.getElementById(mountId).innerHTML = rows.map(function (r) {

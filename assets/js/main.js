@@ -76,6 +76,7 @@
         { label: "활동기관", file: "contact.html?p=orgs"   },
         { label: "주소록",   file: "contact.html?p=addr",  own: true },
         { label: "Sites",   file: "contact.html?p=sites", own: true },
+        { label: "What to do", file: "contact.html?p=todo", own: true },
         { label: "To Me",   file: "contact.html"          }
       ] }
     ],

@@ -3264,6 +3264,9 @@ body.diary-on #notesapp > *:not(.ndiary) {
 .td.is-done .td__chk { background: var(--teal); border-color: var(--teal); color: #fff; }
 .td.is-done .td__due { opacity: .5; }
 .todo__foot { margin-top: .9rem; display: flex; justify-content: flex-end; }
+.td[draggable="true"] { cursor: grab; }
+.td.is-drag { opacity: .4; }
+.td.is-over { box-shadow: 0 -3px 0 0 var(--teal); }
 
 /* 표 머리글을 눌러 차례 바꾸기 — 방산 페이지와 같은 모양 */
 .fb-sort { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: .25rem; font: inherit; color: inherit; }
