@@ -21,6 +21,7 @@ import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609081500";
 import * as WS from "./notes-workshop.js?v=202609101300";
 import * as HX from "./hwpx.js?v=202609101300";
+import * as WK from "./notes-weekly.js?v=202609112100";
 
 /** 사진이 이만큼 넘게 있으면 앨범에도 통째로 담습니다 */
 const ALBUM_MIN = 3;
@@ -409,6 +410,8 @@ export async function initNotes(mountId = "notesapp") {
         '<input type="file" id="nFolder" webkitdirectory directory multiple hidden></label>' +
       '<button type="button" class="nbtn" id="nRec" title="1.회의록 폴더를 고르세요 — 회의마다 그날 일정에 회의록 PDF 가 붙습니다">🎙 회의록 붙이기</button>' +
       '<button type="button" class="nbtn" id="nWs" title="1.세미나_토론 폴더(또는 행사 폴더 하나)를 고르세요 — 폴더 이름이 글 제목이 되고, 회의록·자료·사진이 모두 붙습니다">📂 워크샵 올리기</button>' +
+      '<label class="nbtn nfolder" id="nWeekBtn" title="주간점검회의 자료(PDF)를 고르면 내 이름이 든 항목을 찾아 그날 일정의 시각·장소·행사명을 맞춥니다 — 새 글은 만들지 않습니다">📄 주간점검 맞추기' +
+        '<input type="file" id="nWeek" accept=".pdf,.txt" multiple hidden></label>' +
       '<button type="button" class="nbtn nbtn--go" id="nNew">✎ 새 글</button>' +
     "</div>" +
     '<p class="ncount" id="nCount"></p>' +
@@ -2707,6 +2710,51 @@ export async function initNotes(mountId = "notesapp") {
     }
     return { error: null, dropped };
   }
+
+  /* ── 주간점검회의 자료로 일정 맞추기 ──
+     「주간점검회의에 남지현 이름으로 올라오는 수정내용이 있으면 내 캘린더에 반영 — 추가하지 말고 기존 내용을 수정」
+     PDF 에서 내 이름이 든 항목을 뽑아, 같은 날의 일정 글에 시각·장소·행사명을 맞춥니다. 확인창 없이 곧바로. */
+  const weekIn = document.getElementById("nWeek");
+  if (weekIn) weekIn.addEventListener("change", async () => {
+    const files = [...(weekIn.files || [])];
+    weekIn.value = "";
+    if (!files.length) return;
+    const btn = document.getElementById("nWeekBtn");
+    const was = btn.textContent;
+    btn.textContent = "읽는 중…";
+    const NLw = String.fromCharCode(10);
+    const done = [], skipped = [], failed = [];
+    try {
+      try { await load(); } catch (e) {}
+      for (const f of files) {
+        let text = "";
+        try {
+          if (/\.txt$/i.test(f.name)) text = await f.text();
+          else {
+            const r = await NF.extract(f, ["남지현"]);
+            const bl = r && r.lines && r.lines.blocks;
+            text = bl && bl.length ? bl.map((b) => b.text).join(NLw) : ((r && r.lines) || []).map((x) => x.line).join(NLw);
+          }
+        } catch (e) { failed.push(f.name + " — 읽지 못했습니다 (" + ((e && e.message) || "") + ")"); continue; }
+        const items = WK.parseWeekly(text, { names: ["남지현"] });
+        if (!items.length) { failed.push(f.name + " — 남지현 항목을 못 찾았습니다"); continue; }
+        const { changes, skipped: sk } = WK.matchItems(items, rows);
+        for (const c of changes) {
+          btn.textContent = "맞추는 중… " + c.item.date;
+          const r2 = await sb.from("notes").update(c.patch).eq("id", c.row.id);
+          if (r2.error) { failed.push(c.item.date + " " + c.row.title + " — " + r2.error.message); continue; }
+          Object.assign(c.row, c.patch);
+          done.push(c.item.date + " 「" + c.row.title + "」 ← " +
+            Object.entries(c.patch).map(([k, v]) => ({ event_time: "시각", place: "장소", event: "행사명" }[k] || k) + " " + v).join(" · "));
+        }
+        sk.forEach((x) => skipped.push(x.item.date + " " + x.item.title.slice(0, 40) + " — " + x.why));
+      }
+      await load();
+    } finally { btn.textContent = was; }
+    alert((done.length ? "맞췄습니다:" + NLw + done.join(NLw) : "고친 것이 없습니다.") +
+      (skipped.length ? NLw + NLw + "건너뜀:" + NLw + skipped.join(NLw) : "") +
+      (failed.length ? NLw + NLw + "실패:" + NLw + failed.join(NLw) : ""));
+  });
 
   /* ── 워크샵·세미나 폴더 올리기 ──
      「워크샵 등의 경우 여기처럼 사진, 회의록이 있는 경우 전부 Schedule 게시판에
