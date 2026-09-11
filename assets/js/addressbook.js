@@ -719,6 +719,22 @@ export function sortRows(rows, key, dir, has) {
   const L = Array.isArray(rows) ? rows.slice() : [];
   if (!key || (key !== "photo" && !SORT_KEYS[key])) return L;
   const d = dir < 0 ? -1 : 1;
+  /* 경기연구원 줄을 직함으로 세울 때는 가나다가 아니라 자리 차례로
+     — 「부원장부터 임원을 먼저, 크게 부서별로, 선임연구위원>연구위원>선임연구원>연구원」 */
+  if (key === "title" && L.some((r) => r && r.kind === "gri")) {
+    const deptIx = griDeptOrder(L);
+    return L.map((r, i) => [r, i]).sort((A, B) => {
+      const a = A[0], b = B[0], ga = a && a.kind === "gri", gb = b && b.kind === "gri";
+      if (ga !== gb) return ga ? -1 : 1;                     // 경기연구원 줄을 앞에 모읍니다
+      if (ga) { const c = griSortKey(a, deptIx).localeCompare(griSortKey(b, deptIx), "ko", { numeric: true }); return (c ? c * d : 0) || A[1] - B[1]; }
+      const x = String(a && a.title || "").trim(), y = String(b && b.title || "").trim();
+      if (!x && !y) return A[1] - B[1];
+      if (!x) return 1;
+      if (!y) return -1;
+      const c = x.localeCompare(y, "ko", { numeric: true });
+      return (c ? c * d : 0) || A[1] - B[1];
+    }).map(([r]) => r);
+  }
   if (key === "photo") {
     const yes = (r) => (has && has(r && r.name, r)) ? 1 : 0;
     return L.map((r, i) => [r, i]).sort((A, B) => {
@@ -736,6 +752,45 @@ export function sortRows(rows, key, dir, has) {
     const c = a.localeCompare(b, "ko", { numeric: true });
     return (c ? c * d : 0) || A[1] - B[1];
   }).map(([r]) => r);
+}
+
+/* ── 경기연구원 자리 차례 ──
+   「직함 소팅시에는 기본적으로 부원장부터 임원의 경우 먼저 쓰고, 크게크게 부서별로
+    나눠지게 기본세팅 … 선임연구위원>연구위원>선임연구원>연구원」 */
+export const GRI_RANKS = [
+  [/(원장|이사장|^소장$)/,          0, "임원"],      // 원장·부원장·이사장·센터 소장
+  [/(실장|센터장|단장|부장|팀장)$/,   1, "부서장"],
+  [/^선임연구위원/,                  2, "선임연구위원"],
+  [/^연구위원/,                      3, "연구위원"],
+  [/^선임연구원/,                    4, "선임연구원"],
+  [/^연구원/,                        5, "연구원"],
+  [/^선임(매니저|투자분석위원)/,      6, "선임매니저"],
+  [/투자분석위원/,                   7, "투자분석위원"],
+  [/(매니저|투자분석원)/,            8, "매니저"],
+];
+/** 직함 → 자리 순위 (작을수록 위). 「GRI 균형발전지원센터장 · 도시주택연구실 선임연구위원」 은 앞 자리로 봅니다 */
+export function griRank(title) {
+  const t = String(title || "").replace(/^GRI\s*/i, "").split("·")[0].trim();
+  if (!t) return 9;
+  const hit = GRI_RANKS.find(([re]) => re.test(t));
+  return hit ? hit[1] : 9;
+}
+/** 부서가 처음 나온 차례 — 명단(조직도) 순서를 그대로 부서 차례로 씁니다 */
+export function griDeptOrder(rows) {
+  const ix = new Map();
+  (rows || []).forEach((r) => {
+    if (!r || r.kind !== "gri") return;
+    const k = String(r.orgDept || "").trim();
+    if (!ix.has(k)) ix.set(k, ix.size);
+  });
+  return ix;
+}
+/** 줄 세우기 열쇠 — 임원(0) 은 부서에 상관없이 맨 앞, 그다음은 부서 차례, 부서 안에서는 순위 */
+export function griSortKey(r, deptIx) {
+  const rank = griRank(r && r.title);
+  const dept = String(r && r.orgDept || "").trim();
+  const di = deptIx && deptIx.has(dept) ? deptIx.get(dept) : 999;
+  return (rank === 0 ? "0|000" : "1|" + String(di).padStart(3, "0")) + "|" + rank + "|" + String(r && r.name || "");
 }
 
 /** 그림 종류 → 확장자 */
@@ -1526,8 +1581,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         .join(" ").toLowerCase().includes(s);
     };
     const inGroup = (r) => cur === "all" || (cur === "alum" ? r.src === "alum" : r.kind === cur);
+    /* 경기연구원 갈래는 아무 칸도 안 골랐을 때 자리 차례(임원 → 부서별 → 직급)가 기본입니다 */
     const shown = () => sortRows(
-      rows.filter(inGroup).filter(match), sortKey, sortDir,
+      rows.filter(inGroup).filter(match), sortKey || (cur === "gri" ? "title" : ""), sortDir,
       (n, r) => !!findKey(havePhoto, n, r && r.company, isTwin(n)));
 
     function paint() {
