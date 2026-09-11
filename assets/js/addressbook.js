@@ -947,7 +947,20 @@ async function mirroredMap() {
 /** 폴더 그림이든 그 사본이든 — 파일(Blob) 하나로 */
 const fileOf = async (it) => (it && it.blob) ? it.blob : await it.fh.getFile();
 
-export const __mirror = { mirrorFolder, mirroredMap, isMirrorKey };
+/** 지금 폴더를 읽을 수 있으면, 그 그림을 브라우저 안에 곧바로 베껴 둡니다 (끝까지 기다립니다).
+ *  폴더를 고르거나 「이어서 열기」 를 누른 자리에서 부릅니다 — 그래야 바로 새로고침해도 사본이 남습니다. */
+export async function mirrorNow() {
+  try {
+    let dir = null;
+    try { dir = await photoDir(); } catch (e) {}
+    if (!dir) return 0;
+    const m = await collectPhotos(dir);
+    photoMap = m;
+    return await mirrorFolder(m);
+  } catch (e) { return 0; }
+}
+
+export const __mirror = { mirrorFolder, mirroredMap, isMirrorKey, mirrorNow };
 
 /* ── 붙여넣은 사진 ──
    Ctrl+V 로 넣으신 그림은 이 브라우저의 IndexedDB 에 담깁니다.
@@ -2286,8 +2299,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (faceBtn.dataset.resume) {
         if (await resumeFaceFolder()) {
           faceBtnNormal();
+          await mirrorNow();                  // 그림을 브라우저 안에 베껴 둡니다 — 다음엔 안 물어봅니다
           const n0 = await photoCount();
-          say(n0 ? `얼굴 사진 ${n0}장을 다시 읽었습니다.` : "폴더는 열렸지만 그림을 찾지 못했습니다.");
+          say(n0 ? `얼굴 사진 ${n0}장을 담아 두었습니다 — 이제 새로고침해도 그대로 보입니다.` : "폴더는 열렸지만 그림을 찾지 못했습니다.");
           await refreshPhotoNames();
           repaint();
           return;
@@ -2296,9 +2310,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       }
       if (!(await pickFaceFolder())) return;
       faceBtnNormal();
+      await mirrorNow();                       // 고른 폴더의 그림을 곧바로 베껴 둡니다
       const n = await photoCount();
       say(n
-        ? `얼굴 사진 ${n}장을 찾았습니다. 이름이 같은 분께 붙습니다.`
+        ? `얼굴 사진 ${n}장을 담아 두었습니다 — 이제 새로고침해도, 폴더를 다시 안 골라도 그대로 보입니다.`
         : "그 폴더에서 그림을 찾지 못했습니다. 파일 이름을 그 사람 이름으로 지어 주세요 (예: 이석준.jpg).");
       await refreshPhotoNames();
       repaint();
