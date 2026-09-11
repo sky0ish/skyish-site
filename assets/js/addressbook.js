@@ -847,11 +847,107 @@ export async function collectPhotos(dir) {
 async function loadPhotoMap() {
   if (photoMap) return photoMap;
   photoMap = new Map();
-  try {
-    photoMap = await collectPhotos(await photoDir());
-  } catch (e) { /* 폴더가 없어도 그냥 갑니다 */ }
+  let dir = null;
+  try { dir = await photoDir(); } catch (e) {}
+  if (dir) {
+    try { photoMap = await collectPhotos(dir); } catch (e) { /* 폴더가 없어도 그냥 갑니다 */ }
+    /* 폴더를 읽을 수 있을 때 그 그림들을 브라우저 안에 베껴 둡니다 —
+       다음에 폴더 허락이 「prompt」 로 돌아가 있어도 얼굴이 그대로 보이게. 조용히, 뒤에서. */
+    const snap = photoMap;
+    mirrorFolder(snap).catch(() => {});
+    return photoMap;
+  }
+  /* 폴더를 못 열면(허락을 다시 물어야 하면) 지난번에 베껴 둔 것으로 보입니다 */
+  try { photoMap = await mirroredMap(); } catch (e) {}
   return photoMap;
 }
+
+/* ── 폴더 그림의 브라우저 안 사본 ──
+   「Face 폴더를 너무 자주 지정하게 되어 있어. 한 번 지정하면 계속 인식되게 해줘」
+   브라우저를 새로 켜면 폴더 읽기 허락이 「prompt」 로 돌아가는데, 창은 사람이 누른
+   자리에서만 뜰 수 있어 매번 「이어서 열기」 를 눌러야 했습니다. 그래서 폴더를 읽을 수
+   있을 때마다 그림을 PHOTO_STORE 에 「folder:열쇠」 로 베껴 두고, 못 열 때는 그것으로
+   그립니다. 폴더는 새 그림을 넣으셨을 때 「이어서 열기」 로 한 번 더 읽으면 됩니다.
+   사본은 이 브라우저 안에만 있습니다 — 어디로도 올라가지 않습니다. */
+const MIRROR = "folder:";
+const mirrorKey = (k) => MIRROR + k;
+const isMirrorKey = (k) => String(k).indexOf(MIRROR) === 0;
+
+async function mirrorFolder(m) {
+  if (!m || !m.size) return 0;
+  let db;
+  try { db = await openDb(); } catch (e) { return 0; }
+  const have = await new Promise((ok) => {
+    try {
+      const r = db.transaction(PHOTO_STORE, "readonly").objectStore(PHOTO_STORE).getAll();
+      const rk = db.transaction(PHOTO_STORE, "readonly").objectStore(PHOTO_STORE).getAllKeys();
+      let vals = null, keys = null;
+      const done = () => { if (vals && keys) ok(new Map(keys.map((k, i) => [String(k), vals[i]]))); };
+      r.onsuccess = () => { vals = r.result || []; done(); };
+      rk.onsuccess = () => { keys = rk.result || []; done(); };
+      r.onerror = rk.onerror = () => ok(new Map());
+    } catch (e) { ok(new Map()); }
+  });
+  let n = 0;
+  for (const [k, it] of m) {
+    if (!it || !it.fh || typeof it.fh.getFile !== "function") continue;
+    let f;
+    try { f = await it.fh.getFile(); } catch (e) { continue; }
+    const old = have.get(mirrorKey(k));
+    if (old && old.size === f.size && old.mtime === (f.lastModified || 0)) continue;
+    const rec = { blob: f, name: it.name || f.name, size: f.size, mtime: f.lastModified || 0 };
+    try {
+      await new Promise((ok, no) => {
+        const t = db.transaction(PHOTO_STORE, "readwrite");
+        t.objectStore(PHOTO_STORE).put(rec, mirrorKey(k));
+        t.oncomplete = ok; t.onerror = () => no(t.error);
+      });
+      n++;
+    } catch (e) {}
+  }
+  /* 폴더에서 없어진 그림은 사본도 지웁니다 */
+  for (const k of have.keys()) {
+    if (!isMirrorKey(k) || m.has(k.slice(MIRROR.length))) continue;
+    try {
+      await new Promise((ok) => {
+        const t = db.transaction(PHOTO_STORE, "readwrite");
+        t.objectStore(PHOTO_STORE).delete(k);
+        t.oncomplete = ok; t.onerror = ok;
+      });
+    } catch (e) {}
+  }
+  try { db.close(); } catch (e) {}
+  return n;
+}
+
+/** 베껴 둔 폴더 그림 — collectPhotos 와 같은 꼴의 표 ({blob, name, mirrored:true}) */
+async function mirroredMap() {
+  const out = new Map();
+  let db;
+  try { db = await openDb(); } catch (e) { return out; }
+  try {
+    const rows = await new Promise((ok, no) => {
+      const st = db.transaction(PHOTO_STORE, "readonly").objectStore(PHOTO_STORE);
+      const rk = st.getAllKeys(), rv = st.getAll();
+      let keys = null, vals = null;
+      const done = () => { if (keys && vals) ok(keys.map((k, i) => [String(k), vals[i]])); };
+      rk.onsuccess = () => { keys = rk.result || []; done(); };
+      rv.onsuccess = () => { vals = rv.result || []; done(); };
+      rk.onerror = rv.onerror = () => no(rk.error || rv.error);
+    });
+    for (const [k, v] of rows) {
+      if (!isMirrorKey(k) || !v || !v.blob) continue;
+      out.set(k.slice(MIRROR.length), { blob: v.blob, name: v.name || "", mirrored: true });
+    }
+  } catch (e) {}
+  try { db.close(); } catch (e) {}
+  return out;
+}
+
+/** 폴더 그림이든 그 사본이든 — 파일(Blob) 하나로 */
+const fileOf = async (it) => (it && it.blob) ? it.blob : await it.fh.getFile();
+
+export const __mirror = { mirrorFolder, mirroredMap, isMirrorKey };
 
 /* ── 붙여넣은 사진 ──
    Ctrl+V 로 넣으신 그림은 이 브라우저의 IndexedDB 에 담깁니다.
@@ -949,6 +1045,11 @@ export async function removeFolderPhoto(k) {
   try {
     const gone = await deleteFolderEntry((await loadPhotoMap()).get(k));
     if (!gone) return "";
+    try {                                  // 브라우저 안 사본도 함께 지웁니다
+      const db = await openDb();
+      await new Promise((ok) => { const t = db.transaction(PHOTO_STORE, "readwrite"); t.objectStore(PHOTO_STORE).delete(mirrorKey(k)); t.oncomplete = ok; t.onerror = ok; });
+      db.close();
+    } catch (e) {}
     photoMap = null;                       // 폴더를 다시 읽습니다
     const old = photoUrls.get(k);
     if (old) URL.revokeObjectURL(old);
@@ -1004,7 +1105,7 @@ export async function photo(name, org) {
     const m = await loadPhotoMap();
     const it = m.get(k);
     if (!it) { photoUrls.set(k, ""); return ""; }
-    const url = URL.createObjectURL(await it.fh.getFile());
+    const url = URL.createObjectURL(await fileOf(it));
     photoUrls.set(k, url);
     return url;
   } catch (e) { photoUrls.set(k, ""); return ""; }
@@ -1020,7 +1121,7 @@ async function storedNames() {
       r.onsuccess = () => ok(r.result || []); r.onerror = () => no(r.error);
     });
     db.close();
-    storedKeyCache = v.map(String);
+    storedKeyCache = v.map(String).filter((k) => !isMirrorKey(k));   // 폴더 사본은 붙여넣은 사진이 아닙니다
     return storedKeyCache;
   } catch (e) { return []; }
 }
@@ -1078,7 +1179,7 @@ export async function buildPhotoPack(onStep) {
   try {
     const m = await loadPhotoMap();
     for (const [k, it] of m) {
-      try { await add(k, await it.fh.getFile()); } catch (e) {}
+      try { await add(k, await fileOf(it)); } catch (e) {}
     }
   } catch (e) {}
   /* 나중에 채워 넣으신 내용도 함께 담습니다 — 폰에서도 그대로 보이게 */
@@ -1378,7 +1479,7 @@ export async function photoByKey(k) {
     if (b) { const u = URL.createObjectURL(b); photoUrls.set(k, u); return u; }
     const it = (await loadPhotoMap()).get(k);
     if (!it) return "";
-    const u = URL.createObjectURL(await it.fh.getFile());
+    const u = URL.createObjectURL(await fileOf(it));
     photoUrls.set(k, u);
     return u;
   } catch (e) { return ""; }
@@ -2364,8 +2465,15 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (fs.state === "prompt") {
         faceBtn.dataset.resume = "1";
         faceBtn.textContent = "🙂 " + fs.name + " 이어서 열기";
-        faceBtn.classList.add("nbtn--go");
-        say("얼굴 사진은 폴더(" + fs.name + ") 읽기를 다시 허락해야 보입니다 — 「🙂 " + fs.name + " 이어서 열기」 를 눌러 주세요.");
+        /* 베껴 둔 사본이 있으면 얼굴은 이미 보입니다 — 새 그림을 넣으셨을 때만 누르시면 됩니다.
+           사본이 하나도 없을 때만 눌러 달라고 합니다. */
+        const nMirror = (await mirroredMap()).size;
+        if (nMirror) {
+          faceBtn.title = "얼굴 사진 " + nMirror + "장은 담아 둔 것으로 보입니다. 폴더에 새 사진을 넣으셨으면 눌러서 다시 읽습니다.";
+        } else {
+          faceBtn.classList.add("nbtn--go");
+          say("얼굴 사진은 폴더(" + fs.name + ") 읽기를 다시 허락해야 보입니다 — 「🙂 " + fs.name + " 이어서 열기」 를 눌러 주세요.");
+        }
       }
     } catch (e) { /* 폴더 상태를 못 봐도 화면은 그려집니다 */ }
   }
