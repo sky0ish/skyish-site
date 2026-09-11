@@ -159,8 +159,10 @@ export const looksGri = (fname, headers) =>
 export function fromGri(rows, headers) {
   const col = griColumns(headers);
   if (!col) return [];
+  const extraCol = (headers || []).map((h) => String(h == null ? "" : h).trim()).find((h) => /겸직|겸임/.test(h)) || "";
   return rows.map((r) => {
-    const t = txt(r[col.title]);
+    const extra = extraCol ? txt(r[extraCol]) : "";           // 「도시주택연구실 선임연구위원」 처럼 겸직 자리
+    const t = [txt(r[col.title]), extra].filter(Boolean).join(" · ");
     return {
       src: "gri", kind: "gri",
       name: txt(r[col.name]).replace(/\s*\(.*\)$/, ""),
