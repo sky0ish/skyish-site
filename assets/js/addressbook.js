@@ -83,6 +83,7 @@ export const GROUPS = [
   ["prof",   "명함_교수",     "#8a6bb0"],
   ["public", "명함_공공기관", "#b3543b"],
   ["etc",    "명함_기타",     "#7d7768"],
+  ["gri",    "경기연구원",    "#2f7d6f"],
   ["alum",   "동문",         "#c98a3f"],
 ];
 export const GROUP_NAME  = Object.fromEntries(GROUPS.map(([k, v]) => [k, v]));
@@ -128,6 +129,65 @@ export function fromRemember(rows) {
       at: txt(r["명함 등록일"]),
     };
   }).filter((x) => x.name || x.company);
+}
+
+/* ── 경기연구원 직원 명단 ──
+   「주소록에 경기연구원 카테고리를 추가해서 … 소속 및 GRI+직책으로 넣어주고, 핸드폰과 회사전화번호 모두」
+   그룹웨어·조직도에서 내보낸 표(엑셀·CSV·탭 글)를 받습니다. 머리글 이름은 느슨하게 봅니다:
+     이름(성명) · 소속(부서·실·센터) · 직책(직위·직급) · 휴대폰(핸드폰·휴대전화·HP) · 회사전화(사무실·내선·전화) · 이메일 */
+const GRI_COLS = {
+  name:   /^(이름|성명|name)$/i,
+  dept:   /(소속|부서|실|센터|팀|department)/i,
+  title:  /(직책|직위|직급|title)/i,
+  mobile: /(휴대폰|핸드폰|휴대전화|휴대|mobile|hp)/i,
+  phone:  /(회사전화|사무실|내선|전화|tel|phone)/i,
+  email:  /(메일|email)/i,
+};
+export function griColumns(headers) {
+  const hs = (headers || []).map((h) => String(h == null ? "" : h).trim());
+  const pick = (re, avoid) => hs.find((h) => h && re.test(h) && !(avoid && avoid.test(h))) || "";
+  const col = {
+    name: pick(GRI_COLS.name), dept: pick(GRI_COLS.dept), title: pick(GRI_COLS.title),
+    mobile: pick(GRI_COLS.mobile), phone: pick(GRI_COLS.phone, GRI_COLS.mobile), email: pick(GRI_COLS.email),
+  };
+  return col.name && (col.mobile || col.phone || col.dept) ? col : null;
+}
+/** 경기연구원 명단인가 — 파일 이름이나 머리글로 */
+export const looksGri = (fname, headers) =>
+  /(경기연구원|GRI|직원|조직도)/i.test(String(fname || "")) && !!griColumns(headers);
+
+export function fromGri(rows, headers) {
+  const col = griColumns(headers);
+  if (!col) return [];
+  return rows.map((r) => {
+    const t = txt(r[col.title]);
+    return {
+      src: "gri", kind: "gri",
+      name: txt(r[col.name]).replace(/\s*\(.*\)$/, ""),
+      company: "경기연구원",
+      title: t ? (/^GRI/i.test(t) ? t : "GRI " + t) : "GRI",
+      orgDept: txt(r[col.dept]),
+      email: txt(r[col.email]).toLowerCase(),
+      mobile: tel(r[col.mobile]), phone: tel(r[col.phone]),
+      addr: "", major: "", majorName: "", univDept: "", degree: "", degreeYear: "",
+      city: "", tag: "GRI", at: "",
+    };
+  }).filter((x) => /^[가-힣]{2,4}$/.test(x.name) || (x.name && (x.mobile || x.phone)));
+}
+
+/** 탭·쉼표로 나뉜 글(내보내기 txt/csv)을 표로 */
+export function tableFromText(text) {
+  const lines = String(text || "").replace(new RegExp(String.fromCharCode(13), "g"), "").split(String.fromCharCode(10)).map((l) => l.trim()).filter(Boolean);
+  if (lines.length < 2) return { headers: [], rows: [] };
+  const TAB = String.fromCharCode(9);
+  const sep = lines[0].indexOf(TAB) >= 0 ? TAB : ",";
+  const headers = lines[0].split(sep).map((h) => h.trim());
+  const rows = lines.slice(1).map((l) => {
+    const cells = l.split(sep); const o = {};
+    headers.forEach((h, i) => { o[h] = (cells[i] || "").trim(); });
+    return o;
+  });
+  return { headers, rows };
 }
 
 export function fromUtokyo(rows, headers) {
@@ -418,19 +478,32 @@ export async function loadFromFiles(files, say) {
   let out = [];
   for (const f of files) {
     const n = f.name;
-    if (!/\.xlsx?$/i.test(n) || /^~\$/.test(n)) continue;
+    if (!/\.(xlsx?|csv|txt)$/i.test(n) || /^~\$/.test(n)) continue;
     const hit = await cacheGet(fileKey(f));
     if (hit && Array.isArray(hit.rows)) { out = out.concat(hit.rows); continue; }
     if (say) say(n + " 읽는 중…");
-    if (!XLSX) XLSX = await import(/* @vite-ignore */ XLSX_LIB);
     const before = out.length;
+    /* 경기연구원 명단을 탭·쉼표 글로 내보낸 경우 — 엑셀 없이 바로 */
+    if (/\.(csv|txt)$/i.test(n)) {
+      const tb = tableFromText(await f.text());
+      if (looksGri(n, tb.headers) || griColumns(tb.headers)) out = out.concat(fromGri(tb.rows, tb.headers));
+      else if (say) say(n + " — 이름·소속·전화 머리글이 없어 건너뜁니다.");
+      cachePut(fileKey(f), { rows: out.slice(before), at: Date.now() });
+      continue;
+    }
+    if (!XLSX) XLSX = await import(/* @vite-ignore */ XLSX_LIB);
     const wb = await readWorkbook(f, XLSX);
 
     /* 어느 엑셀인지는 파일 이름이 아니라 「속」을 보고 가립니다.
        폰으로 내려받다 이름이 바뀌어도 (「문서 (1).xlsx」 처럼) 읽힙니다. */
     const isCard = /명함/.test(n) || wb.SheetNames.some((sn) => /remember/i.test(sn));
     const alumSheet = wb.SheetNames.find((sn) => /전체주소록/.test(sn) && !/사본/.test(sn));
-    if (isCard) {
+    /* 경기연구원 직원 명단 — 첫 장의 머리글로 알아봅니다 */
+    const ws0 = wb.Sheets[wb.SheetNames[0]];
+    const hdr0 = ws0 ? (XLSX.utils.sheet_to_json(ws0, { header: 1 })[0] || []).map(txt) : [];
+    if (!isCard && !alumSheet && (looksGri(n, hdr0) || griColumns(hdr0))) {
+      out = out.concat(fromGri(XLSX.utils.sheet_to_json(ws0, { defval: "" }), hdr0));
+    } else if (isCard) {
       const { rows } = sheetRows(XLSX, wb, /remember/i);
       out = out.concat(fromRemember(rows));
     } else if (alumSheet) {
@@ -1487,7 +1560,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           `<td>${esc(r.mobile || r.phone)}` +
             `${r.email ? `<div class="asub">${esc(r.email)}</div>` : ""}</td>` +
           `<td><span class="ncat" style="--c:${GROUP_COLOR[r.src === "alum" ? "alum" : r.kind]}">` +
-            `${esc(r.src === "alum" ? "동문" : GROUP_NAME[r.kind].replace("명함_", ""))}</span></td>` +
+            `${esc(r.src === "alum" ? "동문" : (GROUP_NAME[r.kind] || "").replace("명함_", ""))}</span></td>` +
           /* 사진이 있는지 — 그린 뒤에 fillFaces 가 채웁니다 */
           (() => {
             const yes = !!findKey(havePhoto, r.name, r.company, isTwin(r.name));
@@ -1989,8 +2062,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       return;
     }
     const nCard = rows.filter((r) => r.src === "card").length;
-    const nAlum = rows.length - nCard;
-    say(`명함첩 ${nCard}명 · 동문 ${nAlum}명을 읽었습니다. ` +
+    const nGri = rows.filter((r) => r.src === "gri").length;
+    const nAlum = rows.length - nCard - nGri;
+    say(`명함첩 ${nCard}명 · 동문 ${nAlum}명` + (nGri ? ` · 경기연구원 ${nGri}명` : "") + "을 읽었습니다. " +
         "겹친 것은 새 쪽으로 하나만 남겼습니다. 이 화면에만 있습니다.");
     ui();
     refreshPhotoNames();          // 누가 사진이 있는지 미리 모읍니다 (조용히)
@@ -2004,7 +2078,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     const files = [];
     for await (const [, h] of dir.entries()) {
       if (h.kind !== "file") continue;
-      if (!/\.xlsx?$/i.test(h.name) || /^~\$/.test(h.name)) continue;
+      if (!/\.(xlsx?|csv|txt)$/i.test(h.name) || /^~\$/.test(h.name)) continue;
+      if (/\.(csv|txt)$/i.test(h.name) && !/(경기연구원|GRI|직원|조직도)/i.test(h.name)) continue;   // 글 파일은 경기연구원 명단만
       files.push(await h.getFile());
     }
     await useFiles(newestOfEachKind(files));
@@ -2017,6 +2092,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     const best = new Map();
     (files || []).forEach((f) => {
       const kind = /명함/.test(f.name) ? "card"
+        : /(경기연구원|GRI|직원|조직도)/i.test(f.name) ? "gri"
         : /주소록|동문|동경대/.test(f.name) ? "alum" : f.name;
       const cur = best.get(kind);
       if (!cur || (f.lastModified || 0) > (cur.lastModified || 0)) best.set(kind, f);
