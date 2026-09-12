@@ -23,6 +23,7 @@ const src = readFileSync(new URL("../../assets/js/addressbook.js", import.meta.u
 const AB = await import(
   "data:text/javascript;base64," + Buffer.from(src, "utf8").toString("base64"));
 
+const NL = String.fromCharCode(10);
 let bad = 0;
 const eq = (name, got, want) => {
   if (JSON.stringify(got) === JSON.stringify(want)) { console.log("  ✓ " + name); return; }
@@ -267,6 +268,145 @@ eq("★ 지운 줄만 빠진다", AB.dropHidden([옛직장, 명함], 지움).map
    ["삼성물산"]);
 eq("지운 것이 없으면 그대로", AB.dropHidden([옛직장, 명함], new Set()).length, 2);
 eq("아무것도 안 넘겨도", AB.dropHidden([옛직장], null).length, 1);
+
+
+/* ── 새 갈래 — 동경대(西村中島研究室) · SCSC(돌도끼) · 서울대건축(계획·의장) ──
+   「주소록에 <동경대>카테고리를 추가해서 … [SCSC] [서울대건축] 추가해서 돌도끼는 SCSC에
+    건축계획연구실과 의장연구실 주소록은 서울대건축에, 西村中島研究室은 [동경대]쪽에」
+   여기 이름·연락처는 모두 지어낸 것입니다. 파일의 생김새만 실제와 같습니다. */
+console.log("\n── 갈래 단추 ──");
+eq("동경대 · SCSC · 서울대건축 갈래가 있다",
+   ["alum", "scsc", "snu"].map((k) => AB.GROUP_NAME[k]), ["동경대", "SCSC", "서울대건축"]);
+eq("명부 이름", [AB.SRC_NAME.lab, AB.SRC_NAME.scsc, AB.SRC_NAME.snuplan, AB.SRC_NAME.snudesign],
+   ["西村中島研究室", "돌도끼", "건축계획연구실", "건축의장연구실"]);
+
+console.log("\n── 옛 명부의 전화 ──");
+eq("서울 지역번호 없는 7자리", AB.telOld("595-5891"), "02-595-5891");
+eq("서울 지역번호 없는 8자리", AB.telOld("3462 4311"), "02-3462-4311");
+eq("지역번호가 있으면 그대로 다듬는다", AB.telOld("031 219 1816"), "031-219-1816");
+eq("서울 9자리", AB.telOld("02 880 7052"), "02-880-7052");
+eq("휴대폰", AB.telOld(" 010 5472 1083 "), "010-5472-1083");
+eq("★ 나라 번호는 적힌 대로", AB.telOld("+39-3298089061"), "+39-3298089061");
+eq("★ 미국 번호도 적힌 대로 (전에는 144-3851-7119 로 잘랐습니다)", AB.telOld("1-443-851-7119"), "1-443-851-7119");
+eq("내선이 붙은 것은 적힌 대로", AB.telOld("783-7331(512)"), "783-7331(512)");
+eq("두 번호를 한 칸에", AB.telOld("1-734-604-9620(US), 010-9027-9620(KOR)"), "1-734-604-9620(US), 010-9027-9620(KOR)");
+eq("빈 칸", AB.telOld(""), "");
+eq("학번 — 두 자리로", ["95", "0", "1", "OO", "O1", 95, "", "abc"].map(AB.cohort), ["95", "00", "01", "00", "01", "95", "", ""]);
+
+console.log("\n── 돌도끼 (SCSC) ──");
+const dol = AB.fromDoldoki([
+  { "학번": "95", "이름": "가나다", "전화번호": "010-1111-2222", "이메일": "GA@example.com", "직장": "경기연구원 도시주택연구실" },
+  { "학번": 0, "이름": "라마바", "전화번호": "+1-408-728-8113", "이메일": "", "직장": "" },
+  { "학번": "이름", "이름": "", "전화번호": "", "이메일": "", "직장": "" },       // 빈 줄
+]);
+eq("★ SCSC 갈래 · 돌도끼 명부", dol.map((r) => [r.kind, r.src, r.lab]), [["scsc", "scsc", "돌도끼"], ["scsc", "scsc", "돌도끼"]]);
+eq("학번은 학부 칸에", dol.map((r) => r.univDept), ["95학번", "00학번"]);
+eq("이메일은 소문자로, 직장은 소속으로", [dol[0].email, dol[0].company], ["ga@example.com", "경기연구원 도시주택연구실"]);
+eq("해외 번호는 적힌 대로", dol[1].mobile, "+1-408-728-8113");
+eq("이름+학번이 사람 열쇠", dol[0].dkey, "scsc|가나다|95");
+eq("머리글로 알아본다", AB.looksDoldoki("", ["학번", "이름", "전화번호", "이메일", "직장"]), true);
+eq("파일 이름으로도", AB.looksDoldoki("DOlDOKI_주소록_update_중.xlsx", []), true);
+eq("경기연구원 명단은 아니다", AB.looksDoldoki("경기연구원_직원명단.xlsx", ["소속", "이름", "직책", "휴대폰"]), false);
+/* 파일이 둘 — 같은 사람은 하나로, 더 채워진 쪽으로 */
+const two = AB.fromDoldoki([{ "학번": "95", "이름": "가나다", "전화번호": "", "이메일": "", "직장": "" }])
+  .concat(dol.slice(0, 1));
+eq("★ 두 파일의 같은 사람은 한 줄", AB.dedupePeople(two).length, 1);
+eq("채워진 쪽이 남는다", AB.dedupePeople(two)[0].mobile, "010-1111-2222");
+/* 새 파일이 이깁니다 — 파일 고친 날(fileAt) */
+const older = { ...dol[0], company: "옛 직장", fileAt: "2020-04-23" };
+const newer = { ...dol[0], company: "새 직장", fileAt: "2023-06-03" };
+eq("★ 파일 고친 날이 늦은 쪽이 남는다", AB.dedupePeople([older, newer])[0].company, "새 직장");
+
+console.log("\n── 西村中島研究室 (동경대) ──");
+const nisH = ["", "出身国", "名前", "修了年", "現在の所属", "肩書き", "連絡先（メールアドレス）", "備考欄"];
+const nis = AB.fromNishimura([
+  { "": 1, "出身国": "韓国", "名前": "南知賢", "修了年": 2011, "現在の所属": "Geonggi Research Institute", "肩書き": "Research Fellow", "連絡先（メールアドレス）": "SKY@example.com", "備考欄": "" },
+  { "": 2, "出身国": "", "名前": "宋珍和", "修了年": 2008, "現在の所属": "不明", "肩書き": "不明", "連絡先（メールアドレス）": "不明", "備考欄": "" },
+  { "": 3, "出身国": "中国", "名前": "胡宝哲　Hu Baozhe", "修了年": 1993, "現在の所属": "中国城市建设研究院", "肩書き": "教授级高工", "連絡先（メールアドレス）": "hu@example.com", "備考欄": "欠席" },
+  { "": 4, "出身国": "台湾", "名前": "（丘先生）", "修了年": "", "現在の所属": "台湾歴史資源経理学会", "肩書き": "秘書長", "連絡先（メールアドレス）": "", "備考欄": "" },
+  { "": 5, "出身国": "タイ", "名前": "YONGTANIT PIMONSATHEAN", "修了年": 1994, "現在の所属": "Thammasat University", "肩書き": "Associate Professor", "連絡先（メールアドレス）": "y@example.com", "備考欄": "" },
+], nisH);
+eq("머리글로 알아본다", AB.looksNishimura(nisH), true);
+eq("★ 동경대 갈래 · 西村中島研究室 명부", nis.map((r) => r.kind + "|" + r.src), ["alum|lab", "alum|lab", "alum|lab", "alum|lab", "alum|lab"]);
+eq("★ 한국 분은 한글 이름 + 한자", [nis[0].name, nis[0].nameKanji], ["남지현", "南知賢"]);
+eq("「不明」 은 빈 칸으로", [nis[1].company, nis[1].title, nis[1].email], ["", "", ""]);
+eq("나라는 아래로 이어 받는다", nis.map((r) => r.city), ["한국", "한국", "중국", "대만", "태국"]);
+eq("한자 + 로마자는 나눈다", [nis[2].name, nis[2].nameKanji], ["胡宝哲", "Hu Baozhe"]);
+eq("괄호는 뗀다", nis[3].name, "丘先生");
+eq("로마자 이름은 그대로", nis[4].name, "YONGTANIT PIMONSATHEAN");
+eq("수료 해", [nis[0].degreeYear, nis[3].degreeYear], ["2011", ""]);
+eq("연구실 · 이메일 소문자 · 비고는 메모", [nis[0].lab, nis[0].email, nis[2].memo], ["西村中島研究室", "sky@example.com", "欠席"]);
+
+console.log("\n── 총동문회 명부의 한글 이름 달기 ──");
+const alumRow = { src: "alum", kind: "alum", name: "윤주선", nameKanji: "尹柱善", company: "충남대" };
+const labRow = { src: "lab", kind: "alum", name: "尹柱善", nameKanji: "", company: "AURI" };
+const linked = AB.linkKanji([alumRow, labRow]);
+eq("★ 같은 한자가 총동문회에 있으면 그 한글 이름을", [linked[1].name, linked[1].nameKanji], ["윤주선", "尹柱善"]);
+eq("총동문회 줄은 그대로", linked[0].name, "윤주선");
+eq("모르는 한자는 그대로", AB.linkKanji([alumRow, { src: "lab", kind: "alum", name: "張松", nameKanji: "Zhang Song" }])[1].name, "張松");
+eq("총동문회가 없으면 그대로", AB.linkKanji([labRow])[0].name, "尹柱善");
+
+console.log("\n── 서울대 건축계획연구실 ──");
+const planH = ["명부ID", "성명", "학부", "순번(입실 년도)", "석졸", "박사", "구분", "이동통신", "e-mail", "직장명", "직위",
+               "우편물발송시", "직장우편", "직장 주소", "직장 전화", "직장 팩스", "자택 우편", "자택 주소", "자택 전화", "우편물 발송지", "석사논문 제목", "박사논문 제목"];
+const plan = AB.fromSnuPlan([
+  { "명부ID": 1, "성명": "강영건", "학부": 75, "순번(입실 년도)": "80석입/87박입", "석졸": 1985, "박사": 1995, "구분": "박졸",
+    "이동통신": "011-389-5891", "e-mail": "KY@example.com", "직장명": "단우건축", "직위": "소장", "직장 주소": "서울시 서초구 방배동 831-7",
+    "직장 전화": "595-5891", "자택 주소": "서울시 서초구 방배4동 84-1", "자택 전화": "3333-4444", "석사논문 제목": "", "박사논문 제목": "도시 주거에 관한 연구" },
+  { "명부ID": 2, "성명": "김지나", "학부": "OO", "순번(입실 년도)": "05석입", "석졸": "", "박사": "", "구분": "", "이동통신": "", "e-mail": "", "직장명": "(주)삼우종합건축", "직위": "", "직장 전화": "" },
+], planH);
+eq("머리글로 알아본다", AB.looksSnuPlan(planH), true);
+eq("경기연구원 명단은 아니다", AB.looksSnuPlan(["소속", "이름", "직책"]), false);
+eq("★ 서울대건축 갈래 · 계획연구실 명부", plan.map((r) => r.kind + "|" + r.src + "|" + r.lab), ["snu|snuplan|건축계획연구실", "snu|snuplan|건축계획연구실"]);
+eq("학부 학번", plan.map((r) => r.univDept), ["서울대 건축학과 75학번", "서울대 건축학과 00학번"]);
+eq("학위", [plan[0].degree, plan[0].degreeYear, plan[1].degree], ["80석입/87박입 · 박졸", "1995", "05석입"]);
+eq("★ 서울 지역번호 없는 직장 전화", plan[0].phone, "02-595-5891");
+eq("★ 자택 주소·자택 전화는 안 담는다", [plan[0].addr, JSON.stringify(plan[0]).indexOf("방배4동") < 0, JSON.stringify(plan[0]).indexOf("3333-4444") < 0],
+   ["서울시 서초구 방배동 831-7", true, true]);
+eq("논문은 메모에", plan[0].memo, "박사논문: 도시 주거에 관한 연구");
+eq("소속·직함·이메일", [plan[0].company, plan[0].title, plan[0].email], ["단우건축", "소장", "ky@example.com"]);
+
+console.log("\n── 서울대 건축의장연구실 ──");
+/* 실제 파일처럼 위에 제목·교내 전화표가 있고, 머리글은 22번째 줄쯤에 있습니다 */
+const grid = [
+  [], [], ["", "   건축의장 연구실 2015년 주소록"], ["", "(151-742) 서울특별시 관악구", "tel) 880 7052"], ["", "  교내 전화"],
+  ["", "심우갑", 7059, "박홍근", 7050, "과사무실", "", 7051],
+  ["", "이름", "", "", "생일", "핸드폰 번호", "자택전화", "직장", "자택 주소", "직장전화", "E-mail address", "출신학교",
+   "석사", "석사학위논문", "제출일", "박사", "박사학위논문", "제출일", "간단", "자세히"],
+  ["", "김광현 ", "金光鉉", "", "", "010 5472 1083", "02 594 1083", "건축의장연구실", "서울시 서초구 방배3동", "02 880 7052", "kkh@example.com", "", "", "", "", "", "", "", 13, 19],
+  [1, "권순정", "權純政", "(박 93)", 601120, "010 3708 7459", "02 2651 7459", "아주대학교 건축학부", "서울시 양천구 목동", "031 219 1816", "sj@example.com",
+   "서울대학교 건축학과 동대학원", "", "종합병원 증개축 연구", "1986.2", "1986.2~1999.2", "노인요양시설 연구", "1999.2", 13, 19],
+  [2, "가지카와\n아키히로", "梶川\n晶啓", "(박 95) ", "", "", "", "일본거주", "", "", "kaji@example.com", "", "", "", "", "", "", "", 13, 19],
+  [3, "홍지학", "洪志學", "(박 07)", "", "+1 857 919 9377\n010 2251 8098", "", "MIT", "", "", " ps@example.com", "", "", "", "", "", "", "", 13, 19],
+  [4, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 13, 19],
+];
+eq("머리글 줄을 찾는다", AB.snuDesignHeader(grid), 6);
+eq("경기연구원 명단(휴대폰·회사전화)은 아니다", AB.looksSnuDesign([["소속", "이름", "직책", "휴대폰", "회사전화", "이메일"]]), false);
+const des = AB.fromSnuDesign(grid);
+eq("★ 머리글 아래 사람만 — 교내 전화표·빈 줄은 뺀다", des.map((r) => r.name), ["김광현", "권순정", "가지카와 아키히로", "홍지학"]);
+eq("★ 서울대건축 갈래 · 의장연구실 명부", [des[0].kind, des[0].src, des[0].lab], ["snu", "snudesign", "건축의장연구실"]);
+eq("한자 이름", [des[1].nameKanji, des[2].nameKanji], ["權純政", "梶川晶啓"]);
+eq("학위 · 박사 제출 해", [des[1].degree, des[1].degreeYear], ["박 93", "1999"]);
+eq("소속 · 직장 전화 · 휴대폰", [des[1].company, des[1].phone, des[1].mobile], ["아주대학교 건축학부", "031-219-1816", "010-3708-7459"]);
+eq("출신학교는 학부 칸에, 없으면 서울대 건축학과", [des[1].univDept, des[0].univDept], ["서울대학교 건축학과 동대학원", "서울대 건축학과"]);
+eq("논문은 메모에", des[1].memo.split(NL), ["석사논문: 종합병원 증개축 연구", "박사논문: 노인요양시설 연구"]);
+eq("★ 생일·자택 전화·자택 주소는 안 담는다", [JSON.stringify(des[1]).indexOf("601120"), JSON.stringify(des[1]).indexOf("2651"), JSON.stringify(des[1]).indexOf("목동")], [-1, -1, -1]);
+eq("두 번호를 한 칸에 적은 것은 적힌 대로 (줄바꿈은 띄기로)", des[3].mobile, "+1 857 919 9377 010 2251 8098");
+eq("붙은 공백(nbsp)은 뗀다", des[3].email, "ps@example.com");
+
+console.log("\n── 합쳐진 분은 두 갈래 모두에 ──");
+const 명함줄 = P({ name: "가나다", company: "경기연구원", title: "연구위원", mobile: "010-1111-2222", kind: "public" });
+const 돌도끼줄 = { ...dol[0], company: "경기연구원" };
+const 둘 = AB.mergeSame([돌도끼줄, 명함줄]);
+eq("★ 한 줄로 합쳐지고", 둘.length, 1);
+eq("★ 출처는 명함첩, 다른 갈래는 also 에", [둘[0].kind, 둘[0].also], ["public", ["scsc"]]);
+eq("★ 명함 갈래에도, SCSC 갈래에도 든다", [AB.inKind(둘[0], "public"), AB.inKind(둘[0], "scsc"), AB.inKind(둘[0], "all"), AB.inKind(둘[0], "snu")], [true, true, true, false]);
+eq("출처 한 줄", [AB.srcLabel(명함줄), AB.srcLabel(dol[0]), AB.srcLabel(nis[0]), AB.srcLabel(des[0])], ["명함첩", "SCSC · 돌도끼", "동경대 · 西村中島研究室", "서울대건축 · 건축의장연구실"]);
+eq("딱지 — 갈래 둘 + 명부", (AB.chips(둘[0]).match(/ncat/g) || []).length, 2);
+eq("읽은 수 한 줄", AB.readSummary([명함줄, dol[0], dol[1], nis[0], plan[0], des[0]]),
+   "명함첩 1명 · 西村中島研究室 1명 · SCSC 돌도끼 2명 · 건축계획연구실 1명 · 건축의장연구실 1명");
+eq("빈 것", [AB.inKind(null, "all"), AB.chips(null), AB.readSummary(null), AB.linkKanji(null), AB.fromDoldoki(null), AB.fromNishimura(null, null), AB.fromSnuPlan(null, null), AB.fromSnuDesign(null)],
+   [false, "", "", [], [], [], [], []]);
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

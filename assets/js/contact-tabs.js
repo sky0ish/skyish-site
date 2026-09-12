@@ -7,7 +7,7 @@
 //   해야할일  오늘의 체크리스트 — 관리자만
 //
 // 관리자가 아니면 뒤의 세 갈래는 단추째 사라집니다.
-import { initAddr } from "./addressbook.js?v=202609131200";
+import { initAddr } from "./addressbook.js?v=202609131300";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
 import { initTodo } from "./todo.js?v=202609111800";

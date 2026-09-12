@@ -8,12 +8,19 @@
 //     새로고침하면 사라지고, 다시 열려면 파일을 다시 고르면 됩니다.
 //
 //  읽는 것
-//    00.주소록/개인명함첩_*.xlsx              리멤버 명함첩  (약 2,570명)
-//    00.주소록/동경대 총동문회 주소록_*.xlsx   동문 명부     (약 1,310명)
+//    00.주소록/개인명함첩_*.xlsx              리멤버 명함첩  (약 2,570명)   → 명함_*
+//    00.주소록/경기연구원_직원명단.xlsx        직원 명단                     → 경기연구원
+//    00.주소록/동경대 총동문회 주소록_*.xlsx   동문 명부     (약 1,310명)   → 동경대
+//    00.주소록/西村中島研究室アジアのOBOG*.xlsx 연구실 OB/OG  (약 30명)      → 동경대
+//    00.주소록/DOlDOKI_주소록_*.xlsx           돌도끼        (약 190명)     → SCSC
+//    00.주소록/건축계획연구실 주소록_*.xls     서울대 건축계획연구실 (130명) → 서울대건축
+//    00.주소록/건축의장연구실주소록_*.xls      서울대 건축의장연구실 (160명) → 서울대건축
 //
 //  두 파일의 「부서」는 뜻이 다릅니다 —
 //    명함첩의 부서 = 다니는 회사의 팀,  동문 명부의 Department = 동경대 학부.
 //    그래서 절대 한 칸에 합치지 않습니다.
+//  옛 연구실 명부의 생일·자택 전화·자택 주소는 읽지 않습니다 — 화면에 쓸 일이 없는 것은
+//  브라우저 안에도 담지 않습니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import { IMG_EXT, photoKey, nameFromFile, packText, readPack, packFileName, dataUrlType, sortPicked,
          orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609091200";
@@ -76,7 +83,7 @@ export function kindOf(company, title) {
   return "etc";
 }
 
-/** 화면 위쪽 갈래 단추 */
+/** 화면 위쪽 갈래 단추 — 갈래(kind) 하나에 명부(src)가 여럿 들 수 있습니다 */
 export const GROUPS = [
   ["all",    "전체",         "#4f9d92"],
   ["gov",    "명함_공무원",   "#2a5fa8"],
@@ -84,10 +91,39 @@ export const GROUPS = [
   ["public", "명함_공공기관", "#b3543b"],
   ["etc",    "명함_기타",     "#7d7768"],
   ["gri",    "경기연구원",    "#2f7d6f"],
-  ["alum",   "동문",         "#c98a3f"],
+  ["alum",   "동경대",        "#c98a3f"],   // 총동문회 명부 + 西村中島研究室 OB/OG
+  ["scsc",   "SCSC",         "#3b7dd8"],   // 돌도끼 주소록
+  ["snu",    "서울대건축",    "#a04a7a"],   // 건축계획연구실 + 건축의장연구실
 ];
 export const GROUP_NAME  = Object.fromEntries(GROUPS.map(([k, v]) => [k, v]));
 export const GROUP_COLOR = Object.fromEntries(GROUPS.map(([k, , c]) => [k, c]));
+/** 어느 명부에서 왔는지 — 갈래 아래 작은 글씨로 보입니다 (명함첩·경기연구원은 갈래가 곧 명부라 안 적습니다) */
+export const SRC_NAME = {
+  alum: "총동문회", lab: "西村中島研究室", scsc: "돌도끼",
+  snuplan: "건축계획연구실", snudesign: "건축의장연구실",
+};
+/** 출처 한 줄 — 「동경대 · 西村中島研究室」 */
+export const srcLabel = (r) => !r ? "" : r.src === "card" ? "명함첩"
+  : [GROUP_NAME[r.kind] || "", SRC_NAME[r.src] || ""].filter(Boolean).join(" · ");
+/** 이 줄이 이 갈래에 드는가 — 두 명부에서 합쳐진 줄은 두 갈래 모두에 듭니다 */
+export const inKind = (r, k) => !!r && (k === "all" || r.kind === k ||
+  (Array.isArray(r.also) && r.also.indexOf(k) >= 0));
+/** 갈래 딱지 (+ 합쳐진 다른 갈래) + 명부 이름 — 표와 자세히 칸이 같이 씁니다 */
+export function chips(r) {
+  if (!r) return "";
+  const one = (k) => `<span class="ncat" style="--c:${GROUP_COLOR[k] || "#7d7768"}">` +
+    `${esc((GROUP_NAME[k] || k || "").replace("명함_", ""))}</span>`;
+  return one(r.kind) + (r.also || []).map(one).join("") +
+    (SRC_NAME[r.src] ? `<div class="asub">${esc(SRC_NAME[r.src])}</div>` : "");
+}
+/** 「명함첩 2,570명 · 동경대 총동문회 1,310명 · …」 — 읽은 뒤 알려 주는 한 줄 */
+export function readSummary(rows) {
+  const L = Array.isArray(rows) ? rows : [];
+  const n = (src) => L.filter((r) => r && r.src === src).length;
+  return [["card", "명함첩"], ["gri", "경기연구원"], ["alum", "동경대 총동문회"], ["lab", "西村中島研究室"],
+          ["scsc", "SCSC 돌도끼"], ["snuplan", "건축계획연구실"], ["snudesign", "건축의장연구실"]]
+    .map(([s, l]) => (n(s) ? `${l} ${n(s).toLocaleString("ko-KR")}명` : "")).filter(Boolean).join(" · ");
+}
 
 
 /* ── 값 다듬기 ─────────────────────────────────────────────── */
@@ -224,14 +260,211 @@ export function fromUtokyo(rows, headers) {
 }
 
 
+/* ── 옛 명부의 전화 ──
+   「595-5891」 처럼 서울 지역번호를 뺀 7·8자리는 02 를 붙입니다 (2000년대 서울 명부).
+   나라 번호가 붙은 것(+1 857 …, 86 411 …)은 손대지 않고 적힌 대로 둡니다 —
+   tel() 은 한국 번호만 알아서 이런 것을 엉뚱하게 자릅니다. */
+export function telOld(v) {
+  const s = txt(v).replace(/[ \s]+/g, " ");
+  if (!s) return "";
+  const d = s.replace(/[^0-9]/g, "");
+  /* 나라 번호(+39 …) · 내선이 붙은 것(783-7331(512)) · 두 번호를 한 칸에 적은 것은 적힌 대로 */
+  if (/[+()]/.test(s) || d.length > 11 || (d.length >= 9 && !/^0/.test(d) && !/^82/.test(d))) return s;
+  if (d.length === 7) return "02-" + d.slice(0, 3) + "-" + d.slice(3);
+  if (d.length === 8 && !/^0/.test(d)) return "02-" + d.slice(0, 4) + "-" + d.slice(4);
+  return tel(d);
+}
+/** 학번 — 「95」 「0」 「OO」(영문 O 로 친 것) → 「95」 「00」 */
+export const cohort = (v) => {
+  const s = txt(v).replace(/[oO]/g, "0").replace(/[^0-9]/g, "");
+  return s ? s.slice(-2).padStart(2, "0") : "";
+};
+const year4 = (v) => (txt(v).match(/(19|20)\d{2}/) || [""])[0];
+/** 「不明」 같은 「모름」 표시는 빈 칸으로 */
+const known = (v) => { const s = txt(v); return /^(不明|未定|없음|모름|\?+|-+)$/.test(s) ? "" : s; };
+const oneLine = (v) => txt(v).replace(/ /g, " ").replace(/\s+/g, " ").trim();
+
+
+/* ── 서울대 돌도끼 (SCSC) ──
+   DOlDOKI_주소록_*.xlsx — 「전체」 장(과 「95」 장)에 학번 · 이름 · 전화번호 · 이메일 · 직장.
+   파일이 둘이라 같은 사람이 두 번 들어옵니다 — 이름+학번(dkey)으로 하나로 합칩니다. */
+export const looksDoldoki = (fname, headers) =>
+  /(DOlDOKI|돌도끼)/i.test(String(fname || "")) ||
+  ["학번", "이름", "전화번호"].every((h) => (headers || []).indexOf(h) >= 0);
+
+export function fromDoldoki(rows) {
+  return (rows || []).map((r) => {
+    const name = oneLine(r["이름"]);
+    const yr = cohort(r["학번"]);
+    if (!name || name === "이름") return null;
+    return {
+      src: "scsc", kind: "scsc",
+      dkey: "scsc|" + name.replace(/\s+/g, "") + "|" + yr,
+      name, company: oneLine(r["직장"]), title: "", orgDept: "",
+      email: txt(r["이메일"]).toLowerCase(),
+      mobile: telOld(r["전화번호"]), phone: "", addr: "",          // 해외 번호(+39 …)는 적힌 대로
+      major: "", majorName: "", univDept: yr ? yr + "학번" : "", degree: "", degreeYear: "",
+      lab: "돌도끼", city: "", tag: "SCSC", at: "",
+    };
+  }).filter(Boolean);
+}
+
+
+/* ── 동경대 西村中島研究室 아시아 OB/OG ──
+   西村中島研究室アジアのOBOG*.xlsx — 出身国 · 名前 · 修了年 · 現在の所属 · 肩書き · 連絡先 · 備考欄.
+   나라는 무리의 첫 줄에만 적혀 있어 아래로 이어 받습니다. */
+export const looksNishimura = (headers) =>
+  (headers || []).some((h) => /名前/.test(h)) && (headers || []).some((h) => /修了年/.test(h));
+
+/* 한국 분은 이 명부에 한자로만 적혀 있습니다 — 읽는 소리를 달아 둡니다.
+   총동문회 명부에 같은 한자가 있으면 그쪽 한글 이름이 우선합니다 (linkKanji). */
+export const KANJI_KO = {
+  "崔宣珠": "최선주", "李政炯": "이정형", "宋珍和": "송진화",
+  "南知賢": "남지현", "鄭一止": "정일지", "尹柱善": "윤주선",
+};
+const COUNTRY_KO = {
+  "韓国": "한국", "中国": "중국", "台湾": "대만", "タイ": "태국", "ベトナム": "베트남",
+  "マレーシア": "말레이시아", "ネパール": "네팔", "バングラデシュ": "방글라데시",
+  "インドネシア": "인도네시아", "日本": "일본",
+};
+
+export function fromNishimura(rows, headers) {
+  const H = (headers || []).map(txt);
+  const col = (re) => H.find((h) => re.test(h)) || "";
+  const c = { country: col(/出身国|国/), name: col(/名前|氏名/), year: col(/修了年|卒業年/),
+              org: col(/所属/), title: col(/肩書|職/), mail: col(/連絡先|メール|mail/i), note: col(/備考/) };
+  let country = "";
+  return (rows || []).map((r) => {
+    if (txt(r[c.country])) country = txt(r[c.country]);
+    const raw = oneLine(r[c.name]).replace(/[（）()]/g, "").replace(/　/g, " ").trim();
+    if (!raw || /^(名前|氏名)$/.test(raw)) return null;
+    /* 「胡宝哲 Hu Baozhe」 — 앞의 한자와 뒤의 로마자를 나눕니다 */
+    const m = raw.match(/^([^A-Za-z]+?)\s+([A-Za-z][A-Za-z .'-]*)$/);
+    let name = m ? m[1].trim() : raw, sub = m ? m[2].trim() : "";
+    const ko = KANJI_KO[name.replace(/\s+/g, "")];
+    if (ko) { sub = name; name = ko; }
+    const email = known(r[c.mail]).toLowerCase();
+    return {
+      src: "lab", kind: "alum",
+      name, nameKanji: sub,
+      company: oneLine(known(r[c.org])), title: oneLine(known(r[c.title])), orgDept: "",
+      email: /@/.test(email) ? email : "",
+      mobile: "", phone: "", addr: "",
+      major: "", majorName: "", univDept: "西村中島研究室",
+      degree: year4(r[c.year]) ? "修了" : "", degreeYear: year4(r[c.year]),
+      lab: "西村中島研究室", city: COUNTRY_KO[country] || country, tag: "", at: "",
+      memo: oneLine(known(r[c.note])),
+    };
+  }).filter(Boolean);
+}
+
+/** 한자로만 적힌 이름에 총동문회 명부의 한글 이름을 달아 줍니다 (같은 한자가 있을 때) */
+export function linkKanji(rows) {
+  const L = (Array.isArray(rows) ? rows : []).filter(Boolean);
+  const ko = new Map();
+  L.forEach((r) => { if (r.src === "alum" && r.nameKanji && r.name) ko.set(norm(r.nameKanji), r.name); });
+  if (!ko.size) return L;
+  const CJK = /^[㐀-䶿一-鿿]+$/;
+  return L.map((r) => {
+    if (r.src !== "lab" || !CJK.test(String(r.name || "").replace(/\s+/g, ""))) return r;
+    const k = ko.get(norm(r.name));
+    return k ? { ...r, nameKanji: r.name, name: k } : r;
+  });
+}
+
+
+/* ── 서울대 건축계획연구실 ──
+   건축계획연구실 주소록_*.xls — 명부ID · 성명 · 학부 · 순번(입실 년도) · 석졸 · 박사 · 구분 ·
+   이동통신 · e-mail · 직장명 · 직위 · 직장 주소 · 직장 전화 … · 석사논문 제목 · 박사논문 제목 */
+export const looksSnuPlan = (headers) =>
+  (headers || []).indexOf("성명") >= 0 && (headers || []).some((h) => /입실|명부ID/.test(h));
+
+export function fromSnuPlan(rows, headers) {
+  const H = (headers || []).map(txt);
+  const col = (re) => H.find((h) => re.test(h)) || "";
+  const c = { cohort: col(/^학부$/), in: col(/입실/), ms: col(/^석졸/), phd: col(/^박사$/), kind: col(/^구분$/),
+              mobile: col(/이동통신|휴대/), email: col(/e-?mail/i), company: col(/직장명/), title: col(/^직위/),
+              addr: col(/직장 ?주소/), phone: col(/직장 ?전화/), mt: col(/석사논문/), dt: col(/박사논문/) };
+  return (rows || []).map((r) => {
+    const name = oneLine(r["성명"]);
+    if (!name || name === "성명") return null;
+    const yr = cohort(r[c.cohort]);
+    const memo = [txt(r[c.mt]) ? "석사논문: " + oneLine(r[c.mt]) : "",
+                  txt(r[c.dt]) ? "박사논문: " + oneLine(r[c.dt]) : ""].filter(Boolean).join(NL);
+    return {
+      src: "snuplan", kind: "snu",
+      name, company: oneLine(r[c.company]), title: oneLine(r[c.title]), orgDept: "",
+      email: txt(r[c.email]).toLowerCase(),
+      mobile: telOld(r[c.mobile]), phone: telOld(r[c.phone]), addr: oneLine(r[c.addr]),
+      major: "", majorName: "",
+      univDept: ["서울대 건축학과", yr ? yr + "학번" : ""].filter(Boolean).join(" "),
+      degree: [oneLine(r[c.in]), oneLine(r[c.kind])].filter(Boolean).join(" · "),
+      degreeYear: year4(r[c.phd]) || year4(r[c.ms]),
+      lab: "건축계획연구실", city: "", tag: "", at: "", memo,
+    };
+  }).filter(Boolean);
+}
+
+
+/* ── 서울대 건축의장연구실 ──
+   건축의장연구실주소록_*.xls — 위에 교내 전화표가 있고, 「이름 · (한자) · (학위) · 생일 · 핸드폰 번호 ·
+   자택전화 · 직장 · 자택 주소 · 직장전화 · E-mail address · 출신학교 · 석사 · 석사학위논문 · 제출일 ·
+   박사 · 박사학위논문 · 제출일」 머리글 아래부터 사람입니다. 머리글이 첫 줄이 아니라 칸(grid)으로 읽습니다.
+   생일 · 자택전화 · 자택 주소는 읽지 않습니다. */
+export function snuDesignHeader(grid) {
+  for (let i = 0; i < Math.min((grid || []).length, 80); i++) {
+    const row = (grid[i] || []).map(txt);
+    if (row.indexOf("이름") >= 0 && row.some((h) => /핸드폰/.test(h)) && row.some((h) => /e-?mail/i.test(h)) &&
+        row.some((h) => /출신학교|직장 ?전화/.test(h))) return i;      // 경기연구원 명단(휴대폰·회사전화)과 헷갈리지 않게
+  }
+  return -1;
+}
+export const looksSnuDesign = (grid) => snuDesignHeader(grid) >= 0;
+
+export function fromSnuDesign(grid) {
+  const hi = snuDesignHeader(grid);
+  if (hi < 0) return [];
+  const H = grid[hi].map(txt);
+  const ix = (re) => H.findIndex((h) => re.test(h));
+  const n = H.indexOf("이름");
+  const c = { name: n, kanji: n + 1, deg: n + 2, mobile: ix(/핸드폰/), company: ix(/^직장$/),
+              phone: ix(/직장 ?전화/), email: ix(/e-?mail/i), school: ix(/출신학교/),
+              mt: ix(/석사학위논문/), dt: ix(/박사학위논문/) };
+  const g = (row, i) => (i >= 0 ? oneLine(row[i]) : "");
+  /* 논문 다음 칸이 「제출일」 이면 그 해를 학위 해로 씁니다 */
+  const yearAfter = (row, i) => (i >= 0 && /제출/.test(H[i + 1] || "")) ? year4(row[i + 1]) : "";
+  const out = [];
+  for (let i = hi + 1; i < grid.length; i++) {
+    const row = grid[i] || [];
+    const name = g(row, c.name);
+    if (!name) continue;
+    const memo = [g(row, c.mt) ? "석사논문: " + g(row, c.mt) : "",
+                  g(row, c.dt) ? "박사논문: " + g(row, c.dt) : ""].filter(Boolean).join(NL);
+    out.push({
+      src: "snudesign", kind: "snu",
+      name, nameKanji: g(row, c.kanji).replace(/\s+/g, ""),
+      company: g(row, c.company), title: "", orgDept: "",
+      email: g(row, c.email).toLowerCase().replace(/\s+/g, ""),
+      mobile: telOld(row[c.mobile]), phone: telOld(row[c.phone]), addr: "",
+      major: "", majorName: "", univDept: g(row, c.school) || "서울대 건축학과",
+      degree: g(row, c.deg).replace(/[()（）]/g, "").trim(),
+      degreeYear: yearAfter(row, c.dt) || yearAfter(row, c.mt),
+      lab: "건축의장연구실", city: "", tag: "", at: "", memo,
+    });
+  }
+  return out;
+}
+
+
 /* ── 같은 사람이 두 번 들어온 것을 하나로 ──
    리멤버는 내보낼 때마다 새 파일을 만들고, 한 파일 안에도 같은 사람이
    두 번 들어 있는 일이 있습니다. 사람을 가르는 열쇠는
    「어디서 왔나 + 이름 + 회사」 입니다.
    같은 사람이면 **새 것**을 남깁니다 — 명함 등록일이 늦은 쪽,
    그것도 같으면 채워진 칸이 많은 쪽입니다. */
+const META = ["src", "kind", "dkey", "fileAt", "also"];
 const filled = (r) => Object.keys(r || {})
-  .filter((k) => k !== "src" && k !== "kind")
+  .filter((k) => META.indexOf(k) < 0 && k.indexOf("__") !== 0)
   .reduce((n, k) => n + (String(r[k] == null ? "" : r[k]).trim() ? 1 : 0), 0);
 
 export function dedupePeople(rows) {
@@ -239,11 +472,13 @@ export function dedupePeople(rows) {
   const order = [];
   (Array.isArray(rows) ? rows : []).forEach((r) => {
     if (!r) return;
-    const key = [r.src || "", String(r.name || "").replace(/\s+/g, ""),
+    /* 명부가 제 열쇠(dkey)를 주면 그것으로 — 돌도끼는 이름+학번으로 사람을 가릅니다 */
+    const key = r.dkey || [r.src || "", String(r.name || "").replace(/\s+/g, ""),
                  String(r.company || "").replace(/\s+/g, "")].join("|").toLowerCase();
     const cur = best.get(key);
     if (!cur) { best.set(key, r); order.push(key); return; }
-    const at = (x) => String((x && x.at) || "");
+    /* 명함 등록일이 없으면 파일의 고친 날(fileAt)로 — 새 파일이 이깁니다 */
+    const at = (x) => String((x && (x.at || x.fileAt)) || "");
     if (at(r) > at(cur) || (at(r) === at(cur) && filled(r) > filled(cur))) best.set(key, r);
   });
   return order.map((k) => best.get(k));
@@ -284,13 +519,18 @@ export function mergeSame(rows) {
     const hit = out.find((x) => samePerson(x, r));
     if (!hit) { out.push({ ...r }); return; }
     Object.keys(r).forEach((f) => {
-      if (f === "src" || f === "kind") return;
+      if (META.indexOf(f) >= 0) return;
       if (!String(hit[f] == null ? "" : hit[f]).trim() && String(r[f] == null ? "" : r[f]).trim()) {
         hit[f] = r[f];
       }
     });
+    /* 갈래는 둘 다 기억합니다 — 명함첩과 돌도끼에 같이 있는 분은
+       명함 갈래에서도, SCSC 갈래에서도 보여야 합니다 (also) */
+    const kinds = new Set([hit.kind, r.kind].concat(hit.also || [], r.also || []));
     /* 출처는 명함첩을 남깁니다 — 내가 직접 받은 쪽이 더 새것입니다 */
     if (hit.src !== "card" && r.src === "card") { hit.src = r.src; hit.kind = r.kind; }
+    kinds.delete(hit.kind); kinds.delete(undefined); kinds.delete("");
+    if (kinds.size) hit.also = [...kinds];
     hit.__merged = true;
   });
   return out;
@@ -500,22 +740,41 @@ export async function loadFromFiles(files, say) {
        폰으로 내려받다 이름이 바뀌어도 (「문서 (1).xlsx」 처럼) 읽힙니다. */
     const isCard = /명함/.test(n) || wb.SheetNames.some((sn) => /remember/i.test(sn));
     const alumSheet = wb.SheetNames.find((sn) => /전체주소록/.test(sn) && !/사본/.test(sn));
-    /* 경기연구원 직원 명단 — 첫 장의 머리글로 알아봅니다 */
+    /* 그 밖의 명부는 첫 장의 머리글로 알아봅니다 */
     const ws0 = wb.Sheets[wb.SheetNames[0]];
-    const hdr0 = ws0 ? (XLSX.utils.sheet_to_json(ws0, { header: 1 })[0] || []).map(txt) : [];
-    if (!isCard && !alumSheet && (looksGri(n, hdr0) || griColumns(hdr0))) {
-      out = out.concat(fromGri(XLSX.utils.sheet_to_json(ws0, { defval: "" }), hdr0));
-    } else if (isCard) {
+    const grid0 = ws0 ? XLSX.utils.sheet_to_json(ws0, { header: 1 }) : [];
+    const hdr0 = (grid0[0] || []).map(txt);
+    const objs = (ws) => XLSX.utils.sheet_to_json(ws, { defval: "" });
+    if (isCard) {
       const { rows } = sheetRows(XLSX, wb, /remember/i);
       out = out.concat(fromRemember(rows));
     } else if (alumSheet) {
       const ws = wb.Sheets[alumSheet];
-      const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
       const headers = (XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || []).map(txt);
-      out = out.concat(fromUtokyo(rows, headers));
+      out = out.concat(fromUtokyo(objs(ws), headers));
+    /* 돌도끼 · 서울대 두 연구실 · 西村中島研究室 — 경기연구원 머리글 짐작(griColumns)보다 앞에 둡니다.
+       「전화번호」 「순번(입실 년도)」 가 그 느슨한 짐작에 걸려 경기연구원으로 읽혔습니다. */
+    } else if (looksDoldoki(n, hdr0)) {
+      /* 「전체」 장과 「95」 장에 같은 사람이 있습니다 — dkey 로 dedupePeople 이 합칩니다 */
+      wb.SheetNames.forEach((sn) => {
+        const ws = wb.Sheets[sn];
+        const h = ws ? (XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || []).map(txt) : [];
+        if (looksDoldoki("", h)) out = out.concat(fromDoldoki(objs(ws)));
+      });
+    } else if (looksSnuPlan(hdr0)) {
+      out = out.concat(fromSnuPlan(objs(ws0), hdr0));
+    } else if (looksNishimura(hdr0)) {
+      out = out.concat(fromNishimura(objs(ws0), hdr0));
+    } else if (looksSnuDesign(grid0)) {
+      out = out.concat(fromSnuDesign(grid0));
+    } else if (looksGri(n, hdr0) || griColumns(hdr0)) {
+      out = out.concat(fromGri(objs(ws0), hdr0));
     } else if (say) {
       say(n + " — 명함첩(remember)도 동문 명부(전체주소록)도 아닌 것 같아 건너뜁니다.");
     }
+    /* 파일의 고친 날 — 같은 사람이 두 파일에 있을 때 새 파일이 이기도록 */
+    const fileAt = f.lastModified ? new Date(f.lastModified).toISOString().slice(0, 10) : "";
+    if (fileAt) out.slice(before).forEach((r) => { if (r && !r.fileAt) r.fileAt = fileAt; });
     cachePut(fileKey(f), { rows: out.slice(before), at: Date.now() });   // 다음에는 바로
   }
   return out;
@@ -541,7 +800,7 @@ export async function alumniNames() {
       if (e.kind !== "file") continue;
       const n = e.name;
       if (!/\.xlsx?$/i.test(n) || /^~\$/.test(n)) continue;
-      if (!/주소록|동문|동경대/.test(n) || /명함/.test(n)) continue;   // 동문 명부만
+      if (!/(총동문회|동문|동경대)/.test(n) || /명함/.test(n)) continue;   // 총동문회 명부만
       files.push(await e.getFile());
     }
     if (!files.length) return new Set();
@@ -705,7 +964,7 @@ export const SORT_KEYS = {
   title:   (r) => r.title,
   major:   (r) => r.majorName || r.univDept,
   tel:     (r) => r.mobile || r.phone,
-  src:     (r) => (r.src === "alum" ? "동문" : (GROUP_NAME[r.kind] || "")),
+  src:     (r) => srcLabel(r),
   photo:   null,          // 사진은 따로 — 있는 사람이 먼저
 };
 
@@ -1604,9 +1863,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         "거기서 <b>🙂 얼굴 사진 가져오기</b> 로 그 파일을 고르세요." +
       "</p>" +
       /* 자료가 아직 없을 때 「사라진 게 아니라 아직 안 읽은 것」 임을 알려 줍니다 */
-      '<p class="anot" id="abNot">명함첩과 동문 명부는 <b>내 컴퓨터에만</b> 있습니다.<br>' +
+      '<p class="anot" id="abNot">명함첩 · 동문 명부 · 연구실 주소록은 <b>내 컴퓨터에만</b> 있습니다.<br>' +
         "브라우저는 페이지를 열 때마다 폴더를 새로 읽어야 해서, " +
-        "위 단추를 한 번 누르시면 <b>명함_공무원 · 교수 · 공공기관 · 기타</b> 갈래와 " +
+        "위 단추를 한 번 누르시면 <b>명함 · 경기연구원 · 동경대 · SCSC · 서울대건축</b> 갈래와 " +
         "찾는 칸이 그대로 돌아옵니다.</p>" +
     "</div>" +
     '<div id="abBody"></div>';
@@ -1691,10 +1950,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (major && r.major !== major) return false;
       if (!s) return true;
       return [r.name, r.company, r.title, r.orgDept, r.univDept,
-              r.majorName, r.major, r.email, r.mobile, r.phone, r.city, r.tag]
+              r.majorName, r.major, r.email, r.mobile, r.phone, r.city, r.tag,
+              r.nameKanji, r.lab, SRC_NAME[r.src]]
         .join(" ").toLowerCase().includes(s);
     };
-    const inGroup = (r) => cur === "all" || (cur === "alum" ? r.src === "alum" : r.kind === cur);
+    const inGroup = (r) => inKind(r, cur);
     /* 경기연구원 갈래는 아무 칸도 안 골랐을 때 자리 차례(임원 → 부서별 → 직급)가 기본입니다 */
     const shown = () => sortRows(
       rows.filter(inGroup).filter(match), sortKey || (cur === "gri" ? "title" : ""), sortDir,
@@ -1704,7 +1964,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       const l = shown();
       // 갈래 단추 — 지금 찾기말이 걸린 상태의 개수를 함께 셉니다
       tabs.innerHTML = GROUPS.map(([k, label]) => {
-        const n = rows.filter((r) => k === "all" || (k === "alum" ? r.src === "alum" : r.kind === k))
+        const n = rows.filter((r) => inKind(r, k))
                       .filter(match).length;
         return `<button type="button" data-k="${k}"${k === cur ? ' class="on"' : ""}>` +
                `${esc(label)}<span class="n">${n}</span></button>`;
@@ -1731,8 +1991,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
             `${r.univDept ? `<div class="asub">${esc(r.univDept)}</div>` : ""}</td>` +
           `<td>${esc(r.mobile || r.phone)}` +
             `${r.email ? `<div class="asub">${esc(r.email)}</div>` : ""}</td>` +
-          `<td><span class="ncat" style="--c:${GROUP_COLOR[r.src === "alum" ? "alum" : r.kind]}">` +
-            `${esc(r.src === "alum" ? "동문" : (GROUP_NAME[r.kind] || "").replace("명함_", ""))}</span></td>` +
+          `<td>${chips(r)}</td>` +
           /* 사진이 있는지 — 그린 뒤에 fillFaces 가 채웁니다 */
           (() => {
             const yes = !!findKey(havePhoto, r.name, r.company, isTwin(r.name));
@@ -1845,8 +2104,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     box.innerHTML =
       '<div class="ndet__box">' +
         '<button type="button" class="ndet__x" id="abX">✕</button>' +
-        `<span class="ncat" style="--c:${GROUP_COLOR[r.src === "alum" ? "alum" : r.kind]}">` +
-          `${esc(r.src === "alum" ? "동문" : GROUP_NAME[r.kind])}</span>` +
+        chips(r) +
         `<h3>${esc(r.name)}${r.nameKanji ? ` <small>${esc(r.nameKanji)}</small>` : ""}</h3>` +
         /* 왼쪽은 적힌 것, 오른쪽은 얼굴 */
         '<div class="adet2">' +
@@ -2203,11 +2461,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   /* ── 보이는 것만 엑셀로 ── */
   function download(list) {
     const q = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
-    const head = ["이름", "소속", "부서", "직함", "전공", "학부", "학위", "학위연도",
+    const head = ["이름", "소속", "부서", "직함", "전공", "학부", "연구실", "학위", "학위연도",
                   "휴대폰", "회사 전화", "이메일", "주소", "지역", "출처"];
     const lines = [head.map(q).join(",")].concat(list.map((r) => [
-      r.name, r.company, r.orgDept, r.title, r.majorName, r.univDept, r.degree, r.degreeYear,
-      r.mobile, r.phone, r.email, r.addr, r.city, r.src === "alum" ? "동문" : "명함첩",
+      r.name, r.company, r.orgDept, r.title, r.majorName, r.univDept, r.lab, r.degree, r.degreeYear,
+      r.mobile, r.phone, r.email, r.addr, r.city, srcLabel(r),
     ].map(q).join(",")));
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")],
@@ -2219,12 +2477,13 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
 
   /* ── 파일 읽어 들이기 ── */
   async function useFiles(files) {
+    let loaded = [];                       // 합치기 전 — 명부마다 몇 명 읽었는지는 이것으로 셉니다
     try {
       /* 나중에 명함 받아 채워 넣으신 것을 엑셀 위에 얹습니다 —
          엑셀을 새로 읽어도 손수 고친 것은 그대로 남습니다. */
-      rows = dropHidden(
-        applyExtras(mergeSame(dedupePeople(await loadFromFiles(files, say))), await allExtras()),
-        await hiddenKeys());
+      /* linkKanji — 연구실 명부의 한자 이름에 총동문회 명부의 한글 이름을 답니다 */
+      loaded = dedupePeople(linkKanji(await loadFromFiles(files, say)));
+      rows = dropHidden(applyExtras(mergeSame(loaded), await allExtras()), await hiddenKeys());
     } catch (e) {
       say("읽지 못했습니다 — " + e.message);
       return;
@@ -2233,10 +2492,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       say("엑셀을 찾지 못했습니다. 「개인명함첩…」 「…주소록…」 이름의 파일이 든 폴더를 골라 주세요.");
       return;
     }
-    const nCard = rows.filter((r) => r.src === "card").length;
-    const nGri = rows.filter((r) => r.src === "gri").length;
-    const nAlum = rows.length - nCard - nGri;
-    say(`명함첩 ${nCard}명 · 동문 ${nAlum}명` + (nGri ? ` · 경기연구원 ${nGri}명` : "") + "을 읽었습니다. " +
+    say(readSummary(loaded) + "을 읽었습니다. " +
         "겹친 것은 새 쪽으로 하나만 남겼습니다. 이 화면에만 있습니다.");
     ui();
     refreshPhotoNames();          // 누가 사진이 있는지 미리 모읍니다 (조용히)
@@ -2265,7 +2521,12 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     (files || []).forEach((f) => {
       const kind = /명함/.test(f.name) ? "card"
         : /(경기연구원|GRI|직원|조직도)/i.test(f.name) ? "gri"
-        : /주소록|동문|동경대/.test(f.name) ? "alum" : f.name;
+        /* 돌도끼는 파일이 둘이라도 모두 읽습니다 — 같은 사람은 dedupePeople 이 새 파일 쪽으로 합칩니다 */
+        : /(DOlDOKI|돌도끼)/i.test(f.name) ? "scsc:" + f.name
+        : /건축계획연구실/.test(f.name) ? "snuplan"
+        : /의장연구실/.test(f.name) ? "snudesign"
+        : /(西村|中島|OBOG)/i.test(f.name) ? "lab"
+        : /(총동문회|동문|동경대)/.test(f.name) ? "alum" : f.name;
       const cur = best.get(kind);
       if (!cur || (f.lastModified || 0) > (cur.lastModified || 0)) best.set(kind, f);
     });
@@ -2415,8 +2676,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     if (c && Array.isArray(c.rows) && c.rows.length) {
       rows = dropHidden(applyExtras(mergeSame(c.rows), await allExtras()),
                         await hiddenKeys());
-      const nCard = rows.filter((r) => r.src === "card").length;
-      say(`담아 둔 명함첩 ${nCard}명 · 동문 ${rows.length - nCard}명 — 이 폰 브라우저에만 있습니다. ` +
+      say(`담아 둔 ${readSummary(rows)} — 이 폰 브라우저에만 있습니다. ` +
           "새 엑셀을 읽히려면 「엑셀 고르기」.");
       ui();
     } else {
