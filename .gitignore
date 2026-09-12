@@ -70,6 +70,11 @@ assets/data/flood/
 /00.주소록/
 *.vcf
 
+# 그룹웨어 게시판에서 긁어 온 자료 — 「11.해외출장보고_Data」 처럼 「번호.게시판명_Data」 폴더.
+# 동료들의 내부 문서입니다. 저장소는 공개이므로 절대 올리지 않습니다.
+# 홈페이지에는 비공개 보관함(analysis/travel)으로만 갑니다 — admin/travel-gri.html 에서 올립니다.
+/*_Data/
+
 # 지도 원본 (구글 마이맵에서 내보낸 KMZ) — assets/data/*.json 으로 옮겨 담아 씁니다
 /1_MAP/
 /000.APP/
@@ -137,3 +142,7 @@ _gritest/
 _gritest.html
 _gricheck.html
 _addrtest.html
+_gtview.html
+_gtstub.js
+_gritravel/
+__pycache__/

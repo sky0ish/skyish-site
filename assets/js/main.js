@@ -39,12 +39,14 @@
         { label: "도시쇠퇴", file: "pictures.html?cat=decline"  },
         { label: "기타",     file: "pictures.html?cat=etc"      }
       ] },
-      { label: "TRAVEL",   file: "travel.html", also: ["travel-post.html"], sub: [
+      { label: "TRAVEL",   file: "travel.html", also: ["travel-post.html", "travel-gri.html"], sub: [
         { label: "유럽", file: "travel.html?region=europe" },
         { label: "일본", file: "travel.html?region=japan"  },
         { label: "미국", file: "travel.html?region=usa"    },
         { label: "중국", file: "travel.html?region=china"  },
-        { label: "기타", file: "travel.html?region=etc"    }
+        { label: "기타", file: "travel.html?region=etc"    },
+        /* 경기연구원 해외출장보고서 — 로그인·승인된 분만 (비공개 보관함) */
+        { label: "GRI 출장보고서", file: "travel-gri.html" }
       ] },
       { label: "GALLERY",  file: "gallery.html", also: ["album.html"], sub: [
         { label: "Urban",        file: "gallery.html?cat=urban"      },
@@ -565,7 +567,10 @@
       return '<a href="travel.html' + (r.key === "all" ? "" : "?region=" + r.key) + '"' +
         (r.key === cur ? ' class="on" aria-current="page"' : "") + ">" +
         escapeHtml(r.label) + ' <span class="tregions__n">' + n + "</span></a>";
-    }).join("") + "</nav>";
+    }).join("") +
+    /* 경기연구원 해외출장보고서 게시판 — 따로 있는 화면 (로그인·승인된 분만) */
+    '<a href="travel-gri.html" title="경기연구원 해외출장보고서 — 로그인·승인된 분만">GRI 출장보고서 🔒</a>' +
+    "</nav>";
   }
 
   function travelBoard() {

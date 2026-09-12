@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRI 해외출장보고서 — Jee-Hyun NAM</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css?v=202609112000">
+  <!-- 동료들의 내부 보고서입니다 — 로그인·승인된 분만 봅니다 (파일은 비공개 보관함에서 임시 주소로 엽니다) -->
+  <script type="module" src="assets/js/guard.js?v=202609010300"></script>
+  <style>
+    /* 여행 게시판(.tb)의 생김새를 그대로 쓰고, 여기 필요한 것만 보탭니다 */
+    .gri-bar{display:flex;flex-wrap:wrap;gap:.5rem .8rem;align-items:center;margin:0 0 1rem}
+    .gri-bar input[type=search]{flex:1 1 240px;min-width:180px;padding:.5rem .8rem;border:1px solid var(--line);
+                                border-radius:var(--radius-sm);font:inherit;background:#fff}
+    .gri-bar select{padding:.45rem .6rem;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;background:#fff}
+    .gri-years{display:flex;flex-wrap:wrap;gap:.35rem;margin:0 0 1rem}
+    .gri-years .chip{font-size:.8rem;padding:.25rem .65rem;cursor:pointer}
+    .gri-years .chip .n{opacity:.6;margin-left:.25em;font-size:.85em}
+    .tb--gri .tb__row{cursor:pointer}
+    .tb--gri .tb__row.is-open{background:rgba(79,157,146,.07)}
+    .tb__who{font-size:.86rem;color:var(--mauve);line-height:1.5}
+    .tb__who b{color:var(--ink);font-weight:600}
+    .tb__tag{display:inline-block;font-size:.7rem;padding:.05rem .45rem;border:1px solid var(--line);
+             border-radius:999px;color:var(--mauve);margin-left:.4em;vertical-align:middle}
+    .tb__tag.is-hwp{color:#8e3b2c;border-color:#e6b9ad}
+    .tb__tag.is-scan{color:#8a6bb0;border-color:#d3c4e6}
+    /* 펼쳐진 글 */
+    .gri-open{grid-column:1 / -1;padding:.9rem 1rem 1.2rem 3.6rem;border-top:1px dashed var(--line-soft);
+              background:#fff}
+    .gri-open h4{margin:0 0 .5rem;font-size:.95rem;color:var(--ink)}
+    .gri-open .gri-sum{font-size:.95rem;line-height:1.85;color:#3d3735;white-space:pre-wrap;margin:0 0 .9rem;max-width:72ch}
+    .gri-open .gri-pts{margin:0 0 .9rem;padding-left:1.2em;font-size:.92rem;line-height:1.75;color:#3d3735;max-width:72ch}
+    .gri-open .gri-meta{display:grid;grid-template-columns:5.5em 1fr;gap:.2rem .6rem;font-size:.86rem;
+                        color:#4a4442;margin:0 0 .9rem;max-width:72ch}
+    .gri-open .gri-meta b{color:var(--mauve);font-weight:600}
+    .gri-files{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+    .gri-file{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);border-radius:var(--radius-sm);
+              padding:.35rem .7rem;background:#fff;font-size:.86rem}
+    .gri-file .nm{max-width:38ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gri-file .sz{color:var(--mauve);font-size:.8rem}
+    .gri-file button{all:unset;cursor:pointer;color:var(--teal-text);font-weight:600;padding:.1rem .3rem;border-radius:4px}
+    .gri-file button:hover{background:#eaf5f3}
+    .gri-file button[disabled]{opacity:.5;cursor:default}
+    .gri-src{font-size:.8rem;color:var(--mauve);margin-top:.6rem}
+    .gri-note{font-size:.86rem;color:var(--mauve);line-height:1.8;margin:.6rem 0 0}
+    .gri-err{padding:14px 18px;background:#fdf3f0;border:1px solid #f0cfc6;border-radius:10px;font-size:.88rem;
+             color:#8e3b2c;line-height:1.7;margin:0 0 1.4rem;white-space:pre-wrap}
+    @media (max-width:640px){ .gri-open{padding-left:1rem} }
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <header class="page-banner">
+      <div class="page-banner__media">
+        <img src="assets/img/pictures-banner.jpg" alt="">
+      </div>
+      <div class="container container--wide page-banner__inner">
+        <span class="eyebrow" style="color:#d9cfcf">Travel · GRI</span>
+        <h1 style="font-size:clamp(1.9rem,5.5vw,3.6rem);text-transform:none">GRI 해외출장보고서</h1>
+        <p>경기연구원 해외출장보고 게시판의 보고서를 한자리에 모았습니다. 제목을 누르면 요약과 보고서 PDF 가 열립니다.</p>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="container container--wide">
+        <div id="gri-board"><p class="gri-note">목록을 불러오는 중…</p></div>
+        <p class="gri-note">
+          보고서 파일은 비공개 보관함에 있어 로그인·승인된 분만 열 수 있고, 여는 순간에만 한 시간짜리 임시 주소가 만들어집니다.
+          요약은 보고서 본문을 읽고 간추린 것이라 원문과 다를 수 있습니다 — 판단은 PDF 원문으로 해 주세요.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="assets/js/main.js?v=202609121200" defer></script>
+  <script type="module" src="assets/js/travel-gri.js?v=202609121200"></script>
+</body>
+</html>
