@@ -49,7 +49,7 @@ function hit(p) {
   if (!q) return true;
   const s = q.toLowerCase();
   return [p.trip, p.title, p.postTitle, (p.travelers || []).join(" "), (p.countries || []).join(" "),
-          p.summary, (p.points || []).join(" "), p.where, p.who]
+          p.summary, (p.points || []).join(" "), p.where, p.who, (p.places || []).join(" ")]
     .join(" ").toLowerCase().indexOf(s) >= 0;
 }
 
@@ -81,7 +81,7 @@ function row(p, i, total) {
 }
 
 function detail(p) {
-  const meta = [["출장명", p.trip], ["기간", p.period], ["지역", p.where || (p.countries || []).join(", ")], ["출장자", p.who || (p.travelers || []).join(", ")]]
+  const meta = [["출장명", p.trip], ["기간", p.period], ["지역", p.where || (p.countries || []).join(", ")], ["출장지", (p.places || []).join(" · ")], ["출장자", p.who || (p.travelers || []).join(", ")]]
     .filter(([, v]) => v).map(([k, v]) => `<b>${esc(k)}</b><span>${esc(v)}</span>`).join("");
   const files = (p.files || []).map((f, i) =>
     `<span class="gri-file"><span class="nm" title="${esc(f.file)}">${esc(f.file)}</span>` +
@@ -119,7 +119,7 @@ function paint() {
       REGIONS.map(([k, l]) => `<a href="#" data-region="${k}"${k === region ? ' class="on" aria-current="page"' : ""}>${esc(l)} <span class="tregions__n">${count(k)}</span></a>`).join("") +
     "</nav>" +
     '<div class="gri-bar">' +
-      '<input type="search" id="gri-q" placeholder="출장명 · 출장자 · 나라 · 요약으로 찾기" value="' + esc(q) + '" autocomplete="off">' +
+      '<input type="search" id="gri-q" placeholder="출장명 · 출장자 · 나라 · 출장지(방문 기관·도시) · 요약으로 찾기" value="' + esc(q) + '" autocomplete="off">' +
       '<select id="gri-year"><option value="">모든 해</option>' +
         Object.keys(years).sort().reverse().map((y) => `<option value="${y}"${y === year ? " selected" : ""}>${y} (${years[y]})</option>`).join("") +
       "</select>" +
