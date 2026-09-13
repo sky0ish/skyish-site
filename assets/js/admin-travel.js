@@ -76,6 +76,8 @@ async function draw() {
     (FSA
       ? '<button type="button" class="btn btn--teal abtn" id="pick">📁 11.해외출장보고_Data 폴더 고르기</button>'
       : '<label class="btn btn--teal abtn">📁 폴더 고르기<input type="file" id="pickIn" webkitdirectory multiple hidden></label>') +
+    /* 요약·출장지만 고쳤을 때 — 1 GB 폴더를 다시 고르지 않고 목록만 */
+    ' <label class="btn btn--ghost abtn" title="PDF 는 그대로 두고 목록(gri.json)만 바꿉니다">📄 gri.json 만 올리기<input type="file" id="listOnly" accept=".json,application/json" hidden></label>' +
     '<p class="anote">폴더를 고르면 안의 gri.json 을 읽어, 거기 적힌 파일만 알맞은 이름으로 올립니다. ' +
       "50 MB 를 넘는 파일은 Supabase 설정(Storage → Settings → File size limit)에 따라 막힐 수 있습니다 — 그런 파일은 아래에 붉게 남습니다.</p>" +
     '<div class="abar" id="abar" hidden><i></i></div>' +
@@ -84,6 +86,19 @@ async function draw() {
 
   if (FSA) document.getElementById("pick").addEventListener("click", pickFolder);
   else document.getElementById("pickIn").addEventListener("change", (e) => takeFiles([...e.target.files]));
+  document.getElementById("listOnly").addEventListener("change", (e) => listOnly(e.target.files[0]));
+}
+
+/** 목록(gri.json)만 올리기 — PDF 는 그대로 */
+async function listOnly(file) {
+  if (!file) return;
+  let doc;
+  try { doc = JSON.parse(await file.text()); } catch (e) { say("gri.json 을 읽지 못했습니다 — " + e.message, "err"); return; }
+  if (!doc || !Array.isArray(doc.posts)) { say("gri.json 꼴이 아닙니다 (posts 가 없습니다).", "err"); return; }
+  say("목록 " + doc.posts.length + "건을 올리는 중…");
+  const r = await sb.storage.from(BUCKET).upload(LIST, file, { upsert: true, cacheControl: "60", contentType: "application/json" });
+  if (r.error) { say("목록 올리기 실패 — " + r.error.message, "err"); return; }
+  say("목록 " + doc.posts.length + "건을 올렸습니다 (" + (doc.posts.filter((p) => p.places && p.places.length).length) + "건에 출장지). 게시판을 새로고침하면 보입니다.", "ok");
 }
 
 /* ── 폴더에서 읽기 ── */
