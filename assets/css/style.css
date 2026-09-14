@@ -3165,6 +3165,22 @@ html[data-cp]:not([data-cp="tome"]) .contact-top .contact-grid { display: none; 
 .ahas { text-align:center; font-weight:700; font-size:.82rem; width:52px; }
 .ahas.yes { color:#3f6a3a; }
 .ahas.no  { color:#c9bfa6; font-weight:500; }
+/* 리멤버 명함 이력 — 옛 명함과 소속·직함이 다른 분은 「최신정보」, 아래에 「이전」 */
+.anew { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; vertical-align:2px;
+  font-size:.64rem; font-weight:700; letter-spacing:.02em; color:#2f7d6f; background:#e3f2ef;
+  border:1px solid #bcd9d3; white-space:nowrap; }
+.ndet__box h3 .anew { font-size:.68rem; vertical-align:middle; }
+.asub.aprev { color:#9a8f7c; }
+.asub.aprev::before { content:"↶ "; opacity:.7; }
+.ahist__i { display:block; padding:4px 6px; font-size:.86rem; color:#5f5850; }
+.ahist__i::before { content:"↶ "; opacity:.5; }
+.ahist__i small { margin-left:6px; padding:0 6px; border-radius:999px; font-size:.7em; background:#fdf3e2; color:#8a5a12; }
+.acards__row { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; }
+.acard { margin:0; width:260px; max-width:100%; }
+.acard.old { width:170px; opacity:.85; }
+.acard img { display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:8px;
+  background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.acard figcaption { margin-top:4px; font-size:.74rem; color:var(--mauve); line-height:1.4; }
 /* 표를 칸별로 줄 세우기 */
 #abTbl th.asort { cursor:pointer; user-select:none; white-space:nowrap;
   transition:.14s var(--ease); }

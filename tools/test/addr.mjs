@@ -408,5 +408,61 @@ eq("읽은 수 한 줄", AB.readSummary([명함줄, dol[0], dol[1], nis[0], plan
 eq("빈 것", [AB.inKind(null, "all"), AB.chips(null), AB.readSummary(null), AB.linkKanji(null), AB.fromDoldoki(null), AB.fromNishimura(null, null), AB.fromSnuPlan(null, null), AB.fromSnuDesign(null)],
    [false, "", "", [], [], [], [], []]);
 
+/* ── 리멤버 명함 이력 — 「최신정보」 와 「이전」 ──
+   「현직이 변경된 것은 기존 자료에 추가로 (최신정보)를 추가해서 추가로 넣어줘」
+   이름·회사는 지어낸 것입니다. */
+console.log("\n── 리멤버 명함 이력 ──");
+const card = (id, name, company, position, at, o) => Object.assign(
+  { id, name, company, department: "", position, at, mobile: "", email: "", front: { original: "x" } }, o);
+const hist = AB.remHistory({ stacks: [
+  /* 옮긴 분 — 경기도 팀장 → 동두천시 부시장 (옛 명함 둘은 같은 내용) */
+  { id: 1, main: card(11, "이태진", "동두천시", "부시장", "2026-09-14T20:57:20.000+09:00", { mobile: "01011112222" }),
+    subs: [card(12, "이태진", "경기도", "공정경제기획팀장", "2019-07-19T10:41:25.000+09:00"),
+           card(13, "이태진", "동두천시", "부시장", "2025-05-12T08:33:25.000+09:00"),
+           card(14, "이태진", "동두천시", "부시장", "2025-06-24T10:08:05.000+09:00", { front: null })] },
+  /* 동명이인 — 다른 회사 */
+  { id: 2, main: card(21, "이태진", "삼성물산", "과장", "2020-01-01", { mobile: "01099998888" }), subs: [] },
+  /* 옛 명함이 대표와 같으면 이력 없음 */
+  { id: 3, main: card(31, "김소영", "국토연구원", "연구위원", "2024-01-01"), subs: [card(32, "김소영", "국토연구원", "연구위원", "2022-01-01")] },
+  /* 대표보다 새 명함이 다른 내용 — 「더 새 명함」 */
+  { id: 4, main: card(41, "노두현", "공공자치연구원", "실장", "2025-08-22"), subs: [card(42, "노두현", "역량개발센터", "연구위원", "2025-09-14")] },
+  { id: 5, main: card(51, "", "이름없음", "", "2025-01-01"), subs: [] },
+  /* 리멤버가 같은 명함을 두 번 읽은 것 — 표기만 다르면 이력이 아닙니다 */
+  { id: 6, main: card(61, "정경자", "한국도로공사", "연구위원 공학박사", "2026-09-08"),
+    subs: [card(62, "정경자", "한국도로공사", "연구위원 / 공학박사", "2026-09-08"),
+           card(63, "정경자", "(재)한국도로공사", "연구위원", "2025-01-01"),
+           card(64, "정경자", "", "", "2024-01-01"),                                   // 못 읽은 명함
+           card(65, "정경자", "한국도로공사", "", "2023-01-01", { department: "미래전략처" })] },  // 직함을 못 읽음
+  /* 승진은 이력입니다 */
+  { id: 7, main: card(71, "배유진", "국토연구원", "연구위원", "2026-09-01"), subs: [card(72, "배유진", "국토연구원", "부연구위원 / 도시계획박사", "2023-01-01")] },
+  null,
+] });
+eq("이름으로 묶는다 (동명이인은 한 이름에 둘)", [hist.size, hist.get("이태진").length], [5, 2]);
+const 부시장 = P({ name: "이태진", company: "동두천시", title: "부시장", mobile: "010-1111-2222" });
+const 과장 = P({ name: "이 태진", company: "삼성물산", title: "과장" });
+const 옮김 = P({ name: "이태진", company: "동두천시청", mobile: "010-1111-2222" });    // 소속 표기가 달라도 휴대폰으로
+const 모름 = P({ name: "이태진", company: "어딘가", mobile: "010-0000-0000" });
+eq("★ 소속이 같은 stack", AB.findStack(hist, 부시장).id, 1);
+eq("동명이인은 소속으로 가른다 (띄어쓴 이름도)", AB.findStack(hist, 과장).id, 2);
+eq("소속 표기가 달라도 휴대폰이 같으면", AB.findStack(hist, 옮김).id, 1);
+eq("소속도 연락처도 안 맞으면 안 붙인다", AB.findStack(hist, 모름), null);
+eq("없는 이름·빈 것", [AB.findStack(hist, P({ name: "없는사람" })), AB.findStack(null, 부시장), AB.findStack(hist, null)], [null, null, null]);
+const HL = AB.attachHistory([부시장, 과장, P({ name: "김소영", company: "국토연구원" }), P({ name: "노두현", company: "공공자치연구원" }), P({ name: "남남" })], hist);
+eq("★ 옮긴 분 — 이전 명함은 내용이 다른 것 하나만 (같은 내용의 옛 명함 둘은 접힘)",
+   HL[0].hist, [{ company: "경기도", orgDept: "", title: "공정경제기획팀장", position: "공정경제기획팀장", at: "2019-07-19", id: 12, newer: false }]);
+eq("대표 명함 번호와 그림 있는 명함 번호들", [HL[0].cardId, HL[0].cardIds], [11, [11, 12, 13]]);
+eq("동명이인은 제 stack 을 — 이력 없음", [HL[1].cardId, HL[1].hist], [21, undefined]);
+eq("옛 명함이 대표와 같으면 이력 없음", [HL[2].cardId, HL[2].hist], [31, undefined]);
+eq("대표보다 새 명함이 다르면 newer", [HL[3].hist.length, HL[3].hist[0].newer, HL[3].hist[0].company], [1, true, "역량개발센터"]);
+eq("이력에 없는 분은 그대로", [HL[4].cardId, HL[4].hist], [undefined, undefined]);
+eq("이전 한 줄", AB.histLine(HL[0].hist[0]), "2019.07 · 경기도 · 공정경제기획팀장");
+const HN = AB.attachHistory([P({ name: "정경자", company: "한국도로공사" }), P({ name: "배유진", company: "국토연구원" })], hist);
+eq("★ 표기만 다른 명함(띄어쓰기·슬래시·(재)·못 읽은 것)은 이력이 아니다", HN[0].hist, undefined);
+eq("★ 승진(부연구위원 → 연구위원)은 이력", HN[1].hist && HN[1].hist.map((h) => h.title), ["부연구위원 / 도시계획박사"]);
+eq("직함 견주기", [AB.samePosition("연구위원 공학박사", "연구위원 / 공학박사"), AB.samePosition("부연구위원 / 지리학박사", "부연구위원"),
+   AB.samePosition("부연구위원", "연구위원"), AB.samePosition("", "팀장"), AB.samePosition("ㅣ 부시장", "부시장")], [true, true, false, true, true]);
+eq("빈 이력이면 아무것도 안 한다", AB.attachHistory([부시장], new Map()).length, 1);
+eq("빈 것", [AB.remHistory(null).size, AB.attachHistory(null, hist), AB.attachHistory(null, null)], [0, [], []]);
+
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

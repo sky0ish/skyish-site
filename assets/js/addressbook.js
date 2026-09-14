@@ -558,6 +558,93 @@ export function dropHidden(rows, keys) {
 }
 
 
+/* ── 리멤버 명함 이력 — 「최신정보」 와 「이전」 ─────────────
+   「현직이 변경된 것은 기존 자료에 추가로 (최신정보)를 추가해서 추가로 넣어줘」
+
+   리멤버는 한 사람의 명함을 쌓아 둡니다 — 대표 명함(main) 하나와 옛 명함들(subs).
+   엑셀은 대표 명함만 내보내서 옛 소속·직함이 사라집니다.
+   00.주소록/리멤버_명함이력.json (리멤버 웹 명함첩에서 내려받은 그 묶음,
+   tools/addr/remember_images.py 가 그림을 받을 때 쓰는 파일) 을 함께 읽어,
+   소속·부서·직함이 다른 옛 명함을 「이전」 으로 달고 그런 분에게 「최신정보」 딱지를 답니다.
+   명함 그림 번호(cardId)도 함께 달아 자세히 칸에서 명함 스캔을 보입니다.
+   인터넷에서 새로 긁어 오는 것이 아닙니다 — 내 명함첩에 이미 있던 것입니다. */
+const digits = (v) => String(v == null ? "" : v).replace(/\D/g, "");
+/* 「현직이 바뀐 것」 만 잡습니다 — 리멤버가 같은 명함을 두 번 읽어 「연구위원 공학박사」 와
+   「연구위원 / 공학박사」 로 갈라 둔 것, (재)·사단법인 이 붙고 안 붙은 것, 못 읽어 빈 명함은 같은 것으로 봅니다. */
+const orgN = (v) => orgKey(String(v == null ? "" : v).replace(/(사단법인|재단법인|주식회사|유한회사)/g, " "));
+const posTokens = (v) => new Set(String(v == null ? "" : v).split(/[\s\/|ㅣ,·]+/)
+  .map((t) => t.replace(/[.\-_()（）]/g, "").toLowerCase()).filter(Boolean));
+/** 직함이 같은가 — 「부연구위원 / 지리학박사」 와 「부연구위원」 처럼 한쪽이 다른 쪽에 다 들어 있으면 같습니다.
+ *  「부연구위원」 과 「연구위원」 은 다릅니다 (승진). 빈 것은 못 읽은 명함이라 같은 것으로. */
+export function samePosition(a, b) {
+  const A = posTokens(a), B = posTokens(b);
+  if (!A.size || !B.size) return true;
+  if ([...A].join("") === [...B].join("")) return true;        // 「연구위원 공학박사」 = 「연구위원 / 공학박사」
+  const inside = (x, y) => [...x].every((t) => y.has(t));
+  return inside(A, B) || inside(B, A);
+}
+const sameCard = (a, b) => {
+  const oa = orgN(a && a.company), ob = orgN(b && b.company);
+  return (!oa || !ob || oa === ob) && samePosition(a && a.position, b && b.position);
+};
+
+/** 이력 묶음 → 이름(공백 뺀 소문자) → [stack] */
+export function remHistory(doc) {
+  const by = new Map();
+  const stacks = doc && Array.isArray(doc.stacks) ? doc.stacks : [];
+  stacks.forEach((s) => {
+    if (!s || !s.main) return;
+    const n = norm(s.main.name);
+    if (!n) return;
+    if (!by.has(n)) by.set(n, []);
+    by.get(n).push(s);
+  });
+  return by;
+}
+
+/** 이 줄에 맞는 stack — 이름이 같고 소속이 같거나, 휴대폰·이메일이 같은 것.
+ *  동명이인은 소속·연락처로 가릅니다 — 하나도 안 맞으면 붙이지 않습니다. */
+export function findStack(index, r) {
+  if (!index || !r) return null;
+  const L = index.get(norm(r.name)) || [];
+  if (!L.length) return null;
+  const same = (a, b) => !!norm(a) && norm(a) === norm(b);
+  const sameNo = (a, b) => digits(a).length >= 8 && digits(a) === digits(b);
+  return L.find((s) => same(s.main.company, r.company)) ||
+         L.find((s) => sameNo(s.main.mobile, r.mobile) || same(s.main.email, r.email)) ||
+         null;
+}
+
+/** 줄마다 hist(이전 명함들)·cardId·cardIds 를 답니다 — 옛 명함이 대표와 다를 때만 hist */
+export function attachHistory(rows, index) {
+  const L = Array.isArray(rows) ? rows : [];
+  if (!index || !index.size) return L;
+  L.forEach((r) => {
+    const s = findStack(index, r);
+    if (!s) return;
+    const cards = [s.main].concat(Array.isArray(s.subs) ? s.subs : []);
+    r.cardId = s.main.id;
+    r.cardIds = cards.filter((c) => c && c.front).map((c) => c.id);
+    const prev = [];
+    cards.slice(1).filter(Boolean)
+      .sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")))
+      .forEach((c) => {
+        if (!norm(c.company) && !norm(c.position)) return;          // 못 읽은 명함
+        if (sameCard(s.main, c) || prev.some((p) => sameCard(p, c))) return;
+        prev.push({ company: c.company || "", orgDept: c.department || "", title: c.position || "", position: c.position || "",
+                    at: String(c.at || "").slice(0, 10), id: c.id,
+                    /* 대표보다 새 명함이 다른 내용이면 — 리멤버가 대표를 옛것으로 두었을 수 있습니다 */
+                    newer: !!c.at && String(c.at) > String(s.main.at || "") });
+      });
+    if (prev.length) r.hist = prev;
+  });
+  return L;
+}
+/** 「이전」 줄 한 줄 — 「2019.07 · 경기도 · 공정경제기획팀장」 */
+export const histLine = (h) => [String(h.at || "").slice(0, 7).replace("-", "."), h.company, h.orgDept, h.title]
+  .filter(Boolean).join(" · ");
+
+
 /* ── 내 컴퓨터 파일 기억해 두기 (IndexedDB) ──
    고른 폴더를 다음에 와도 기억합니다. 자료가 아니라 「어느 폴더였는지」만 담습니다. */
 const DB = "skyish-addr", STORE = "handle", KEY = "folder";
@@ -673,6 +760,43 @@ async function getHandle() {
 /** 지난번에 고르신 폴더 손잡이 — 「이어서 열기」 가 이것으로 나옵니다.
  *  (시험에서도 이 길로 확인합니다.) */
 export const readFolderHandle = () => getHandle();
+
+/* ── 명함 스캔 그림 — 00.주소록/리멤버_명함/이름_소속_<번호>.jpg ──
+   tools/addr/remember_images.py 가 받아 둔 것. 번호(리멤버 명함 번호)로 찾습니다 —
+   같은 분의 옛 명함도 번호가 달라 모두 보입니다. 브라우저 안에서만 풀립니다 (blob:). */
+let cardDirMap = null;                 // 번호 → 파일 손잡이
+const cardUrls = new Map();            // 번호 → blob 주소
+export const forgetCardDir = () => { cardDirMap = null; cardUrls.clear(); };
+async function cardFiles() {
+  if (cardDirMap) return cardDirMap;
+  const m = new Map();
+  try {
+    const h = await getHandle();
+    if (!h) return (cardDirMap = m);
+    const st = await h.queryPermission({ mode: "read" }).catch(() => "prompt");
+    if (st !== "granted") return m;                    // 허락이 돌아오면 다시 읽습니다
+    const d = await h.getDirectoryHandle("리멤버_명함").catch(() => null);
+    if (!d) return (cardDirMap = m);
+    for await (const e of d.values()) {
+      if (e.kind !== "file" || !IMG_EXT.test(e.name)) continue;
+      const k = e.name.replace(IMG_EXT, "").match(/_(\d{5,})$/);
+      if (k) m.set(+k[1], e);
+    }
+  } catch (e) { /* 폴더가 없어도 그냥 갑니다 */ }
+  return (cardDirMap = m);
+}
+/** 명함 번호의 그림 주소 — 없으면 "" */
+export async function cardImage(id) {
+  if (!id) return "";
+  if (cardUrls.has(id)) return cardUrls.get(id);
+  const fh = (await cardFiles()).get(+id);
+  if (!fh) return "";
+  try {
+    const u = URL.createObjectURL(await fh.getFile());
+    cardUrls.set(id, u);
+    return u;
+  } catch (e) { return ""; }
+}
 
 /* ── 폴더에서 엑셀 두 개 찾아 읽기 ───────────────────────── */
 async function readWorkbook(file, XLSX) {
@@ -1875,6 +1999,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   const say  = (t) => { hint.textContent = t; };
 
   let rows = [], cur = "all", major = "", shownCount = PAGE;
+  let histIndex = null;                   // 리멤버 명함 이력 (이름 → stack) — 00.주소록/리멤버_명함이력.json
   let sortKey = "", sortDir = 1;          // 어느 칸으로, 어느 쪽으로
   let havePhoto = new Set();              // 사진이 있는 사람 (O/X 와 줄 세우기에)
   /* 표를 다시 그리는 손잡이.
@@ -1949,9 +2074,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       const s = q.value.trim().toLowerCase();
       if (major && r.major !== major) return false;
       if (!s) return true;
+      /* 옛 명함의 소속·직함으로도 찾힙니다 — 「경기도」 로 찾으면 지금은 동두천시인 분도 */
       return [r.name, r.company, r.title, r.orgDept, r.univDept,
               r.majorName, r.major, r.email, r.mobile, r.phone, r.city, r.tag,
               r.nameKanji, r.lab, SRC_NAME[r.src]]
+        .concat((r.hist || []).map((h) => h.company + " " + h.orgDept + " " + h.title))
         .join(" ").toLowerCase().includes(s);
     };
     const inGroup = (r) => inKind(r, cur);
@@ -1984,8 +2111,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           `<td class="ano">${i + 1}</td>` +
           `<td class="aface" data-n="${esc(r.name)}" data-o="${esc(r.company)}">` +
             `<b>${esc(r.name)}</b>` +
+            /* 옛 명함과 소속·직함이 다른 분 — 이 줄이 최신입니다 */
+            `${r.hist ? '<span class="anew" title="옛 명함과 소속·직함이 다릅니다 — 이것이 최신 명함입니다">최신정보</span>' : ""}` +
             `${r.nameKanji ? `<div class="asub">${esc(r.nameKanji)}</div>` : ""}</td>` +
-          `<td>${esc(r.company)}${r.orgDept ? `<div class="asub">${esc(r.orgDept)}</div>` : ""}</td>` +
+          `<td>${esc(r.company)}${r.orgDept ? `<div class="asub">${esc(r.orgDept)}</div>` : ""}` +
+            `${r.hist && norm(r.hist[0].company) !== norm(r.company) ? `<div class="asub aprev">이전 · ${esc(r.hist[0].company)}</div>` : ""}</td>` +
           `<td>${esc(r.title)}</td>` +
           `<td>${r.majorName ? `<b>${esc(r.majorName)}</b>` : ""}` +
             `${r.univDept ? `<div class="asub">${esc(r.univDept)}</div>` : ""}</td>` +
@@ -2105,7 +2235,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       '<div class="ndet__box">' +
         '<button type="button" class="ndet__x" id="abX">✕</button>' +
         chips(r) +
-        `<h3>${esc(r.name)}${r.nameKanji ? ` <small>${esc(r.nameKanji)}</small>` : ""}</h3>` +
+        `<h3>${esc(r.name)}${r.nameKanji ? ` <small>${esc(r.nameKanji)}</small>` : ""}` +
+          `${r.hist ? '<span class="anew" title="옛 명함과 소속·직함이 다릅니다 — 이것이 최신 명함입니다">최신정보</span>' : ""}</h3>` +
         /* 왼쪽은 적힌 것, 오른쪽은 얼굴 */
         '<div class="adet2">' +
           '<div class="alist">' +
@@ -2117,6 +2248,13 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
             line("이메일", r.email) + line("주소", r.addr) +
             line("지역", r.city) + line("꼬리표", r.tag) + line("명함 등록", r.at) +
             line("메모", r.memo) +
+            /* 옛 명함 — 소속·부서·직함이 지금과 다른 것만. 엑셀에는 없고 리멤버 이력에서 옵니다 */
+            (r.hist ? '<div class="aday ahist"><b class="aday__h">이전 명함 — ' + r.hist.length + "건</b>" +
+              r.hist.map((h) => '<span class="ahist__i' + (h.newer ? " newer" : "") + '">' + esc(histLine(h)) +
+                (h.newer ? '<small title="대표 명함보다 나중에 받은 명함입니다">더 새 명함</small>' : "") + "</span>").join("") +
+              "</div>" : "") +
+            /* 명함 스캔 — 00.주소록/리멤버_명함 에 받아 둔 그림. 없으면 아무것도 안 그립니다 */
+            '<div class="aday acards" id="abCards" hidden></div>' +
             /* 명함 등록일의 일정 — 「언제 무슨 모임에서 만났는지」.
                그날 적어 두신 것이 없으면 아무것도 안 그립니다. */
             '<div class="aday" id="abDay" hidden></div>' +
@@ -2153,6 +2291,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     catch (e) { say("사진 칸을 붙이지 못했습니다 — " + (e && e.message)); }
     fillDay(r).catch(() => {});          // 그날 일정은 천천히 채웁니다
     fillMet(r).catch(() => {});          // 만난 자리도
+    fillCards(r).catch(() => {});        // 명함 스캔도
     const edit = document.getElementById("abEdit");
     if (edit) edit.addEventListener("click", () => editForm(r, box));
   }
@@ -2213,6 +2352,23 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           "</span>" +
           '<em class="aday__g" title="어느 게시판">' + esc(CAT[cat] || cat) + "</em></a>";
       }).join("");
+  }
+
+  /* 명함 스캔 — 대표 명함을 크게, 옛 명함은 작게. 리멤버_명함 폴더에 그림이 있을 때만. */
+  async function fillCards(r) {
+    const box = document.getElementById("abCards");
+    if (!box || !r.cardId) return;
+    const ids = [r.cardId].concat((r.hist || []).map((h) => h.id)).filter(Boolean);
+    const urls = await Promise.all(ids.map((id) => cardImage(id)));
+    if (document.getElementById("abCards") !== box) return;
+    const items = ids.map((id, i) => ({ id, url: urls[i], h: i ? r.hist[i - 1] : null })).filter((x) => x.url);
+    if (!items.length) return;
+    box.hidden = false;
+    box.innerHTML = '<b class="aday__h">명함</b><div class="acards__row">' +
+      items.map((x) => '<figure class="acard' + (x.h ? " old" : "") + '"><a href="' + x.url + '" target="_blank" rel="noopener">' +
+        '<img src="' + x.url + '" alt="' + esc(r.name) + ' 명함" loading="lazy"></a>' +
+        "<figcaption>" + (x.h ? esc(histLine(x.h)) : "지금 명함" + (r.at ? " · " + esc(r.at) : "")) + "</figcaption></figure>").join("") +
+      "</div>";
   }
 
   /* ── 명함 내용 더하기 ──
@@ -2478,12 +2634,22 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   /* ── 파일 읽어 들이기 ── */
   async function useFiles(files) {
     let loaded = [];                       // 합치기 전 — 명부마다 몇 명 읽었는지는 이것으로 셉니다
+    /* 리멤버 명함 이력(json)은 엑셀과 따로 — 줄을 다 만든 뒤에 얹습니다 */
+    const jf = (files || []).find((f) => /명함이력.*\.json$/i.test(f.name));
+    const xs = (files || []).filter((f) => f !== jf);
     try {
       /* 나중에 명함 받아 채워 넣으신 것을 엑셀 위에 얹습니다 —
          엑셀을 새로 읽어도 손수 고친 것은 그대로 남습니다. */
       /* linkKanji — 연구실 명부의 한자 이름에 총동문회 명부의 한글 이름을 답니다 */
-      loaded = dedupePeople(linkKanji(await loadFromFiles(files, say)));
+      loaded = dedupePeople(linkKanji(await loadFromFiles(xs, say)));
       rows = dropHidden(applyExtras(mergeSame(loaded), await allExtras()), await hiddenKeys());
+      histIndex = null;                    // 이번에 고른 것에만 — 지난번 이력을 끌고 오지 않습니다
+      if (jf) {
+        try { histIndex = remHistory(JSON.parse(await jf.text())); }
+        catch (e) { say("리멤버 명함 이력(" + jf.name + ")을 읽지 못했습니다 — " + e.message); }
+      }
+      if (histIndex) attachHistory(rows, histIndex);
+      forgetCardDir();                     // 명함 스캔 폴더도 새로 봅니다
     } catch (e) {
       say("읽지 못했습니다 — " + e.message);
       return;
@@ -2492,7 +2658,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       say("엑셀을 찾지 못했습니다. 「개인명함첩…」 「…주소록…」 이름의 파일이 든 폴더를 골라 주세요.");
       return;
     }
+    const nh = rows.filter((r) => r.hist).length;
     say(readSummary(loaded) + "을 읽었습니다. " +
+        (nh ? "옛 명함과 소속·직함이 다른 분 " + nh.toLocaleString("ko-KR") + "명에 「최신정보」 를 달았습니다. " : "") +
         "겹친 것은 새 쪽으로 하나만 남겼습니다. 이 화면에만 있습니다.");
     ui();
     refreshPhotoNames();          // 누가 사진이 있는지 미리 모읍니다 (조용히)
@@ -2506,6 +2674,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     const files = [];
     for await (const [, h] of dir.entries()) {
       if (h.kind !== "file") continue;
+      if (/명함이력.*\.json$/i.test(h.name)) { files.push(await h.getFile()); continue; }   // 리멤버 명함 이력
       if (!/\.(xlsx?|csv|txt)$/i.test(h.name) || /^~\$/.test(h.name)) continue;
       if (/\.(csv|txt)$/i.test(h.name) && !/(경기연구원|GRI|직원|조직도)/i.test(h.name)) continue;   // 글 파일은 경기연구원 명단만
       files.push(await h.getFile());
@@ -2519,7 +2688,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   function newestOfEachKind(files) {
     const best = new Map();
     (files || []).forEach((f) => {
-      const kind = /명함/.test(f.name) ? "card"
+      const kind = /\.json$/i.test(f.name) ? "hist:" + f.name       // 리멤버 명함 이력 — 엑셀과 겨루지 않습니다
+        : /명함/.test(f.name) ? "card"
         : /(경기연구원|GRI|직원|조직도)/i.test(f.name) ? "gri"
         /* 돌도끼는 파일이 둘이라도 모두 읽습니다 — 같은 사람은 dedupePeople 이 새 파일 쪽으로 합칩니다 */
         : /(DOlDOKI|돌도끼)/i.test(f.name) ? "scsc:" + f.name
