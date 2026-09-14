@@ -32,8 +32,8 @@ tools/flood/cache/
 tools/rail/raw.json
 
 # 방산 네트워크 '따로 전달용' 꾸러미 — 남에게 건네려고 만든 낱개 파일 묶음입니다.
-# 홈페이지에는 defense-cluster.html 로 이미 실려 있고, 그쪽은 로그인 보호가 걸려 있습니다.
-# 이 꾸러미에는 보호가 없어서 함께 올리면 보호가 무의미해집니다.
+# 홈페이지에는 defense-cluster.html 로 이미 실려 있습니다 (2026.09 부터 공개 — auth/defense_public.sql).
+# 같은 것을 두 군데 두면 어긋나므로 이 꾸러미는 저장소에 넣지 않습니다.
 /경기도 방산기업정보/
 /auth/산업단지/
 
@@ -49,8 +49,9 @@ tools/rail/all.json
 tools/rail/chunk*.json
 tools/rail/chunk*.txt
 
-# 분석 자료 — Supabase 의 비공개 보관함(analysis)에 둡니다.
-# 공개 폴더에 두면 로그인 없이 주소만으로 받아지므로 저장소에 올리지 않습니다.
+# 분석 자료 — Supabase 보관함(analysis)에 둡니다. 화면은 거기서 읽습니다.
+# 침수(flood)는 승인된 분만, 방산(defense)은 누구나 읽습니다(auth/defense_public.sql).
+# 저장소에도 두면 같은 것이 두 군데가 되어 어긋나므로 올리지 않습니다.
 assets/data/defense/
 assets/data/flood/
 
@@ -147,3 +148,4 @@ _gtstub.js
 _gritravel/
 __pycache__/
 _tpgtest.html
+_histtest.html
