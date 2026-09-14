@@ -989,7 +989,14 @@ const FACE_KEY = "face";              // 얼굴 사진 폴더 손잡이 (Indexed
    홈피 폴더의 9.FACE 가 기본이고, 옛 이름도 함께 봅니다. */
 const PHOTO_DIRS = ["9.FACE", "face", "FACE", "명함사진"];
 let photoMap = null;                  // 열쇠 → 파일 손잡이
+let photoMapP = null;                 // 읽는 중인 약속 — 같이 부른 쪽도 이것을 기다립니다
+let photoGen = 0;                     // 폴더를 다시 읽어야 할 때 하나 올립니다 (읽던 옛것이 덮지 않게)
 const photoUrls = new Map();          // 열쇠 → blob 주소 (한 번만 만듭니다)
+/** 폴더를 다시 읽게 — 골라 둔 폴더가 바뀌었거나 그림을 넣고 뺐을 때 */
+function resetPhotoMap() { photoMap = null; photoMapP = null; photoGen++; }
+/* 시험 손잡이 — 진짜 폴더 대신 시늉 폴더를 (느리게) 주게 (tools/test/addr.mjs) */
+let photoDirForTest = null;
+export const __photo = { useDir(fn) { photoDirForTest = fn; resetPhotoMap(); photoUrls.clear(); } };
 
 
 /** 얼굴 사진 폴더를 골라 둡니다 — 홈피 폴더의 face/ 를 고르시면 됩니다 */
@@ -1007,7 +1014,7 @@ export async function pickFaceFolder() {
     });
     db.close();
   } catch (e) {}
-  photoMap = null;                    // 다시 읽습니다
+  resetPhotoMap();                    // 다시 읽습니다
   photoUrls.clear();
   return true;
 }
@@ -1030,7 +1037,7 @@ export async function resumeFaceFolder() {
   try { st = await h.requestPermission({ mode: "readwrite" }); } catch (e) { st = "denied"; }
   if (st !== "granted") { try { st = await h.requestPermission({ mode: "read" }); } catch (e) { st = "denied"; } }
   if (st !== "granted") return false;
-  photoMap = null;                    // 비어 있던 목록을 버리고 다시 읽습니다
+  resetPhotoMap();                    // 비어 있던 목록을 버리고 다시 읽습니다
   photoUrls.clear();
   return true;
 }
@@ -1067,6 +1074,10 @@ async function photoDir() {
   if (f) {
     const st = await f.queryPermission({ mode: "read" }).catch(() => "prompt");
     if (st === "granted") return await intoPhotoDir(f);
+    /* 골라 둔 9.FACE 가 있는데 허락만 다시 물어야 하는 상태 — 이때 00.주소록/명함사진 으로
+       내려가면 그 작은 폴더가 「전부」 가 되어, 뒤에서 베끼기가 9.FACE 사본 수백 장을 지웠습니다.
+       지난번 사본(mirroredMap)으로 보이게 null 을 돌려줍니다. */
+    return null;
   }
   const h = await getHandle();
   if (!h) return null;
@@ -1229,20 +1240,33 @@ export async function collectPhotos(dir) {
 
 async function loadPhotoMap() {
   if (photoMap) return photoMap;
-  photoMap = new Map();
-  let dir = null;
-  try { dir = await photoDir(); } catch (e) {}
-  if (dir) {
-    try { photoMap = await collectPhotos(dir); } catch (e) { /* 폴더가 없어도 그냥 갑니다 */ }
-    /* 폴더를 읽을 수 있을 때 그 그림들을 브라우저 안에 베껴 둡니다 —
-       다음에 폴더 허락이 「prompt」 로 돌아가 있어도 얼굴이 그대로 보이게. 조용히, 뒤에서. */
-    const snap = photoMap;
-    mirrorFolder(snap).catch(() => {});
-    return photoMap;
-  }
-  /* 폴더를 못 열면(허락을 다시 물어야 하면) 지난번에 베껴 둔 것으로 보입니다 */
-  try { photoMap = await mirroredMap(); } catch (e) {}
-  return photoMap;
+  /* 읽는 동안 또 부르면 같은 약속을 돌려줍니다.
+     전에는 빈 Map 을 자리표로 먼저 넣어 두어서, 표를 그리며 얼굴을 채우는 쪽(fillFaces)과
+     「누가 사진이 있는지」 를 모으는 쪽(refreshPhotoNames)이 나란히 부르면 뒤엣것이 **빈 목록**을
+     받았습니다 — 그래서 사진 칸으로 줄을 세워도 O 와 X 가 섞였습니다 (줄 세우기는 빈 목록을,
+     O·X 는 진짜 그림을 보았으니까요). */
+  const gen = photoGen;
+  if (!photoMapP) photoMapP = (async () => {
+    let m = new Map();
+    let dir = null;
+    try { dir = photoDirForTest ? await photoDirForTest() : await photoDir(); } catch (e) {}
+    if (dir) {
+      try { m = await collectPhotos(dir); } catch (e) { /* 폴더가 없어도 그냥 갑니다 */ }
+      /* 폴더를 읽을 수 있을 때 그 그림들을 브라우저 안에 베껴 둡니다 —
+         다음에 폴더 허락이 「prompt」 로 돌아가 있어도 얼굴이 그대로 보이게. 조용히, 뒤에서.
+         (읽는 사이 폴더가 바뀌었으면 베끼지 않습니다 — 두 폴더의 사본이 섞이지 않게) */
+      if (gen === photoGen) mirrorFolder(m).catch(() => {});
+    } else {
+      /* 폴더를 못 열면(허락을 다시 물어야 하면) 지난번에 베껴 둔 것으로 보입니다 */
+      try { m = await mirroredMap(); } catch (e) {}
+    }
+    if (gen === photoGen) { photoMap = m; photoMapP = null; }   // 읽는 사이 폴더가 바뀌었으면(reset) 옛것으로 덮지 않습니다
+    return m;
+  })();
+  const m = await photoMapP;
+  /* 기다리는 사이 폴더가 바뀌었으면(reset) — 만든 쪽이든 같이 기다린 쪽이든 —
+     옛 목록을 돌려주지 않고 새것을 다시 읽어 옵니다 */
+  return gen === photoGen ? m : loadPhotoMap();
 }
 
 /* ── 폴더 그림의 브라우저 안 사본 ──
@@ -1338,7 +1362,8 @@ export async function mirrorNow() {
     try { dir = await photoDir(); } catch (e) {}
     if (!dir) return 0;
     const m = await collectPhotos(dir);
-    photoMap = m;
+    photoGen++;                          // 읽던 옛 약속이 이것을 덮지 않게
+    photoMap = m; photoMapP = null;
     return await mirrorFolder(m);
   } catch (e) { return 0; }
 }
@@ -1407,7 +1432,7 @@ export async function saveToFaceFolder(name, blob, org) {
     const w = await fh.createWritable();
     await w.write(blob);
     await w.close();
-    photoMap = null;                 // 폴더를 다시 읽습니다
+    resetPhotoMap();                 // 폴더를 다시 읽습니다
     return fname;
   } catch (e) { return ""; }
 }
@@ -1446,7 +1471,7 @@ export async function removeFolderPhoto(k) {
       await new Promise((ok) => { const t = db.transaction(PHOTO_STORE, "readwrite"); t.objectStore(PHOTO_STORE).delete(mirrorKey(k)); t.oncomplete = ok; t.onerror = ok; });
       db.close();
     } catch (e) {}
-    photoMap = null;                       // 폴더를 다시 읽습니다
+    resetPhotoMap();                       // 폴더를 다시 읽습니다
     const old = photoUrls.get(k);
     if (old) URL.revokeObjectURL(old);
     photoUrls.delete(k);
@@ -1530,6 +1555,9 @@ export async function photoNames() {
   const out = new Set();
   try { (await loadPhotoMap()).forEach((_, k) => out.add(k)); } catch (e) {}
   try { (await storedNames()).forEach((k) => out.add(String(k))); } catch (e) {}
+  /* 열어 보니 못 읽은 그림(photo() 가 빈 주소를 담아 둔 열쇠)은 「있는 사람」 에서 뺍니다 —
+     안 그러면 줄 세우기는 O 쪽에 두고 칸에는 X 가 찍혀 섞여 보입니다 */
+  photoUrls.forEach((u, k) => { if (!u) out.delete(k); });
   return out;
 }
 
@@ -2010,10 +2038,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
   let repaint = () => {};
   /* 폴더와 저장소에서 한 번에 모아 둡니다 — 그려진 줄만 봐서는
      3,859명을 사진으로 줄 세울 수 없습니다. */
-  async function refreshPhotoNames() {
+  async function refreshPhotoNames(quiet) {
     try {
       havePhoto = await photoNames();
-      if (document.getElementById("abTbl")) repaint();
+      if (!quiet && document.getElementById("abTbl")) repaint();
     } catch (e) {}
   }
 
@@ -2168,6 +2196,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         else { sortDir = -sortDir; }
         markSort();
         shownCount = PAGE;
+        /* 사진 칸은 「누가 사진이 있는지」 목록(havePhoto)으로 세웁니다 — 아직 못 모았거나, 그 사이
+           붙여넣으신 사진·열어 보니 못 읽은 그림이 있을 수 있어 목록을 새로 모은 뒤 그립니다
+           (refreshPhotoNames 가 그립니다). 폴더 자체는 다시 훑지 않습니다 — 새 파일을 넣으셨으면 「이어서 열기」. */
+        if (k === "photo") { say("사진이 있는 분을 앞에 세우는 중…"); refreshPhotoNames(); return; }
         paint();
       }));
 
@@ -2535,8 +2567,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       await show();
       await refreshPhotoNames();
       paintFacesNow();
-      /* 폴더에도 되돌려 저장합니다 — 브라우저를 비워도 남게 */
+      /* 폴더에도 되돌려 저장합니다 — 브라우저를 비워도 남게.
+         저장하면 폴더 목록을 다시 읽게 되므로, 「누가 사진이 있는지」 도 그 뒤에 한 번 더 모읍니다 */
       const saved = await saveToFaceFolder(r.name, blob, r.company);
+      if (saved) refreshPhotoNames();
       say(saved
         ? `${r.name} 님의 사진을 넣었습니다. 9.FACE 폴더에 「${saved}」 로도 저장했습니다.`
         : `${r.name} 님의 사진을 넣었습니다. ` +
@@ -2808,7 +2842,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         if (a) { known.add(a); known.add(photoKey(r.name)); }
       });
       const { n, people, skipped } = await importPhotos(list, (k) => {
-        if (k % 20 === 0) say("얼굴 사진을 담는 중… " + k + "장");
+        if (k % 20 === 0) {
+          say("얼굴 사진을 담는 중… " + k + "장");
+          refreshPhotoNames(true);        // 담는 중에 표를 만지셔도 줄 세우기가 뒤처지지 않게 (그리지는 않습니다)
+        }
       }, known.size ? known : null);
       /* 꾸러미에는 채워 넣은 내용도 들어 있습니다 — 표에 곧바로 얹습니다 */
       rows = dropHidden(applyExtras(rows, await allExtras()), await hiddenKeys());

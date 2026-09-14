@@ -464,5 +464,39 @@ eq("직함 견주기", [AB.samePosition("연구위원 공학박사", "연구위�
 eq("빈 이력이면 아무것도 안 한다", AB.attachHistory([부시장], new Map()).length, 1);
 eq("빈 것", [AB.remHistory(null).size, AB.attachHistory(null, hist), AB.attachHistory(null, null)], [0, [], []]);
 
+/* ── 사진 목록을 나란히 부를 때 ──
+   「사진 있는 사람과 없는 사람 소팅이 안 되… 소팅키를 눌러도 이상하게 섞여 있어」
+   표를 그리며 얼굴을 채우는 쪽과 「누가 사진이 있는지」 모으는 쪽이 동시에 폴더를 읽으면,
+   전에는 뒤엣것이 빈 목록을 받았습니다 — 줄 세우기는 빈 목록으로, O·X 는 진짜 그림으로. */
+console.log("\n── 사진 목록을 나란히 부를 때 ──");
+{
+  const slow = () => new Promise((r) => setTimeout(() => r(d("9.FACE", [f("가나다_가나연구원.jpg"), f("홍길동.jpg")])), 60));
+  AB.__photo.useDir(slow);
+  const [a, b, c] = await Promise.all([AB.photoNames(), AB.photoNames(), AB.photoNames()]);
+  eq("★ 같이 부른 셋 모두 그림 둘을 본다", [a.size, b.size, c.size], [2, 2, 2]);
+  eq("그 뒤에 부른 것도", (await AB.photoNames()).size, 2);
+  /* 사진 칸으로 세우기 — 목록이 갖춰졌으면 있는 사람이 앞에 */
+  const rowsP = [P({ name: "없음" }), P({ name: "홍길동" }), P({ name: "가나다", company: "가나연구원" })];
+  const have = await AB.photoNames();
+  const has = (n, r) => have.has(n) || have.has(n + "|" + ((r && r.company) || ""));   // 열쇠 「이름」 또는 「이름|소속」
+  eq("★ 있는 사람이 먼저 (원래 차례는 지킴)", AB.sortRows(rowsP, "photo", 1, has).map((r) => r.name), ["홍길동", "가나다", "없음"]);
+  eq("거꾸로", AB.sortRows(rowsP, "photo", -1, has).map((r) => r.name), ["없음", "홍길동", "가나다"]);
+  /* 읽는 사이 폴더가 바뀌면(reset) 옛것이 덮지 않는다 */
+  AB.__photo.useDir(() => new Promise((r) => setTimeout(() => r(d("F", [f("옛것.jpg")])), 60)));
+  const first = AB.photoNames();
+  AB.__photo.useDir(() => Promise.resolve(d("F", [f("새것.jpg"), f("새것2.jpg")])));
+  const second = await AB.photoNames();
+  eq("바뀌기 전에 부른 것도 옛 목록이 아니라 새 폴더를 받는다", [...await first].sort(), ["새것", "새것2"]);
+  eq("바뀐 뒤에 부른 것은 새 폴더", [...second].sort(), ["새것", "새것2"]);
+  eq("옛 읽기가 끝나도 새 폴더가 남는다", [...await AB.photoNames()].sort(), ["새것", "새것2"]);
+  /* 읽는 중에 같이 기다리던 쪽(joiner)도, 그 사이 폴더가 바뀌면 새 폴더를 받는다 */
+  AB.__photo.useDir(() => new Promise((r) => setTimeout(() => r(d("F", [f("옛것.jpg")])), 60)));
+  const maker = AB.photoNames();                       // 읽기를 시작한 쪽
+  const joiner = AB.photoNames();                      // 같은 읽기를 같이 기다리는 쪽
+  await new Promise((r) => setTimeout(r, 10));
+  AB.__photo.useDir(() => Promise.resolve(d("F", [f("새것.jpg")])));   // 기다리는 사이 폴더가 바뀜
+  eq("★ 시작한 쪽도 같이 기다린 쪽도 새 폴더", [[...await maker], [...await joiner]], [["새것"], ["새것"]]);
+}
+
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);
