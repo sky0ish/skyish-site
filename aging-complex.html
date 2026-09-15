@@ -36,8 +36,10 @@
     /* 이름표 — 시군은 진한 회색, 산단은 파란색 (QGIS 화면 그대로) */
     .lbl{background:none;border:0;box-shadow:none;padding:0;white-space:nowrap;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;pointer-events:none}
     .lbl::before{display:none}
-    .lbl-si{color:#323232;font-size:13px;font-weight:500;letter-spacing:.02em;text-shadow:0 0 3px #fff,0 0 2px #fff,0 0 1px #fff}
-    .lbl-dan{color:#3232fa;font-size:11px;font-weight:500;text-shadow:0 0 3px #fff,0 0 2px #fff}
+    .lbl-si{color:#323232;font-size:13px;font-weight:500;letter-spacing:.02em;paint-order:stroke fill;-webkit-text-stroke:3px rgba(255,255,255,.9);
+            text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 0 4px #fff}
+    .lbl-dan{color:#3232fa;font-size:11px;font-weight:600;paint-order:stroke fill;-webkit-text-stroke:3px rgba(255,255,255,.95);
+             text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 0 4px #fff}
     .lbl-st{color:#1c1a19;font-size:11px;background:rgba(255,255,255,.92);border:1px solid #cfc8bf;border-radius:4px;padding:.15rem .4rem;box-shadow:0 1px 3px rgba(0,0,0,.15)}
     .z-lo .lbl-dan{display:none}
     .no-si .lbl-si{display:none}
@@ -337,7 +339,7 @@
             </div>
             <div class="fb-card ag-legend" id="ag-legend-grade"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
           </div>
-          <p class="fb-sub">A·B 등급 폴리곤을 누르면 종합점수·추천 용도·등급 뜻. C·D 는 검은 테두리 산단으로 보입니다. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_grade.png" data-cap="전환 우선순위 등급 지도 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
+          <p class="fb-sub">A·B 등급 폴리곤을 누르면 종합점수·추천 용도·등급 뜻. C·D 는 붉은 반투명 산단 경계로 보입니다. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_grade.png" data-cap="전환 우선순위 등급 지도 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
 
           <h3 style="margin:1.6rem 0 .3rem">30년 이상 노후산단 유형화</h3>
           <div class="fb-card">
@@ -451,6 +453,6 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609160700" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609160800" defer></script>
 </body>
 </html>

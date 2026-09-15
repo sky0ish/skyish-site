@@ -43,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609160700";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609160800";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -604,7 +604,7 @@
   }
 
   /* ---------- 움직이는 미니 지도 넷 — 역세권 1km · 도시쇠퇴도 · 공업 용도지역 · 등급 (① 지도 자료를 다시 씀) ----------
-     공통: 시군 경계·이름, 산단 경계는 검은 테두리(채움 없음)로 기본 표시, 「노후년도 색 채움」·「산단 이름」·「철도역」은 체크박스,
+     공통: 시군 경계·이름, 산단 경계는 붉은 테두리 + 50% 붉은 채움으로 기본 표시, 「노후년도 색 채움」·「산단 이름」·「철도역」은 체크박스,
            범례는 지도 밖 카드, 전체화면 단추, 정적 PNG 는 라이트박스로 보조 */
   var GRADE_TXT = { A: "전환 우선", B: "복합화", C: "고도화 유지", D: "보호·게이트" };
   function miniMaps(d) {
@@ -625,9 +625,9 @@
       });
       var sync = function () { mapEl.classList.toggle("z-lo", mm.getZoom() < DAN_ZOOM); };
       mm.on("zoomend", sync); sync();
-      /* 산단 경계 — 검은 테두리, 채움은 체크박스 */
+      /* 산단 경계 — 붉은 테두리 + 반투명 붉은 채움, 「노후년도 색 채움」 을 켜면 그 색표로 */
       var fillOn = false, cxLayer = null, lblGrp = L.layerGroup();
-      var cxStyle = function (f) { var p = f.properties; return fillOn ? { color: "#232323", weight: 0.9, fillColor: ageColor(p.matched ? p.age : null), fillOpacity: 0.95 } : { color: "#232323", weight: 0.9, fill: false }; };
+      var cxStyle = function (f) { var p = f.properties; return fillOn ? { color: "#232323", weight: 0.9, fillColor: ageColor(p.matched ? p.age : null), fillOpacity: 0.95 } : { color: "#d7301f", weight: 1.5, fillColor: "#d7301f", fillOpacity: 0.5 }; };
       if (cx) {
         cxLayer = L.geoJSON(cx, { pane: "pCx", style: cxStyle, onEachFeature: function (f, l) {
           var p = f.properties;
@@ -644,7 +644,7 @@
       });
       /* 체크박스 목록 — spec.layers 앞에 두고, 공통 셋을 뒤에 */
       var items = spec.layers.concat([
-        { key: "cx", label: "산업단지 경계", sw: "background:#fff;border-color:#232323", on: true, layer: cxLayer },
+        { key: "cx", label: "산업단지 경계", sw: "background:rgba(215,48,31,.5);border-color:#d7301f", on: true, layer: cxLayer },
         { key: "fill", label: "노후년도 색 채움", sw: "background:#c57171;border-color:#232323", on: !!spec.fillOn, toggle: function (v) { fillOn = v; if (cxLayer) cxLayer.setStyle(cxStyle); } },
         { key: "lbl", label: "산단 이름", sw: "background:#3232fa", on: spec.lblOn !== false, layer: lblGrp },
         { key: "st", label: "철도역", sw: "border-radius:50%;background:#fff;border-color:#000", on: spec.stOn !== false, layer: stGrp },
@@ -661,7 +661,7 @@
       if (cxLayer) cxLayer.setStyle(cxStyle);
       var leg = document.getElementById("ag-legend-" + key);
       if (leg) leg.innerHTML = "<h4>" + esc(spec.title) + "</h4>" + spec.legend +
-        "<b>공통</b>" + '<span><i style="background:#fff;border-color:#232323"></i>산업단지 경계</span>' +
+        "<b>공통</b>" + '<span><i style="background:rgba(215,48,31,.5);border-color:#d7301f"></i>산업단지 경계 (붉은 반투명)</span>' +
         '<span><i style="background:linear-gradient(90deg,#fbecec,#970000)"></i>노후년도 색(켜면) 0→62년</span>' + '<span><i class="st"></i>철도역</span>';
       var b = document.getElementById("ag-busy-" + key); if (b) b.hidden = true;
       return mm;
