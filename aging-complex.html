@@ -105,6 +105,13 @@
     .ag-logic div{padding:10px 12px;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:#fff;font-size:.84rem;line-height:1.6}
     .ag-logic b{display:block;font-size:.95rem;margin-bottom:.15rem}
     .ag-logic small{color:#6b6360}
+    .ag-logic .pre{background:#f4f2ef;border-color:#d9d4cf}
+    .ag-stat #ag-rk-pre b small{font-size:.9rem;color:#8b8280}
+    .ag-keep,.ag-gate,.ag-ok{display:inline-block;padding:.05rem .45rem;border-radius:999px;font-size:.74rem;white-space:nowrap}
+    .ag-keep{background:#e5e5e5;color:#4a4a4a;font-weight:700}
+    .ag-gate{background:#f4f2ef;color:#8b8280}
+    .ag-ok{background:#e6f4ea;color:#1e6b3a}
+    .dn{color:#8b8280;font-size:.72rem;white-space:nowrap}
     .tag-out{font-size:.72rem;font-weight:600;color:#92400e;background:#fef3c7;border-radius:999px;padding:.05rem .4rem;vertical-align:1px}
   </style>
 </head>
@@ -318,9 +325,11 @@
           </div>
           <p class="fb-fig__desc">
             산단 206곳과 산단 밖 공업지역 클러스터 109곳(준공업·공업지역 필지를 묶은 것), 모두 315개 단위를
-            <strong>① 노후도 30 · ② 역세권 20 · ③ 도시쇠퇴 15 · ④ 토지특성·종상향 조건 35</strong>의 100점으로 매겨
+            <strong>① 노후도 30 · ② 역세권 20 · ③ 도시쇠퇴·산업체감소 20 · ④ 토지특성·종상향 조건 30</strong>의 100점으로 매겨
             산단과 클러스터 각각 상위 15%를 <strong>A(전환 우선)</strong>, 40%까지를 <strong>B(복합화)</strong>, 나머지를 C(고도화 유지)로 두고,
             지정 20년 미만·건물 3동 미만·가동 중인 산단은 <strong>D(보호·게이트)</strong>로 뺐습니다.
+            점수에 앞서 <strong>0단계 전제 — 산업체 감소</strong>(행정동 사업체가 최대치보다 5% 이상 줄었거나, 사업체 쇠퇴 행정동이 면적의 절반 이상)를 두어,
+            산업이 유지되는 곳은 노후·역세권 점수와 관계없이 <strong>「산업 유지」(C)</strong>로 둡니다.
             상업·주거·업무 용도별로는 가중치를 달리한 점수로 30년 이상 산단 가운데 상위 10을 따로 뽑았습니다.
           </p>
           <div class="ag-stat" id="ag-rk-stat"></div>
@@ -347,14 +356,14 @@
               <table class="fb-table">
                 <thead><tr><th>유형</th><th>개소</th><th>면적 ha</th><th>건물 30년↑</th><th>종합점수</th><th>A/B</th><th>대표 산단</th></tr></thead>
                 <tbody>
-                  <tr><td>Ⅰ 역세권·산업쇠퇴형</td><td class="n">5</td><td class="n">209</td><td class="n">26%</td><td class="n">47.1</td><td class="n">1/2</td><td>송탄, 동두천, 동두천상봉암</td></tr>
-                  <tr><td>Ⅱ 역세권·비쇠퇴형</td><td class="n">4</td><td class="n">1,641</td><td class="n">25%</td><td class="n">48.6</td><td class="n">3/0</td><td>반월특수(안산신도시), 용현, 서울온수</td></tr>
-                  <tr><td>Ⅲ 비역세권·산업쇠퇴형</td><td class="n">25</td><td class="n">900</td><td class="n">15%</td><td class="n">36.5</td><td class="n">0/3</td><td>안성제1, 향남제약, 미양농공단지</td></tr>
-                  <tr><td>Ⅳ 비역세권·비쇠퇴형</td><td class="n">6</td><td class="n">1,458</td><td class="n">33%</td><td class="n">35.8</td><td class="n">0/0</td><td>아산(원정지구), 양주도하, 반월도금</td></tr>
+                  <tr><td>Ⅰ 역세권·산업쇠퇴형</td><td class="n">5</td><td class="n">209</td><td class="n">26%</td><td class="n">45.0</td><td class="n">1/2</td><td>송탄, 동두천, 동두천상봉암</td></tr>
+                  <tr><td>Ⅱ 역세권·비쇠퇴형</td><td class="n">4</td><td class="n">1,641</td><td class="n">25%</td><td class="n">45.4</td><td class="n">1/0</td><td>반월특수(안산신도시), 서울온수, 용현</td></tr>
+                  <tr><td>Ⅲ 비역세권·산업쇠퇴형</td><td class="n">25</td><td class="n">900</td><td class="n">15%</td><td class="n">35.1</td><td class="n">0/2</td><td>안성제1, 향남제약, 미양농공단지</td></tr>
+                  <tr><td>Ⅳ 비역세권·비쇠퇴형</td><td class="n">6</td><td class="n">1,458</td><td class="n">33%</td><td class="n">31.6</td><td class="n">0/0</td><td>아산(원정지구), 양주도하, 반월도금</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="fb-sub" style="margin-top:.5rem">역세권 = 역 1km 안 면적 비율이 있는 곳, 산업쇠퇴 = 도시쇠퇴 8유형 가운데 산업 관련 쇠퇴형. 30년 이상·조성완료 산단 40곳 기준.</p>
+            <p class="fb-sub" style="margin-top:.5rem">역세권 = 역 1km 안 면적 비율이 있는 곳, 산업쇠퇴 = 도시쇠퇴 8유형 가운데 산업 관련 쇠퇴형. 30년 이상·조성완료 산단 40곳 기준. Ⅱ·Ⅳ의 반월특수(안산신도시)·서울온수·아산(원정지구)·양주도하 등은 0단계 전제 미충족으로 「산업 유지」(C).</p>
           </div>
 
           <h3 style="margin:1.6rem 0 .3rem">용도별 전환 상위 10 (30년 이상 산단)</h3>
@@ -454,6 +463,6 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609160900" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609161000" defer></script>
 </body>
 </html>

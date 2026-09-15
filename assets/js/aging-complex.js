@@ -43,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609160900";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609161000";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -227,6 +227,7 @@
         "<b>가장 가까운 역</b><span>" + esc(p.near_st) + " · " + (p.near_m < 1000 ? p.near_m + " m" : (p.near_m / 1000).toFixed(1) + " km") + " (경계까지 직선)</span>" +
         (p.where ? "<b>위치</b><span>" + esc(p.where) + "</span>" : "") +
         (p.n_list > 1 ? "<b>목록 줄</b><span>" + p.n_list + "줄이 이 경계에 붙음</span>" : "") +
+        rankRow(RK["D_" + p.id]) +
       "</div>" +
       '<p class="ag-hint">가까운 역을 누르면 반경 안 산단이 나옵니다.</p>';
   }
@@ -308,6 +309,7 @@
             '<div class="ag-kv"><b>종합점수</b><span>' + p["종합점수"] + " / 100</span>" +
             "<b>추천 용도</b><span>" + esc(p["추천용도"] || "—") + "</span>" +
             (p["노후년도"] ? "<b>노후년도</b><span>" + Math.round(p["노후년도"]) + "년</span>" : "") +
+            preRow(RK[p.unit_id]) +
             "<b>등급 뜻</b><span>" + esc(crit) + "</span></div>" +
             '<p class="ag-hint">⑤ 절의 표에서 점수 구성과 종상향 방식을 볼 수 있습니다.</p>';
         });
@@ -626,12 +628,13 @@
       var sync = function () { mapEl.classList.toggle("z-lo", mm.getZoom() < DAN_ZOOM); };
       mm.on("zoomend", sync); sync();
       /* 산단 경계 — 붉은 테두리 + 반투명 붉은 채움, 「노후년도 색 채움」 을 켜면 그 색표로 */
-      var fillOn = false, cxLayer = null, lblGrp = L.layerGroup();
-      var cxStyle = function (f) { var p = f.properties; return fillOn ? { color: "#232323", weight: 0.9, fillColor: ageColor(p.matched ? p.age : null), fillOpacity: 0.95 } : { color: "#d7301f", weight: 1.5, fillColor: "#d7301f", fillOpacity: 0.5 }; };
+      var fillOn = false, cxLayer = null, lblGrp = L.layerGroup(), cxA = spec.cxFill != null ? spec.cxFill : 0.5;   // 채움 불투명도 (등급 지도는 옅게)
+      var cxStyle = function (f) { var p = f.properties; return fillOn ? { color: "#232323", weight: 0.9, fillColor: ageColor(p.matched ? p.age : null), fillOpacity: 0.95 } : { color: "#d7301f", weight: 1.5, fillColor: "#d7301f", fillOpacity: cxA }; };
       if (cx) {
         cxLayer = L.geoJSON(cx, { pane: "pCx", style: cxStyle, onEachFeature: function (f, l) {
           var p = f.properties;
-          l.bindTooltip(esc(p.name) + (p.matched && p.age != null ? " · 노후 " + p.age + "년" : " · 목록 짝 없음") + (p.near_st ? " · " + esc(p.near_st) + " " + p.near_m + "m" : ""), { sticky: true, className: "lbl-st" });
+          var tip = esc(p.name) + (p.matched && p.age != null ? " · 노후 " + p.age + "년" : " · 목록 짝 없음") + (p.near_st ? " · " + esc(p.near_st) + " " + p.near_m + "m" : "");
+          l.bindTooltip(function () { return tip + (spec.cxTip ? spec.cxTip(p) : ""); }, { sticky: true, className: "lbl-st" });   // 함수 — 열 때 만들어 ⑤ 자료가 늦게 와도 됨
           if (p.lat && p.lon) L.tooltip({ permanent: true, direction: "center", className: "lbl lbl-dan", pane: "pLbl", interactive: false }).setLatLng([p.lat, p.lon]).setContent(p.name).addTo(lblGrp);
         } });
       }
@@ -644,7 +647,7 @@
       });
       /* 체크박스 목록 — spec.layers 앞에 두고, 공통 셋을 뒤에 */
       var items = spec.layers.concat([
-        { key: "cx", label: "산업단지 경계", sw: "background:rgba(215,48,31,.5);border-color:#d7301f", on: true, layer: cxLayer },
+        { key: "cx", label: "산업단지 경계", sw: "background:rgba(215,48,31," + cxA + ");border-color:#d7301f", on: true, layer: cxLayer },
         { key: "fill", label: "노후년도 색 채움", sw: "background:#c57171;border-color:#232323", on: !!spec.fillOn, toggle: function (v) { fillOn = v; if (cxLayer) cxLayer.setStyle(cxStyle); } },
         { key: "lbl", label: "산단 이름", sw: "background:#3232fa", on: spec.lblOn !== false, layer: lblGrp },
         { key: "st", label: "철도역", sw: "border-radius:50%;background:#fff;border-color:#000", on: spec.stOn !== false, layer: stGrp },
@@ -661,9 +664,10 @@
       if (cxLayer) cxLayer.setStyle(cxStyle);
       var leg = document.getElementById("ag-legend-" + key);
       if (leg) leg.innerHTML = "<h4>" + esc(spec.title) + "</h4>" + spec.legend +
-        "<b>공통</b>" + '<span><i style="background:rgba(215,48,31,.5);border-color:#d7301f"></i>산업단지 경계 (붉은 반투명)</span>' +
+        "<b>공통</b>" + '<span><i style="background:rgba(215,48,31,' + cxA + ');border-color:#d7301f"></i>산업단지 경계 (붉은 ' + Math.round(cxA * 100) + '%)</span>' +
         '<span><i style="background:linear-gradient(90deg,#fbecec,#970000)"></i>노후년도 색(켜면) 0→62년</span>' + '<span><i class="st"></i>철도역</span>';
       var b = document.getElementById("ag-busy-" + key); if (b) b.hidden = true;
+      (window.__agMini = window.__agMini || {})[key] = mm;              // 시험·디버그용 손잡이
       return mm;
     }
     var maps = [];
@@ -714,15 +718,21 @@
     if (d.grade) {
       var gm = d.grade.meta || {}, gc = gm["색"] || GRADE_COLOR, crit = gm["등급기준"] || {};
       maps.push(build("grade", {
-        title: "전환 우선순위 등급", fillOn: false, lblOn: true,
-        layers: [{ key: "grade", label: "A·B 등급 폴리곤", sw: "background:#fc8d59;border-color:#d7301f", on: true, layer: L.geoJSON(d.grade, { pane: "pTop",
-          style: function (f) { return { color: f.properties.color || "#d7301f", weight: 2.2, fillColor: f.properties.color || "#d7301f", fillOpacity: 0.7 }; },
+        title: "전환 우선순위 등급", fillOn: false, lblOn: true, cxFill: 0.25,       // 산단 채움을 옅게 — A 색(#d7301f)과 안 겹치게
+        cxTip: function (p) { var rk = RK["D_" + p.id]; return rk ? "<br>" + gradeChip(rk["등급"]) + " " + rk["종합점수"] + "점 · " + reasonChip(rk) : ""; },
+        layers: [{ key: "grade", label: "A·B 등급 폴리곤 (A 는 굵은 테두리)", sw: "background:#fc8d59;border-color:#d7301f", on: true, layer: L.geoJSON(d.grade, { pane: "pTop",
+          style: function (f) { var p = f.properties; return { color: p.color || "#d7301f", weight: p.grade === "A" ? 3 : 2.2, fillColor: p.color || "#d7301f", fillOpacity: 0.7 }; },
           onEachFeature: function (f, l) {
             var p = f.properties;
             l.bindTooltip("<b>" + esc(p.grade) + "</b> " + esc(p.name) + " · " + p["종합점수"] + "점", { sticky: true, className: "lbl-st" });
-            l.bindPopup('<span class="ag-grade" style="background:' + esc(p.color) + '">' + esc(p.grade) + "</span> <b>" + esc(p.name) + "</b><br>종합 " + p["종합점수"] + "점 · 추천 " + esc(p["추천용도"] || "—") + (p["노후년도"] ? " · 노후 " + Math.round(p["노후년도"]) + "년" : "") + "<br><small>" + esc(crit[p.grade] || "") + "</small>");
+            l.bindPopup(function () {
+              var rk = RK[p.unit_id] || {};
+              return '<span class="ag-grade" style="background:' + esc(p.color) + '">' + esc(p.grade) + "</span> <b>" + esc(p.name) + "</b><br>종합 " + p["종합점수"] + "점 · 추천 " + esc(p["추천용도"] || "—") + (p["노후년도"] ? " · 노후 " + Math.round(p["노후년도"]) + "년" : "") +
+                "<br>0단계 전제 " + reasonChip(rk) + (rk.busi_decline != null ? " · 사업체 " + declRate(rk) : "") + (rk.decl_class ? " · " + esc(rk.decl_class) : "") + "<br><small>" + esc(crit[p.grade] || "") + "</small>";
+            });
           } }) }],
-        legend: "<b>등급 (지도에는 A·B 폴리곤만, C·D 는 산단 경계로)</b>" + ["A", "B", "C", "D"].map(function (k) { return '<span><i style="background:' + (gc[k] || "#999") + '"></i>' + k + " " + GRADE_TXT[k] + "</span>"; }).join(""),
+        legend: "<b>등급 (지도에는 A·B 폴리곤만, C·D 는 산단 경계로)</b>" + ["A", "B", "C", "D"].map(function (k) { return '<span><i style="background:' + (gc[k] || "#999") + (k === "A" ? ";border:2px solid #7f1d1d" : "") + '"></i>' + k + " " + GRADE_TXT[k] + "</span>"; }).join("") +
+          '<span style="grid-column:1/-1"><i style="background:#e5e5e5;border-color:#9a9a9a"></i>「산업 유지」 = 0단계 전제(사업체 감소) 미충족 → C (산단 말풍선에 표시)</span>',
         hint: "A·B " + d.grade.features.length + "곳",
       }));
     }
@@ -803,6 +813,24 @@
   /* ---------- ⑤ 전환 우선순위 — 요약 · 로직 · 표 셋 ---------- */
   var GRADE_COLOR = { A: "#d7301f", B: "#fc8d59", C: "#fdcc8a", D: "#bdbdbd" };
   var gradeChip = function (g) { return g ? '<span class="ag-grade" style="background:' + (GRADE_COLOR[g] || "#999") + (g === "C" ? ";color:#5a3a00" : "") + '">' + esc(g) + "</span>" : "—"; };
+  /* ⑤ 자료를 unit_id 로 찾는 표 — ① 지도 옆칸·미니 지도 팝업이 씀 (ranking() 이 채움; 산단은 "D_" + complexes.id) */
+  var RK = {};
+  /* 0단계 전제(산업체 감소) 판정 — 미충족은 회색 배지 「산업 유지」, 게이트는 옅은 글자, 충족은 초록 */
+  var reasonChip = function (r) {
+    var s = (r && r["판정사유"]) || ""; if (!s) return "—";
+    if (s.indexOf("미충족") >= 0) return '<span class="ag-keep" title="' + esc(s) + '">산업 유지</span>';
+    if (s.indexOf("게이트") === 0) return '<span class="ag-gate" title="' + esc(s) + '">게이트</span>';
+    return '<span class="ag-ok" title="' + esc(s) + '">전제 충족</span>';
+  };
+  var declRate = function (r) { return r && r.busi_decline != null ? "↓" + Math.round(r.busi_decline * 100) + "%" : ""; };   // 사업체 최대치 대비 감소율
+  /* 쇠퇴유형 + (↓감소율) — 표 칸 */
+  var declTxt = function (r) { return esc((r.decl_class || "—").replace("지역", "")) + (r.busi_decline != null ? ' <small class="dn">(' + declRate(r) + ")</small>" : ""); };
+  /* 옆칸 줄 — ① 지도 산단(등급·점수·판정) · 등급 폴리곤(판정·쇠퇴유형) */
+  var rankRow = function (rk) { return rk ? "<b>전환 우선순위</b><span>" + gradeChip(rk["등급"]) + " " + rk["종합점수"] + "점 · " + reasonChip(rk) + (rk.busi_decline != null ? " · 사업체 " + declRate(rk) : "") + "</span>" : ""; };
+  var preRow = function (rk) { return rk ? "<b>0단계 전제</b><span>" + reasonChip(rk) + (rk.busi_decline != null ? " · 사업체 " + declRate(rk) : "") + "</span>" + (rk.decl_class ? "<b>쇠퇴유형</b><span>" + esc(rk.decl_class) + "</span>" : "") : ""; };
+  var REASON_COL = { k: "판정사유", label: "0단계 판정", cell: reasonChip };
+  /* 추천 용도 알약 — 「산업 유지(…미충족)」 은 판정 열과 겹치니 짧게 회색으로 */
+  var useChip = function (r) { var u = r["추천용도"] || ""; if (!u) return "—"; return u.indexOf("산업 유지") === 0 ? '<span class="ag-use" style="background:#eee;color:#4a4a4a" title="' + esc(u) + '">산업 유지</span>' : '<span class="ag-use">' + esc(u) + "</span>"; };
   var pct = function (v) { return v == null || v === "" ? "—" : Math.round(v * 100) + "%"; };
   /* 「주거/상업/업무」 세 비율을 한 칸에 — 예: 0%/1%/0% */
   var pct3 = function (a, b, c) { return (a == null && b == null && c == null) ? "—" : [a, b, c].map(function (v) { return v == null ? "–" : Math.round(v * 100) + "%"; }).join("/"); };
@@ -811,12 +839,15 @@
   function sortTable(tblId, rows, cols, sortKey0, dir0, rankCol) {
     var tbl = document.getElementById(tblId); if (!tbl) return;
     var sk = sortKey0, sd = dir0 || -1;
+    var cmp = function (x, y) { return (typeof x === "string" || typeof y === "string") ? String(x).localeCompare(String(y), "ko") : x - y; };
     var draw = function () {
+      var col = cols.filter(function (c) { return c.k === sk; })[0], vk = (col && col.sort) || sk;   // 값 열쇠 (열 열쇠와 다를 수 있음)
       var L2 = rows.slice().sort(function (a, b) {
-        var x = a[sk], y = b[sk];
+        var x = a[vk], y = b[vk];
         if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
-        if (typeof x === "string" || typeof y === "string") return String(x).localeCompare(String(y), "ko") * sd;
-        return (x - y) * sd;
+        var c = cmp(x, y);
+        if (!c && vk !== sk && a[sk] != null && b[sk] != null) c = cmp(a[sk], b[sk]);
+        return c * sd;
       });
       tbl.querySelector("thead").innerHTML = "<tr>" + (rankCol ? "<th>순위</th>" : "") + cols.map(function (c) {
         var on = c.k === sk;
@@ -828,21 +859,21 @@
       tbl.querySelectorAll("th button").forEach(function (b) {
         b.addEventListener("click", function () {
           var k = b.dataset.k, c = cols.filter(function (x) { return x.k === k; })[0];
-          if (sk === k) sd = -sd; else { sk = k; sd = c && c.num ? -1 : 1; }
+          if (sk === k) sd = -sd; else { sk = k; sd = c && (c.num || c.desc) ? -1 : 1; }
           draw();
         });
       });
     };
     draw();
   }
-  var USE_NOTE = "내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).";
+  var USE_NOTE = "쇠퇴유형 괄호 = 행정동 사업체 최대치 대비 감소율(↓). 내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).";
   var RANK_COLS = [
     { k: "name", label: "산업단지", cell: function (r) { return "<b>" + esc(r.name) + "</b>"; } },
     { k: "시군", label: "시군", cell: function (r) { return esc(r["시군"] || ""); } },
     { k: "노후년도", label: "노후", num: true, cell: function (r) { return r["노후년도"] == null ? "—" : Math.round(r["노후년도"]); } },
     { k: "area_ha", label: "ha", num: true, cell: function (r) { return num(Math.round(r.area_ha || 0)); } },
     { k: "dist_station_m", label: "최근접역", num: true, cell: stTxt },
-    { k: "decl_class", label: "쇠퇴유형", cell: function (r) { return esc((r.decl_class || "—").replace("지역", "")); } },
+    { k: "decl_class", sort: "busi_decline", desc: true, label: "쇠퇴유형(사업체↓)", cell: declTxt },
     { k: "semi_ind_ratio", label: "준공업", num: true, cell: function (r) { return pct(r.semi_ind_ratio); } },
     { k: "old30_ratio_gfa", label: "30년↑건물", num: true, cell: function (r) { return pct(r.old30_ratio_gfa); } },
     { k: "res_gfa_ratio", label: "내부 주거/상업/업무", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
@@ -855,21 +886,31 @@
       var danji = items.filter(function (x) { return x.unit_type === "산업단지"; });
       var gdD = { A: 0, B: 0, C: 0, D: 0 }; danji.forEach(function (x) { if (gdD[x["등급"]] != null) gdD[x["등급"]]++; });
       var recA = items.filter(function (x) { return x["등급"] === "A"; }).reduce(function (a, x) { return a + (x["회수가능_공업지역_ha"] || 0); }, 0);
+      items.forEach(function (x) { RK[x.unit_id] = x; });
+      /* 0단계 전제 — 충족 / 미충족(게이트 밖 → 「산업 유지」 C) / 게이트 안에서 미충족 */
+      var preOk = items.filter(function (x) { return x["전제_산업체감소"] === true; }).length,
+          preNo = items.filter(function (x) { return /미충족/.test(x["판정사유"] || ""); }).length,
+          preGate = items.filter(function (x) { return x["전제_산업체감소"] === false && !/미충족/.test(x["판정사유"] || ""); }).length;
       document.getElementById("ag-rk-src").textContent = "단위 " + (m["단위수"] || items.length) + " · 산단 " + (m["산단수"] || "") + " · 기준일 " + (m["기준일"] || "");
       document.getElementById("ag-rk-stat").innerHTML =
         "<div><b>" + (m["단위수"] || items.length) + "</b><span>분석 단위 — 산단 " + (m["산단수"] || "") + " + 산단 밖 클러스터 " + ((m["단위수"] || items.length) - (m["산단수"] || 0)) + "</span></div>" +
         "<div><b>" + (m["30년이상산단"] || "—") + "곳</b><span>30년 이상·조성완료 산단 (핵심 대상)</span></div>" +
         "<div><b>" + ["A", "B", "C", "D"].map(function (k) { return gradeChip(k) + " " + (gd[k] || 0); }).join(" ") + "</b><span>등급 (전체) · 산단만 A " + gdD.A + " · B " + gdD.B + " · C " + gdD.C + " · D " + gdD.D + "</span></div>" +
-        "<div><b>" + num(Math.round(m["회수가능_공업지역_ha"] || 0)) + " ha</b><span>회수 가능 공업지역 (A등급 " + num(Math.round(recA)) + " ha)</span></div>";
+        "<div><b>" + num(Math.round(m["회수가능_공업지역_ha"] || 0)) + " ha</b><span>회수 가능 공업지역 (A등급 " + num(Math.round(recA)) + " ha)</span></div>" +
+        '<div id="ag-rk-pre"><b>' + preOk + ' <small>/</small> ' + preNo + "</b><span>0단계 전제(사업체 감소) 충족 / 미충족 → <span class=\"ag-keep\">산업 유지</span> C" + (preGate ? " · 게이트 D 안 미충족 " + preGate + " 별도" : "") + "</span></div>";
       var lw = m["로직가중치"] || {};
-      var NAMES = { "노후년도": "지정 경과", "old30": "30년↑ 건물", "year_mean": "평균 승인연도", "low_rise": "저층", "dist_sta": "최근접역 거리", "sta1km": "역 1km 면적비", "dist_gtx": "GTX", "decl": "쇠퇴 유형 가중", "semi_ind": "준공업", "ind_zone": "공업지역", "nonind": "비공업 이용", "nonfactory": "비공장 연면적", "vacant": "나지", "gap_res": "주거 지가격차", "far_low": "저용적률", "gap_com": "상업 지가격차", "pop": "인구밀도", "rescom_adj": "주거·상업 인접", "parcel": "필지", "gam": "공공기관 이전" };
-      document.getElementById("ag-rk-logic").innerHTML = Object.keys(lw).map(function (k) {
-        return "<div><b>" + esc(k) + "</b>" + Object.keys(lw[k]).map(function (x) { return esc(NAMES[x] || x) + " " + lw[k][x]; }).join(" · ") + "</div>";
-      }).join("");
+      var NAMES = { "노후년도": "지정 경과", "old30": "30년↑ 건물", "year_mean": "평균 승인연도", "low_rise": "저층", "dist_sta": "최근접역 거리", "sta1km": "역 1km 면적비", "dist_gtx": "GTX", "decl": "쇠퇴 유형 가중", "semi_ind": "준공업", "ind_zone": "공업지역", "nonind": "비공업 이용", "nonfactory": "비공장 연면적", "vacant": "나지", "gap_res": "주거 지가격차", "far_low": "저용적률", "gap_com": "상업 지가격차", "pop": "인구밀도", "rescom_adj": "주거·상업 인접", "parcel": "필지", "gam": "공공기관 이전",
+        "busi_decline": "사업체 감소율", "busi_fac_share": "사업체 쇠퇴 면적비", "busi_dec3y_share": "3년 연속 감소 면적비" };
+      document.getElementById("ag-rk-logic").innerHTML =
+        '<div class="pre"><b>0단계 전제 — 산업체 감소</b>행정동 사업체 최대치 대비 <strong>5%↓</strong> 또는 도시재생법 사업체 쇠퇴 행정동이 <strong>면적 50%↑</strong><br><small>미충족이면 점수와 관계없이 「산업 유지」(C) · 게이트 D 는 별도</small></div>' +
+        Object.keys(lw).map(function (k) {
+          return "<div><b>" + esc(k) + "</b>" + Object.keys(lw[k]).map(function (x) { return esc(NAMES[x] || x) + " " + lw[k][x]; }).join(" · ") + "</div>";
+        }).join("");
       /* 용도별 상위 10 */
       var useCols = RANK_COLS.concat([
         { k: "점수", label: "점수", num: true, cell: function (r) { return "<b>" + r["점수"] + "</b>"; } },
         { k: "등급", label: "등급", cell: function (r) { return gradeChip(r["등급"]); } },
+        REASON_COL,
         { k: "종상향_방식", label: "종상향 방식", small: true, cell: function (r) { return esc(r["종상향_방식"] || "–"); } },
       ]);
       var showUse = function (u) { sortTable("ag-use-tbl", top[u] || [], useCols, "점수", -1, true); };
@@ -885,11 +926,12 @@
       var topCols = RANK_COLS.concat([
         { k: "종합점수", label: "점수", num: true, cell: function (r) { return "<b>" + r["종합점수"] + "</b>"; } },
         { k: "등급", label: "등급", cell: function (r) { return gradeChip(r["등급"]); } },
-        { k: "추천용도", label: "추천", cell: function (r) { return r["추천용도"] ? '<span class="ag-use">' + esc(r["추천용도"]) + "</span>" : "—"; } },
+        REASON_COL,
+        { k: "추천용도", label: "추천", cell: useChip },
         { k: "종상향_방식", label: "종상향 방식", small: true, cell: function (r) { return esc(r["종상향_방식"] || "–"); } },
       ]);
       sortTable("ag-top-tbl", core, topCols, "종합점수", -1, true);
-      document.getElementById("ag-top-note").textContent = "30년 이상·조성완료 산단 " + danji.filter(function (x) { return x["핵심필터_30년노후"]; }).length + "곳 가운데 종합점수 상위 15. D는 게이트(가동 중 등)에 걸려 등급에서 빠진 곳. " + USE_NOTE;
+      document.getElementById("ag-top-note").textContent = "30년 이상·조성완료 산단 " + danji.filter(function (x) { return x["핵심필터_30년노후"]; }).length + "곳 가운데 종합점수 상위 15. D는 게이트(가동 중 등)에 걸려 등급에서 빠진 곳, 「산업 유지」는 0단계 전제(사업체 감소) 미충족으로 C 에 둔 곳. " + USE_NOTE;
       /* 클러스터 상위 15 */
       var cl = items.filter(function (x) { return x.unit_type !== "산업단지"; }).sort(function (a, b) { return (b["종합점수"] || 0) - (a["종합점수"] || 0); }).slice(0, 15);
       var clCols = [
@@ -897,14 +939,15 @@
         { k: "시군", label: "시군", cell: function (r) { return esc(r["시군"] || ""); } },
         { k: "area_ha", label: "ha", num: true, cell: function (r) { return num(Math.round(r.area_ha || 0)); } },
         { k: "dist_station_m", label: "최근접역", num: true, cell: stTxt },
-        { k: "decl_class", label: "쇠퇴유형", cell: function (r) { return esc((r.decl_class || "—").replace("지역", "")); } },
+        { k: "decl_class", sort: "busi_decline", desc: true, label: "쇠퇴유형(사업체↓)", cell: declTxt },
         { k: "semi_ind_ratio", label: "준공업", num: true, cell: function (r) { return pct(r.semi_ind_ratio); } },
         { k: "old30_ratio_gfa", label: "30년↑건물", num: true, cell: function (r) { return pct(r.old30_ratio_gfa); } },
         { k: "res_gfa_ratio", label: "내부 주거/상업/업무", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
         { k: "ring_res_ratio", label: "주변300m 주거/상업/업무", num: true, cell: function (r) { return pct3(r.ring_res_ratio, r.ring_com_ratio, r.ring_off_ratio); } },
         { k: "종합점수", label: "점수", num: true, cell: function (r) { return "<b>" + r["종합점수"] + "</b>"; } },
         { k: "등급", label: "등급", cell: function (r) { return gradeChip(r["등급"]); } },
-        { k: "추천용도", label: "추천", cell: function (r) { return r["추천용도"] ? '<span class="ag-use">' + esc(r["추천용도"]) + "</span>" : "—"; } },
+        REASON_COL,
+        { k: "추천용도", label: "추천", cell: useChip },
       ];
       sortTable("ag-cl-tbl", cl, clCols, "종합점수", -1, true);
     }).catch(function (e) {
