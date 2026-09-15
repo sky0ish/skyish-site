@@ -43,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609160800";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609160900";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -804,6 +804,8 @@
   var GRADE_COLOR = { A: "#d7301f", B: "#fc8d59", C: "#fdcc8a", D: "#bdbdbd" };
   var gradeChip = function (g) { return g ? '<span class="ag-grade" style="background:' + (GRADE_COLOR[g] || "#999") + (g === "C" ? ";color:#5a3a00" : "") + '">' + esc(g) + "</span>" : "—"; };
   var pct = function (v) { return v == null || v === "" ? "—" : Math.round(v * 100) + "%"; };
+  /* 「주거/상업/업무」 세 비율을 한 칸에 — 예: 0%/1%/0% */
+  var pct3 = function (a, b, c) { return (a == null && b == null && c == null) ? "—" : [a, b, c].map(function (v) { return v == null ? "–" : Math.round(v * 100) + "%"; }).join("/"); };
   var stTxt = function (r) { return r.nearest_station ? esc(r.nearest_station) + (r.dist_station_m != null ? ' <span style="color:#8b8280">' + num(Math.round(r.dist_station_m)) + " m</span>" : "") : "—"; };
   /* 정렬되는 표 하나 — cols: [{k, label, cell(r), num}] */
   function sortTable(tblId, rows, cols, sortKey0, dir0, rankCol) {
@@ -833,6 +835,7 @@
     };
     draw();
   }
+  var USE_NOTE = "내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).";
   var RANK_COLS = [
     { k: "name", label: "산업단지", cell: function (r) { return "<b>" + esc(r.name) + "</b>"; } },
     { k: "시군", label: "시군", cell: function (r) { return esc(r["시군"] || ""); } },
@@ -842,7 +845,8 @@
     { k: "decl_class", label: "쇠퇴유형", cell: function (r) { return esc((r.decl_class || "—").replace("지역", "")); } },
     { k: "semi_ind_ratio", label: "준공업", num: true, cell: function (r) { return pct(r.semi_ind_ratio); } },
     { k: "old30_ratio_gfa", label: "30년↑건물", num: true, cell: function (r) { return pct(r.old30_ratio_gfa); } },
-    { k: "nonfactory_gfa_ratio", label: "비공장", num: true, cell: function (r) { return pct(r.nonfactory_gfa_ratio); } },
+    { k: "res_gfa_ratio", label: "내부 주거/상업/업무", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
+    { k: "ring_res_ratio", label: "주변300m 주거/상업/업무", num: true, cell: function (r) { return pct3(r.ring_res_ratio, r.ring_com_ratio, r.ring_off_ratio); } },
   ];
   function ranking() {
     Promise.all([getJSON(D + "analysis/ranking_all.json"), getJSON(D + "analysis/ranking_top10_by_use.json")]).then(function (r) {
@@ -885,7 +889,7 @@
         { k: "종상향_방식", label: "종상향 방식", small: true, cell: function (r) { return esc(r["종상향_방식"] || "–"); } },
       ]);
       sortTable("ag-top-tbl", core, topCols, "종합점수", -1, true);
-      document.getElementById("ag-top-note").textContent = "30년 이상·조성완료 산단 " + danji.filter(function (x) { return x["핵심필터_30년노후"]; }).length + "곳 가운데 종합점수 상위 15. D는 게이트(가동 중 등)에 걸려 등급에서 빠진 곳.";
+      document.getElementById("ag-top-note").textContent = "30년 이상·조성완료 산단 " + danji.filter(function (x) { return x["핵심필터_30년노후"]; }).length + "곳 가운데 종합점수 상위 15. D는 게이트(가동 중 등)에 걸려 등급에서 빠진 곳. " + USE_NOTE;
       /* 클러스터 상위 15 */
       var cl = items.filter(function (x) { return x.unit_type !== "산업단지"; }).sort(function (a, b) { return (b["종합점수"] || 0) - (a["종합점수"] || 0); }).slice(0, 15);
       var clCols = [
@@ -896,6 +900,8 @@
         { k: "decl_class", label: "쇠퇴유형", cell: function (r) { return esc((r.decl_class || "—").replace("지역", "")); } },
         { k: "semi_ind_ratio", label: "준공업", num: true, cell: function (r) { return pct(r.semi_ind_ratio); } },
         { k: "old30_ratio_gfa", label: "30년↑건물", num: true, cell: function (r) { return pct(r.old30_ratio_gfa); } },
+        { k: "res_gfa_ratio", label: "내부 주거/상업/업무", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
+        { k: "ring_res_ratio", label: "주변300m 주거/상업/업무", num: true, cell: function (r) { return pct3(r.ring_res_ratio, r.ring_com_ratio, r.ring_off_ratio); } },
         { k: "종합점수", label: "점수", num: true, cell: function (r) { return "<b>" + r["종합점수"] + "</b>"; } },
         { k: "등급", label: "등급", cell: function (r) { return gradeChip(r["등급"]); } },
         { k: "추천용도", label: "추천", cell: function (r) { return r["추천용도"] ? '<span class="ag-use">' + esc(r["추천용도"]) + "</span>" : "—"; } },
