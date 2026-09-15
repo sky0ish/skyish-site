@@ -19,9 +19,10 @@
   var D = "assets/data/aging/";
   var GG_CENTER = [37.42, 127.05], GG_ZOOM = 9;
   var DAN_ZOOM = 10;                                   // 산단 이름은 이 줌부터
-  /* QGIS 등급 색 그대로 (노후년도 0~62, 10급간) */
+  /* QGIS 등급 색 그대로 (노후년도 0~62, 10급간) — 0~6 만 흰색 대신 아주 옅은 붉은색:
+     흰 바탕에서는 새 산단이 있는지 안 보였습니다 */
   var AGE_CLASSES = [
-    [0, 6, "#ffffff"], [6, 11, "#f3e3e3"], [11, 15, "#e8c6c6"], [15, 19, "#dcaaaa"], [19, 26, "#d18e8e"],
+    [0, 6, "#fbecec"], [6, 11, "#f3e3e3"], [11, 15, "#e8c6c6"], [15, 19, "#dcaaaa"], [19, 26, "#d18e8e"],
     [26, 32, "#c57171"], [32, 36, "#ba5555"], [36, 42, "#ae3939"], [42, 53, "#a31c1c"], [53, 63, "#970000"],
   ];
   var UNMATCHED = "#8f9a9e";
@@ -42,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609160300";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609160400";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
