@@ -85,6 +85,14 @@
     .ag-bul{margin:.4rem 0 0;padding-left:1.1rem;line-height:1.75;font-size:.94rem;color:#4a4442}
     .ag-bul li{margin:.15rem 0}
     .ag-next{border:1px dashed var(--line);border-radius:var(--radius-md);padding:1rem 1.2rem;color:var(--mauve);font-size:.9rem;line-height:1.7}
+    .ag-grade{display:inline-block;min-width:1.5em;text-align:center;padding:.05rem .4rem;border-radius:4px;color:#fff;font-weight:700;font-size:.78rem}
+    .ag-use{display:inline-block;padding:.05rem .45rem;border-radius:999px;font-size:.74rem;background:#eef2ff;color:#3730a3}
+    .fb-table td.s{font-size:.78rem;color:#6b6360;max-width:22ch}
+    .ag-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:.2rem 0 .7rem}
+    .ag-logic{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:.6rem 0 1rem}
+    .ag-logic div{padding:10px 12px;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:#fff;font-size:.84rem;line-height:1.6}
+    .ag-logic b{display:block;font-size:.95rem;margin-bottom:.15rem}
+    .ag-logic small{color:#6b6360}
     .tag-out{font-size:.72rem;font-weight:600;color:#92400e;background:#fef3c7;border-radius:999px;padding:.05rem .4rem;vertical-align:1px}
   </style>
 </head>
@@ -127,6 +135,7 @@
               <label class="fb-check"><input type="checkbox" id="ag-l-pop" checked><span class="sw" style="background:#74c476;border-color:#006d2c"></span>② 인구밀도 격자 (6단계)</label>
               <label class="fb-check"><input type="checkbox" id="ag-l-dec" checked><span class="sw" style="background:#6a2fe0;border-color:#1f1fff"></span>③ 도시쇠퇴도 (8유형)</label>
               <label class="fb-check" id="ag-l-ind-w"><input type="checkbox" id="ag-l-ind" checked><span class="sw" style="background:#e8b450;border-color:#a16207"></span>④ 토지특성 — 공업 용도지역 <span class="fb-fig__src" id="ag-l-ind-n"></span></label>
+              <label class="fb-check" id="ag-l-grade-w"><input type="checkbox" id="ag-l-grade" checked><span class="sw" style="background:#fc8d59;border-color:#d7301f"></span>⑤ 전환 우선순위 A·B 등급 <span class="fb-fig__src" id="ag-l-grade-n"></span></label>
             </fieldset>
           </div>
           <div class="fb-controls">
@@ -268,16 +277,89 @@
           </div>
         </section>
 
-        <!-- ⑤ 다음 그림 자리 — 새 그림은 이 꼴로 한 덩어리씩 더합니다 -->
+        <!-- ⑤ 전환 우선순위 — 4대 로직 100점 · A~D 등급 · 용도별 상위 10 -->
         <section class="fb-fig" id="fig5">
           <div class="fb-fig__head">
             <span class="fb-fig__no">⑤</span>
-            <h2>전환 우선순위 등급 (준비 중)</h2>
-            <span class="fb-fig__src">토지특성 · 건축물 통합 뒤</span>
+            <h2>전환 우선순위 — 4대 로직 100점, A~D 등급, 용도별 상위 10</h2>
+            <span class="fb-fig__src" id="ag-rk-src">자료를 불러오는 중…</span>
+          </div>
+          <p class="fb-fig__desc">
+            산단 206곳과 산단 밖 공업지역 클러스터 109곳(준공업·공업지역 필지를 묶은 것), 모두 315개 단위를
+            <strong>① 노후도 30 · ② 역세권 20 · ③ 도시쇠퇴 15 · ④ 토지특성·종상향 조건 35</strong>의 100점으로 매겨
+            산단과 클러스터 각각 상위 15%를 <strong>A(전환 우선)</strong>, 40%까지를 <strong>B(복합화)</strong>, 나머지를 C(고도화 유지)로 두고,
+            지정 20년 미만·건물 3동 미만·가동 중인 산단은 <strong>D(보호·게이트)</strong>로 뺐습니다.
+            상업·주거·업무 용도별로는 가중치를 달리한 점수로 30년 이상 산단 가운데 상위 10을 따로 뽑았습니다.
+          </p>
+          <div class="ag-stat" id="ag-rk-stat"></div>
+          <div class="ag-logic" id="ag-rk-logic"></div>
+          <div class="fb-chart" style="grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)">
+            <figure class="ag-shot" style="margin-top:0">
+              <img class="ag-zoom" src="assets/data/aging/analysis/fig_framework.png" alt="전환 우선순위 분석의 틀 — 4대 로직과 등급 기준" loading="lazy">
+              <figcaption>분석의 틀 — 4대 로직(100점)과 게이트·등급 기준 (누르면 크게)</figcaption>
+            </figure>
+            <figure class="ag-shot" style="margin-top:0">
+              <img class="ag-zoom" src="assets/data/aging/analysis/map_grade.png" alt="전환 우선순위 A~D 등급 지도" loading="lazy">
+              <figcaption>등급 지도 — A(빨강)·B(주황)·C(살구)·D(회색). ① 지도의 「⑤ 전환 우선순위 A·B 등급」 층으로 확대해 볼 수 있습니다.</figcaption>
+            </figure>
+          </div>
+
+          <h3 style="margin:1.6rem 0 .3rem">30년 이상 노후산단 유형화</h3>
+          <div class="fb-card">
+            <div class="fb-scroll">
+              <table class="fb-table">
+                <thead><tr><th>유형</th><th>개소</th><th>면적 ha</th><th>건물 30년↑</th><th>종합점수</th><th>A/B</th><th>대표 산단</th></tr></thead>
+                <tbody>
+                  <tr><td>Ⅰ 역세권·산업쇠퇴형</td><td class="n">5</td><td class="n">209</td><td class="n">26%</td><td class="n">47.1</td><td class="n">1/2</td><td>송탄, 동두천, 동두천상봉암</td></tr>
+                  <tr><td>Ⅱ 역세권·비쇠퇴형</td><td class="n">4</td><td class="n">1,641</td><td class="n">25%</td><td class="n">48.6</td><td class="n">3/0</td><td>반월특수(안산신도시), 용현, 서울온수</td></tr>
+                  <tr><td>Ⅲ 비역세권·산업쇠퇴형</td><td class="n">25</td><td class="n">900</td><td class="n">15%</td><td class="n">36.5</td><td class="n">0/3</td><td>안성제1, 향남제약, 미양농공단지</td></tr>
+                  <tr><td>Ⅳ 비역세권·비쇠퇴형</td><td class="n">6</td><td class="n">1,458</td><td class="n">33%</td><td class="n">35.8</td><td class="n">0/0</td><td>아산(원정지구), 양주도하, 반월도금</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="fb-sub" style="margin-top:.5rem">역세권 = 역 1km 안 면적 비율이 있는 곳, 산업쇠퇴 = 도시쇠퇴 8유형 가운데 산업 관련 쇠퇴형. 30년 이상·조성완료 산단 40곳 기준.</p>
+          </div>
+
+          <h3 style="margin:1.6rem 0 .3rem">용도별 전환 상위 10 (30년 이상 산단)</h3>
+          <p class="fb-fig__desc" style="margin:.2rem 0 .6rem">상업용은 역세권·상업 지가격차·인구, 주거용은 인구·주거 지가격차·주변 주거, 업무시설용은 역·GTX·공공기관 이전(GAM)에 무게를 둔 점수입니다. 머리글을 누르면 정렬됩니다.</p>
+          <div class="ag-tabs" id="ag-use-tabs">
+            <button type="button" class="chip active" data-use="상업용">상업용</button>
+            <button type="button" class="chip" data-use="주거용">주거용</button>
+            <button type="button" class="chip" data-use="업무시설용">업무시설용</button>
+          </div>
+          <div class="fb-card">
+            <div class="fb-scroll"><table class="fb-table" id="ag-use-tbl"><thead></thead><tbody></tbody></table></div>
+          </div>
+          <figure class="ag-shot">
+            <img class="ag-zoom" src="assets/data/aging/analysis/top10_by_use.png" alt="용도별(상업·주거·업무) 전환 상위 10 산업단지 막대그림" loading="lazy">
+            <figcaption>용도별 상위 10 — 상업용 · 주거용 · 업무시설용 (누르면 크게)</figcaption>
+          </figure>
+
+          <h3 style="margin:1.6rem 0 .3rem">종합 우선순위 상위 15 (30년 이상 산단)</h3>
+          <div class="fb-card">
+            <div class="fb-scroll"><table class="fb-table" id="ag-top-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="fb-sub" style="margin-top:.5rem" id="ag-top-note"></p>
+          </div>
+          <figure class="ag-shot">
+            <img class="ag-zoom" src="assets/data/aging/analysis/top20_danji.png" alt="종합 점수 상위 20 산업단지의 로직별 점수 구성" loading="lazy">
+            <figcaption>상위 20 산단의 로직별 점수 구성 — 노후도 · 역세권 · 도시쇠퇴 · 토지특성 (누르면 크게)</figcaption>
+          </figure>
+
+          <h3 style="margin:1.6rem 0 .3rem">산단 밖 공업지역 클러스터 상위 15</h3>
+          <div class="fb-card">
+            <div class="fb-scroll"><table class="fb-table" id="ag-cl-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="fb-sub" style="margin-top:.5rem">산단이 아닌 준공업·공업지역 필지를 30m 버퍼로 묶은 클러스터(3ha 이상, 과밀억제권역 1ha 이상) 109곳 가운데 종합점수 상위 15.</p>
+          </div>
+        </section>
+
+        <!-- ⑥ 다음 그림 자리 — 새 그림은 이 꼴로 한 덩어리씩 더합니다 -->
+        <section class="fb-fig" id="fig6">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">⑥</span>
+            <h2>다음 그림 (준비 중)</h2>
           </div>
           <p class="ag-next">
-            노후도·역세권·건물 노후 비율·용도지역을 100점 지표로 묶어 산단과 산단 밖 공업지역 클러스터를 A~D 등급으로 나눈 지도가 들어올 자리입니다.
-            새 그림은 <code>&lt;section class="fb-fig"&gt;</code> 한 덩어리를 이 아래에 더하면 같은 꼴로 붙습니다.
+            새 그림은 <code>&lt;section class="fb-fig"&gt;</code> 한 덩어리를 이 위에 더하면 같은 꼴로 붙습니다. 정적 그림은 <code>img.ag-zoom</code> 으로 두면 눌러서 확대됩니다.
           </p>
         </section>
 
@@ -302,6 +384,6 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609160200" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609160300" defer></script>
 </body>
 </html>
