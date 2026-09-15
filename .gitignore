@@ -150,3 +150,6 @@ __pycache__/
 _tpgtest.html
 _histtest.html
 _sorttest.html
+
+# 보고서용 문서 — 홈페이지에 싣지 않습니다
+/*.docx

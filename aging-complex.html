@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>경기도 노후 산업단지 — 역세권과 인구밀도 — Jee-Hyun NAM</title>
+  <meta name="description" content="경기도 산업단지 229곳의 노후년도를 철도역 역세권·인구밀도 격자와 겹쳐 확대해 보는 지도. 역을 누르면 반경 안 산단을 세고, 거리를 잴 수 있습니다.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css?v=202609112000">
+  <!-- 공개 — DATA › 산업 갈래는 가입하지 않은 분도 봅니다. 자료는 공개 자료라 assets/data/aging/ 에 함께 둡니다 -->
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css?v=202609010300">
+  <style>
+    /* ① 지도 — QGIS 화면과 같은 흰 바탕 */
+    .ag-map .fb-map{background:#fff}
+    .ag-grid{display:grid;gap:1rem;grid-template-columns:minmax(0,2.3fr) minmax(280px,1fr)}
+    @media (max-width:900px){.ag-grid{grid-template-columns:minmax(0,1fr)}}
+    .ag-side{max-height:680px;overflow:auto;font-size:.9rem}
+    .ag-side h4{margin:0 0 .3rem;font-size:1rem}
+    .ag-side .sub{color:#6b6360;font-size:.82rem;margin:0 0 .6rem}
+    .ag-list{list-style:none;margin:.5rem 0 0;padding:0}
+    .ag-list li{padding:.42rem 0;border-top:1px solid rgba(0,0,0,.08);cursor:pointer;display:flex;gap:.5rem;align-items:baseline}
+    .ag-list li:hover{background:#f7f4ef}
+    .ag-list .nm{flex:1 1 auto;min-width:0}
+    .ag-list .age{font-size:.76rem;padding:.05rem .4rem;border-radius:999px;color:#fff;background:#8b8280;flex:0 0 auto}
+    .ag-list .km{color:#8b8280;font-variant-numeric:tabular-nums;flex:0 0 auto;font-size:.84rem}
+    .ag-kv{display:grid;grid-template-columns:auto 1fr;gap:.2rem .7rem;font-size:.88rem;margin:.4rem 0 .6rem}
+    .ag-kv b{color:#6b6360;font-weight:500}
+    .ag-hint{color:#6b6360;font-size:.84rem;line-height:1.7}
+    /* 이름표 — 시군은 진한 회색, 산단은 파란색 (QGIS 화면 그대로) */
+    .lbl{background:none;border:0;box-shadow:none;padding:0;white-space:nowrap;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;pointer-events:none}
+    .lbl::before{display:none}
+    .lbl-si{color:#323232;font-size:13px;font-weight:500;letter-spacing:.02em;text-shadow:0 0 3px #fff,0 0 2px #fff,0 0 1px #fff}
+    .lbl-dan{color:#3232fa;font-size:11px;font-weight:500;text-shadow:0 0 3px #fff,0 0 2px #fff}
+    .lbl-st{color:#1c1a19;font-size:11px;background:rgba(255,255,255,.92);border:1px solid #cfc8bf;border-radius:4px;padding:.15rem .4rem;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+    .z-lo .lbl-dan{display:none}
+    .no-si .lbl-si{display:none}
+    .no-dan .lbl-dan{display:none}
+    .measuring .leaflet-container{cursor:crosshair}
+    .ag-ruler{background:#1c1a19;color:#fff;font-size:11px;border:0;border-radius:4px;padding:.15rem .45rem;box-shadow:none;font-variant-numeric:tabular-nums}
+    .ag-ruler::before{display:none}
+    /* 범례 — 두 칸 */
+    .ag-legend{display:grid;grid-template-columns:auto auto;gap:.2rem 1.1rem;max-width:min(420px,80%);align-items:start}
+    .ag-legend b{grid-column:1/-1;font-size:.74rem;color:#6b6360;margin:.25rem 0 .05rem;font-weight:600}
+    .ag-legend span{display:flex;align-items:center;gap:.4rem;font-size:.76rem;white-space:nowrap}
+    .ag-legend i{display:inline-block;width:12px;height:12px;border:1px solid rgba(0,0,0,.3);border-radius:2px;flex:0 0 auto}
+    .ag-legend i.st{border-radius:50%;background:#fff;border:1.5px solid #000;position:relative}
+    .ag-legend i.st::after{content:"";position:absolute;left:3px;top:3px;width:4px;height:4px;border-radius:50%;background:#000}
+    .ag-legend i.zone{background:rgba(255,23,68,.55);border-color:#b3001b}
+    .ag-legend__t{all:unset;grid-column:1/-1;cursor:pointer;font-size:.74rem;font-weight:700;color:var(--teal-text);margin-bottom:.1rem}
+    .ag-legend.folded > *:not(.ag-legend__t){display:none}
+    /* ② 표 */
+    .ag-stat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:0 0 1rem}
+    .ag-stat div{padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-md)}
+    .ag-stat b{display:block;font-size:1.4rem;font-family:var(--font-display);font-weight:400;line-height:1.15}
+    .ag-stat span{font-size:.76rem;color:var(--mauve)}
+    .fb-table td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .fb-table th button{all:unset;cursor:pointer;font:inherit;color:inherit}
+    .fb-table th button:hover{color:var(--teal-text)}
+    .fb-table th.on button{color:var(--teal-text);font-weight:700}
+    .ag-shot{margin-top:1rem;border:1px solid var(--line-soft);border-radius:var(--radius-md);overflow:hidden;background:#fff}
+    .ag-shot img{display:block;width:100%;height:auto}
+    .ag-shot figcaption{padding:.6rem .9rem;font-size:.82rem;color:var(--mauve);border-top:1px solid var(--line-soft)}
+    .ag-bul{margin:.4rem 0 0;padding-left:1.1rem;line-height:1.75;font-size:.94rem;color:#4a4442}
+    .ag-bul li{margin:.15rem 0}
+    .ag-next{border:1px dashed var(--line);border-radius:var(--radius-md);padding:1rem 1.2rem;color:var(--mauve);font-size:.9rem;line-height:1.7}
+    .tag-out{font-size:.72rem;font-weight:600;color:#92400e;background:#fef3c7;border-radius:999px;padding:.05rem .4rem;vertical-align:1px}
+  </style>
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <article class="section fb-wrap">
+      <div class="container container--wide">
+        <span class="eyebrow">Data Analysis</span>
+        <h1 class="fb-title">[경기도 노후 산업단지 — 역세권과 인구밀도]</h1>
+        <p class="fb-lead">
+          경기도 산업단지 경계를 <strong>지정 후 몇 년이 지났는지(노후년도)</strong>로 색칠하고,
+          철도역 307곳과 <strong>인구 100m 격자</strong>를 같은 지도에 겹쳤습니다.
+          휠로 확대하면 QGIS 화면처럼 시군·산단 이름이 보이고, <strong>역을 누르면 반경 안의 산단</strong>을 세어 주며,
+          <strong>거리 재기</strong>로 아무 두 점 사이를 잴 수 있습니다. 그림은 앞으로 계속 보강합니다.
+        </p>
+        <p class="fb-crumb" style="margin-top:1.2rem">
+          <a class="btn btn--ghost" href="pictures.html?cat=industry">← 목록으로</a>
+          <a class="btn btn--ghost" href="defense-cluster.html">방위산업 클러스터 →</a>
+        </p>
+
+        <!-- ① 노후산단 × 역세권 × 인구밀도 -->
+        <section class="fb-fig" id="fig1">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">①</span>
+            <h2>노후 산업단지 × 철도역 역세권 × 인구밀도 격자</h2>
+            <span class="fb-fig__src" id="ag-src">자료를 불러오는 중…</span>
+          </div>
+          <p class="fb-fig__desc">
+            산단은 <strong>노후년도(2026 − 지정 연도)</strong>가 클수록 진한 붉은색, 인구 격자는 <strong>인구밀도가 높을수록 진한 초록색</strong>입니다.
+            체크를 끄고 켜서 두 층을 따로 또는 겹쳐서 보실 수 있습니다.
+            <strong>역세권 1km 안 산단 영역</strong>은 역 반경 1km 원과 산단 경계가 겹치는 부분만 잘라 붉게 얹은 것입니다.
+            시군 이름은 진한 회색, 산단 이름은 파란색으로 QGIS 화면과 같게 두었습니다 (산단 이름은 확대해야 나옵니다).
+          </p>
+          <div class="fb-controls">
+            <fieldset>
+              <legend>겹쳐 볼 층</legend>
+              <label class="fb-check"><input type="checkbox" id="ag-l-cx" checked><span class="sw" style="background:#c57171;border-color:#232323"></span>노후산단 (노후년도 색)</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-zone" checked><span class="sw" style="background:rgba(255,23,68,.6);border-color:#b3001b"></span>역세권 1km 안 산단 영역</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-st" checked><span class="sw" style="border-radius:50%;background:#fff;border-color:#000"></span>철도역</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-pop" checked><span class="sw" style="background:#74c476;border-color:#006d2c"></span>인구밀도 격자 (6단계)</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-emd" checked><span class="sw" style="background:#fff;border-color:rgba(0,0,0,.35)"></span>읍면동 경계</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-lsi" checked><span class="sw" style="background:#323232"></span>시군 이름</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-ldan" checked><span class="sw" style="background:#3232fa"></span>산단 이름</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-base"><span class="sw" style="background:#e5e3df"></span>배경지도</label>
+            </fieldset>
+          </div>
+          <div class="fb-controls">
+            <fieldset>
+              <legend>역세권 반경</legend>
+              <button type="button" class="chip" data-r="500">500m</button>
+              <button type="button" class="chip active" data-r="1000">1km</button>
+              <button type="button" class="chip" data-r="1500">1.5km</button>
+              <button type="button" class="chip" data-r="2000">2km</button>
+              <span class="fb-fig__src">역을 누르면 원을 그리고 안에 걸치는 산단을 셉니다</span>
+            </fieldset>
+            <fieldset>
+              <legend>거리 재기</legend>
+              <button type="button" class="chip" id="ag-measure">📏 재기 시작</button>
+              <button type="button" class="chip" id="ag-clear">지우기</button>
+              <span class="fb-fig__src" id="ag-measure-hint">지도를 차례로 누르면 선이 이어지고, 두 번 누르면 끝납니다</span>
+            </fieldset>
+          </div>
+          <div class="ag-grid">
+            <div class="fb-mapbox ag-map">
+              <div class="fb-map" id="ag-map0"></div>
+              <div class="fb-legend ag-legend" id="ag-legend0"></div>
+              <div class="fb-busy" id="ag-busy0">자료를 불러오는 중입니다…</div>
+            </div>
+            <div class="fb-card ag-side" id="ag-side">
+              <h4>역세권 · 거리</h4>
+              <p class="ag-hint">역을 누르면 반경 안 산단이 여기에 나옵니다. 산단을 누르면 노후년도와 가장 가까운 역이, 빈 곳을 누르면 그 자리의 인구밀도가 나옵니다.</p>
+            </div>
+          </div>
+          <p class="fb-fig__src" style="margin-top:.6rem">
+            자료: 산업입지정보망 산단 경계(DAM_DAN)·목록(2026), 경기 철도역 307(GTX 포함), SGIS 인구 100m 격자, 2026 행정구역.
+            노후년도 = 2026 − 지정 연도. 회색은 경계는 있으나 목록과 아직 짝이 맞지 않은 곳.
+          </p>
+        </section>
+
+        <!-- ② 역세권 1km 안 산단 — 표 -->
+        <section class="fb-fig" id="fig2">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">②</span>
+            <h2>역세권(철도역 1km) 안에 들어오는 산업단지</h2>
+            <span class="fb-fig__src" id="ag-tbl-src">—</span>
+          </div>
+          <p class="fb-fig__desc">
+            철도역 307곳의 반경 1km 원과 경기 산단 경계 206곳을 교차해, <strong>역세권에 걸치는 면적</strong>과 그 비율을 산단마다 셌습니다.
+            노후년도가 크고(30년 이상) 역세권 비율이 높은 곳이 역세권 상업·업무 복합 전환의 1차 후보이고,
+            지정 10년 안쪽의 새 산단은 역세권이라도 보호·고도화 대상입니다. 머리글을 누르면 그 칸으로 줄을 세웁니다.
+          </p>
+          <div class="ag-stat" id="ag-stat"></div>
+          <div class="fb-card">
+            <div class="fb-scroll">
+              <table class="fb-table" id="ag-tbl">
+                <thead><tr>
+                  <th scope="col"><button type="button" data-k="DAN_NAME">산업단지</button></th>
+                  <th scope="col"><button type="button" data-k="단지유형">유형</button></th>
+                  <th scope="col"><button type="button" data-k="노후년도">노후년도</button></th>
+                  <th scope="col"><button type="button" data-k="산단면적_ha">산단면적 ha</button></th>
+                  <th scope="col"><button type="button" data-k="역세권면적_ha">역세권 내 ha</button></th>
+                  <th scope="col"><button type="button" data-k="역세권비율">비율</button></th>
+                  <th scope="col"><button type="button" data-k="역세권_역">해당 역</button></th>
+                  <th scope="col"><button type="button" data-k="최근접역거리_m">가장 가까운 역</button></th>
+                </tr></thead>
+                <tbody id="ag-tbody"></tbody>
+              </table>
+            </div>
+            <p class="fb-sub" id="ag-tbl-note" style="margin-top:.6rem"></p>
+          </div>
+          <figure class="ag-shot">
+            <img src="assets/data/aging/analysis/map_station_1km.png" alt="철도역 1km 역세권과 겹치는 경기도 산업단지 영역을 붉게 표시한 지도" loading="lazy">
+            <figcaption>같은 자료로 그린 정적 지도 — 역세권 1km 안 산단 영역(붉은색). 위 ① 지도에서 「역세권 1km 안 산단 영역」 층과 같습니다.</figcaption>
+          </figure>
+        </section>
+
+        <!-- ③ 노후도 현황 · 자료 -->
+        <section class="fb-fig" id="fig3">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">③</span>
+            <h2>경기도 산업단지 노후도 현황과 자료</h2>
+            <span class="fb-fig__src">목록 기준 · 2026년</span>
+          </div>
+          <div class="fb-chart" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+            <div class="fb-card">
+              <h3>노후도 현황</h3>
+              <ul class="ag-bul">
+                <li>경기도 산단 <strong>229개</strong> (일반 194 · 도시첨단 17 · 국가 17 · 농공 1)</li>
+                <li>지정 후 <strong>20년 이상 83개(36%)</strong>, <strong>30년 이상 47개(21%)</strong>, 40년 이상 13개</li>
+                <li>1970~80년대 지정된 반월·시화(안산·시흥), 아산(평택), 성남일반, 서울온수(부천), 안성1·2 등은 도시 안쪽으로 편입돼 주거지와 섞여 있음</li>
+                <li>과밀억제권역 14개 시의 20년 이상 산단은 11개 — 이곳 공업지역은 새로 지정할 수 없는 물량이라 전환 시 회수 가치가 가장 큼</li>
+                <li>분석 목적: 첨단산단 조성에 필요한 공업지역 물량을, 산업기능을 잃은 노후산단·공업지역의 주거·상업 전환으로 회수해 재배분하는 방안의 공간 근거</li>
+              </ul>
+            </div>
+            <div class="fb-card">
+              <h3>구축한 자료</h3>
+              <ul class="ag-bul">
+                <li>산단 목록 1,475 → 지오코딩 1,447 성공(네이버 1,403 · 카카오 44); 경계(DAM_DAN 1,363)와 5단계 매칭 — 경기 229 중 223 짝</li>
+                <li>노후년도 = 2026 − 지정 연도 (목록의 지정일 기준)</li>
+                <li>철도역 307 (GTX 포함) · SGIS 인구 100m 격자 1,029,094칸 · 2026 시도·시군구·읍면동</li>
+                <li>토지특성(경기 약 450만 필지)·건축물(2,298,133동)은 통합 중 — 끝나면 전환 우선순위(4축 지표, A~D 등급)를 여기에 더합니다</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ④ 다음 그림 자리 — 새 그림은 이 꼴로 한 덩어리씩 더합니다 -->
+        <section class="fb-fig" id="fig4">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">④</span>
+            <h2>전환 우선순위 등급 (준비 중)</h2>
+            <span class="fb-fig__src">토지특성 · 건축물 통합 뒤</span>
+          </div>
+          <p class="ag-next">
+            노후도·역세권·건물 노후 비율·용도지역을 100점 지표로 묶어 산단과 산단 밖 공업지역 클러스터를 A~D 등급으로 나눈 지도가 들어올 자리입니다.
+            새 그림은 <code>&lt;section class="fb-fig"&gt;</code> 한 덩어리를 이 아래에 더하면 같은 꼴로 붙습니다.
+          </p>
+        </section>
+
+        <p class="placeholder-note" lang="ko" style="margin-top:2rem">
+          ✎ 경계는 산업입지정보망 단지경계(DAM_DAN)이고 목록과 이름·위치로 짝을 맞춘 것이라, 지구 나눔이 다른 곳(반월·시화, 아산 등)은 한 경계에 목록 여러 줄이 붙습니다.
+          역세권 거리는 직선거리이며, 인구밀도는 100m 격자 인구 × 100 으로 셈한 명/㎢ 입니다.
+        </p>
+
+      </div>
+    </article>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
+  <script src="assets/js/main.js?v=202609121200" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609160100" defer></script>
+</body>
+</html>
