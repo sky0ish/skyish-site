@@ -387,10 +387,42 @@
           </div>
         </section>
 
-        <!-- ⑥ 다음 그림 자리 — 새 그림은 이 꼴로 한 덩어리씩 더합니다 -->
+        <!-- ⑥ 준공업지역의 실제 기능 판정 — 주거기능전환지역 -->
         <section class="fb-fig" id="fig6">
           <div class="fb-fig__head">
             <span class="fb-fig__no">⑥</span>
+            <h2>준공업지역의 실제 기능 판정 — 주거기능전환지역</h2>
+            <span class="fb-fig__src" id="ag-rs-src">자료를 불러오는 중…</span>
+          </div>
+          <p class="fb-fig__desc">
+            서울시 준공업지역 산업기반평가모델(주거기능전환지역 25개 행정동)과 같은 방식으로, 토지특성정보의 용도지역(<strong>준공업지역 1,907 ha · 8,026필지</strong>)과
+            PNU로 조인한 건축물의 <strong>실제 용도(연면적)</strong>를 행정동별로 집계해 판정했습니다.
+            기준: <strong>주거 연면적 ≥ 50% · 산업 ≤ 20% → 주거기능전환지역</strong>, 주거+상업근생 ≥ 60% · 산업 ≤ 25% → 주거·상업 복합전환지역, 산업 ≥ 50% → 산업기능유지지역,
+            산업 30~50% → 주공혼재(산업우세), 그 외 → 주공혼재(주거우세). 1 ha 미만이거나 용도를 확인한 건물이 10동 미만이면 판정에서 뺐습니다.
+          </p>
+          <div class="ag-stat" id="ag-rs-stat"></div>
+          <div class="fb-controls ag-mini-ctl" id="ag-ctl-resid" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
+          <div class="ag-mini" style="margin-top:.5rem">
+            <div class="fb-mapbox" id="ag-box-resid">
+              <div class="fb-map" id="ag-map-resid"></div>
+              <button type="button" class="ag-fs" data-fs="ag-box-resid" title="전체화면">⛶ 전체화면</button>
+              <div class="fb-busy" id="ag-busy-resid">자료를 불러오는 중입니다…</div>
+            </div>
+            <div class="fb-card ag-legend" id="ag-legend-resid"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
+          </div>
+          <p class="fb-sub">행정동 폴리곤을 누르면 판정과 주거·산업·상업 연면적 비율. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_residential_shift.png" data-cap="준공업지역 실제 기능 판정 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
+          <h3 style="margin:1.4rem 0 .3rem">행정동별 판정 표</h3>
+          <div class="fb-card">
+            <div class="ag-tabs" id="ag-rs-tabs"></div>
+            <div class="fb-scroll"><table class="fb-table" id="ag-rs-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="fb-sub" style="margin-top:.5rem" id="ag-rs-note"></p>
+          </div>
+        </section>
+
+        <!-- ⑦ 다음 그림 자리 — 새 그림은 이 꼴로 한 덩어리씩 더합니다 -->
+        <section class="fb-fig" id="fig7">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">⑦</span>
             <h2>다음 그림 (준비 중)</h2>
           </div>
           <p class="ag-next">
@@ -419,6 +451,6 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609160600" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609160700" defer></script>
 </body>
 </html>

@@ -43,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609160600";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609160700";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -123,6 +123,7 @@
       getJSON(D + "analysis/decline_8class.json").catch(function () { return null; }),
       getJSON(D + "analysis/industrial_zone.json").catch(function () { return null; }),
       getJSON(D + "analysis/grade_area.json").catch(function () { return null; }),
+      getJSON(D + "analysis/residential_shift.json").catch(function () { return null; }),
     ]).then(function (r) {
       drawBoundaries(r[0], r[1], r[2]);
       drawPop(r[5]);
@@ -136,7 +137,8 @@
       legend();
       wire();
       lightbox();
-      miniMaps({ sig: r[1], cx: r[3], st: r[4], zone: r[6], dec: r[7], ind: r[8], grade: r[9] });
+      miniMaps({ sig: r[1], cx: r[3], st: r[4], zone: r[6], dec: r[7], ind: r[8], grade: r[9], resid: r[10] });
+      residential(r[10]);
       busy(null);
       var n = r[3].features.length, m = r[3].features.filter(function (f) { return f.properties.matched; }).length;
       document.getElementById("ag-src").textContent = "산단 경계 " + n + "곳(목록 짝 " + m + ") · 철도역 " + r[4].n + " · 인구 100m 격자";
@@ -724,6 +726,26 @@
         hint: "A·B " + d.grade.features.length + "곳",
       }));
     }
+    /* 준공업지역 실제 기능 판정 */
+    if (d.resid) {
+      var rm = d.resid.meta || {}, rc = rm["색"] || {}, rn = rm["판정수"] || {}, rk = rm["판정기준"] || {};
+      var rorder = Object.keys(rc);
+      maps.push(build("resid", {
+        title: "준공업지역 실제 기능 판정", fillOn: false, lblOn: true, stOn: false,
+        layers: [{ key: "resid", label: "판정 (행정동별 준공업 필지 묶음)", sw: "background:#c0392b;border-color:#7f1d1d", on: true, layer: L.geoJSON(d.resid, { pane: "pTop",
+          style: function (f) { return { color: "rgba(0,0,0,.35)", weight: 0.6, fillColor: f.properties.color || "#999", fillOpacity: 0.85 }; },
+          onEachFeature: function (f, l) {
+            var p = f.properties, pc = function (v) { return v == null ? "—" : Math.round(v * 100) + "%"; };
+            l.bindTooltip(esc(p.name) + " · " + esc(p["판정"]), { sticky: true, className: "lbl-st" });
+            l.bindPopup("<b>" + esc(p.name) + "</b><br>" + '<span style="display:inline-block;width:10px;height:10px;border:1px solid rgba(0,0,0,.3);vertical-align:-1px;background:' + esc(p.color) + '"></span> ' + esc(p["판정"]) +
+              "<br>준공업 " + num(Math.round(p["준공업면적_ha"] * 10) / 10) + " ha · 필지 " + num(p["필지수"]) + " · 건물 " + num(Math.round(p["건물수"] || 0)) + "(용도 확인 " + num(Math.round(p["용도확인건물수"] || 0)) + ")" +
+              "<br>연면적 — 주거 " + pc(p["주거_연면적비율"]) + " · 산업 " + pc(p["산업_연면적비율"]) + " · 상업근생 " + pc(p["상업근생_연면적비율"]) +
+              "<br>30년 이상 건물 " + pc(p["건물30년이상비율"]) + (p["쇠퇴유형"] ? " · " + esc(p["쇠퇴유형"]) : ""));
+          } }) }],
+        legend: "<b>판정 · 행정동 수</b>" + rorder.map(function (k) { return '<span title="' + esc(rk[k] || "") + '"><i style="background:' + rc[k] + '"></i>' + esc(k) + "<em>" + (rn[k] != null ? rn[k] : "") + "</em></span>"; }).join(""),
+        hint: "행정동 " + d.resid.features.length + "곳 · 준공업 " + num(rm["준공업면적_ha"] || 0) + " ha",
+      }));
+    }
     /* 전체화면 — 나갈 때 크기 다시 셈 */
     document.querySelectorAll(".ag-fs[data-fs]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -736,6 +758,46 @@
       setTimeout(function () { maps.forEach(function (mm) { if (mm) mm.invalidateSize(); }); }, 150);
       document.querySelectorAll(".ag-fs[data-fs]").forEach(function (b) { b.textContent = document.fullscreenElement && document.fullscreenElement.id === b.dataset.fs ? "✕ 전체화면 끝" : "⛶ 전체화면"; });
     });
+  }
+
+  /* ---------- ⑥ 준공업지역 실제 기능 판정 — 판정별 수 · 표 ---------- */
+  function residential(geo) {
+    var src = document.getElementById("ag-rs-src");
+    if (!geo) { if (src) src.textContent = "자료가 아직 없습니다"; return; }
+    var m = geo.meta || {}, rc = m["색"] || {}, rn = m["판정수"] || {}, rk = m["판정기준"] || {};
+    if (src) src.textContent = "행정동 " + geo.features.length + "곳 · 준공업지역 " + num(m["준공업면적_ha"] || 0) + " ha · 기준일 " + (m["기준일"] || "");
+    var ORDER = ["주거기능전환지역", "주거·상업 복합전환지역", "주공혼재지역(주거우세)", "주공혼재지역(산업우세)", "산업기능유지지역", "소규모(판정 제외)"];
+    document.getElementById("ag-rs-stat").innerHTML = ORDER.filter(function (k) { return rn[k] != null; }).map(function (k) {
+      return '<div><b><span style="display:inline-block;width:12px;height:12px;border:1px solid rgba(0,0,0,.3);border-radius:2px;vertical-align:-1px;margin-right:.3rem;background:' + (rc[k] || "#999") + '"></span>' + rn[k] + "곳</b><span>" + esc(k) + (rk[k] ? " — " + esc(rk[k]) : "") + "</span></div>";
+    }).join("");
+    getJSON(D + "analysis/residential_shift_table.json").then(function (t) {
+      var rows = (t.items || []).map(function (r) { var o = {}; Object.keys(r).forEach(function (k) { o[k] = r[k]; }); o.name = o["행정동"]; return o; });
+      var pc = function (v) { return v == null ? "—" : Math.round(v * 100) + "%"; };
+      var cols = [
+        { k: "name", label: "행정동", cell: function (r) { return "<b>" + esc(r.name) + "</b>"; } },
+        { k: "판정", label: "판정", cell: function (r) { return '<span style="display:inline-block;width:10px;height:10px;border:1px solid rgba(0,0,0,.3);vertical-align:-1px;margin-right:.3rem;background:' + (rc[r["판정"]] || "#999") + '"></span>' + esc((r["판정"] || "").replace("지역", "")); } },
+        { k: "준공업면적_ha", label: "준공업 ha", num: true, cell: function (r) { return num(Math.round((r["준공업면적_ha"] || 0) * 10) / 10); } },
+        { k: "필지수", label: "필지", num: true, cell: function (r) { return num(r["필지수"] || 0); } },
+        { k: "용도확인건물수", label: "용도 확인 건물", num: true, cell: function (r) { return num(Math.round(r["용도확인건물수"] || 0)) + "/" + num(Math.round(r["건물수"] || 0)); } },
+        { k: "주거_연면적비율", label: "주거 연면적", num: true, cell: function (r) { return pc(r["주거_연면적비율"]); } },
+        { k: "산업_연면적비율", label: "산업 연면적", num: true, cell: function (r) { return pc(r["산업_연면적비율"]); } },
+        { k: "상업근생_연면적비율", label: "상업근생", num: true, cell: function (r) { return pc(r["상업근생_연면적비율"]); } },
+        { k: "건물30년이상비율", label: "30년↑건물", num: true, cell: function (r) { return pc(r["건물30년이상비율"]); } },
+        { k: "쇠퇴유형", label: "쇠퇴유형", cell: function (r) { return esc((r["쇠퇴유형"] || "—").replace("지역", "")); } },
+      ];
+      var cur = "판정됨";
+      var show = function () {
+        var L2 = cur === "모두" ? rows : rows.filter(function (r) { return cur === "판정됨" ? r["판정"] !== "소규모(판정 제외)" : r["판정"] === cur; });
+        sortTable("ag-rs-tbl", L2, cols, "주거_연면적비율", -1, true);
+        document.getElementById("ag-rs-note").textContent = L2.length + "곳 · 주거 연면적 비율이 큰 차례(머리글을 누르면 바뀜). 비율은 용도를 확인한 건물의 연면적 기준.";
+      };
+      var tabs = [["판정됨", "판정된 47곳"], ["주거기능전환지역", "주거기능전환"], ["주거·상업 복합전환지역", "주거·상업 복합"], ["산업기능유지지역", "산업기능유지"], ["모두", "소규모 포함 전체"]];
+      document.getElementById("ag-rs-tabs").innerHTML = tabs.map(function (x) { return '<button type="button" class="chip' + (x[0] === cur ? " active" : "") + '" data-rs="' + esc(x[0]) + '">' + esc(x[1]) + "</button>"; }).join("");
+      document.querySelectorAll("#ag-rs-tabs [data-rs]").forEach(function (b) {
+        b.addEventListener("click", function () { cur = b.dataset.rs; document.querySelectorAll("#ag-rs-tabs [data-rs]").forEach(function (x) { x.classList.toggle("active", x === b); }); show(); });
+      });
+      show();
+    }).catch(function (e) { document.getElementById("ag-rs-note").textContent = "표 자료를 불러오지 못했습니다 — " + e.message; });
   }
 
   /* ---------- ⑤ 전환 우선순위 — 요약 · 로직 · 표 셋 ---------- */
