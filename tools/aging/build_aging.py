@@ -9,10 +9,10 @@
   행정경계 : G:/내 드라이브/000.GIS_2024/00.행정구역2026  (시도 · 시군구 · 읍면동, 2026)
 
   만드는 것 (assets/data/aging/ — 공개 자료라 저장소에 함께 둡니다)
-    complexes.json   산업단지 경계 (경기·서울·인천, WGS84, 10m 단순화) + 노후년도·목록 정보 + 가장 가까운 역
+    complexes.json   산업단지 경계 (경기도만 — 위치가 경기도이거나 경계 대부분이 경기 안, WGS84, 8m 단순화) + 노후년도·목록·유치업종 + 가장 가까운 역
     stations.json    역 307 (이름·노선·GTX)
-    sido.json        시도 윤곽 (경기·서울·인천)
-    sig.json         시군구 경계 + 이름 (경기·서울·인천)
+    sido.json        시도 윤곽 (경기도)
+    sig.json         시군구 경계 + 이름 (경기도)
     emd.json         읍면동 경계 (경기)
     pop_density.png  인구밀도 6단계 초록 격자 그림 (WGS84 축에 맞춰 다시 표본화)
     pop_meta.json    그림 범위·급간, 500m 격자 값(클릭해 보기)
@@ -60,12 +60,11 @@ def round_coords(geom, prec):
 
 # ── 행정경계 ─────────────────────────────────────────────
 sido = gpd.read_file(os.path.join(ADM, "시도", "ctp_rvn_utf8.shp"))
-sido = sido[sido["CTP_KOR_NM"].isin(["경기도", "서울특별시", "인천광역시"])]
+sido = sido[sido["CTP_KOR_NM"].isin(["경기도"])]                      # 홈페이지는 경기도만 (2026-09-16 v5)
 gg = sido[sido["CTP_KOR_NM"] == "경기도"].geometry.iloc[0]
-area3 = sido.geometry.union_all()
 dump(sido.rename(columns={"CTP_KOR_NM": "name"}), "sido.json", ["name"], simplify_m=120, prec=4)
 sig = gpd.read_file(os.path.join(ADM, "시군구", "sig_utf8.shp"))
-sig = sig[sig["SIG_CD"].str[:2].isin(["41", "11", "28"])].rename(columns={"SIG_KOR_NM": "name", "SIG_CD": "code"})
+sig = sig[sig["SIG_CD"].str[:2].isin(["41"])].rename(columns={"SIG_KOR_NM": "name", "SIG_CD": "code"})
 dump(sig, "sig.json", ["code", "name"], simplify_m=45, prec=4)
 emd = gpd.read_file(os.path.join(ADM, "읍면동", "emd_utf8.shp"))
 emd = emd[emd["EMD_CD"].str[:2] == "41"].rename(columns={"EMD_KOR_NM": "name", "EMD_CD": "code"})
@@ -94,8 +93,14 @@ say("stations.json", len(stations))
 # ── 산업단지 경계 ─────────────────────────────────────────
 f = os.path.join(SRC, "gpkg", "산업단지목록_경계매칭_노후도추가.gpkg")
 cx = gpd.read_file(f, layer="산업단지경계_매칭").to_crs("EPSG:5179")
-cx = cx[cx.geometry.intersects(area3)]
-say("경계매칭 (경기·서울·인천 안)", len(cx), "rows,", cx["DAN_ID"].nunique(), "unique DAN_ID")
+# 경기도만 — 목록의 위치가 「경기도」 이거나, 경계 면적의 절반 이상이 경기 안 (서울·인천 제외)
+def in_gg(geom):
+    try: return geom.intersection(gg).area >= 0.5 * geom.area
+    except Exception: return geom.representative_point().within(gg)
+cx = cx[cx["위치"].astype(str).str.contains("경기도") | cx.geometry.apply(in_gg)]
+say("경계매칭 (경기도)", len(cx), "rows,", cx["DAN_ID"].nunique(), "unique DAN_ID", "| 연결방법:", dict(cx["경계연결방법"].astype(str).value_counts()))
+def txt(v): return "" if v is None or (isinstance(v, float) and math.isnan(v)) else str(v)
+def numv(v, f=float): return None if v is None or (isinstance(v, float) and math.isnan(v)) else f(v)
 # 같은 경계(DAN_ID)에 목록 줄이 여럿 붙은 것은 하나로 — 노후년도는 가장 오래된(큰) 값, 목록 이름은 모두
 rows = []
 for did, grp in cx.groupby("DAN_ID"):
@@ -104,12 +109,14 @@ for did, grp in cx.groupby("DAN_ID"):
     names = list(dict.fromkeys([str(x) for x in grp["단지명"].dropna()]))
     rows.append({"geometry": r0.geometry, "id": str(did), "name": str(r0["DAN_NAME"]), "lname": " / ".join(names), "type": str(r0["단지유형"] or r0["DANJI_TYPE"] or ""),
                  "status": str(r0["조성"] or ""), "desig": str(r0["지정일"] or "")[:10], "age": int(r0["노후년도"]) if not (isinstance(r0["노후년도"], float) and math.isnan(r0["노후년도"])) else None,
-                 "area": int(r0["dam_area_m2"]) if r0["dam_area_m2"] == r0["dam_area_m2"] else None, "where": str(r0["위치"] or ""), "matched": True, "n_list": int(len(grp))})
+                 "area": int(r0["dam_area_m2"]) if r0["dam_area_m2"] == r0["dam_area_m2"] else None, "where": str(r0["위치"] or ""), "matched": True, "n_list": int(len(grp)),
+                 # v5 새 칸 — 경계 연결 방법(분양현황 단지코드=DAN_ID / 지오코딩 보조), 유치업종 상위 3 과 그 필지면적
+                 "link": txt(r0.get("경계연결방법")), "ind3": txt(r0.get("유치업종_상위3")), "ind3_ha": numv(r0.get("유치업종_필지면적_ha"), lambda v: round(float(v), 1))})
 um = gpd.read_file(f, layer="DAM_DAN_미매칭경계").to_crs("EPSG:5179")
-um = um[um.geometry.intersects(area3)]
+um = um[um.geometry.apply(in_gg)]
 for _, r in um.iterrows():
     rows.append({"geometry": r.geometry, "id": str(r["DAN_ID"]), "name": str(r["DAN_NAME"]), "lname": "", "type": str(r["DANJI_TYPE"] or ""), "status": "", "desig": "",
-                 "age": None, "area": int(r["dam_area_m2"]) if r["dam_area_m2"] == r["dam_area_m2"] else None, "where": "", "matched": False, "n_list": 0})
+                 "age": None, "area": int(r["dam_area_m2"]) if r["dam_area_m2"] == r["dam_area_m2"] else None, "where": "", "matched": False, "n_list": 0, "link": "", "ind3": "", "ind3_ha": None})
 cg = gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:5179")
 # 가장 가까운 역 (경계까지 거리)
 stx = st.geometry.values
@@ -120,7 +127,7 @@ nn = cg.geometry.apply(nearest)
 cg["near_st"] = [x[0] for x in nn]; cg["near_m"] = [x[1] for x in nn]
 rp = cg.geometry.representative_point().to_crs("EPSG:4326"); cg["lon"] = rp.x.round(6); cg["lat"] = rp.y.round(6)   # 이름표 자리
 say("complexes: matched", int(cg["matched"].sum()), "unmatched", int((~cg["matched"]).sum()), "age null", int(cg["age"].isna().sum()))
-dump(cg, "complexes.json", ["id", "name", "lname", "type", "status", "desig", "age", "area", "where", "matched", "n_list", "near_st", "near_m", "lon", "lat"], simplify_m=8)
+dump(cg, "complexes.json", ["id", "name", "lname", "type", "status", "desig", "age", "area", "where", "matched", "n_list", "link", "ind3", "ind3_ha", "near_st", "near_m", "lon", "lat"], simplify_m=8)
 
 # ── 인구밀도 격자 → WGS84 축의 그림 ───────────────────────
 if "--no-pop" in sys.argv: say("pop 건너뜀"); sys.exit(0)

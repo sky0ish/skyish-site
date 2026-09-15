@@ -43,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609161000";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609161130";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -226,7 +226,9 @@
         "<b>면적</b><span>" + (p.area ? num(Math.round(p.area / 10000)) + " ha" : "—") + "</span>" +
         "<b>가장 가까운 역</b><span>" + esc(p.near_st) + " · " + (p.near_m < 1000 ? p.near_m + " m" : (p.near_m / 1000).toFixed(1) + " km") + " (경계까지 직선)</span>" +
         (p.where ? "<b>위치</b><span>" + esc(p.where) + "</span>" : "") +
+        (p.ind3 ? "<b>유치업종 상위 3</b><span>" + esc(p.ind3) + (p.ind3_ha != null ? ' <span style="color:#8b8280">(필지 ' + num(p.ind3_ha) + " ha)</span>" : "") + "</span>" : "") +   // v5 — 유치업종도면
         (p.n_list > 1 ? "<b>목록 줄</b><span>" + p.n_list + "줄이 이 경계에 붙음</span>" : "") +
+        (p.link ? "<b>경계 연결</b><span>" + esc(p.link) + "</span>" : "") +
         rankRow(RK["D_" + p.id]) +
       "</div>" +
       '<p class="ag-hint">가까운 역을 누르면 반경 안 산단이 나옵니다.</p>';

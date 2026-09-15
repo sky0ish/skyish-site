@@ -112,6 +112,7 @@
     .ag-gate{background:#f4f2ef;color:#8b8280}
     .ag-ok{background:#e6f4ea;color:#1e6b3a}
     .dn{color:#8b8280;font-size:.72rem;white-space:nowrap}
+    .ag-basis{margin:-.3rem 0 .8rem;font-size:.8rem;color:#6b6360}
     .tag-out{font-size:.72rem;font-weight:600;color:#92400e;background:#fef3c7;border-radius:999px;padding:.05rem .4rem;vertical-align:1px}
   </style>
 </head>
@@ -123,6 +124,7 @@
       <div class="container container--wide">
         <span class="eyebrow">Data Analysis</span>
         <h1 class="fb-title">[경기도 노후 산업단지 — 역세권과 인구밀도]</h1>
+        <p class="ag-basis" id="ag-basis">자료 기준: 2026-09-16 v5 (경계: 분양현황 단지코드 연결 · 경기도 소재 산단 215곳)</p>
         <p class="fb-lead">
           경기도 산업단지 경계를 <strong>지정 후 몇 년이 지났는지(노후년도)</strong>로 색칠하고,
           철도역 307곳과 <strong>인구 100m 격자</strong>를 같은 지도에 겹쳤습니다.
@@ -213,7 +215,7 @@
             <span class="fb-fig__src" id="ag-tbl-src">—</span>
           </div>
           <p class="fb-fig__desc">
-            철도역 307곳의 반경 1km 원과 경기 산단 경계 206곳을 교차해, <strong>역세권에 걸치는 면적</strong>과 그 비율을 산단마다 셌습니다.
+            철도역 307곳의 반경 1km 원과 경기 산단 경계 215곳을 교차해, <strong>역세권에 걸치는 면적</strong>과 그 비율을 산단마다 셌습니다.
             노후년도가 크고(30년 이상) 역세권 비율이 높은 곳이 역세권 상업·업무 복합 전환의 1차 후보이고,
             지정 10년 안쪽의 새 산단은 역세권이라도 보호·고도화 대상입니다. 머리글을 누르면 그 칸으로 줄을 세웁니다.
           </p>
@@ -270,7 +272,7 @@
             <div class="fb-card">
               <h3>구축한 자료</h3>
               <ul class="ag-bul">
-                <li>산단 목록 1,475 → 지오코딩 1,447 성공(네이버 1,403 · 카카오 44); 경계(DAM_DAN 1,363)와 5단계 매칭 — 경기 229 중 223 짝</li>
+                <li>산단 목록 1,475 → 경계(DAM_DAN 1,363)와 분양현황 단지코드(DAN_ID)로 직접 연결, 못 찾은 것은 지오코딩(네이버·카카오)으로 보조 — 경기 229 중 228 짝, 고유 경계 215 (v5). 유치업종도면으로 단지별 상위 3 업종·필지면적 붙임</li>
                 <li>노후년도 = 2026 − 지정 연도 (목록의 지정일 기준)</li>
                 <li>철도역 307 (GTX 포함) · SGIS 인구 100m 격자 1,029,094칸 · 2026 시도·시군구·읍면동</li>
                 <li>토지특성(경기 약 450만 필지)·건축물(2,298,133동)은 통합 중 — 끝나면 전환 우선순위(4축 지표, A~D 등급)를 여기에 더합니다</li>
@@ -324,7 +326,7 @@
             <span class="fb-fig__src" id="ag-rk-src">자료를 불러오는 중…</span>
           </div>
           <p class="fb-fig__desc">
-            산단 206곳과 산단 밖 공업지역 클러스터 109곳(준공업·공업지역 필지를 묶은 것), 모두 315개 단위를
+            경기도 산단 215곳과 산단 밖 공업지역 클러스터 102곳(준공업·공업지역 필지를 묶은 것), 모두 317개 단위를
             <strong>① 노후도 30 · ② 역세권 20 · ③ 도시쇠퇴·산업체감소 20 · ④ 토지특성·종상향 조건 30</strong>의 100점으로 매겨
             산단과 클러스터 각각 상위 15%를 <strong>A(전환 우선)</strong>, 40%까지를 <strong>B(복합화)</strong>, 나머지를 C(고도화 유지)로 두고,
             지정 20년 미만·건물 3동 미만·가동 중인 산단은 <strong>D(보호·게이트)</strong>로 뺐습니다.
@@ -358,12 +360,12 @@
                 <tbody>
                   <tr><td>Ⅰ 역세권·산업쇠퇴형</td><td class="n">5</td><td class="n">209</td><td class="n">26%</td><td class="n">45.0</td><td class="n">1/2</td><td>송탄, 동두천, 동두천상봉암</td></tr>
                   <tr><td>Ⅱ 역세권·비쇠퇴형</td><td class="n">4</td><td class="n">1,641</td><td class="n">25%</td><td class="n">45.4</td><td class="n">1/0</td><td>반월특수(안산신도시), 서울온수, 용현</td></tr>
-                  <tr><td>Ⅲ 비역세권·산업쇠퇴형</td><td class="n">25</td><td class="n">900</td><td class="n">15%</td><td class="n">35.1</td><td class="n">0/2</td><td>안성제1, 향남제약, 미양농공단지</td></tr>
+                  <tr><td>Ⅲ 비역세권·산업쇠퇴형</td><td class="n">26</td><td class="n">769</td><td class="n">15%</td><td class="n">35.5</td><td class="n">1/2</td><td>안성제1, 향남제약, 미양농공단지</td></tr>
                   <tr><td>Ⅳ 비역세권·비쇠퇴형</td><td class="n">6</td><td class="n">1,458</td><td class="n">33%</td><td class="n">31.6</td><td class="n">0/0</td><td>아산(원정지구), 양주도하, 반월도금</td></tr>
                 </tbody>
               </table>
             </div>
-            <p class="fb-sub" style="margin-top:.5rem">역세권 = 역 1km 안 면적 비율이 있는 곳, 산업쇠퇴 = 도시쇠퇴 8유형 가운데 산업 관련 쇠퇴형. 30년 이상·조성완료 산단 40곳 기준. Ⅱ·Ⅳ의 반월특수(안산신도시)·서울온수·아산(원정지구)·양주도하 등은 0단계 전제 미충족으로 「산업 유지」(C).</p>
+            <p class="fb-sub" style="margin-top:.5rem">역세권 = 역 1km 안 면적 비율이 있는 곳, 산업쇠퇴 = 도시쇠퇴 8유형 가운데 산업 관련 쇠퇴형. 30년 이상·조성완료 산단 41곳 기준. Ⅱ·Ⅳ의 반월특수(안산신도시)·서울온수·아산(원정지구)·양주도하 등은 0단계 전제 미충족으로 「산업 유지」(C).</p>
           </div>
 
           <h3 style="margin:1.6rem 0 .3rem">용도별 전환 상위 10 (30년 이상 산단)</h3>
@@ -395,7 +397,7 @@
           <h3 style="margin:1.6rem 0 .3rem">산단 밖 공업지역 클러스터 상위 15</h3>
           <div class="fb-card">
             <div class="fb-scroll"><table class="fb-table" id="ag-cl-tbl"><thead></thead><tbody></tbody></table></div>
-            <p class="fb-sub" style="margin-top:.5rem">산단이 아닌 준공업·공업지역 필지를 30m 버퍼로 묶은 클러스터(3ha 이상, 과밀억제권역 1ha 이상) 109곳 가운데 종합점수 상위 15. 내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).</p>
+            <p class="fb-sub" style="margin-top:.5rem">산단이 아닌 준공업·공업지역 필지를 30m 버퍼로 묶은 클러스터(3ha 이상, 과밀억제권역 1ha 이상) 102곳 가운데 종합점수 상위 15. 내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).</p>
           </div>
         </section>
 
@@ -463,6 +465,6 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609161000" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609161130" defer></script>
 </body>
 </html>
