@@ -18,9 +18,10 @@
   <style>
     /* ① 지도 — QGIS 화면과 같은 흰 바탕 */
     .ag-map .fb-map{background:#fff}
-    .ag-grid{display:grid;gap:1rem;grid-template-columns:minmax(0,2.3fr) minmax(280px,1fr)}
+    .ag-grid{display:grid;gap:1rem;grid-template-columns:minmax(0,2.2fr) minmax(300px,1fr);align-items:start}
     @media (max-width:900px){.ag-grid{grid-template-columns:minmax(0,1fr)}}
-    .ag-side{max-height:680px;overflow:auto;font-size:.9rem}
+    .ag-right{display:grid;gap:1rem;align-content:start}
+    .ag-side{max-height:360px;overflow:auto;font-size:.9rem}
     .ag-side h4{margin:0 0 .3rem;font-size:1rem}
     .ag-side .sub{color:#6b6360;font-size:.82rem;margin:0 0 .6rem}
     .ag-list{list-style:none;margin:.5rem 0 0;padding:0}
@@ -44,16 +45,31 @@
     .measuring .leaflet-container{cursor:crosshair}
     .ag-ruler{background:#1c1a19;color:#fff;font-size:11px;border:0;border-radius:4px;padding:.15rem .45rem;box-shadow:none;font-variant-numeric:tabular-nums}
     .ag-ruler::before{display:none}
-    /* 범례 — 두 칸 */
-    .ag-legend{display:grid;grid-template-columns:auto auto;gap:.2rem 1.1rem;max-width:min(420px,80%);align-items:start}
-    .ag-legend b{grid-column:1/-1;font-size:.74rem;color:#6b6360;margin:.25rem 0 .05rem;font-weight:600}
-    .ag-legend span{display:flex;align-items:center;gap:.4rem;font-size:.76rem;white-space:nowrap}
+    /* 범례 — 지도 밖 오른쪽 카드, 두 칸 */
+    .ag-legend{display:grid;grid-template-columns:1fr 1fr;gap:.18rem .8rem;align-items:start;font-size:.78rem}
+    .ag-legend h4{grid-column:1/-1;margin:0 0 .2rem;font-size:1rem}
+    .ag-legend b{grid-column:1/-1;font-size:.72rem;color:#6b6360;margin:.35rem 0 .05rem;font-weight:600;letter-spacing:.03em}
+    .ag-legend span{display:flex;align-items:center;gap:.4rem;font-size:.76rem;white-space:nowrap;min-width:0}
+    .ag-legend span em{font-style:normal;color:#8b8280;margin-left:.15rem}
     .ag-legend i{display:inline-block;width:12px;height:12px;border:1px solid rgba(0,0,0,.3);border-radius:2px;flex:0 0 auto}
+    .ag-legend i.buf{background:#c6dbef;border-color:#5b8fbf;border-radius:50%}
+    .ag-legend i.zn{background:rgba(232,180,80,.65);border-color:#a16207}
     .ag-legend i.st{border-radius:50%;background:#fff;border:1.5px solid #000;position:relative}
     .ag-legend i.st::after{content:"";position:absolute;left:3px;top:3px;width:4px;height:4px;border-radius:50%;background:#000}
     .ag-legend i.zone{background:rgba(255,23,68,.55);border-color:#b3001b}
-    .ag-legend__t{all:unset;grid-column:1/-1;cursor:pointer;font-size:.74rem;font-weight:700;color:var(--teal-text);margin-bottom:.1rem}
-    .ag-legend.folded > *:not(.ag-legend__t){display:none}
+    .ag-legend__t{all:unset;cursor:pointer;font-size:.74rem;font-weight:600;color:var(--teal-text);justify-self:end}
+    .ag-legend.folded > *:not(.ag-legend__t):not(h4){display:none}
+    /* 그림 확대 — 눌러서 크게, 휠로 더 크게, 끌어서 이동 */
+    .ag-zoom{cursor:zoom-in}
+    .ag-lb{position:fixed;inset:0;z-index:2000;background:rgba(20,18,16,.92);display:none;align-items:center;justify-content:center;overflow:hidden}
+    .ag-lb.on{display:flex}
+    .ag-lb img{max-width:none;user-select:none;cursor:grab;transform-origin:0 0;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#fff}
+    .ag-lb img.drag{cursor:grabbing}
+    .ag-lb__x{position:absolute;top:14px;right:16px;all:unset;cursor:pointer;color:#fff;font-size:1.6rem;line-height:1;padding:.2rem .5rem;border-radius:6px;background:rgba(255,255,255,.12)}
+    .ag-lb__hint{position:absolute;left:16px;bottom:14px;color:#ddd;font-size:.8rem}
+    .ag-lb__cap{position:absolute;left:16px;top:16px;right:70px;color:#fff;font-size:.9rem;text-shadow:0 1px 3px #000}
+    .fb-table th button .arr{font-size:.7em;color:#c3bcb8;margin-left:.2rem}
+    .fb-table th.on button .arr{color:var(--teal)}
     /* ② 표 */
     .ag-stat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:0 0 1rem}
     .ag-stat div{padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-md)}
@@ -106,11 +122,19 @@
           </p>
           <div class="fb-controls">
             <fieldset>
-              <legend>겹쳐 볼 층</legend>
-              <label class="fb-check"><input type="checkbox" id="ag-l-cx" checked><span class="sw" style="background:#c57171;border-color:#232323"></span>노후산단 (노후년도 색)</label>
+              <legend>큰 층 (켜고 끄기)</legend>
+              <label class="fb-check"><input type="checkbox" id="ag-l-cx" checked><span class="sw" style="background:#c57171;border-color:#232323"></span>① 산단 노후년도</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-pop" checked><span class="sw" style="background:#74c476;border-color:#006d2c"></span>② 인구밀도 격자 (6단계)</label>
+              <label class="fb-check"><input type="checkbox" id="ag-l-dec" checked><span class="sw" style="background:#6a2fe0;border-color:#1f1fff"></span>③ 도시쇠퇴도 (8유형)</label>
+              <label class="fb-check" id="ag-l-ind-w"><input type="checkbox" id="ag-l-ind" checked><span class="sw" style="background:#e8b450;border-color:#a16207"></span>④ 토지특성 — 공업 용도지역 <span class="fb-fig__src" id="ag-l-ind-n"></span></label>
+            </fieldset>
+          </div>
+          <div class="fb-controls">
+            <fieldset>
+              <legend>겹쳐 볼 것</legend>
+              <label class="fb-check"><input type="checkbox" id="ag-l-buf" checked><span class="sw" style="border-radius:50%;background:#c6dbef;border-color:#5b8fbf"></span>역세권 1km 버퍼(원)</label>
               <label class="fb-check"><input type="checkbox" id="ag-l-zone" checked><span class="sw" style="background:rgba(255,23,68,.6);border-color:#b3001b"></span>역세권 1km 안 산단 영역</label>
               <label class="fb-check"><input type="checkbox" id="ag-l-st" checked><span class="sw" style="border-radius:50%;background:#fff;border-color:#000"></span>철도역</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-pop" checked><span class="sw" style="background:#74c476;border-color:#006d2c"></span>인구밀도 격자 (6단계)</label>
               <label class="fb-check"><input type="checkbox" id="ag-l-emd" checked><span class="sw" style="background:#fff;border-color:rgba(0,0,0,.35)"></span>읍면동 경계</label>
               <label class="fb-check"><input type="checkbox" id="ag-l-lsi" checked><span class="sw" style="background:#323232"></span>시군 이름</label>
               <label class="fb-check"><input type="checkbox" id="ag-l-ldan" checked><span class="sw" style="background:#3232fa"></span>산단 이름</label>
@@ -136,17 +160,20 @@
           <div class="ag-grid">
             <div class="fb-mapbox ag-map">
               <div class="fb-map" id="ag-map0"></div>
-              <div class="fb-legend ag-legend" id="ag-legend0"></div>
               <div class="fb-busy" id="ag-busy0">자료를 불러오는 중입니다…</div>
             </div>
-            <div class="fb-card ag-side" id="ag-side">
-              <h4>역세권 · 거리</h4>
-              <p class="ag-hint">역을 누르면 반경 안 산단이 여기에 나옵니다. 산단을 누르면 노후년도와 가장 가까운 역이, 빈 곳을 누르면 그 자리의 인구밀도가 나옵니다.</p>
+            <div class="ag-right">
+              <div class="fb-card ag-side" id="ag-side">
+                <h4>역세권 · 거리</h4>
+                <p class="ag-hint">역을 누르면 반경 안 산단이 여기에 나옵니다. 산단을 누르면 노후년도와 가장 가까운 역, 행정동을 누르면 쇠퇴 유형, 빈 곳을 누르면 그 자리의 인구밀도가 나옵니다.</p>
+              </div>
+              <!-- 범례 — 지도 그림과 겹치지 않게 오른쪽 여백에 -->
+              <div class="fb-card ag-legend" id="ag-legend0"></div>
             </div>
           </div>
           <p class="fb-fig__src" style="margin-top:.6rem">
-            자료: 산업입지정보망 산단 경계(DAM_DAN)·목록(2026), 경기 철도역 307(GTX 포함), SGIS 인구 100m 격자, 2026 행정구역.
-            노후년도 = 2026 − 지정 연도. 회색은 경계는 있으나 목록과 아직 짝이 맞지 않은 곳.
+            자료: 산업입지정보망 산단 경계(DAM_DAN)·목록(2026), 경기 철도역 307(GTX 포함), SGIS 인구 100m 격자, 도시쇠퇴도 8유형(행정동 1,121 — 인구감소·사업체감소·노후건축물 조합), 토지특성(공업 용도지역), 2026 행정구역.
+            노후년도 = 2026 − 지정 연도. 회색 산단은 경계는 있으나 목록과 아직 짝이 맞지 않은 곳.
           </p>
         </section>
 
@@ -182,8 +209,8 @@
             <p class="fb-sub" id="ag-tbl-note" style="margin-top:.6rem"></p>
           </div>
           <figure class="ag-shot">
-            <img src="assets/data/aging/analysis/map_station_1km.png" alt="철도역 1km 역세권과 겹치는 경기도 산업단지 영역을 붉게 표시한 지도" loading="lazy">
-            <figcaption>같은 자료로 그린 정적 지도 — 역세권 1km 안 산단 영역(붉은색). 위 ① 지도에서 「역세권 1km 안 산단 영역」 층과 같습니다.</figcaption>
+            <img class="ag-zoom" src="assets/data/aging/analysis/map_station_1km.png" alt="철도역 1km 역세권과 겹치는 경기도 산업단지 영역을 붉게 표시한 지도" loading="lazy">
+            <figcaption>같은 자료로 그린 정적 지도 — 역세권 1km 안 산단 영역(붉은색). 위 ① 지도의 「역세권 1km 안 산단 영역」 층과 같습니다. 그림을 누르면 크게 보고 휠로 더 확대합니다.</figcaption>
           </figure>
         </section>
 
@@ -217,10 +244,34 @@
           </div>
         </section>
 
-        <!-- ④ 다음 그림 자리 — 새 그림은 이 꼴로 한 덩어리씩 더합니다 -->
+        <!-- ④ 도시쇠퇴도 8유형 · 공업 용도지역 — ① 지도의 ③·④ 층을 정적 그림으로 -->
         <section class="fb-fig" id="fig4">
           <div class="fb-fig__head">
             <span class="fb-fig__no">④</span>
+            <h2>도시쇠퇴도 8유형 · 공업 용도지역</h2>
+            <span class="fb-fig__src" id="ag-dec-src">행정동 1,121 · 인구감소·사업체감소·노후건축물 조합</span>
+          </div>
+          <p class="fb-fig__desc">
+            행정동마다 인구 감소·사업체 감소·노후 건축물(20년 이상 비율) 세 지표를 조합해 8유형으로 나눈 것입니다.
+            전환 활용도 가중치는 산업쇠퇴 1.0 &gt; 산업건물·인구산업 0.8 &gt; 절대쇠퇴 0.6 &gt; 인구건물 0.35 &gt; 건물·인구 0.3 &gt; 성장 0 입니다.
+            공업 용도지역은 토지특성(필지)에서 일반·준·전용공업지역을 녹여 만든 것입니다. ① 지도에서 같은 층을 켜고 끌 수 있습니다.
+          </p>
+          <div class="fb-chart" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+            <figure class="ag-shot" style="margin-top:0">
+              <img class="ag-zoom" src="assets/data/aging/analysis/map_decline_8class.png" alt="경기도 행정동을 도시쇠퇴 8유형으로 색칠한 지도" loading="lazy">
+              <figcaption>도시쇠퇴도 8유형 (정적 지도 · 누르면 크게)</figcaption>
+            </figure>
+            <figure class="ag-shot" style="margin-top:0" id="ag-ind-fig">
+              <img class="ag-zoom" src="assets/data/aging/analysis/map_industrial_zone.png" alt="경기도 공업 용도지역(일반·준·전용) 지도" loading="lazy" onerror="this.closest('figure').hidden=true">
+              <figcaption>토지특성 — 공업 용도지역 (정적 지도 · 누르면 크게)</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <!-- ⑤ 다음 그림 자리 — 새 그림은 이 꼴로 한 덩어리씩 더합니다 -->
+        <section class="fb-fig" id="fig5">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">⑤</span>
             <h2>전환 우선순위 등급 (준비 중)</h2>
             <span class="fb-fig__src">토지특성 · 건축물 통합 뒤</span>
           </div>
@@ -241,8 +292,16 @@
 
   <div id="site-footer"></div>
 
+  <!-- 그림 확대 — 어느 그림이든 .ag-zoom 을 누르면 여기로 -->
+  <div class="ag-lb" id="ag-lb" role="dialog" aria-label="그림 크게 보기">
+    <div class="ag-lb__cap" id="ag-lb-cap"></div>
+    <button type="button" class="ag-lb__x" id="ag-lb-x" title="닫기 (Esc)">✕</button>
+    <img id="ag-lb-img" alt="">
+    <div class="ag-lb__hint">휠로 확대·축소 · 끌어서 이동 · 두 번 누르면 원래 크기 · Esc 로 닫기</div>
+  </div>
+
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609160100" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609160200" defer></script>
 </body>
 </html>

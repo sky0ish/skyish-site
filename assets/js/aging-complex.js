@@ -6,7 +6,10 @@
             · 역을 누르면 반경(500m~2km) 원을 그리고 안에 걸치는 산단을 셉니다
             · 「거리 재기」 로 아무 두 점 사이를 잽니다 (직선거리)
             · 산단을 누르면 노후년도·가장 가까운 역, 빈 곳을 누르면 그 자리의 인구밀도
-   ② 표   : 역세권 1km 안 산단 (station_1km_summary.json)
+            · 큰 층 넷(산단 노후년도 · 인구밀도 · 도시쇠퇴도 8유형 · 공업 용도지역)을 한 지도에 얹고 각각 켜고 끕니다
+            · 역세권 1km 버퍼(원)는 역 자료로 그립니다 (station_buffer_1km.json 과 같은 1,000m)
+   ② 표   : 역세권 1km 안 산단 (station_1km_summary.json) — 머리글을 누르면 정렬, 다시 누르면 방향 바뀜
+   그림 확대 : .ag-zoom 그림을 누르면 라이트박스(휠 확대·끌기)
 
    자료 : assets/data/aging/*.json · pop_density.png (tools/aging/build_aging.py 가 만듭니다)
           assets/data/aging/analysis/* (산단 분석 세션이 만든 역세권 교차 결과)
@@ -39,7 +42,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609160100";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609160200";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -86,7 +89,7 @@
   }
 
   /* ---------- 지도 ---------- */
-  var map, base = null, layers = {}, popImg = null, popMeta = null, popGrid = null;
+  var map, base = null, layers = {}, popImg = null, popMeta = null, popGrid = null, decMeta = null, indMeta = null;
   var cxLayer, cxIndex = [], stations = [], stMarks = [];
   var radius = 1000, ring = null, ringDash = null, side;
   var measuring = false, mPts = [], mLine = null, mTips = [];
@@ -97,6 +100,9 @@
     L.control.scale({ imperial: false }).addTo(map);
     window.__agMap = map;                                // 시험·디버그용 손잡이
     map.createPane("popPane"); map.getPane("popPane").style.zIndex = 250;      // 격자는 맨 아래
+    map.createPane("decPane"); map.getPane("decPane").style.zIndex = 260;      // 도시쇠퇴도
+    map.createPane("indPane"); map.getPane("indPane").style.zIndex = 270;      // 공업 용도지역
+    map.createPane("bufPane"); map.getPane("bufPane").style.zIndex = 280;      // 역세권 1km 버퍼
     map.createPane("emdPane"); map.getPane("emdPane").style.zIndex = 300;
     map.createPane("sigPane"); map.getPane("sigPane").style.zIndex = 310;
     map.createPane("cxPane"); map.getPane("cxPane").style.zIndex = 400;
@@ -112,14 +118,20 @@
       getJSON(D + "sido.json"), getJSON(D + "sig.json"), getJSON(D + "emd.json"),
       getJSON(D + "complexes.json"), getJSON(D + "stations.json"), getJSON(D + "pop_meta.json"),
       getJSON(D + "analysis/station_1km_area.json").catch(function () { return null; }),
+      getJSON(D + "analysis/decline_8class.json").catch(function () { return null; }),
+      getJSON(D + "analysis/industrial_zone.json").catch(function () { return null; }),
     ]).then(function (r) {
       drawBoundaries(r[0], r[1], r[2]);
       drawPop(r[5]);
+      drawDecline(r[7]);
+      drawIndustrial(r[8]);
+      drawBuffer(r[4]);
       drawComplexes(r[3]);
       drawZone(r[6]);
       drawStations(r[4]);
       legend();
       wire();
+      lightbox();
       busy(null);
       var n = r[3].features.length, m = r[3].features.filter(function (f) { return f.properties.matched; }).length;
       document.getElementById("ag-src").textContent = "산단 경계 " + n + "곳(목록 짝 " + m + ") · 철도역 " + r[4].n + " · 인구 100m 격자";
@@ -215,6 +227,57 @@
     if (hi) { try { hi.setStyle({ weight: 0.8, color: "#232323" }); } catch (e) {} }
     hi = l;
     if (l) { l.setStyle({ weight: 2.6, color: "#0ea5e9" }); if (l.bringToFront) l.bringToFront(); }
+  }
+
+  /* ---------- 도시쇠퇴도 8유형 (행정동) ---------- */
+  function drawDecline(fc) {
+    if (!fc) { var cb = document.getElementById("ag-l-dec"); if (cb) { cb.checked = false; cb.disabled = true; } return; }
+    decMeta = fc.meta || {};
+    layers.dec = L.geoJSON(fc, {
+      pane: "decPane",
+      style: function (f) { return { color: "rgba(0,0,0,.15)", weight: 0.4, fillColor: f.properties.color || "#999", fillOpacity: 0.5 }; },
+      onEachFeature: function (f, l) {
+        var p = f.properties;
+        l.bindTooltip(esc([p.si, p.sgg, p.emd].filter(Boolean).join(" ")) + " · " + esc(p.class_8) + (p.weight != null ? " (가중치 " + p.weight + ")" : ""), { sticky: true, className: "lbl-st" });
+        l.on("click", function (e) {
+          L.DomEvent.stop(e);
+          if (measuring) { addMeasure(e.latlng); return; }
+          side.innerHTML = "<h4><i style=\"display:inline-block;width:11px;height:11px;border:1px solid rgba(0,0,0,.3);vertical-align:-1px;background:" + esc(p.color) + "\"></i> " + esc([p.si, p.sgg, p.emd].filter(Boolean).join(" ")) + "</h4>" +
+            '<p class="sub">도시쇠퇴도 8유형</p><div class="ag-kv">' +
+            "<b>유형</b><span>" + esc(p.class_8) + (p.class_3 && p.class_3 !== p.class_8 ? " (3유형: " + esc(p.class_3) + ")" : "") + "</span>" +
+            "<b>전환 활용 가중치</b><span>" + (p.weight != null ? p.weight : "—") + "</span>" +
+            "<b>인구 (최대 대비)</b><span>" + (p.pop_to_max != null ? Math.round(p.pop_to_max * 100) + "%" : "—") + "</span>" +
+            "<b>사업체 (최대 대비)</b><span>" + (p.busi_to_max != null ? Math.round(p.busi_to_max * 100) + "%" : "—") + "</span>" +
+            "<b>20년 이상 건물 비율</b><span>" + (p.old_bd20r != null ? Math.round(p.old_bd20r * 100) + "%" : "—") + "</span></div>" +
+            '<p class="ag-hint">인구·사업체는 그 동의 최대치 대비 지금 값(1 에 가까울수록 유지). 도시쇠퇴도는 인구감소·사업체감소·노후건축물 세 지표의 조합입니다.</p>';
+        });
+      },
+    }).addTo(map);
+  }
+
+  /* ---------- 토지특성 — 공업 용도지역 ---------- */
+  function drawIndustrial(fc) {
+    var cb = document.getElementById("ag-l-ind"), n = document.getElementById("ag-l-ind-n");
+    if (!fc) { if (cb) { cb.checked = false; cb.disabled = true; } if (n) n.textContent = "(준비 중)"; return; }
+    indMeta = fc.meta || {};
+    layers.ind = L.geoJSON(fc, {
+      pane: "indPane",
+      style: function (f) { return { color: "#a16207", weight: 0.6, fillColor: f.properties.color || "#e8b450", fillOpacity: 0.6 }; },
+      onEachFeature: function (f, l) {
+        var p = f.properties, nm = p.name || p.zone || p["용도지역"] || p["용도지역명"] || "공업지역";
+        l.bindTooltip(esc(nm) + (p.area_ha ? " · " + num(Math.round(p.area_ha)) + " ha" : ""), { sticky: true, className: "lbl-st" });
+      },
+    }).addTo(map);
+    if (n) n.textContent = "(" + fc.features.length + ")";
+  }
+
+  /* ---------- 역세권 1km 버퍼(원) — 역마다 1,000m ---------- */
+  function drawBuffer(doc) {
+    layers.buf = L.layerGroup();
+    doc.items.forEach(function (s) {
+      L.circle([s.lat, s.lon], { pane: "bufPane", radius: 1000, color: "#5b8fbf", weight: 0.8, fillColor: "#c6dbef", fillOpacity: 0.35, interactive: false }).addTo(layers.buf);
+    });
+    layers.buf.addTo(map);
   }
 
   /* ---------- 역세권 1km 안 산단 영역 (분석 세션 결과) ---------- */
@@ -325,17 +388,32 @@
   /* ---------- 범례 ---------- */
   function legend() {
     var el = document.getElementById("ag-legend0");
-    el.innerHTML = '<button type="button" class="ag-legend__t" id="ag-legend-t" title="범례 접기/펴기">▾ 범례</button>' +
-      "<b>노후년도 (2026 − 지정 연도)</b>" +
+    var decLeg = "";
+    if (decMeta && decMeta["색"]) {
+      var cnt = decMeta["유형수"] || {}, w = decMeta["가중치"] || {};
+      var order = Object.keys(decMeta["색"]).sort(function (a, b) { return (w[b] || 0) - (w[a] || 0) || (cnt[b] || 0) - (cnt[a] || 0); });
+      decLeg = "<b>③ 도시쇠퇴도 8유형 (행정동 · 가중치)</b>" +
+        order.map(function (k) { return '<span><i style="background:' + decMeta["색"][k] + ';opacity:.85"></i>' + esc(k.replace("지역", "")) + "<em>" + (w[k] != null ? w[k] : "") + (cnt[k] ? " · " + cnt[k] + "동" : "") + "</em></span>"; }).join("");
+    }
+    var indLeg = "";
+    if (indMeta) {
+      var cols = indMeta["색"] || indMeta.colors || { "공업 용도지역": "#e8b450" };
+      indLeg = "<b>④ 토지특성 — 공업 용도지역</b>" + Object.keys(cols).map(function (k) { return '<span><i style="background:' + cols[k] + ';opacity:.8"></i>' + esc(k) + "</span>"; }).join("");
+    }
+    el.innerHTML = "<h4>범례 <button type=\"button\" class=\"ag-legend__t\" id=\"ag-legend-t\" title=\"범례 접기/펴기\" style=\"float:right\">▾ 접기</button></h4>" +
+      "<b>① 노후년도 (2026 − 지정 연도)</b>" +
       AGE_CLASSES.map(function (c) { return '<span><i style="background:' + c[2] + '"></i>' + c[0] + " – " + (c[1] === 63 ? 62 : c[1]) + "</span>"; }).join("") +
       '<span><i style="background:' + UNMATCHED + '"></i>목록과 짝 없음</span>' +
       '<span><i class="zone"></i>역세권 1km 안 산단 영역</span>' +
-      "<b>인구밀도 (명/㎢, 100m 격자)</b>" +
+      "<b>② 인구밀도 (명/㎢, 100m 격자)</b>" +
       popMeta.colors.map(function (c, i) { return '<span><i style="background:' + c + '"></i>' + popMeta.labels[i] + "</span>"; }).join("") +
+      decLeg + indLeg +
+      "<b>역세권 · 역</b>" +
+      '<span><i class="buf"></i>역세권 1km 버퍼(원)</span>' +
       '<span><i class="st"></i>철도역</span>';
     document.getElementById("ag-legend-t").addEventListener("click", function () {
       var off = el.classList.toggle("folded");
-      this.textContent = off ? "▸ 범례" : "▾ 범례";
+      this.textContent = off ? "▸ 펴기" : "▾ 접기";
     });
   }
 
@@ -345,6 +423,9 @@
     var tog = function (layer, show) { if (!layer) return; if (show) layer.addTo(map); else map.removeLayer(layer); };
     on("ag-l-cx", function (v) { tog(layers.cx, v); document.getElementById("ag-map0").classList.toggle("no-dan", !v || !document.getElementById("ag-l-ldan").checked); });
     on("ag-l-zone", function (v) { tog(layers.zone, v); });
+    on("ag-l-dec", function (v) { tog(layers.dec, v); });
+    on("ag-l-ind", function (v) { tog(layers.ind, v); });
+    on("ag-l-buf", function (v) { tog(layers.buf, v); });
     on("ag-l-st", function (v) { tog(layers.st, v); });
     on("ag-l-pop", function (v) { tog(layers.pop, v); });
     on("ag-l-emd", function (v) { tog(layers.emd, v); });
@@ -383,6 +464,43 @@
     var best = null, bd = Infinity;
     stations.forEach(function (s) { var d = dist(c, [s.lat, s.lon]); if (d < bd) { bd = d; best = s; } });
     return best;
+  }
+
+  /* ---------- 그림 확대 (라이트박스) — .ag-zoom 그림 누르면 ---------- */
+  function lightbox() {
+    var lb = document.getElementById("ag-lb"), img = document.getElementById("ag-lb-img"), cap = document.getElementById("ag-lb-cap");
+    if (!lb) return;
+    var sc = 1, tx = 0, ty = 0, drag = null;
+    var apply = function () { img.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + sc + ")"; };
+    var fit = function () {
+      var W = lb.clientWidth, H = lb.clientHeight, w = img.naturalWidth || 1, h = img.naturalHeight || 1;
+      sc = Math.min((W - 40) / w, (H - 80) / h, 1); tx = (W - w * sc) / 2; ty = (H - h * sc) / 2; apply();
+    };
+    var open = function (src, text) {
+      cap.textContent = text || ""; lb.classList.add("on"); document.body.style.overflow = "hidden";
+      img.onload = fit; img.src = src; if (img.complete) fit();
+    };
+    var close = function () { lb.classList.remove("on"); document.body.style.overflow = ""; };
+    document.querySelectorAll("img.ag-zoom").forEach(function (im) {
+      im.addEventListener("click", function () { var f = im.closest("figure"); open(im.currentSrc || im.src, f && f.querySelector("figcaption") ? f.querySelector("figcaption").textContent : im.alt); });
+    });
+    document.getElementById("ag-lb-x").addEventListener("click", close);
+    lb.addEventListener("click", function (e) { if (e.target === lb) close(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && lb.classList.contains("on")) close(); });
+    lb.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      var k = e.deltaY < 0 ? 1.15 : 1 / 1.15, ns = Math.max(0.2, Math.min(12, sc * k));
+      /* 마우스 자리를 기준으로 확대 */
+      tx = e.clientX - (e.clientX - tx) * (ns / sc); ty = e.clientY - (e.clientY - ty) * (ns / sc); sc = ns; apply();
+    }, { passive: false });
+    img.addEventListener("mousedown", function (e) { e.preventDefault(); drag = { x: e.clientX - tx, y: e.clientY - ty }; img.classList.add("drag"); });
+    window.addEventListener("mousemove", function (e) { if (!drag) return; tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply(); });
+    window.addEventListener("mouseup", function () { drag = null; img.classList.remove("drag"); });
+    img.addEventListener("dblclick", fit);
+    /* 손가락 — 끌기만 (핀치는 브라우저 기본) */
+    img.addEventListener("touchstart", function (e) { if (e.touches.length === 1) drag = { x: e.touches[0].clientX - tx, y: e.touches[0].clientY - ty }; }, { passive: true });
+    img.addEventListener("touchmove", function (e) { if (drag && e.touches.length === 1) { tx = e.touches[0].clientX - drag.x; ty = e.touches[0].clientY - drag.y; apply(); } }, { passive: true });
+    img.addEventListener("touchend", function () { drag = null; });
   }
 
   /* ---------- ② 역세권 1km 안 산단 표 ---------- */
@@ -428,7 +546,13 @@
         "<td>" + esc(r["최근접역"] || "") + (r["최근접역거리_m"] != null ? ' <span style="color:#8b8280">' + (r["최근접역거리_m"] === 0 ? "안에" : num(Math.round(r["최근접역거리_m"])) + " m") + "</span>" : "") + "</td>" +
       "</tr>";
     }).join("");
-    document.querySelectorAll("#ag-tbl th").forEach(function (th) { var b = th.querySelector("button"); th.classList.toggle("on", !!b && b.dataset.k === sortK); });
+    document.querySelectorAll("#ag-tbl th").forEach(function (th) {
+      var b = th.querySelector("button"); if (!b) return;
+      var on = b.dataset.k === sortK; th.classList.toggle("on", on);
+      var a = b.querySelector(".arr"); if (!a) { a = document.createElement("span"); a.className = "arr"; b.appendChild(a); }
+      a.textContent = on ? (sortDir > 0 ? "▲" : "▼") : "↕";
+      b.title = on ? "다시 누르면 반대 방향" : "이 칸으로 줄 세우기";
+    });
     document.getElementById("ag-tbl-note").textContent = "역세권 내 면적이 큰 차례(누르면 바뀜). 비율 = 역세권 내 면적 ÷ 산단 면적. 거리는 산단 경계에서 역까지의 직선거리이고 0은 역이 경계 안에 있다는 뜻입니다.";
   }
 
