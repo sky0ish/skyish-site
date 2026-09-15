@@ -43,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609160400";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609160600";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -136,6 +136,7 @@
       legend();
       wire();
       lightbox();
+      miniMaps({ sig: r[1], cx: r[3], st: r[4], zone: r[6], dec: r[7], ind: r[8], grade: r[9] });
       busy(null);
       var n = r[3].features.length, m = r[3].features.filter(function (f) { return f.properties.matched; }).length;
       document.getElementById("ag-src").textContent = "산단 경계 " + n + "곳(목록 짝 " + m + ") · 철도역 " + r[4].n + " · 인구 100m 격자";
@@ -525,6 +526,9 @@
     document.querySelectorAll("img.ag-zoom").forEach(function (im) {
       im.addEventListener("click", function () { var f = im.closest("figure"); open(im.currentSrc || im.src, f && f.querySelector("figcaption") ? f.querySelector("figcaption").textContent : im.alt); });
     });
+    document.querySelectorAll(".ag-png[data-png]").forEach(function (b) {
+      b.addEventListener("click", function () { open(b.dataset.png + "?v=" + VER, b.dataset.cap || ""); });
+    });
     document.getElementById("ag-lb-x").addEventListener("click", close);
     lb.addEventListener("click", function (e) { if (e.target === lb) close(); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && lb.classList.contains("on")) close(); });
@@ -595,6 +599,143 @@
       b.title = on ? "다시 누르면 반대 방향" : "이 칸으로 줄 세우기";
     });
     document.getElementById("ag-tbl-note").textContent = "역세권 내 면적이 큰 차례(누르면 바뀜). 비율 = 역세권 내 면적 ÷ 산단 면적. 거리는 산단 경계에서 역까지의 직선거리이고 0은 역이 경계 안에 있다는 뜻입니다.";
+  }
+
+  /* ---------- 움직이는 미니 지도 넷 — 역세권 1km · 도시쇠퇴도 · 공업 용도지역 · 등급 (① 지도 자료를 다시 씀) ----------
+     공통: 시군 경계·이름, 산단 경계는 검은 테두리(채움 없음)로 기본 표시, 「노후년도 색 채움」·「산단 이름」·「철도역」은 체크박스,
+           범례는 지도 밖 카드, 전체화면 단추, 정적 PNG 는 라이트박스로 보조 */
+  var GRADE_TXT = { A: "전환 우선", B: "복합화", C: "고도화 유지", D: "보호·게이트" };
+  function miniMaps(d) {
+    var sig = d.sig, cx = d.cx, st = d.st;
+    function build(key, spec) {
+      var mapEl = document.getElementById("ag-map-" + key); if (!mapEl) return null;
+      var mm = L.map("ag-map-" + key, { preferCanvas: true, scrollWheelZoom: true }).setView(GG_CENTER, GG_ZOOM);
+      L.control.scale({ imperial: false }).addTo(mm);
+      mm.createPane("pBase"); mm.getPane("pBase").style.zIndex = 300;      // 주제 층(쇠퇴·공업지역·버퍼)
+      mm.createPane("pSig"); mm.getPane("pSig").style.zIndex = 350;
+      mm.createPane("pCx"); mm.getPane("pCx").style.zIndex = 400;
+      mm.createPane("pTop"); mm.getPane("pTop").style.zIndex = 420;        // 주제 위 층(역세권 영역·등급)
+      mm.createPane("pSt"); mm.getPane("pSt").style.zIndex = 430;
+      mm.createPane("pLbl"); mm.getPane("pLbl").style.zIndex = 600;
+      L.geoJSON(sig, { pane: "pSig", style: { color: "#232323", weight: 0.8, fill: false }, interactive: false }).addTo(mm);
+      L.geoJSON(sig).eachLayer(function (l) {
+        L.tooltip({ permanent: true, direction: "center", className: "lbl lbl-si", pane: "pLbl", interactive: false }).setLatLng(l.getBounds().getCenter()).setContent(l.feature.properties.name).addTo(mm);
+      });
+      var sync = function () { mapEl.classList.toggle("z-lo", mm.getZoom() < DAN_ZOOM); };
+      mm.on("zoomend", sync); sync();
+      /* 산단 경계 — 검은 테두리, 채움은 체크박스 */
+      var fillOn = false, cxLayer = null, lblGrp = L.layerGroup();
+      var cxStyle = function (f) { var p = f.properties; return fillOn ? { color: "#232323", weight: 0.9, fillColor: ageColor(p.matched ? p.age : null), fillOpacity: 0.95 } : { color: "#232323", weight: 0.9, fill: false }; };
+      if (cx) {
+        cxLayer = L.geoJSON(cx, { pane: "pCx", style: cxStyle, onEachFeature: function (f, l) {
+          var p = f.properties;
+          l.bindTooltip(esc(p.name) + (p.matched && p.age != null ? " · 노후 " + p.age + "년" : " · 목록 짝 없음") + (p.near_st ? " · " + esc(p.near_st) + " " + p.near_m + "m" : ""), { sticky: true, className: "lbl-st" });
+          if (p.lat && p.lon) L.tooltip({ permanent: true, direction: "center", className: "lbl lbl-dan", pane: "pLbl", interactive: false }).setLatLng([p.lat, p.lon]).setContent(p.name).addTo(lblGrp);
+        } });
+      }
+      /* 역 */
+      var stGrp = L.layerGroup();
+      if (st) st.items.forEach(function (x) {
+        var o = L.circleMarker([x.lat, x.lon], { pane: "pSt", radius: 4.5, color: "#000", weight: 1.2, fillColor: "#fff", fillOpacity: 1 });
+        o.bindTooltip(esc(x.name) + "역" + (x.lines ? " · " + esc(x.lines) : ""), { direction: "top", offset: [0, -6], className: "lbl-st" });
+        o.addTo(stGrp); L.circleMarker([x.lat, x.lon], { pane: "pSt", radius: 1.5, color: "#000", weight: 0, fillColor: "#000", fillOpacity: 1, interactive: false }).addTo(stGrp);
+      });
+      /* 체크박스 목록 — spec.layers 앞에 두고, 공통 셋을 뒤에 */
+      var items = spec.layers.concat([
+        { key: "cx", label: "산업단지 경계", sw: "background:#fff;border-color:#232323", on: true, layer: cxLayer },
+        { key: "fill", label: "노후년도 색 채움", sw: "background:#c57171;border-color:#232323", on: !!spec.fillOn, toggle: function (v) { fillOn = v; if (cxLayer) cxLayer.setStyle(cxStyle); } },
+        { key: "lbl", label: "산단 이름", sw: "background:#3232fa", on: spec.lblOn !== false, layer: lblGrp },
+        { key: "st", label: "철도역", sw: "border-radius:50%;background:#fff;border-color:#000", on: spec.stOn !== false, layer: stGrp },
+      ]);
+      var ctl = document.getElementById("ag-ctl-" + key);
+      if (ctl) ctl.innerHTML = "<fieldset><legend>켜고 끄기</legend>" + items.map(function (it) {
+        return '<label class="fb-check"><input type="checkbox" data-mk="' + it.key + '"' + (it.on ? " checked" : "") + (it.layer === null && !it.toggle ? " disabled" : "") + '><span class="sw" style="' + it.sw + '"></span>' + esc(it.label) + "</label>";
+      }).join("") + (spec.hint ? '<span class="fb-fig__src">' + esc(spec.hint) + "</span>" : "") + "</fieldset>";
+      items.forEach(function (it) {
+        if (it.toggle) it.toggle(it.on); else if (it.layer && it.on) it.layer.addTo(mm);
+        var cb = ctl && ctl.querySelector('[data-mk="' + it.key + '"]');
+        if (cb) cb.addEventListener("change", function () { if (it.toggle) it.toggle(cb.checked); else if (it.layer) { if (cb.checked) it.layer.addTo(mm); else mm.removeLayer(it.layer); } });
+      });
+      if (cxLayer) cxLayer.setStyle(cxStyle);
+      var leg = document.getElementById("ag-legend-" + key);
+      if (leg) leg.innerHTML = "<h4>" + esc(spec.title) + "</h4>" + spec.legend +
+        "<b>공통</b>" + '<span><i style="background:#fff;border-color:#232323"></i>산업단지 경계</span>' +
+        '<span><i style="background:linear-gradient(90deg,#fbecec,#970000)"></i>노후년도 색(켜면) 0→62년</span>' + '<span><i class="st"></i>철도역</span>';
+      var b = document.getElementById("ag-busy-" + key); if (b) b.hidden = true;
+      return mm;
+    }
+    var maps = [];
+    /* 역세권 1km */
+    if (d.st) maps.push(build("sta", {
+      title: "역세권(철도역 1km) 포함 영역", fillOn: false, lblOn: true,
+      layers: [
+        { key: "buf", label: "역세권 1km 원", sw: "border-radius:50%;background:#c6dbef;border-color:#5b8fbf", on: true, layer: (function () {
+          var g = L.layerGroup(); d.st.items.forEach(function (x) { L.circle([x.lat, x.lon], { pane: "pBase", radius: 1000, color: "#5b8fbf", weight: 0.8, fillColor: "#c6dbef", fillOpacity: 0.45, interactive: false }).addTo(g); }); return g; })() },
+        { key: "zone", label: "역세권 1km 안 산단 영역", sw: "background:#d7301f;border-color:#8b0000", on: true, layer: d.zone ? L.geoJSON(d.zone, { pane: "pTop", style: { color: "#8b0000", weight: 1, fillColor: "#d7301f", fillOpacity: 0.75 }, onEachFeature: function (f, l) {
+          var p = f.properties; l.bindTooltip(esc(p.DAN_NAME) + " · 역세권 안 " + num(p["역세권면적_ha"]) + " ha (" + Math.round(p["역세권비율"] * 100) + "%)", { sticky: true, className: "lbl-st" });
+          l.bindPopup("<b>" + esc(p.DAN_NAME) + "</b> " + esc(p["단지유형"] || "") + (p["노후년도"] != null ? " · 노후 " + p["노후년도"] + "년" : "") + "<br>산단 " + num(p["산단면적_ha"]) + " ha 중 역세권 안 " + num(p["역세권면적_ha"]) + " ha (" + Math.round(p["역세권비율"] * 100) + "%)<br>" + esc(p["역세권_역"] || "") + (p["GTX역세권"] ? " · GTX" : ""));
+        } }) : null },
+      ],
+      legend: '<span><i class="buf"></i>역세권 1km 원 (역 ' + d.st.n + ")</span>" + '<span><i style="background:#d7301f;border-color:#8b0000"></i>역세권 안 산단 영역' + (d.zone ? " (" + d.zone.features.length + ")" : "") + "</span>",
+      hint: "역세권 안 영역은 역 1km 원 ∩ 산단 경계",
+    }));
+    /* 도시쇠퇴도 8유형 */
+    if (d.dec) {
+      var meta = d.dec.meta || {}, cnt = meta["유형수"] || {}, w = meta["가중치"] || {}, col = meta["색"] || {};
+      var order = Object.keys(col).sort(function (a, b2) { return (w[b2] || 0) - (w[a] || 0) || (cnt[b2] || 0) - (cnt[a] || 0); });
+      maps.push(build("dec", {
+        title: "도시쇠퇴도 8유형", fillOn: false, lblOn: true, stOn: false,
+        layers: [{ key: "dec", label: "도시쇠퇴도 8유형 (행정동)", sw: "background:#6a2fe0;border-color:#1f1fff", on: true, layer: L.geoJSON(d.dec, { pane: "pBase",
+          style: function (f) { return { color: "rgba(0,0,0,.18)", weight: 0.4, fillColor: f.properties.color || "#999", fillOpacity: 0.78 }; },
+          onEachFeature: function (f, l) {
+            var p = f.properties, nm = [p.si, p.sgg, p.emd].filter(Boolean).join(" ");
+            l.bindTooltip(esc(nm) + " · " + esc(p.class_8), { sticky: true, className: "lbl-st" });
+            l.bindPopup("<b>" + esc(nm) + "</b><br>" + '<span style="display:inline-block;width:10px;height:10px;border:1px solid rgba(0,0,0,.3);vertical-align:-1px;background:' + esc(p.color) + '"></span> ' + esc(p.class_8) + (p.weight != null ? " · 가중치 " + p.weight : "") + "<br>인구 " + (p.pop_to_max != null ? Math.round(p.pop_to_max * 100) + "%" : "—") + " · 사업체 " + (p.busi_to_max != null ? Math.round(p.busi_to_max * 100) + "%" : "—") + " (최대 대비) · 20년↑건물 " + (p.old_bd20r != null ? Math.round(p.old_bd20r * 100) + "%" : "—"));
+          } }) }],
+        legend: "<b>유형 · 전환 활용 가중치 · 행정동 수</b>" + order.map(function (k) { return '<span><i style="background:' + col[k] + '"></i>' + esc(k.replace("지역", "")) + "<em>" + (w[k] != null ? w[k] : "") + (cnt[k] ? " · " + cnt[k] + "동" : "") + "</em></span>"; }).join(""),
+        hint: "행정동 " + d.dec.features.length + "곳",
+      }));
+    }
+    /* 공업 용도지역 */
+    if (d.ind) {
+      var m2 = d.ind.meta || {}, col2 = m2["색"] || m2.colors || {}, area = m2["면적_ha"] || {};
+      maps.push(build("ind", {
+        title: "토지특성 — 공업 용도지역", fillOn: false, lblOn: true, stOn: false,
+        layers: [{ key: "ind", label: "공업 용도지역 (일반·준·전용)", sw: "background:#c98bd9;border-color:#4a1f66", on: true, layer: L.geoJSON(d.ind, { pane: "pBase",
+          style: function (f) { return { color: "#5b2c85", weight: 0.7, fillColor: f.properties.color || "#e8b450", fillOpacity: 0.85 }; },
+          onEachFeature: function (f, l) { var p = f.properties, nm = p.name || p.zone || "공업지역"; l.bindTooltip(esc(nm) + (p.area_ha ? " · " + num(Math.round(p.area_ha)) + " ha" : ""), { sticky: true, className: "lbl-st" }); l.bindPopup("<b>" + esc(nm) + "</b><br>" + (p.area_ha ? "면적 " + num(Math.round(p.area_ha * 10) / 10) + " ha" : "")); } }) }],
+        legend: "<b>용도지역 · 면적</b>" + Object.keys(col2).map(function (k) { return '<span><i style="background:' + col2[k] + '"></i>' + esc(k) + "<em>" + (area[k] != null ? num(Math.round(area[k])) + " ha" : "") + "</em></span>"; }).join(""),
+        hint: (m2["필지수"] ? "필지 " + num(m2["필지수"]) + "개 · " : "") + d.ind.features.length + "구역",
+      }));
+    }
+    /* 등급 */
+    if (d.grade) {
+      var gm = d.grade.meta || {}, gc = gm["색"] || GRADE_COLOR, crit = gm["등급기준"] || {};
+      maps.push(build("grade", {
+        title: "전환 우선순위 등급", fillOn: false, lblOn: true,
+        layers: [{ key: "grade", label: "A·B 등급 폴리곤", sw: "background:#fc8d59;border-color:#d7301f", on: true, layer: L.geoJSON(d.grade, { pane: "pTop",
+          style: function (f) { return { color: f.properties.color || "#d7301f", weight: 2.2, fillColor: f.properties.color || "#d7301f", fillOpacity: 0.7 }; },
+          onEachFeature: function (f, l) {
+            var p = f.properties;
+            l.bindTooltip("<b>" + esc(p.grade) + "</b> " + esc(p.name) + " · " + p["종합점수"] + "점", { sticky: true, className: "lbl-st" });
+            l.bindPopup('<span class="ag-grade" style="background:' + esc(p.color) + '">' + esc(p.grade) + "</span> <b>" + esc(p.name) + "</b><br>종합 " + p["종합점수"] + "점 · 추천 " + esc(p["추천용도"] || "—") + (p["노후년도"] ? " · 노후 " + Math.round(p["노후년도"]) + "년" : "") + "<br><small>" + esc(crit[p.grade] || "") + "</small>");
+          } }) }],
+        legend: "<b>등급 (지도에는 A·B 폴리곤만, C·D 는 산단 경계로)</b>" + ["A", "B", "C", "D"].map(function (k) { return '<span><i style="background:' + (gc[k] || "#999") + '"></i>' + k + " " + GRADE_TXT[k] + "</span>"; }).join(""),
+        hint: "A·B " + d.grade.features.length + "곳",
+      }));
+    }
+    /* 전체화면 — 나갈 때 크기 다시 셈 */
+    document.querySelectorAll(".ag-fs[data-fs]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var box = document.getElementById(b.dataset.fs); if (!box) return;
+        if (document.fullscreenElement === box) document.exitFullscreen();
+        else if (box.requestFullscreen) box.requestFullscreen();
+      });
+    });
+    document.addEventListener("fullscreenchange", function () {
+      setTimeout(function () { maps.forEach(function (mm) { if (mm) mm.invalidateSize(); }); }, 150);
+      document.querySelectorAll(".ag-fs[data-fs]").forEach(function (b) { b.textContent = document.fullscreenElement && document.fullscreenElement.id === b.dataset.fs ? "✕ 전체화면 끝" : "⛶ 전체화면"; });
+    });
   }
 
   /* ---------- ⑤ 전환 우선순위 — 요약 · 로직 · 표 셋 ---------- */

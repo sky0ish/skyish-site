@@ -58,6 +58,16 @@
     .ag-legend i.st::after{content:"";position:absolute;left:3px;top:3px;width:4px;height:4px;border-radius:50%;background:#000}
     .ag-legend i.zone{background:rgba(255,23,68,.55);border-color:#b3001b}
     .ag-legend__t{all:unset;cursor:pointer;font-size:.74rem;font-weight:600;color:var(--teal-text);justify-self:end}
+    /* ④ 미니 지도 둘 — 지도 | 범례 카드, 전체화면 단추 */
+    .ag-mini{display:grid;gap:.8rem;grid-template-columns:minmax(0,1fr) minmax(220px,.5fr);align-items:start;margin-top:.8rem}
+    @media (max-width:900px){.ag-mini{grid-template-columns:minmax(0,1fr)}}
+    .ag-mini .fb-map{height:440px;min-height:300px;background:#fff}
+    .ag-mini .fb-mapbox:fullscreen{background:#fff}
+    .ag-mini .fb-mapbox:fullscreen .fb-map{height:100vh}
+    .ag-fs{position:absolute;top:10px;right:10px;z-index:600;all:unset;cursor:pointer;background:#fff;border:1px solid #cfc8bf;border-radius:6px;padding:.25rem .55rem;font-size:.8rem;box-shadow:0 1px 3px rgba(0,0,0,.15);position:absolute}
+    .ag-fs:hover{border-color:var(--teal);color:var(--teal-text)}
+    .ag-mini h3{margin:0 0 .3rem;font-size:1rem}
+    .ag-mini .fb-sub{margin:.4rem 0 0}
     .ag-legend.folded > *:not(.ag-legend__t):not(h4){display:none}
     /* 그림 확대 — 눌러서 크게, 휠로 더 크게, 끌어서 이동 */
     .ag-zoom{cursor:zoom-in}
@@ -217,10 +227,17 @@
             </div>
             <p class="fb-sub" id="ag-tbl-note" style="margin-top:.6rem"></p>
           </div>
-          <figure class="ag-shot">
-            <img class="ag-zoom" src="assets/data/aging/analysis/map_station_1km.png" alt="철도역 1km 역세권과 겹치는 경기도 산업단지 영역을 붉게 표시한 지도" loading="lazy">
-            <figcaption>같은 자료로 그린 정적 지도 — 역세권 1km 안 산단 영역(붉은색). 위 ① 지도의 「역세권 1km 안 산단 영역」 층과 같습니다. 그림을 누르면 크게 보고 휠로 더 확대합니다.</figcaption>
-          </figure>
+          <h3 style="margin:1.4rem 0 .2rem">역세권(철도역 1km) 포함 영역 — 움직이는 지도</h3>
+          <div class="fb-controls ag-mini-ctl" id="ag-ctl-sta" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
+          <div class="ag-mini" style="margin-top:.5rem">
+            <div class="fb-mapbox" id="ag-box-sta">
+              <div class="fb-map" id="ag-map-sta"></div>
+              <button type="button" class="ag-fs" data-fs="ag-box-sta" title="전체화면">⛶ 전체화면</button>
+              <div class="fb-busy" id="ag-busy-sta">자료를 불러오는 중입니다…</div>
+            </div>
+            <div class="fb-card ag-legend" id="ag-legend-sta"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
+          </div>
+          <p class="fb-sub">휠로 확대·끌어서 이동. 붉은 영역을 누르면 역세권 안 면적·비율, 역을 누르면 노선. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_station_1km.png" data-cap="역세권 1km 안 산단 영역 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
         </section>
 
         <!-- ③ 노후도 현황 · 자료 -->
@@ -265,16 +282,29 @@
             전환 활용도 가중치는 산업쇠퇴 1.0 &gt; 산업건물·인구산업 0.8 &gt; 절대쇠퇴 0.6 &gt; 인구건물 0.35 &gt; 건물·인구 0.3 &gt; 성장 0 입니다.
             공업 용도지역은 토지특성(필지)에서 일반·준·전용공업지역을 녹여 만든 것입니다. ① 지도에서 같은 층을 켜고 끌 수 있습니다.
           </p>
-          <div class="fb-chart" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
-            <figure class="ag-shot" style="margin-top:0">
-              <img class="ag-zoom" src="assets/data/aging/analysis/map_decline_8class.png" alt="경기도 행정동을 도시쇠퇴 8유형으로 색칠한 지도" loading="lazy">
-              <figcaption>도시쇠퇴도 8유형 (정적 지도 · 누르면 크게)</figcaption>
-            </figure>
-            <figure class="ag-shot" style="margin-top:0" id="ag-ind-fig">
-              <img class="ag-zoom" src="assets/data/aging/analysis/map_industrial_zone.png" alt="경기도 공업 용도지역(일반·준·전용) 지도" loading="lazy" onerror="this.closest('figure').hidden=true">
-              <figcaption>토지특성 — 공업 용도지역 (정적 지도 · 누르면 크게)</figcaption>
-            </figure>
+          <h3 style="margin:1.2rem 0 .2rem">도시쇠퇴도 8유형 — 움직이는 지도</h3>
+          <div class="fb-controls ag-mini-ctl" id="ag-ctl-dec" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
+          <div class="ag-mini" style="margin-top:.5rem">
+            <div class="fb-mapbox" id="ag-box-dec">
+              <div class="fb-map" id="ag-map-dec"></div>
+              <button type="button" class="ag-fs" data-fs="ag-box-dec" title="전체화면">⛶ 전체화면</button>
+              <div class="fb-busy" id="ag-busy-dec">자료를 불러오는 중입니다…</div>
+            </div>
+            <div class="fb-card ag-legend" id="ag-legend-dec"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
           </div>
+          <p class="fb-sub">행정동을 누르면 유형·가중치·지표. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_decline_8class.png" data-cap="도시쇠퇴도 8유형 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
+
+          <h3 style="margin:1.6rem 0 .2rem">토지특성 — 공업 용도지역 — 움직이는 지도</h3>
+          <div class="fb-controls ag-mini-ctl" id="ag-ctl-ind" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
+          <div class="ag-mini" style="margin-top:.5rem">
+            <div class="fb-mapbox" id="ag-box-ind">
+              <div class="fb-map" id="ag-map-ind"></div>
+              <button type="button" class="ag-fs" data-fs="ag-box-ind" title="전체화면">⛶ 전체화면</button>
+              <div class="fb-busy" id="ag-busy-ind">자료를 불러오는 중입니다…</div>
+            </div>
+            <div class="fb-card ag-legend" id="ag-legend-ind"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
+          </div>
+          <p class="fb-sub">구역을 누르면 용도지역명·면적. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_industrial_zone.png" data-cap="토지특성 — 공업 용도지역 정적 그림">정적 그림(PNG) 크게 보기</button></p>
         </section>
 
         <!-- ⑤ 전환 우선순위 — 4대 로직 100점 · A~D 등급 · 용도별 상위 10 -->
@@ -293,16 +323,21 @@
           </p>
           <div class="ag-stat" id="ag-rk-stat"></div>
           <div class="ag-logic" id="ag-rk-logic"></div>
-          <div class="fb-chart" style="grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)">
-            <figure class="ag-shot" style="margin-top:0">
-              <img class="ag-zoom" src="assets/data/aging/analysis/fig_framework.png" alt="전환 우선순위 분석의 틀 — 4대 로직과 등급 기준" loading="lazy">
-              <figcaption>분석의 틀 — 4대 로직(100점)과 게이트·등급 기준 (누르면 크게)</figcaption>
-            </figure>
-            <figure class="ag-shot" style="margin-top:0">
-              <img class="ag-zoom" src="assets/data/aging/analysis/map_grade.png" alt="전환 우선순위 A~D 등급 지도" loading="lazy">
-              <figcaption>등급 지도 — A(빨강)·B(주황)·C(살구)·D(회색). ① 지도의 「⑤ 전환 우선순위 A·B 등급」 층으로 확대해 볼 수 있습니다.</figcaption>
-            </figure>
+          <figure class="ag-shot" style="margin-top:0;max-width:900px">
+            <img class="ag-zoom" src="assets/data/aging/analysis/fig_framework.png" alt="전환 우선순위 분석의 틀 — 4대 로직과 등급 기준" loading="lazy">
+            <figcaption>분석의 틀 — 4대 로직(100점)과 게이트·등급 기준 (누르면 크게)</figcaption>
+          </figure>
+          <h3 style="margin:1.4rem 0 .2rem">등급 지도 — 움직이는 지도</h3>
+          <div class="fb-controls ag-mini-ctl" id="ag-ctl-grade" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
+          <div class="ag-mini" style="margin-top:.5rem">
+            <div class="fb-mapbox" id="ag-box-grade">
+              <div class="fb-map" id="ag-map-grade"></div>
+              <button type="button" class="ag-fs" data-fs="ag-box-grade" title="전체화면">⛶ 전체화면</button>
+              <div class="fb-busy" id="ag-busy-grade">자료를 불러오는 중입니다…</div>
+            </div>
+            <div class="fb-card ag-legend" id="ag-legend-grade"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
           </div>
+          <p class="fb-sub">A·B 등급 폴리곤을 누르면 종합점수·추천 용도·등급 뜻. C·D 는 검은 테두리 산단으로 보입니다. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_grade.png" data-cap="전환 우선순위 등급 지도 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
 
           <h3 style="margin:1.6rem 0 .3rem">30년 이상 노후산단 유형화</h3>
           <div class="fb-card">
@@ -384,6 +419,6 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609160400" defer></script>
+  <script src="assets/js/aging-complex.js?v=202609160600" defer></script>
 </body>
 </html>
