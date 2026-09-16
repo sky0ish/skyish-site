@@ -13,7 +13,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="assets/css/style.css?v=202609112000">
-  <!-- 공개 — 가입하지 않은 분도 봅니다 (자료는 auth/defense_public.sql 로 열어 둔 defense 폴더) -->
+  <!-- 로그인·승인된 사람만 열람 — DATA 갈래 전체 (2026-09-17) -->
+  <script type="module" src="assets/js/guard.js?v=202609010300"></script>
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css?v=202609010300">
   <style>
     /* ④ 네트워크 — 지도 + 옆 설명패널 */
@@ -459,8 +460,7 @@
             <span class="fb-fig__src" id="dc-dl-src">보관함을 여는 중…</span>
           </div>
           <p class="fb-fig__desc">
-            위 지도와 표가 읽는 <strong>원자료를 그대로</strong> 받아 가실 수 있습니다.
-            로그인은 필요 없습니다. 기업 명단은
+            위 지도와 표가 읽는 <strong>원자료를 그대로</strong> 받아 가실 수 있습니다 (회원만). 기업 명단은
             <a href="defense-companies.html">기업 리스트</a>에서 <strong>엑셀(CSV)</strong>로도 받습니다.
           </p>
           <ul class="dc-dl" id="dc-dl"></ul>
@@ -480,7 +480,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/defense-cluster.js?v=202609140900" defer></script>
+  <script src="assets/js/defense-cluster.js?v=202609171000" defer></script>
   <script src="assets/js/defense-graph.js?v=202609091500" defer></script>
   <script src="assets/js/defense-cluster-network.js?v=202609091400" defer></script>
 </body>

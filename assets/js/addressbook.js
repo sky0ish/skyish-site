@@ -22,7 +22,7 @@
 //  옛 연구실 명부의 생일·자택 전화·자택 주소는 읽지 않습니다 — 화면에 쓸 일이 없는 것은
 //  브라우저 안에도 담지 않습니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import { IMG_EXT, photoKey, nameFromFile, packText, readPack, packFileName, dataUrlType, sortPicked,
+import { IMG_EXT, photoKey, nameFromFile, packText, readPack, packFileName, dataUrlType,
          orgKey, personKey, splitFileName, findKey, isSharedKey, readExtras, candidateKeys, faceFileStem, atDate } from "./addr-pack.js?v=202609091200";
 
 /** 주인 이메일 — 이 사람만 주소록을 봅니다 */
@@ -1410,14 +1410,26 @@ export async function savePhoto(name, blob, org) {
   } catch (e) { return false; }
 }
 
-/** 붙여넣은 사진을 9.FACE 폴더에 「이름.jpg」 로 되돌려 저장합니다.
+/** 붙여넣은 사진을 9.FACE 폴더에 「이름_소속.jpg」 로 되돌려 저장합니다.
  *  폴더를 안 고르셨거나 쓰기를 안 허락하셨으면 조용히 넘어갑니다
  *  (브라우저 안 사본은 이미 저장돼 있어 화면에는 그대로 보입니다).
+ *  @param opts.resume  골라 둔 폴더의 허락이 「prompt」 로 돌아갔으면(브라우저를 새로 켠 뒤) 다시 묻습니다
+ *  @param opts.pick    폴더를 아직 안 골라 두셨으면 고르는 창을 엽니다
+ *                      — 둘 다 사람이 누른 자리(붙여넣기·단추)에서만 됩니다
  *  @returns 저장한 파일 이름, 못 했으면 빈 글자
  */
-export async function saveToFaceFolder(name, blob, org) {
+export async function saveToFaceFolder(name, blob, org, opts) {
+  const o = opts || {};
   try {
-    const dir = await photoDir();
+    let dir = await photoDir();
+    if (!dir && (o.resume || o.pick)) {
+      const h = await faceHandle();
+      let ok = false;
+      if (h) ok = await resumeFaceFolder();              // 허락만 다시 받으면 되는 상태
+      else if (o.pick) ok = await pickFaceFolder();       // 아직 안 골라 둔 상태 — 고르기를 그만두면 AbortError → 빈 글자
+      if (!ok) return "";
+      dir = await photoDir();
+    }
     if (!dir || typeof dir.getFileHandle !== "function") return "";
     let st = await dir.queryPermission({ mode: "readwrite" }).catch(() => "prompt");
     if (st !== "granted") {
@@ -1920,6 +1932,17 @@ export async function fromFolder(k) {
   } catch (e) { return ""; }
 }
 
+/** 그 열쇠의 그림이 9.FACE 폴더에 파일로 있는가 — 브라우저 안 사본이 있어도 봅니다
+    (붙여넣은 뒤 「사진 저장하기」 를 보일지 말지, 지울 때 폴더 파일도 함께 지울지 정하는 데 씁니다).
+    @returns 폴더 안 파일 이름, 없으면 빈 글자 */
+export async function folderFile(k) {
+  if (!k) return "";
+  try {
+    const it = (await loadPhotoMap()).get(k);
+    return it ? (it.name || "그림 파일") : "";
+  } catch (e) { return ""; }
+}
+
 /** 사진이 몇 장 준비돼 있는지 — 안내에 씁니다 */
 export async function photoCount() {
   return (await loadPhotoMap()).size;
@@ -1983,21 +2006,11 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       (FSA ? '<button type="button" class="nbtn" id="abFace" ' +
         'title="홈피 폴더의 9.FACE 를 고르세요 — 파일 이름이 사람 이름인 그림을 얼굴로 씁니다">' +
         '🙂 얼굴 사진 폴더</button>' : "") +
-      /* 얼굴 사진 가져오기 — 폰에는 컴퓨터 폴더가 없습니다.
-         꾸러미(.json) 한 개든 그림 여러 장이든 받습니다.
-         고른 파일은 이 브라우저 안에만 담깁니다. */
-      /* accept 를 적지 않습니다 — image/* 와 .json 을 섞어 적으면 아이폰에서
-         꾸러미(.json)가 아예 안 골라집니다. 갈래는 받아서 우리가 가립니다. */
-      '<label class="nbtn afiles" id="abPhotoLbl" ' +
-        'title="컴퓨터에서 내보낸 「사진 꾸러미」 하나, 또는 얼굴 그림 여러 장">' +
-        '🙂 얼굴 사진 가져오기' +
-        '<input type="file" id="abPhotos" multiple hidden>' +
-      "</label>" +
-      /* 컴퓨터에서 폰으로 옮길 때 — 가진 얼굴을 한 파일로 묶습니다.
-         폰·사파리·파이어폭스에도 놓습니다 — 폴더를 못 여는 곳일수록
-         브라우저 안에 담긴 사진을 꺼낼 길이 여기밖에 없습니다. */
+      /* 「🙂 얼굴 사진 가져오기」(꾸러미·그림 파일을 브라우저에 담기)는 2026-09-17 뺐습니다 —
+         얼굴은 「🙂 얼굴 사진 폴더」(9.FACE) 하나로 봅니다. 담는 함수(importPhotos)는 남겨 두었습니다. */
+      /* 가진 얼굴과 채워 넣은 내용을 한 파일로 내려받기(백업). */
       '<button type="button" class="nbtn" id="abPack" ' +
-        'title="가진 얼굴 사진과 채워 넣은 내용을 한 파일로 내려받습니다">' +
+        'title="가진 얼굴 사진과 채워 넣은 내용을 한 파일로 내려받습니다 (백업)">' +
         '⤓ 사진 꾸러미</button>' +
       '<button type="button" class="nbtn" id="abAgain" hidden></button>' +
       (FSA ? "" :
@@ -2010,9 +2023,9 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
          전에는 「아직 안 읽었습니다」 안내(abNot) 안에만 적어 두어,
          이미 주소록이 열려 있는 분(=정작 읽어야 할 분)은 볼 수가 없었습니다. */
       '<p class="ahint ahint--how" id="abHow">' +
-        "얼굴 사진은 <b>이 브라우저 안에만</b> 있습니다. 다른 기기(폰)에서도 보시려면 " +
-        "컴퓨터에서 <b>⤓ 사진 꾸러미</b> 로 한 파일을 내려받아 옮기신 뒤, " +
-        "거기서 <b>🙂 얼굴 사진 가져오기</b> 로 그 파일을 고르세요." +
+        "얼굴 사진은 <b>🙂 얼굴 사진 폴더</b> 로 홈피 폴더의 <b>9.FACE</b> 를 한 번 고르면 표에 나옵니다 " +
+        "(파일 이름이 「이름_소속.jpg」). 다른 컴퓨터에서도 같은 구글 드라이브 폴더를 고르면 됩니다. " +
+        "그림은 브라우저 안에서만 풀리고 어디로도 올라가지 않습니다." +
       "</p>" +
       /* 자료가 아직 없을 때 「사라진 게 아니라 아직 안 읽은 것」 임을 알려 줍니다 */
       '<p class="anot" id="abNot">명함첩 · 동문 명부 · 연구실 주소록은 <b>내 컴퓨터에만</b> 있습니다.<br>' +
@@ -2473,7 +2486,8 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
          (NT로봇 김경환 님의 얼굴이 경기도청 김경환 님께 붙었던 일) */
       const key = await photoKeyOf(r.name, r.company);
       const shared = isSharedKey(key);
-      const inFolder = key ? await fromFolder(key) : "";
+      /* 폴더에 파일로 있는가 — 붙여넣어 브라우저 안에만 있는 사진이면 「저장하기」 를 보입니다 */
+      const inFolder = key ? await folderFile(key) : "";
       const u = await photo(r.name, r.company);
       if (u) {
         boxEl.innerHTML = '<img src="' + u + '" alt="' + esc(r.name) + '">';
@@ -2490,9 +2504,42 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
           (inFolder
             ? '<p class="aphoto__warn">9.FACE 폴더의 「' + esc(inFolder) + '」 입니다 — ' +
               "지우면 그 파일도 함께 지워집니다.</p>"
-            : "") +
+            /* 브라우저 안에만 있는 사진 — 한 번 눌러 9.FACE 폴더에 「이름_소속.jpg」 로 남깁니다.
+               (전에는 폴더 허락이 풀려 있으면 저장이 조용히 안 되고, 「명함 내용 더하기 → 저장」 을
+               눌러도 사진과는 상관이 없어 헷갈렸습니다.) */
+            : '<button type="button" class="nbtn nbtn--go" id="abPhotoSave" ' +
+              'title="9.FACE 폴더에 「이름_소속.jpg」 로 저장합니다 (폴더를 아직 안 고르셨으면 고르는 창이 뜹니다)">' +
+              "💾 사진 저장하기</button>") +
           '<button type="button" class="nbtn" id="abPhotoDel">' +
           (shared && twins > 1 ? "이 분 아님 (지우기)" : "사진 지우기") + "</button>";
+        const sv = document.getElementById("abPhotoSave");
+        if (sv) sv.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          sv.disabled = true;
+          try {
+            const blob = await (await fetch(u)).blob();
+            const saved = await saveToFaceFolder(r.name, blob, r.company, { resume: true, pick: true });
+            if (saved) {
+              await refreshPhotoNames(true);
+              await show();
+              paintFacesNow();
+              say(r.name + " 님의 사진을 9.FACE 폴더에 「" + saved + "」 로 저장했습니다.");
+              return;
+            }
+            if (typeof window.showDirectoryPicker !== "function") {
+              /* 폴더에 곧바로 못 쓰는 브라우저(파이어폭스·사파리) — 내려받기 폴더로 */
+              const fname = faceFileStem(r.name, r.company, safeFileName) + extOf(blob.type);
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob); a.download = fname;
+              document.body.appendChild(a); a.click(); a.remove();
+              setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+              say("이 브라우저는 폴더에 곧바로 쓰지 못해 「" + fname + "」 로 내려받았습니다 — 9.FACE 폴더로 옮겨 주세요.");
+            } else {
+              say("저장하지 못했습니다 — 9.FACE 폴더를 고르고 쓰기를 허락해 주세요.");
+            }
+          } catch (err) { say("저장하지 못했습니다 — " + (err && err.message)); }
+          sv.disabled = false;
+        });
         /* 「이 분 것으로」 — 소속을 붙인 열쇠로 옮겨 담고, 함께 쓰던 것은 치웁니다.
            그러면 같은 이름의 다른 분에게서는 사진이 사라집니다. */
         const mine = document.getElementById("abPhotoMine");
@@ -2569,12 +2616,12 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       paintFacesNow();
       /* 폴더에도 되돌려 저장합니다 — 브라우저를 비워도 남게.
          저장하면 폴더 목록을 다시 읽게 되므로, 「누가 사진이 있는지」 도 그 뒤에 한 번 더 모읍니다 */
-      const saved = await saveToFaceFolder(r.name, blob, r.company);
-      if (saved) refreshPhotoNames();
+      const saved = await saveToFaceFolder(r.name, blob, r.company, { resume: true });
+      if (saved) { refreshPhotoNames(true); await show(); }     // 저장됐으면 「저장하기」 단추를 거둡니다
       say(saved
         ? `${r.name} 님의 사진을 넣었습니다. 9.FACE 폴더에 「${saved}」 로도 저장했습니다.`
         : `${r.name} 님의 사진을 넣었습니다. ` +
-          "(폴더에도 남기시려면 「🙂 얼굴 사진 폴더」 로 9.FACE 를 골라 주세요)");
+          "사진 아래 「💾 사진 저장하기」 를 누르면 9.FACE 폴더에 파일로 남습니다.");
     };
 
     /* 클립보드에서 그림을 꺼냅니다.
@@ -2764,31 +2811,34 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       if (faceBtn.dataset.resume) {
         if (await resumeFaceFolder()) {
           faceBtnNormal();
-          await mirrorNow();                  // 그림을 브라우저 안에 베껴 둡니다 — 다음엔 안 물어봅니다
-          const n0 = await photoCount();
-          say(n0 ? `얼굴 사진 ${n0}장을 담아 두었습니다 — 이제 새로고침해도 그대로 보입니다.` : "폴더는 열렸지만 그림을 찾지 못했습니다.");
-          await refreshPhotoNames();
-          repaint();
+          await facesFromFolder();
           return;
         }
         /* 허락을 못 받았으면 아래로 — 폴더를 새로 고르게 합니다 */
       }
       if (!(await pickFaceFolder())) return;
       faceBtnNormal();
-      await mirrorNow();                       // 고른 폴더의 그림을 곧바로 베껴 둡니다
-      const n = await photoCount();
-      say(n
-        ? `얼굴 사진 ${n}장을 담아 두었습니다 — 이제 새로고침해도, 폴더를 다시 안 골라도 그대로 보입니다.`
-        : "그 폴더에서 그림을 찾지 못했습니다. 파일 이름을 그 사람 이름으로 지어 주세요 (예: 이석준.jpg).");
-      await refreshPhotoNames();
-      repaint();
+      await facesFromFolder();
     } catch (e) {
       if (e.name !== "AbortError") say("폴더를 열지 못했습니다 — " + e.message);
     }
   });
+  /* 폴더를 고르거나 허락을 다시 받은 직후 —
+     ① 먼저 폴더 목록을 읽어 표에 얼굴을 그립니다 (수백 장이라도 목록만 읽으니 금방)
+     ② 그 다음에 그림을 브라우저 안에 베껴 둡니다 — 새로고침해도, 허락이 풀려도 그대로 보이게.
+     전에는 ②를 다 끝낸 뒤에야 ①을 해서, 구글 드라이브의 9.FACE(500장 넘음)를 고르면
+     한동안 아무 일도 없는 것처럼 보였습니다. */
+  async function facesFromFolder() {
+    say("얼굴 사진 폴더를 읽는 중…");
+    const n = await photoCount();
+    await refreshPhotoNames();               // 표를 다시 그려 얼굴을 얹습니다
+    if (!n) { say("그 폴더에서 그림을 찾지 못했습니다. 파일 이름을 「이름_소속.jpg」 로 지어 주세요."); return; }
+    say(`얼굴 사진 ${n}장 — 표에 얼굴을 얹었습니다. 브라우저 안에 사본을 담는 중…`);
+    await mirrorNow();
+    say(`얼굴 사진 ${n}장을 담아 두었습니다 — 이제 새로고침해도, 폴더를 다시 안 골라도 그대로 보입니다.`);
+  }
 
-  /* 사진 꾸러미 내보내기 — 컴퓨터의 얼굴을 한 파일로.
-     구글 드라이브에 두셨다 폰에서 「얼굴 사진 가져오기」 로 고르시면 됩니다. */
+  /* 사진 꾸러미 내보내기 — 가진 얼굴과 채워 넣은 내용을 한 파일로 (백업). */
   const packBtn = document.getElementById("abPack");
   if (packBtn) packBtn.addEventListener("click", async () => {
     const was = packBtn.textContent;
@@ -2814,59 +2864,12 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       setTimeout(() => URL.revokeObjectURL(url), 4000);
       const mb = Math.round(blob.size / 1048576 * 10) / 10;
       say("얼굴 사진 " + n + "장" + (nExtra ? " · 채워 넣은 내용 " + nExtra + "건" : "") +
-          "을 한 파일로 묶었습니다 (" + mb + "MB). " +
-          "이 파일을 폰으로 옮기신 뒤 「얼굴 사진 가져오기」 로 고르시면 됩니다." +
-          (mb > 40 ? " ※ 파일이 큽니다 — 폰에서 못 여실 수 있습니다." : ""));
+          "을 한 파일로 묶었습니다 (" + mb + "MB) — 백업으로 두세요.");
     } catch (e) {
       say("묶지 못했습니다 — " + (e && e.message ? e.message : e));
     } finally {
       packBtn.disabled = false;
       packBtn.textContent = was;
-    }
-  });
-
-  /* 얼굴 사진 가져오기 — 꾸러미든 그림이든. 이 브라우저에만 담깁니다. */
-  const photosEl = document.getElementById("abPhotos");
-  if (photosEl) photosEl.addEventListener("change", async (e) => {
-    const list = [...e.target.files];
-    e.target.value = "";
-    if (!list.length) return;
-    const kinds = sortPicked(list.map((f) => f.name));
-    say("얼굴 사진을 담는 중…" + (kinds.packs.length ? " (꾸러미)" : ""));
-    try {
-      /* 주소록에 있는 이름만 담습니다 — 폰 사진첩의 「IMG_4821.JPG」 를 그대로 받으면
-         담았다고 알리고도 얼굴은 한 장도 안 붙고, 지울 길 없는 그림만 쌓입니다. */
-      const known = new Set();
-      rows.forEach((r) => {
-        const a = personKey(r.name, r.company);
-        if (a) { known.add(a); known.add(photoKey(r.name)); }
-      });
-      const { n, people, skipped } = await importPhotos(list, (k) => {
-        if (k % 20 === 0) {
-          say("얼굴 사진을 담는 중… " + k + "장");
-          refreshPhotoNames(true);        // 담는 중에 표를 만지셔도 줄 세우기가 뒤처지지 않게 (그리지는 않습니다)
-        }
-      }, known.size ? known : null);
-      /* 꾸러미에는 채워 넣은 내용도 들어 있습니다 — 표에 곧바로 얹습니다 */
-      rows = dropHidden(applyExtras(rows, await allExtras()), await hiddenKeys());
-      await refreshPhotoNames();
-      repaint();
-      const why = skipped.length
-        ? NL + "못 담은 것 " + skipped.length + "개:" + NL + skipped.slice(0, 8).join(NL) +
-          (skipped.length > 8 ? NL + "…" : "")
-        : "";
-      if (n) {
-        say("얼굴 사진 " + n + "장(" + people + "분)을 이 브라우저에 담았습니다." +
-            (skipped.length ? " 못 담은 것 " + skipped.length + "개." : ""));
-        if (skipped.length) alert("담았습니다 — " + n + "장." + why);
-      } else if (skipped.length) {
-        say("담긴 것이 없습니다 — 까닭을 알려 드립니다.");
-        alert("담긴 것이 없습니다." + why);
-      } else {
-        say("담을 것을 찾지 못했습니다.");
-      }
-    } catch (err) {
-      say("담지 못했습니다 — " + (err && err.message ? err.message : err));
     }
   });
 
@@ -2893,9 +2896,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
         "① 명함첩·동문 엑셀 두 파일을 폰에 한 번 내려받고<br>" +
         "② 「엑셀 고르기」 로 두 파일을 고르시면 —<br>" +
         "그 뒤로는 <b>저절로</b> 열립니다. 자료는 이 폰 브라우저 밖으로 안 나갑니다.<br><br>" +
-        "<b>얼굴 사진</b>도 마찬가지입니다. 컴퓨터에서 「⤓ 사진 꾸러미」 로 한 파일을 " +
-        "내려받아 폰으로 옮기신 뒤, 「🙂 얼굴 사진 가져오기」 로 그 파일을 고르시면 " +
-        "얼굴이 함께 뜹니다.";
+        "<b>얼굴 사진</b>은 컴퓨터(9.FACE 폴더)에서만 보입니다.";
     }
     return true;
   }

@@ -12,8 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
+  <!-- 로그인·승인된 사람만 열람 — DATA 갈래 전체 (2026-09-17) -->
+  <script type="module" src="assets/js/guard.js?v=202609010300"></script>
   <link rel="stylesheet" href="assets/css/style.css?v=202609112000">
-  <!-- 공개 — DATA › 산업 갈래는 가입하지 않은 분도 봅니다. 자료는 공개 자료라 assets/data/aging/ 에 함께 둡니다 -->
+  <!-- 자료(assets/data/aging/)는 공개 저장소에 함께 둡니다 — 화면은 위 guard.js 로 회원만 -->
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css?v=202609010300">
   <style>
     /* ① 지도 — QGIS 화면과 같은 흰 바탕 */

@@ -3134,7 +3134,7 @@ html[data-cp]:not([data-cp="tome"]) .contact-top .contact-grid { display: none; 
 .aphoto__hint b { color:var(--ink); font-weight:600; }
 .aphoto__hint small { font-size:.7rem; opacity:.8; }
 .aphoto__act { margin-top:8px; text-align:center; }
-.aphoto__act .nbtn { padding:5px 12px; font-size:.74rem; }
+.aphoto__act .nbtn { padding:5px 12px; font-size:.74rem; margin:2px 3px; }   /* 「사진 저장하기」·「사진 지우기」 가 나란히 */
 
 @media (max-width:700px) {
   .adet2 { grid-template-columns:1fr; gap:16px; }

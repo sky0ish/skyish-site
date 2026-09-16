@@ -2,7 +2,7 @@
    수도권 방산기업 리스트 — defense-companies.html
 
    자료: analysis 보관함의 defense/companies.json
-     (defense 폴더는 auth/defense_public.sql 로 누구나 읽습니다 — 로그인 없이 보고 CSV 로 받습니다)
+     (defense 폴더는 승인된 회원만 읽습니다 — 2026-09-17 부터 DATA 갈래 전체가 회원만)
      cols  화면에 보일 칸의 차례와 이름
      rows  기업 한 곳이 한 줄. _fill 이 있으면 그 칸은 조사로 채운 것.
 
@@ -172,8 +172,7 @@
           : '<b>analysis / defense 폴더에 <code>companies.json</code> 이 없습니다.</b><br>' +
             '지금 그 폴더에 있는 것: ' +
             (names.length ? '<code>' + names.map(esc).join("</code> · <code>") + '</code>'
-                          : '<span class="dl-empty">(비어 있음 — 로그인하지 않은 상태라면 defense 폴더 ' +
-                            '공개 규칙(auth/defense_public.sql)이 아직 안 걸린 것일 수 있습니다)</span>') + '<br>' +
+                          : '<span class="dl-empty">(비어 있음)</span>') + '<br>' +
             '<span class="dl-empty">이름이 <code>companies.json</code> 인지, ' +
             'analysis 보관함의 <code>defense</code> 폴더 <b>안</b>인지 봐 주세요. ' +
             '만드는 곳: tools/defense/build_defense_companies.py</span>';
@@ -182,7 +181,7 @@
         box.innerHTML = '<b>기업 명단을 불러오지 못했습니다.</b><br>' +
           '<span class="dl-empty">보관함도 열어 보지 못했습니다 — ' +
           esc(String((e2 && e2.message) || raw || "까닭 모름")) +
-          '. defense 폴더 공개 규칙(auth/defense_public.sql)이 아직 안 걸려 있을 수 있습니다.</span>';
+          '. 로그인이 풀렸거나 승인 상태가 아닐 수 있습니다.</span>';
       });
     document.getElementById("dl-body").innerHTML =
       '<tr><td style="padding:2rem;text-align:center;color:#8b8280">' +
