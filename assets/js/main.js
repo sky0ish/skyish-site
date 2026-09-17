@@ -74,7 +74,9 @@
         { label: "일상",     file: "blog.html?cat=daily"    },
         { label: "ETC",      file: "blog.html?cat=etc"      }
       ] },
-      { label: "CONTACT",  file: "contact.html", sub: [
+      /* CONTACT 을 누르면 주소록으로 (「여기서 Contact 을 누르면 주소록으로 가게 해줘」) —
+         관리자가 아니면 contact-tabs.js 가 To Me 로 되돌립니다. 밑줄은 also 로 켭니다. */
+      { label: "CONTACT",  file: "contact.html?p=addr", also: ["contact.html"], sub: [
         { label: "활동기관", file: "contact.html?p=orgs"   },
         { label: "주소록",   file: "contact.html?p=addr",  own: true },
         { label: "Sites",   file: "contact.html?p=sites", own: true },
