@@ -3337,3 +3337,11 @@ th[aria-sort] .fb-sort__a { color: var(--teal); }
 .inbox__sub { font-weight: 700; margin: .3rem 0 .2rem; }
 .inbox__body { font-size: .92rem; line-height: 1.65; white-space: normal; word-break: break-word; }
 .inbox__acts { display: flex; gap: .4rem; justify-content: flex-end; margin-top: .5rem; }
+
+/* 글 창 「만난 사람」 아래 — 주소록에 있는 분은 알약으로, 누르면 명함 */
+.npl-row { display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; margin-top:6px; }
+.npl-lab { font-size:.72rem; color:var(--mauve); margin-right:2px; }
+.npl { all:unset; cursor:pointer; display:inline-flex; align-items:baseline; gap:4px; padding:2px 9px;
+       border:1px solid var(--line); border-radius:999px; background:#fff; font-size:.78rem; color:var(--teal-text); }
+.npl:hover { border-color:var(--teal); background:#f4faf8; }
+.npl small { font-size:.68rem; color:#8b8280; }

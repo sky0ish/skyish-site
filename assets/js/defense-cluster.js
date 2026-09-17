@@ -433,91 +433,6 @@
       });
   }
 
-  /* ---------- ⑦ 자료 내려받기 ----------
-     보관함 defense 폴더에 **지금 들어 있는** 파일을 그대로 늘어놓습니다.
-     파일마다 이름을 적어 두지 않는 까닭은, 관리 화면(admin/data.html)에서
-     새 파일을 올리면 여기도 저절로 늘어나야 하기 때문입니다.
-     companies-edits.json 은 화면에서 손으로 고친 내역이라 뺍니다 —
-     그 내용은 기업 리스트의 CSV 에 이미 합쳐져 나갑니다. */
-  var DL_WHAT = {
-    "points.json":    "기업·연구장비 좌표 (① ④ ⑤)",
-    "network.json":   "장비 × 기업 관계망 · 장비 키워드 (② ③)",
-    "companies.json": "수도권 방산기업 명단 (⑥)",
-    "complexes.json": "경기도 산업단지 157곳 (① 별)",
-    "equip-map.png":  "연구장비 시군 분포 원본 그림 (②)",
-  };
-  var DL_SKIP = { "companies-edits.json": 1, ".emptyFolderPlaceholder": 1 };
-
-  function 내려받기(m) {
-    var ul = document.getElementById("dc-dl");
-    var src = document.getElementById("dc-dl-src");
-    if (!ul) return;
-    var 안됨 = function (why) {
-      if (src) src.textContent = "—";
-      ul.innerHTML = '<li class="none">' + esc(why) + "</li>";
-    };
-    var box = m.sb && m.sb.storage && m.sb.storage.from("analysis");
-    if (!box) { 안됨("보관함을 열 수 없습니다."); return; }
-
-    box.list("defense", { limit: 100, sortBy: { column: "name", order: "asc" } })
-      .then(function (r) {
-        if (r.error) throw r.error;
-        var files = (r.data || []).filter(function (f) {
-          return f.id && !DL_SKIP[f.name];         // id 없는 것은 하위 폴더입니다
-        });
-        /* 읽을 권한이 없으면 오류가 아니라 빈 목록이 옵니다 */
-        if (!files.length) {
-          안됨("자료 목록이 비어 있습니다 — 파일을 아직 안 올렸거나, 로그인이 풀렸거나 승인 상태가 아닐 수 있습니다.");
-          return null;
-        }
-        /* 아는 파일은 위 표 차례로, 모르는 것은 그 뒤에 이름순으로 */
-        var order = Object.keys(DL_WHAT);
-        files.sort(function (a, b) {
-          var ia = order.indexOf(a.name), ib = order.indexOf(b.name);
-          if (ia < 0) ia = 99; if (ib < 0) ib = 99;
-          return ia - ib || a.name.localeCompare(b.name);
-        });
-        var paths = files.map(function (f) { return "defense/" + f.name; });
-        return box.createSignedUrls(paths, 60 * 60 * 4).then(function (u) {
-          if (u.error) throw u.error;
-          return { files: files, urls: u.data || [] };
-        });
-      })
-      .then(function (got) {
-        if (!got) return;
-        var byPath = {};
-        got.urls.forEach(function (x) { if (x && x.signedUrl) byPath[x.path] = x.signedUrl; });
-        var n = 0;
-        ul.innerHTML = got.files.map(function (f) {
-          var url = byPath["defense/" + f.name];
-          if (!url) return "";
-          n++;
-          var size = (f.metadata && f.metadata.size) || 0;
-          var ext = (f.name.split(".").pop() || "").toLowerCase();
-          var ic = /png|jpe?g|gif|webp|svg/.test(ext) ? "🖼" : /xlsx?|csv/.test(ext) ? "📊" : "📄";
-          return '<li><a href="' + url + '" download="' + esc(f.name) + '" rel="noopener">' +
-            '<span class="ic" aria-hidden="true">' + ic + '</span>' +
-            '<span class="nm">' + esc(f.name) +
-              (DL_WHAT[f.name] ? '<span class="what">' + esc(DL_WHAT[f.name]) + '</span>' : "") +
-            '</span>' +
-            '<span class="sz">' + 크기(size) + '</span></a></li>';
-        }).join("");
-        if (src) src.textContent = "파일 " + n + "개 · 내려받기 주소는 4시간 동안 유효";
-      })
-      .catch(function (e) {
-        console.error(e);
-        안됨("자료 목록을 불러오지 못했습니다 — 로그인이 풀렸거나 승인 상태가 아닐 수 있습니다. (" +
-             String((e && e.message) || e) + ")");
-      });
-  }
-
-  function 크기(b) {
-    if (!b) return "";
-    if (b < 1024) return b + " B";
-    if (b < 1024 * 1024) return (b / 1024).toFixed(0) + " KB";
-    return (b / 1024 / 1024).toFixed(1) + " MB";
-  }
-
   /* ══════════════════════════════════════════════════════════
      ⑤ 시군별 분포와 전국 대비 강점
 
@@ -735,10 +650,9 @@
     import("../../auth/auth.js")
       .then(function (m) {
         방 = m;                          // 뒤에서 ⑤ 가 다시 씁니다
-        /* ② 그려 둔 그림과 ⑦ 내려받기 목록은 자료와 따로 받아 옵니다.
-           여기서 무슨 일이 나도 아래 지도·통계까지 멎으면 안 됩니다. */
+        /* ② 그려 둔 그림은 자료와 따로 받아 옵니다.
+           여기서 무슨 일이 나도 아래 지도·통계까지 멎으면 안 됩니다. (⑦ 자료 내려받기 절은 2026-09-17 뺐습니다) */
         try { 그림(m); } catch (e) { console.error(e); }
-        try { 내려받기(m); } catch (e) { console.error(e); }
         return m.loadAnalysisJson("defense/points.json");
       })
       .then(function (j) {

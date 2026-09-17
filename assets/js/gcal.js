@@ -393,6 +393,54 @@ export async function deleteEvent(id, calId) {
 /* ── 일정 하나를 구글 「내 캘린더(primary)」 에 넣습니다 ──
    @param {date:"2026-09-02", time:"14:00"|"" , title, place}
    시각이 있으면 그때부터 한 시간, 없으면 종일로 넣습니다. */
+/** 일정 몸통 — addEvent · updateEvent 가 같이 씁니다 */
+function eventBody(ev) {
+  const body = { summary: String(ev.title || "").slice(0, 200) };
+  if (ev.place) body.location = String(ev.place).slice(0, 200);
+  if (ev.time) {
+    const beg = ev.date + "T" + ev.time + ":00";
+    const d = new Date(beg);
+    const end = new Date(d.getTime() + 60 * 60 * 1000);
+    const p = (n) => String(n).padStart(2, "0");
+    const local = (x) => x.getFullYear() + "-" + p(x.getMonth() + 1) + "-" + p(x.getDate()) +
+                         "T" + p(x.getHours()) + ":" + p(x.getMinutes()) + ":00";
+    body.start = { dateTime: beg, timeZone: "Asia/Seoul" };
+    body.end   = { dateTime: local(end), timeZone: "Asia/Seoul" };
+  } else {
+    const d = new Date(ev.date + "T00:00:00");
+    d.setDate(d.getDate() + 1);
+    const next = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+                 "-" + String(d.getDate()).padStart(2, "0");
+    body.start = { date: ev.date };
+    body.end   = { date: next };
+  }
+  return body;
+}
+
+/** 이미 있는 구글 일정을 고칩니다 — 시각·장소·제목을 행사 정보대로 바로잡을 때.
+ *  @param id     구글 일정 번호 (글의 gcal_id)
+ *  @param ev     { date, time, title, place }  — time 이 비면 종일
+ *  @param calId  어느 캘린더인지 (없으면 내 캘린더)
+ *  @returns true — 없는 일정(404)이면 false, 그 밖의 실패는 던집니다 */
+export async function updateEvent(id, ev, calId) {
+  const t = await useToken();
+  const r = await fetch(
+    "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(calId || "primary") +
+      "/events/" + encodeURIComponent(id),
+    { method: "PATCH",
+      headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
+      body: JSON.stringify(eventBody(ev)) });
+  if (r.status === 404 || r.status === 410) return false;
+  if (!r.ok) {
+    if (r.status === 403 || r.status === 401) {
+      if (await authFail(r)) { disconnect(); throw new Error("구글이 쓰기를 막았습니다 — 「구글 달력 잇기」 를 다시 눌러 주세요."); }
+      throw new Error("구글이 잠시 바쁩니다 — 조금 뒤에 다시 해 주세요.");
+    }
+    throw new Error("구글 일정을 고치지 못했습니다 (" + r.status + ")");
+  }
+  return true;
+}
+
 export async function addEvent(ev) {
   const t = await useToken();
   const body = { summary: String(ev.title || "").slice(0, 200) };

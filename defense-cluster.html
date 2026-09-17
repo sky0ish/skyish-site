@@ -96,21 +96,6 @@
     .dc-shot figcaption{padding:.6rem .9rem;font-size:.82rem;color:var(--mauve);
                         border-top:1px solid var(--line-soft)}
 
-    /* ⑦ 자료 내려받기 — 보관함 defense 폴더의 파일을 하나씩 */
-    .dc-dl{list-style:none;margin:.4rem 0 0;padding:0;display:grid;gap:.5rem;
-           grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
-    .dc-dl li{margin:0}
-    .dc-dl a{display:flex;align-items:center;gap:.6rem;padding:.6rem .85rem;
-             background:var(--white);border:1px solid var(--line);border-radius:var(--radius-md);
-             box-shadow:var(--shadow-sm);text-decoration:none;color:inherit}
-    .dc-dl a:hover{border-color:var(--teal);color:var(--teal-text)}
-    .dc-dl .ic{font-size:1.15rem;line-height:1;flex:0 0 auto}
-    .dc-dl .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-               font-family:var(--font-mono,monospace);font-size:.84rem}
-    .dc-dl .what{display:block;font-family:var(--font-body);font-size:.78rem;color:var(--mauve);
-                 white-space:normal}
-    .dc-dl .sz{flex:0 0 auto;font-size:.76rem;color:#8b8280;font-variant-numeric:tabular-nums}
-    .dc-dl .none{grid-column:1/-1;color:var(--mauve);font-size:.86rem}
 
     /* 관계망 찾기 칸 */
     .dc-g__find{position:relative;display:flex;flex-wrap:wrap;gap:.5rem .7rem;
@@ -452,20 +437,6 @@
           </p>
         </section>
 
-        <!-- 자료 내려받기 — 이 화면이 읽는 원자료를 그대로 받아 갑니다 (defense-cluster.js 가 채웁니다) -->
-        <section class="fb-fig" id="fig6">
-          <div class="fb-fig__head">
-            <span class="fb-fig__no">⑦</span>
-            <h2>자료 내려받기</h2>
-            <span class="fb-fig__src" id="dc-dl-src">보관함을 여는 중…</span>
-          </div>
-          <p class="fb-fig__desc">
-            위 지도와 표가 읽는 <strong>원자료를 그대로</strong> 받아 가실 수 있습니다 (회원만). 기업 명단은
-            <a href="defense-companies.html">기업 리스트</a>에서 <strong>엑셀(CSV)</strong>로도 받습니다.
-          </p>
-          <ul class="dc-dl" id="dc-dl"></ul>
-        </section>
-
         <p class="placeholder-note" lang="ko" style="margin-top:2rem">
           ✎ 기업 위치는 <strong>본사 주소를 지오코딩</strong>한 값이라 실제 공장·연구소 위치와 다를 수 있습니다.
           연구장비는 주소 단위로 묶어 한 점에 여러 기관이 함께 잡히기도 합니다.
@@ -480,7 +451,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609121200" defer></script>
-  <script src="assets/js/defense-cluster.js?v=202609171000" defer></script>
+  <script src="assets/js/defense-cluster.js?v=202609171100" defer></script>
   <script src="assets/js/defense-graph.js?v=202609091500" defer></script>
   <script src="assets/js/defense-cluster-network.js?v=202609091400" defer></script>
 </body>

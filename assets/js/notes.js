@@ -7,7 +7,7 @@
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as NF from "./notes-files.js?v=202609051200";
-import * as GC from "./gcal.js?v=202609080900";
+import * as GC from "./gcal.js?v=202609171300";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
@@ -22,6 +22,7 @@ import * as UP from "./notes-uploads.js?v=202609081500";
 import * as WS from "./notes-workshop.js?v=202609101300";
 import * as HX from "./hwpx.js?v=202609101300";
 import * as WK from "./notes-weekly.js?v=202609112100";
+import * as SM from "./notes-seminar.js?v=202609171300";
 
 /** 사진이 이만큼 넘게 있으면 앨범에도 통째로 담습니다 */
 const ALBUM_MIN = 3;
@@ -464,7 +465,8 @@ export async function initNotes(mountId = "notesapp") {
             '<input type="text" id="nmC" maxlength="120" ' +
               'placeholder="폴더 이름의 ( ) 안에 적은 분"></div>' +
           '<div><label for="nmW">만난 사람</label>' +
-            '<input type="text" id="nmW" maxlength="200"></div>' +
+            '<input type="text" id="nmW" maxlength="200">' +
+            '<div class="npl-row" id="nmWho" hidden></div></div>' +
         "</div>" +
         '<label id="nmGcalBox" class="ngc" hidden>' +
           '<input type="checkbox" id="nmGcal" checked> 구글 캘린더에도 넣기' +
@@ -1928,6 +1930,52 @@ export async function initNotes(mountId = "notesapp") {
     };
   }
 
+  /** 글 창의 「만난 사람」·본문에 적힌 사람 가운데 명함첩(주소록)에 있는 분을 알약으로 늘어놓습니다 —
+   *  누르면 그 분 명함(주소록 정보)이 열립니다.
+   *  「해당 내용에 내가 만난 사람들이 있으면 그 이름을 클릭하면 주소록 정보로 링크되서 내용을 열 수 있게」
+   *  만난 사람 칸의 이름은 모두, 본문은 석 자 이상 이름만(두 자 이름은 흔한 낱말과 겹칩니다). */
+  let whoGen = 0;
+  async function linkPeopleForm(row) {
+    const box = document.getElementById("nmWho");
+    if (!box) return;
+    box.hidden = true; box.innerHTML = "";
+    if (!isAdmin) return;
+    const gen = ++whoGen;
+    try {
+      if (!cardIdx) cardIdx = CD.buildIndex(await addrCards());
+    } catch (e) { return; }
+    if (gen !== whoGen || !cardIdx || !cardIdx.size) return;
+    const people = document.getElementById("nmW").value;
+    const body = document.getElementById("nmB").value;
+    const hits = new Map();
+    CD.matchPeople(people, cardIdx).forEach((h) => hits.set(h.name, h));
+    if (body) {
+      cardIdx.forEach((cards, k) => {
+        const name = cards[0] && cards[0].name;
+        if (!name || name.length < 3 || hits.has(name)) return;
+        if (body.indexOf(name) >= 0) hits.set(name, { name, cards, one: cards.length === 1 ? cards[0] : null });
+      });
+    }
+    if (!hits.size) return;
+    const list = [...hits.values()];
+    box.innerHTML = '<span class="npl-lab">명함</span>' + list.map((h, i) => {
+      const f = CD.cardFace(h.one || h.cards[0]);
+      return '<button type="button" class="npl" data-i="' + i + '" title="' + esc(h.name) + (f.company ? " · " + esc(f.company) : "") + ' — 명함 보기">' +
+        esc(h.name) + (f.company ? '<small>' + esc(f.company) + '</small>' : "") + "</button>";
+    }).join("");
+    box.hidden = false;
+    box.querySelectorAll(".npl").forEach((b) => b.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const h = list[+b.dataset.i];
+      if (h) showCard(h);
+    }));
+  }
+  /* 만난 사람·본문을 고치면 알약도 따라갑니다 (조용히, 잠깐 뒤에) */
+  let whoTimer = null;
+  ["nmW", "nmB"].forEach((id) => document.getElementById(id).addEventListener("input", () => {
+    clearTimeout(whoTimer); whoTimer = setTimeout(() => linkPeopleForm(null), 600);
+  }));
+
   /** 그날의 모든 일정을 한 창에 — 내 글과 구글 일정을 함께 폅니다 */
   function dayView(key) {
     dayGen += 1;
@@ -2196,7 +2244,7 @@ export async function initNotes(mountId = "notesapp") {
         try { await GC.silent(); } catch (e) {}
       }
       if (GC.connected()) {
-        try { gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth()); } catch (e) {}
+        try { gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth()); await importGoogle(); } catch (e) {}
       }
       drawCal();
     };
@@ -2335,6 +2383,7 @@ export async function initNotes(mountId = "notesapp") {
     document.getElementById("nmC").value = row ? row.contact || "" : "";
     document.getElementById("nmP").value = row ? row.place || "" : "";
     document.getElementById("nmW").value = row ? row.people || "" : "";
+    linkPeopleForm(row);                 // 주소록에 있는 이름은 알약으로 — 누르면 명함
     fillTags(mCat.value);
     mTag.value = row ? (row.tag || "") : "";
     syncTag();
@@ -2765,9 +2814,58 @@ export async function initNotes(mountId = "notesapp") {
      사진을 붙임으로 꺼냅니다. 그다음 행사 정보 · 발표자료 · 폴더의 사진이 차례로 붙습니다.
      회의록에 이름 옆에 얼굴 사진이 붙어 있으면 그 이름의 주소록 사진으로도 갑니다. */
   let wsBusy = false;
+  /** 행사 폴더의 정보에서 개요를 — 개최개요.json 이 있으면 그것을, 없으면 info 의 PDF·그림(글자 읽기)을 읽습니다.
+   *  읽어 만든 것은 개최개요.json 으로 폴더에 놓아 둡니다 (세미나회의록.py 가 머리 상자에 씁니다). */
+  async function seminarBrief(job, hs, dirHandle, say) {
+    const readJson = async (p) => { try { return JSON.parse(await (await hs[p].getFile()).text()); } catch (e) { return null; } };
+    const jp = Object.keys(hs).find((p) => /^개최개요\.json$/i.test(p));
+    if (jp) {
+      const b = SM.briefFromJson(await readJson(jp), job);
+      if (b && (b.presenters.length || b.discussants.length || b.time || b.place)) return b;
+    }
+    /* PDF·글 파일을 먼저 읽고, 거기서 사람·시각이 나오면 그림(글자 읽기는 느리고 오독이 섞입니다)은 건너뜁니다 */
+    const docs = (job.info || []).filter((p) => /\.(pdf|txt)$/i.test(p)).slice(0, 4);
+    const pics = (job.info || []).filter((p) => /\.(jpe?g|png|webp)$/i.test(p)).slice(0, 3);
+    if (!docs.length && !pics.length) return null;
+    const enough = (b) => !!(b && (b.presenters.length || b.discussants.length || b.time));
+    const read = async (paths) => {
+      const chunks = [];
+      for (const p of paths) {
+        const f = hs[p] ? await hs[p].getFile() : null;
+        if (!f) continue;
+        if (say) say("행사 정보 읽는 중… " + f.name);
+        const r = await NF.extract(f, NF.MINE, { ocr: true, say });
+        const lines = (r && r.lines) || [];
+        if (lines.length) chunks.push(lines.map((x) => (typeof x === "string" ? x : x.line)).join(String.fromCharCode(10)));
+      }
+      return chunks.join(String.fromCharCode(10));
+    };
+    let used = docs.slice();
+    let b = docs.length ? SM.parseBrief(await read(docs), job) : null;
+    if (!enough(b) && pics.length) {
+      const t2 = await read(pics);
+      const b2 = SM.parseBrief(t2, job);
+      if (!b || enough(b2)) { b = b2; used = pics.slice(); }
+    }
+    if (!b) return null;
+    b.src = used.map((p) => p.split("/").pop()).join(", ");
+    if (!(b.presenters.length || b.discussants.length || b.time || b.place || b.mc.length || b.chair.length)) return null;
+    /* 폴더에 놓아 둡니다 — 못 써도(읽기만 허락) 조용히 */
+    if (dirHandle && dirHandle.getFileHandle) {
+      try {
+        const fh = await dirHandle.getFileHandle("개최개요.json", { create: true });
+        const w = await fh.createWritable();
+        await w.write(JSON.stringify(SM.briefJson(b, job), null, 1));
+        await w.close();
+      } catch (e) {}
+    }
+    return b;
+  }
+
   async function attachWorkshops(dir) {
     const NL = String.fromCharCode(10);
     const folders = [], bag = new Map();          // 폴더이름 → {경로: 손잡이}
+    const dirs = new Map();                        // 폴더이름 → 폴더 손잡이 (개최개요.json 을 놓아 두려고)
     const walk = async (h, base, out, hs, depth) => {
       for await (const e of h.values()) {
         const p = base ? base + "/" + e.name : e.name;
@@ -2789,6 +2887,7 @@ export async function initNotes(mountId = "notesapp") {
         try { await walk(e, "", out, hs, 0); } catch (x) {}
         folders.push({ name: e.name, files: out });
         bag.set(e.name, hs);
+        dirs.set(e.name, e);
       }
     } catch (err) {
       alert("폴더를 읽지 못했습니다 — " + (err && err.message));
@@ -2805,7 +2904,8 @@ export async function initNotes(mountId = "notesapp") {
     if (!confirm("행사 " + jobs.length + "건을 Schedule 글로 올립니다 — 글 제목은 폴더 이름입니다." + NL +
       "회의록 " + cnt("minutes") + " · 행사 정보 " + cnt("info") + " · 발표자료 " + cnt("slides") +
       " · 사진 " + cnt("pics") + "장 (회의록 안에 붙여 넣은 사진은 따로 더 꺼냅니다)" + NL +
-      "같은 제목의 글이 있으면 거기에 이어 붙입니다. 녹음은 올리지 않습니다. 계속할까요?")) return;
+      "같은 제목의 글이 있으면 거기에 이어 붙입니다. 녹음은 올리지 않습니다." + NL +
+      "행사 정보(info)가 있으면 발제자·토론자·일시·장소를 읽어 그날 일정의 시각·장소·만난 사람·개요를 채우고, 구글 일정도 바로잡습니다. 계속할까요?")) return;
 
     const btn = document.getElementById("nWs");
     wsBusy = true; btn.disabled = true;
@@ -2825,7 +2925,14 @@ export async function initNotes(mountId = "notesapp") {
         const ups = [], notes = [];
         try {
           say("올리는 중… " + job.raw);
-          const row = rows.find((r) => r.category === "schedule" && WS.sameTitle(r.title, job.raw));
+          /* 행사 정보(info) → 개요. 폴더에 개최개요.json 이 있으면 그것을, 없으면 PDF·그림을 읽어 만들고 놓아 둡니다 */
+          let brief = null;
+          job.rest = WS.parseFolder(job.raw).rest;      // 개요 짝짓기·본문에 씁니다
+          try { brief = await seminarBrief(job, hs, dirs.get(job.raw), say); }
+          catch (e) { notes.push("행사 정보를 읽지 못했습니다 (" + ((e && e.message) || "") + ")"); }
+          let row = rows.find((r) => r.category === "schedule" && WS.sameTitle(r.title, job.raw));
+          /* 같은 제목이 없어도 그날 글(예: 구글에서 온 「LH이미홍—토론」)이 이 행사면 그 글을 채웁니다 */
+          if (!row && brief) row = SM.pickRow(rows, job, brief, WS.sameTitle) || null;
           const have = row ? (row.files || []) : [];
           const put = async (file) => {
             if (!file) return false;
@@ -2898,7 +3005,7 @@ export async function initNotes(mountId = "notesapp") {
             } catch (e) { notes.push(f.name + " — 올리지 못했습니다"); }
           }
 
-          if (!ups.length && !row) {
+          if (!ups.length && !row && !brief) {
             failed.push(job.raw + " — 올릴 파일이 없습니다" +
                         (notes.length ? " (" + notes.join(", ") + ")" : ""));
             continue;
@@ -2906,6 +3013,7 @@ export async function initNotes(mountId = "notesapp") {
 
           /* ④ 글 — 같은 제목이 있으면 이어 붙이고, 없으면 새로 */
           const body = WS.buildBody(job, text);
+          let target = row;
           if (row) {
             const patch = { files: have.concat(ups) };
             if (!String(row.body || "").trim()) patch.body = body;
@@ -2914,7 +3022,8 @@ export async function initNotes(mountId = "notesapp") {
             const r2 = await sb.from("notes").update(patch).eq("id", row.id);
             if (r2.error) throw r2.error;
             Object.assign(row, patch);
-            done.push("「" + job.raw + "」 에 " + ups.length + "건 이어 붙였습니다");
+            done.push("「" + job.raw + "」 에 " + ups.length + "건 이어 붙였습니다" +
+                      (WS.sameTitle(row.title, job.raw) ? "" : " (그날 글 「" + row.title + "」)"));
           } else {
             const fresh = {
               category: "schedule", tag: job.tag || null, title: job.title,
@@ -2923,8 +3032,30 @@ export async function initNotes(mountId = "notesapp") {
             const r2 = await sb.from("notes").insert(fresh).select();
             if (r2.error) throw r2.error;
             const made = (r2.data && r2.data[0]) || null;
-            if (made) rows.unshift(made);
+            if (made) { rows.unshift(made); target = made; }
             done.push("새 글 「" + job.raw + "」 (" + ups.length + "건)");
+          }
+          /* ④-2 개요를 얹습니다 — 시각(01:30 → 13:30 같은 것)·장소·행사명·만난 사람·본문 개요.
+             구글에 넘어간 글(gcal_id)이면 구글 일정도 같이 바로잡습니다. */
+          if (brief && target) {
+            const patch = SM.patchFor(brief, target, job, NF.mergePeople, NF.MINE);
+            if (Object.keys(patch).length) {
+              const r3 = await putNote(patch, target.id);
+              if (r3.error) throw r3.error;
+              Object.assign(target, patch);
+              const what = Object.keys(patch).map((k) => ({ event_time: "시각 " + patch.event_time, place: "장소", event: "행사명", people: "만난 사람", body: "개요", tag: "말머리", event_date: "날짜" }[k] || k));
+              done.push("  ↳ 행사 정보로 채움: " + what.join(" · ") +
+                        (brief.presenters.length ? " · 발제 " + brief.presenters.length : "") +
+                        (brief.discussants.length ? " · 토론 " + brief.discussants.length : ""));
+            }
+            if (target.gcal_id && GC.ready() && GC.connected() && (patch.event_time || patch.place)) {
+              try {
+                const okg = await GC.updateEvent(target.gcal_id, {
+                  date: (target.event_date || job.date).slice(0, 10), time: target.event_time || "",
+                  title: (target.tag ? "[" + target.tag + "] " : "") + target.title, place: target.place || "" });
+                done.push(okg ? "  ↳ 구글 일정도 " + (target.event_time || "종일") + " 으로 맞췄습니다" : "  ↳ 구글 일정은 이미 없어 두었습니다");
+              } catch (e) { notes.push("구글 일정은 못 고쳤습니다 — " + ((e && e.message) || "")); }
+            }
           }
           notes.forEach((x) => failed.push(job.raw + ": " + x));
 
@@ -2992,8 +3123,12 @@ export async function initNotes(mountId = "notesapp") {
       return;
     }
     let dir;
-    try { dir = await window.showDirectoryPicker({ id: "skyish-ws", mode: "read" }); }
-    catch (err) { return; }                 // 고르다 닫으신 것
+    /* 읽고 쓰기 — 행사 정보에서 읽은 개최개요.json 을 폴더에 놓아 두려고. 쓰기를 안 허락하셔도 읽기로 갑니다 */
+    try { dir = await window.showDirectoryPicker({ id: "skyish-ws", mode: "readwrite" }); }
+    catch (err) {
+      try { dir = await window.showDirectoryPicker({ id: "skyish-ws", mode: "read" }); }
+      catch (e2) { return; }                // 고르다 닫으신 것
+    }
     await attachWorkshops(dir);
   });
 
@@ -3658,6 +3793,34 @@ export async function initNotes(mountId = "notesapp") {
   const gBox = document.getElementById("nGcalBox");
   if (GC.ready() && GC.warm) GC.warm();     // 단추를 누르기 전에 미리 데워 둡니다
 
+  /** 구글에만 있는 일정을 Schedule 글로 가져옵니다 — 「왜 아래 목록에 노란색 일정이 안 나오나」.
+   *  내 글이 구글로 넘어간 것(번호·같은 날 같은 제목)은 dropMirrors 가 걸러 주므로 두 번 생기지 않습니다.
+   *  휴일·생일 캘린더는 뺍니다. 가져온 글에는 구글 번호를 적어 두어 다음부터는 짝이 맞습니다. */
+  let gImporting = false;
+  async function importGoogle() {
+    if (!isAdmin || gImporting || !gEvents.length) return 0;
+    gImporting = true;
+    let n = 0;
+    try {
+      const fresh = dropMirrors(rows, gEvents).filter((e) =>
+        e.gid && e.date && !/holiday|휴일|공휴일|birthday|생일|주간\s*번호|week\s*number/i.test((e.cal || "") + " " + (e.calId || "")));
+      for (const e of fresh) {
+        const lines = [];
+        if (e.time) lines.push("시각: " + e.time);
+        if (e.place) lines.push("장소: " + e.place);
+        lines.push("구글 캘린더에서 가져옴" + (e.cal ? " (" + e.cal + ")" : ""));
+        const r = await putNote({
+          category: "schedule", title: String(e.title || "(제목 없음)").slice(0, 200),
+          body: lines.join(String.fromCharCode(10)), event_date: e.date,
+          event_time: e.time || null, place: e.place || null, gcal_id: e.gid,
+        });
+        if (!r.error) n++;
+      }
+      if (n) { try { await load(); } catch (e) {} }
+    } finally { gImporting = false; }
+    return n;
+  }
+
   async function pullGoogle(force, quiet) {
     if (!GC.ready()) {
       if (quiet) return;
@@ -3682,6 +3845,7 @@ export async function initNotes(mountId = "notesapp") {
          새 열쇠를 받으면 그때 옛 것을 덮어씁니다. */
       await GC.connect(force);
       gEvents = await GC.month(calAt.getFullYear(), calAt.getMonth());
+      const brought = await importGoogle();
       gBox.hidden = false;
       const cals = [...new Set(gEvents.map(function (e) { return e.cal; }).filter(Boolean))];
       gBox.innerHTML = '<p class="ngcal__note">구글 일정 <b>' + gEvents.length +
@@ -3689,6 +3853,7 @@ export async function initNotes(mountId = "notesapp") {
         (calAt.getMonth() + 1) + '월' +
         (cals.length ? ' · 캘린더 ' + esc(cals.join(", ")) : "") +
         '). 달을 옮기면 다시 받아 옵니다. ' +
+        (brought ? '구글에만 있던 일정 <b>' + brought + '건</b>을 Schedule 글로 가져왔습니다. ' : '') +
         '<button type="button" class="nlink" id="gAgain">다른 계정으로</button></p>';
       document.getElementById("gAgain").addEventListener("click", () => pullGoogle(true));
       calBox.hidden = false;
