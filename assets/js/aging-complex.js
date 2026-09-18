@@ -43,7 +43,7 @@
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
   }
-  var VER = "202609161130";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
+  var VER = "202609182230";                              // 자료를 다시 만들면 올립니다 (브라우저가 옛 파일을 쓰지 않게)
   function getJSON(u) {
     return fetch(u + "?v=" + VER).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
   }
@@ -721,7 +721,7 @@
       var gm = d.grade.meta || {}, gc = gm["색"] || GRADE_COLOR, crit = gm["등급기준"] || {};
       maps.push(build("grade", {
         title: "전환 우선순위 등급", fillOn: false, lblOn: true, cxFill: 0.25,       // 산단 채움을 옅게 — A 색(#d7301f)과 안 겹치게
-        cxTip: function (p) { var rk = RK["D_" + p.id]; return rk ? "<br>" + gradeChip(rk["등급"]) + " " + rk["종합점수"] + "점 · " + reasonChip(rk) : ""; },
+        cxTip: function (p) { var rk = RK["D_" + p.id]; return rk ? "<br>" + gradeChip(rk["등급"]) + " " + rk["종합점수"] + "점 · " + reasonChip(rk) + unsoldRow(rk) : ""; },
         layers: [{ key: "grade", label: "A·B 등급 폴리곤 (A 는 굵은 테두리)", sw: "background:#fc8d59;border-color:#d7301f", on: true, layer: L.geoJSON(d.grade, { pane: "pTop",
           style: function (f) { var p = f.properties; return { color: p.color || "#d7301f", weight: p.grade === "A" ? 3 : 2.2, fillColor: p.color || "#d7301f", fillOpacity: 0.7 }; },
           onEachFeature: function (f, l) {
@@ -825,11 +825,14 @@
     return '<span class="ag-ok" title="' + esc(s) + '">전제 충족</span>';
   };
   var declRate = function (r) { return r && r.busi_decline != null ? "↓" + Math.round(r.busi_decline * 100) + "%" : ""; };   // 사업체 최대치 대비 감소율
+  /* v6 미분양 — 「산단 자체 미분양율 / 같은 시군 산단 전체 미분양율(공고면적 가중)」. 공고면적이 없는 산단은 null → 「–」 */
+  var unsoldTxt = function (r) { if (!r || (r.unsold_ratio == null && r.sgg_unsold_ratio == null)) return "—"; var a = r.unsold_ratio == null ? "–" : Math.round(r.unsold_ratio * 100) + "%", b = r.sgg_unsold_ratio == null ? "–" : Math.round(r.sgg_unsold_ratio * 100) + "%"; return a + '<small class="dn">/' + b + "</small>"; };
+  var unsoldRow = function (r) { return r && (r.unsold_ratio != null || r.sgg_unsold_ratio != null) ? " · 미분양 " + (r.unsold_ratio == null ? "–" : Math.round(r.unsold_ratio * 100) + "%") + " / 시군 " + (r.sgg_unsold_ratio == null ? "–" : Math.round(r.sgg_unsold_ratio * 100) + "%") : ""; };
   /* 쇠퇴유형 + (↓감소율) — 표 칸 */
   var declTxt = function (r) { return esc((r.decl_class || "—").replace("지역", "")) + (r.busi_decline != null ? ' <small class="dn">(' + declRate(r) + ")</small>" : ""); };
   /* 옆칸 줄 — ① 지도 산단(등급·점수·판정) · 등급 폴리곤(판정·쇠퇴유형) */
-  var rankRow = function (rk) { return rk ? "<b>전환 우선순위</b><span>" + gradeChip(rk["등급"]) + " " + rk["종합점수"] + "점 · " + reasonChip(rk) + (rk.busi_decline != null ? " · 사업체 " + declRate(rk) : "") + "</span>" : ""; };
-  var preRow = function (rk) { return rk ? "<b>0단계 전제</b><span>" + reasonChip(rk) + (rk.busi_decline != null ? " · 사업체 " + declRate(rk) : "") + "</span>" + (rk.decl_class ? "<b>쇠퇴유형</b><span>" + esc(rk.decl_class) + "</span>" : "") : ""; };
+  var rankRow = function (rk) { return rk ? "<b>전환 우선순위</b><span>" + gradeChip(rk["등급"]) + " " + rk["종합점수"] + "점 · " + reasonChip(rk) + (rk.busi_decline != null ? " · 사업체 " + declRate(rk) : "") + unsoldRow(rk) + "</span>" : ""; };
+  var preRow = function (rk) { return rk ? "<b>0단계 전제</b><span>" + reasonChip(rk) + (rk.busi_decline != null ? " · 사업체 " + declRate(rk) : "") + unsoldRow(rk) + "</span>" + (rk.decl_class ? "<b>쇠퇴유형</b><span>" + esc(rk.decl_class) + "</span>" : "") : ""; };
   var REASON_COL = { k: "판정사유", label: "0단계 판정", cell: reasonChip };
   /* 추천 용도 알약 — 「산업 유지(…미충족)」 은 판정 열과 겹치니 짧게 회색으로 */
   var useChip = function (r) { var u = r["추천용도"] || ""; if (!u) return "—"; return u.indexOf("산업 유지") === 0 ? '<span class="ag-use" style="background:#eee;color:#4a4a4a" title="' + esc(u) + '">산업 유지</span>' : '<span class="ag-use">' + esc(u) + "</span>"; };
@@ -868,7 +871,7 @@
     };
     draw();
   }
-  var USE_NOTE = "쇠퇴유형 괄호 = 행정동 사업체 최대치 대비 감소율(↓). 내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).";
+  var USE_NOTE = "쇠퇴유형 괄호 = 행정동 사업체 최대치 대비 감소율(↓). 미분양 = 산단 자체 미분양율 / 같은 시군 산단 전체 미분양율(공고면적 가중, 분양현황 2026.7). 내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).";
   var RANK_COLS = [
     { k: "name", label: "산업단지", cell: function (r) { return "<b>" + esc(r.name) + "</b>"; } },
     { k: "시군", label: "시군", cell: function (r) { return esc(r["시군"] || ""); } },
@@ -876,6 +879,7 @@
     { k: "area_ha", label: "ha", num: true, cell: function (r) { return num(Math.round(r.area_ha || 0)); } },
     { k: "dist_station_m", label: "최근접역", num: true, cell: stTxt },
     { k: "decl_class", sort: "busi_decline", desc: true, label: "쇠퇴유형(사업체↓)", cell: declTxt },
+    { k: "unsold_ratio", sort: "unsold_ratio", desc: true, label: "미분양 산단/시군", num: true, cell: unsoldTxt },   // v6
     { k: "semi_ind_ratio", label: "준공업", num: true, cell: function (r) { return pct(r.semi_ind_ratio); } },
     { k: "old30_ratio_gfa", label: "30년↑건물", num: true, cell: function (r) { return pct(r.old30_ratio_gfa); } },
     { k: "res_gfa_ratio", label: "내부 주거/상업/업무", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
@@ -902,7 +906,7 @@
         '<div id="ag-rk-pre"><b>' + preOk + ' <small>/</small> ' + preNo + "</b><span>0단계 전제(사업체 감소) 충족 / 미충족 → <span class=\"ag-keep\">산업 유지</span> C" + (preGate ? " · 게이트 D 안 미충족 " + preGate + " 별도" : "") + "</span></div>";
       var lw = m["로직가중치"] || {};
       var NAMES = { "노후년도": "지정 경과", "old30": "30년↑ 건물", "year_mean": "평균 승인연도", "low_rise": "저층", "dist_sta": "최근접역 거리", "sta1km": "역 1km 면적비", "dist_gtx": "GTX", "decl": "쇠퇴 유형 가중", "semi_ind": "준공업", "ind_zone": "공업지역", "nonind": "비공업 이용", "nonfactory": "비공장 연면적", "vacant": "나지", "gap_res": "주거 지가격차", "far_low": "저용적률", "gap_com": "상업 지가격차", "pop": "인구밀도", "rescom_adj": "주거·상업 인접", "parcel": "필지", "gam": "공공기관 이전",
-        "busi_decline": "사업체 감소율", "busi_fac_share": "사업체 쇠퇴 면적비", "busi_dec3y_share": "3년 연속 감소 면적비" };
+        "busi_decline": "사업체 감소율", "busi_fac_share": "사업체 쇠퇴 면적비", "busi_dec3y_share": "3년 연속 감소 면적비", "unsold": "산단 미분양율", "sgg_unsold": "시군 산단 미분양율" };
       document.getElementById("ag-rk-logic").innerHTML =
         '<div class="pre"><b>0단계 전제 — 산업체 감소</b>행정동 사업체 최대치 대비 <strong>5%↓</strong> 또는 도시재생법 사업체 쇠퇴 행정동이 <strong>면적 50%↑</strong><br><small>미충족이면 점수와 관계없이 「산업 유지」(C) · 게이트 D 는 별도</small></div>' +
         Object.keys(lw).map(function (k) {
@@ -942,6 +946,7 @@
         { k: "area_ha", label: "ha", num: true, cell: function (r) { return num(Math.round(r.area_ha || 0)); } },
         { k: "dist_station_m", label: "최근접역", num: true, cell: stTxt },
         { k: "decl_class", sort: "busi_decline", desc: true, label: "쇠퇴유형(사업체↓)", cell: declTxt },
+        { k: "unsold_ratio", sort: "unsold_ratio", desc: true, label: "미분양 산단/시군", num: true, cell: unsoldTxt },   // v6
         { k: "semi_ind_ratio", label: "준공업", num: true, cell: function (r) { return pct(r.semi_ind_ratio); } },
         { k: "old30_ratio_gfa", label: "30년↑건물", num: true, cell: function (r) { return pct(r.old30_ratio_gfa); } },
         { k: "res_gfa_ratio", label: "내부 주거/상업/업무", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
