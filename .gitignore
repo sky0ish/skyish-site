@@ -154,3 +154,6 @@ _sorttest.html
 /*.docx
 _savetest.html
 _facetest.html
+
+# 논문 심사위원 추천 — 게재 전 심사본·주소록 CSV. 절대 올리지 않습니다.
+3_논문편집/
