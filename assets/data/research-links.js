@@ -72,6 +72,7 @@ window.RESEARCH_LINKS = {
   "과천시 비전 2040": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=5052&schBookResultNo=7440",
   "2030 새로운 경기도를 위한 정책제안": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20260116&schBookResultNo=15909",
   "경기북부 신성장거점 구축을 위한 발전전략 연구": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20250263&schBookResultNo=15890",
+  "미군이전평택지원법 유효기간 연장을 위한 사업추진 방향 및 정책개선 방안": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20250308&schBookResultNo=15940",
   "경기도형 도시·건축 민간전문가 제도 도입 방안": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20250279&schBookResultNo=15882",
   "경기도 지역균형발전 기본계획(2025~2029)": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20240110&schBookResultNo=15630",
   "경기도 철도 지하화 사업 개발 전략 수립": "https://www.gri.re.kr/web/contents/resreport.do?schM=view&schProjectNo=20240135&schBookResultNo=15561",
