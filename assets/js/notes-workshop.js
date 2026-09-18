@@ -127,6 +127,19 @@ export function orderPics(paths) {
   return L.map((p) => [p, rank(p)]).sort((a, b) => a[1] - b[1] || byName(a[0], b[0])).map(([p]) => p);
 }
 
+/** 회의록 글(txt·md)이 여럿이면 「회의록_HP」(홈페이지용 최종본)를 맨 앞에, 그다음 새 판(_v2…) 순 */
+export function orderText(paths) {
+  const L = (Array.isArray(paths) ? paths : []).filter(Boolean);
+  const ver = (p) => { const m = /_v(\d+)\.[a-z0-9]+$/i.exec(p); return m ? +m[1] : 0; };
+  const hp = (p) => (/회의록_HP/i.test(p) ? 1 : 0);
+  return L.map((p, i) => [p, hp(p), ver(p), i])
+    .sort((a, b) => b[1] - a[1] || b[2] - a[2] || byName(a[0], b[0]))
+    .map(([p]) => p);
+}
+
+/** 이 글 파일이 홈페이지용 최종본(회의록_HP)인가 */
+export const isHP = (p) => /회의록_HP(_v\d+)?\.(md|txt)$/i.test(String(p || "").split("/").pop());
+
 /** 회의록이 여럿이면 가장 새 판(_v1, _v2…)을 앞에, pdf 와 hwpx 가 짝이면 둘 다 (PDF 먼저).
  *  판 표시가 없는 것(현장에서 적은 원본)은 0 으로 봐서, 보강한 _v1 이 앞에 옵니다. */
 export function orderMinutes(paths) {
@@ -156,7 +169,7 @@ export function plan(folders) {
     const job = {
       raw: info.raw, date: info.date, kind: info.kind, tag: tagFor(info.kind),
       title: info.raw.slice(0, 200),
-      minutes: orderMinutes(g.minutes), text: g.text.slice().sort(byName),
+      minutes: orderMinutes(g.minutes), text: orderText(g.text),
       info: pickDocs(g.info), slides: pickDocs(g.slides, true), docs: pickDocs(g.doc),
       pics: orderPics(g.pic),
     };

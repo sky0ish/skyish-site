@@ -6,7 +6,7 @@
 
 import { parseFolder, folderDate, pickFiles, titleOf, plan, alreadyHas, pickSlide, isPresDir,
          whenText, peopleCount, briefFromRow, hasBrief, briefFromFolder, placeLike, verOf,
-         pickSlides }
+         pickSlides, gistFromJson, dropOldBlocks }
   from "../../assets/js/notes-minutes.js";
 
 let bad = 0;
@@ -271,6 +271,24 @@ const 폴더없음 = plan([{
 }]).jobs[0];
 eq("폴더가 없으면 회의 폴더 것 하나", 폴더없음.slides, ["발표자료_final.pdf"]);
 eq("발표자료 폴더는 아니다", 폴더없음.presFolder, false);
+
+/* ── 최종본 반영 — 「<회의록_v3> 처럼 마지막 번호가 붙은거든지..회의록_HP든지 최종본말야」 ── */
+const VFILES = ["가_회의록.pdf", "가_회의록_v2.pdf", "가_회의록_v3.pdf", "가_회의록내용.json", "가_회의록내용_v3.json", "가.txt", "회의록_HP.md"];
+eq("★ 가장 새 판 PDF", pickFiles(VFILES, "가").pdf, "가_회의록_v3.pdf");
+eq("★ 가장 새 판 json", pickFiles(VFILES, "가").json, "가_회의록내용_v3.json");
+eq("★ 회의록_HP 를 집는다", pickFiles(VFILES, "가").hp, "회의록_HP.md");
+eq("회의록_HP 가 없으면 빈 글자", pickFiles(["가_회의록.pdf"], "가").hp, "");
+eq("★ 이름 붙은 HP 도 (v 포함)", pickFiles(["가_회의록_HP.txt", "가_회의록_HP_v2.md"], "가").hp, "가_회의록_HP_v2.md");
+const NL2 = String.fromCharCode(10);
+eq("★ json → 주제별 본문", gistFromJson({ title: "제목", topics: [{ title: "주제1", gist: ["가", "나"] }, { title: "주제2", gist: ["다"] }] }),
+   ["■ 제목", "", "1. 주제1", "  · 가", "  · 나", "", "2. 주제2", "  · 다"].join(NL2));
+eq("json 이 비면 빈 글자", gistFromJson({}), "");
+const BODY0 = ["머리글", "", "━ 가_회의록.pdf", "옛 정리", "", "━ 나_회의록.pdf", "다른 회의", "", "━ 가_회의록_v2.pdf", "v2 정리"].join(NL2);
+eq("★ 같은 회의의 옛 판 덩이만 지운다", dropOldBlocks(BODY0, "가_회의록_v3.pdf"),
+   ["머리글", "", "━ 나_회의록.pdf", "다른 회의"].join(NL2));
+eq("자기 판 덩이는 남긴다", dropOldBlocks(BODY0, "가_회의록_v2.pdf"),
+   ["머리글", "", "━ 나_회의록.pdf", "다른 회의", "", "━ 가_회의록_v2.pdf", "v2 정리"].join(NL2));
+eq("덩이가 없으면 그대로", dropOldBlocks("그냥 글", "가_회의록.pdf"), "그냥 글");
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

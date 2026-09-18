@@ -286,6 +286,11 @@ const load = (p, extra = (s) => s) => {
     Buffer.from(readFileSync(REPO + "/assets/js/hwpx.js", "utf8")).toString("base64");
   s = s.replace(/^import \* as HX from "\.\/hwpx\.js[^"]*";$/m,
     "const HX = await import(" + JSON.stringify(hxUrl) + ");");
+  /* 세미나 개요 셈(notes-seminar.js)도 진짜를 씁니다 — 셈 자체는 tools/test/seminar.mjs 가 봅니다 */
+  const smUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/notes-seminar.js", "utf8")).toString("base64");
+  s = s.replace(/^import \* as SM from "\.\/notes-seminar\.js[^"]*";$/m,
+    "const SM = await import(" + JSON.stringify(smUrl) + ");");
   const wkUrl = "data:text/javascript;base64," +
     Buffer.from(readFileSync(REPO + "/assets/js/notes-weekly.js", "utf8")).toString("base64");
   s = s.replace(/^import \* as WK from "\.\/notes-weekly\.js[^"]*";$/m,

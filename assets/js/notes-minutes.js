@@ -7,6 +7,8 @@
 //          20260824_…_회의록.pdf          ← 이것을 그날 일정에 붙입니다
 //          20260824_…_회의록내용.json     ← 있으면 제목을 여기서 가져옵니다
 //          20260824_….txt                 ← 있으면 요약을 본문에 담습니다
+//          회의록_HP.md                    ← 있으면 **이 글이 그대로 본문** (홈페이지용 최종본)
+//          …_회의록_v2.pdf / _v2.json      ← 판이 여럿이면 가장 새 판만 붙습니다
 //          음성 260824_114513.m4a          ← 올리지 않습니다 (녹음은 내 컴퓨터에만)
 //          pictures/ (또는 사진/)          ← 있으면 얼굴이 가장 많은 한 장만 함께
 //          presentation/                   ← 있으면 발표자료 한 개도 함께 (PDF 먼저)
@@ -75,8 +77,49 @@ export function pickFiles(names, folder) {
     pdf: pick(/_회의록(_v\d+)?\.pdf$/i),
     json: pick(/_회의록내용(_v\d+)?\.json$/i),
     txt: pick(/\.txt$/i),
+    /* 「회의록_HP.md」(또는 .txt) — 홈페이지에 올릴 **최종본 글**. 있으면 이것이 본문이 됩니다.
+       없으면 가장 새 판(_v3 …)의 회의록내용 json 이, 그것도 없으면 받아쓴 txt 의 정리가 본문입니다. */
+    hp: pick(/회의록_HP(_v\d+)?\.(md|txt)$/i),
     slide: pickSlide(L),
   };
+}
+
+/** 회의록내용 json({title, topics:[{title, gist:[…]}]}) → 게시판 본문 글
+ *  「1. 주제」 아래 「· 내용」 줄. 전체를 다 담습니다 (게시판이 본문을 접어 보여 줍니다). */
+export function gistFromJson(data) {
+  const NL = String.fromCharCode(10);
+  const d = data && typeof data === "object" ? data : {};
+  const out = [];
+  if (d.title) out.push("■ " + String(d.title).trim(), "");
+  (Array.isArray(d.topics) ? d.topics : []).forEach((t, i) => {
+    if (!t) return;
+    out.push((i + 1) + ". " + String(t.title || "").trim());
+    (Array.isArray(t.gist) ? t.gist : []).forEach((g) => { if (g) out.push("  · " + String(g).trim()); });
+    out.push("");
+  });
+  return out.join(NL).replace(/\s+$/, "");
+}
+
+/** 본문에서 같은 회의의 **옛 판** 덩이(「━ …_회의록.pdf」「━ …_회의록_v1.pdf」)를 지웁니다 —
+ *  새 판(_v2)이 오면 최종본 하나만 남게. 다른 회의의 덩이는 그대로 둡니다. */
+export function dropOldBlocks(body, pdfName) {
+  const NL = String.fromCharCode(10);
+  const stem = String(pdfName || "").replace(/_v\d+\.pdf$/i, "").replace(/\.pdf$/i, "");
+  if (!stem) return String(body || "");
+  const lines = String(body || "").split(NL);
+  const out = [];
+  let skipping = false;
+  for (const ln of lines) {
+    if (ln.indexOf("━ ") === 0) {
+      const nm = ln.slice(2).trim();
+      const rest = nm.indexOf(stem) === 0 ? nm.slice(stem.length) : "";
+      const same = (rest === ".pdf" || /^_v\d+\.pdf$/i.test(rest)) && nm !== String(pdfName || "");
+      skipping = same;
+      if (same) continue;
+    }
+    if (!skipping) out.push(ln);
+  }
+  return out.join(NL).replace(/\s+$/, "");
 }
 
 /** 「…_v3.pdf」 의 3. 판 표시가 없으면 1 (처음 것) 로 봅니다. */

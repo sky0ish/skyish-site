@@ -15,11 +15,11 @@ import * as ST from "./notes-stats.js?v=202609112000";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609170900";
 import * as FT from "./notes-facetag.js?v=202609111500";
-import * as MN from "./notes-minutes.js?v=202609091200";
+import * as MN from "./notes-minutes.js?v=202609181000";
 import * as PP from "./notes-photo-pick.js?v=202609101300";
 import * as CD from "./notes-cards.js?v=202609051200";
 import * as UP from "./notes-uploads.js?v=202609081500";
-import * as WS from "./notes-workshop.js?v=202609101300";
+import * as WS from "./notes-workshop.js?v=202609181000";
 import * as HX from "./hwpx.js?v=202609101300";
 import * as WK from "./notes-weekly.js?v=202609112100";
 import * as SM from "./notes-seminar.js?v=202609171300";
@@ -2960,12 +2960,16 @@ export async function initNotes(mountId = "notesapp") {
             }
             await put(f);
           }
+          /* 회의록 글(txt·md) — 「회의록_HP」(홈페이지용 최종본)가 있으면 그 글이 hwpx 보다 앞섭니다 */
+          let hpText = "";
           for (const p of job.text) {
             const f = await fileAt(p);
             if (!f) continue;
-            if (!text) { try { text = await f.text(); } catch (e) {} }
+            if (WS.isHP(p) && !hpText) { try { hpText = (await f.text()).replace(/\r/g, "").trim(); } catch (e) {} }
+            else if (!text) { try { text = await f.text(); } catch (e) {} }
             await put(f);
           }
+          if (hpText) text = hpText;
           /* ② 행사 정보 · 발표자료 · 그 밖의 자료 */
           for (const p of [].concat(job.info, job.slides, job.docs)) await put(await fileAt(p));
 
@@ -3016,7 +3020,8 @@ export async function initNotes(mountId = "notesapp") {
           let target = row;
           if (row) {
             const patch = { files: have.concat(ups) };
-            if (!String(row.body || "").trim()) patch.body = body;
+            /* 본문은 비어 있을 때 채우고, 최종본(회의록_HP)이 있으면 그 글로 새로 씁니다 */
+            if (!String(row.body || "").trim() || hpText) patch.body = body;
             if (!row.tag && job.tag) patch.tag = job.tag;
             if (!row.event_date) patch.event_date = job.date;
             const r2 = await sb.from("notes").update(patch).eq("id", row.id);
@@ -3291,7 +3296,10 @@ export async function initNotes(mountId = "notesapp") {
           const hs = handles.get(job.raw) || {};
           const pdfH = hs[job.pdf];
           if (!pdfH) { failed.push(job.raw + " — 회의록 PDF 를 열지 못했습니다"); continue; }
-          if (row && MN.alreadyHas(row.files, job.pdf)) {
+          /* 같은 PDF 가 이미 붙어 있으면 파일은 다시 안 올립니다 —
+             다만 회의록_HP(최종본 글)가 있으면 본문만 그 글로 새로 씁니다. */
+          const pdfDone = !!(row && MN.alreadyHas(row.files, job.pdf));
+          if (pdfDone && !(job.hp && hs[job.hp])) {
             failed.push(job.pdf + " — 이미 붙어 있습니다"); continue;
           }
           if (ups.some((u) => u.name === job.pdf)) {
@@ -3308,11 +3316,20 @@ export async function initNotes(mountId = "notesapp") {
           }
           titles.push(MN.titleOf(job, jsonTitle));
 
-          /* 본문에 담을 요약 — txt 가 있으면 「전문」 앞까지만.
-             mergeBlock 이 나중에 이 덩이를 다시 찾을 수 있게
-             「━ 파일이름」 머리글을 붙여 넘깁니다. */
+          /* 본문에 담을 글 — **최종본**을 씁니다.
+             「<회의록_v3> 처럼 마지막 번호가 붙은거든지..회의록_HP든지 최종본말야」
+             ① 회의록_HP.md(.txt) 가 있으면 그 글 그대로
+             ② 없으면 가장 새 판의 회의록내용 json(주제별 정리)
+             ③ 그것도 없으면 받아쓴 txt 의 「전문」 앞 정리
+             mergeBlock 이 나중에 이 덩이를 다시 찾을 수 있게 「━ 파일이름」 머리글을 붙여 넘깁니다. */
           let gist = "";
-          if (job.txt && hs[job.txt]) {
+          if (job.hp && hs[job.hp]) {
+            try { gist = (await (await hs[job.hp].getFile()).text()).replace(/\r/g, "").trim(); } catch (e) {}
+          }
+          if (!gist && job.json && hs[job.json]) {
+            try { gist = MN.gistFromJson(JSON.parse(await (await hs[job.json].getFile()).text())); } catch (e) {}
+          }
+          if (!gist && job.txt && hs[job.txt]) {
             try {
               const text = await (await hs[job.txt].getFile()).text();
               const cut = text.indexOf("■ 전문");
@@ -3320,10 +3337,12 @@ export async function initNotes(mountId = "notesapp") {
             } catch (e) {}
           }
 
-          ups.push(await NF.upload(await pdfH.getFile()));
+          if (!pdfDone) {
+            ups.push(await NF.upload(await pdfH.getFile()));
+            /* 회의록 게시판에도 따로 모읍니다 — 아래에서 한꺼번에 올립니다 */
+            minutesJobs.push({ job: job, h: pdfH, title: MN.titleOf(job, jsonTitle) });
+          }
           any = true;
-          /* 회의록 게시판에도 따로 모읍니다 — 아래에서 한꺼번에 올립니다 */
-          minutesJobs.push({ job: job, h: pdfH, title: MN.titleOf(job, jsonTitle) });
 
           /* 발표자료 — presentation 폴더가 있으면 그 안의 **PDF 를 모두** 올립니다.
              폴더가 없으면 회의 폴더에 흩어져 있는 발표자료 하나를 올립니다.
@@ -3375,6 +3394,8 @@ export async function initNotes(mountId = "notesapp") {
           /* mergeBlock 은 「━ 파일이름」 으로 시작하는 줄로 덩이를 찾습니다.
              머리글 없이 넘기면 다시 찾지 못해, 같은 요약이 두 번 쌓이거나
              앞 덩이를 갈아 끼울 때 통째로 지워집니다. */
+          /* 새 판(_v2)이면 같은 회의의 옛 판 덩이는 지웁니다 — 본문에는 최종본 하나만 */
+          body = MN.dropOldBlocks(body, job.pdf);
           if (gist) body = mergeBlock(body, job.pdf, "━ " + job.pdf + NLc + gist);
           if ((job.people || []).length) people = NF.mergePeople(people, job.people);
           if (job.place && !place) place = job.place;
@@ -3391,7 +3412,7 @@ export async function initNotes(mountId = "notesapp") {
           /* 메모리의 글도 함께 갱신합니다 — 다시 돌릴 때 낡은 값을 밑감으로
              삼지 않게. (load() 는 다 끝난 뒤에야 부릅니다.) */
           Object.assign(row, patch);
-          done.push(date + " → 「" + row.title + "」 에 " + ups.length + "건 붙였습니다");
+          done.push(date + " → 「" + row.title + "」 에 " + (ups.length ? ups.length + "건 붙였습니다" : "최종본 글을 새로 썼습니다"));
         } else {
           const title = titles.length > 1 ? titles.join("  ·  ") : (titles[0] || date);
           const fresh = {
