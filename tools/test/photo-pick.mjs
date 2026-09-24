@@ -5,7 +5,8 @@
 // 「사진중에 얼굴개수가 가장 많은 단체사진만 1장 올리면 되」
 // 회의 폴더의 pictures(사진) 안에서 한 장을 고르는 규칙입니다.
 
-import { pickBest, whyPicked, isPicDir, IMG_RE, PIC_DIRS, needEyes, TIE }
+import { pickBest, whyPicked, isPicDir, IMG_RE, PIC_DIRS, needEyes, TIE,
+         groupPhotos, groupNote, GROUP_MIN, GROUP_MAX }
   from "../../assets/js/notes-photo-pick.js";
 
 let bad = 0;
@@ -107,6 +108,23 @@ eq("못 셌으면 그렇다고 말한다",
 eq("얼굴이 0명이어도 못 센 것처럼 말한다",
    whyPicked(P("풍경.jpg", 0), 1), "풍경.jpg");
 eq("고른 것이 없으면 빈 글자", whyPicked(null, 3), "");
+
+/* ── 단체사진 모두 올리기 — 「3인이상 사람 얼굴이 있으면 업로드해줘」 ── */
+const GP = [P("a.jpg", 1), P("b.jpg", 5), P("c.jpg", 3), P("d.jpg", 0), P("e.jpg", 9), P("f.jpg", 2)];
+eq("★ 얼굴 셋 이상만", groupPhotos(GP).map((x) => x.name), ["e.jpg", "b.jpg", "c.jpg"]);
+eq("★ 얼굴 많은 차례", groupPhotos(GP)[0].name, "e.jpg");
+eq("셋 이상이 없으면 빈 목록", groupPhotos([P("a.jpg", 1), P("b.jpg", 2)]).length, 0);
+eq("몇 명부터인지 바꿀 수 있다", groupPhotos(GP, 2).map((x) => x.name), ["e.jpg", "b.jpg", "c.jpg", "f.jpg"]);
+eq("★ 윗수까지만", groupPhotos([P("1", 4), P("2", 4), P("3", 4)], 3, 2).map((x) => x.name), ["1", "2"]);
+eq("0 이면 모두", groupPhotos([P("1", 4), P("2", 4), P("3", 4)], 3, 0).length, 3);
+eq("얼굴이 같으면 눈 뜬 것부터",
+   groupPhotos([E("감은.jpg", 4, 0.2), E("뜬.jpg", 4, 0.9)]).map((x) => x.name), ["뜬.jpg", "감은.jpg"]);
+eq("얼굴을 못 셌으면(-1) 안 올린다", groupPhotos([P("x.jpg", -1), P("y.jpg", -1)]).length, 0);
+eq("빈 목록·이상한 값", [groupPhotos([]).length, groupPhotos(null).length], [0, 0]);
+eq("기본값", [GROUP_MIN, GROUP_MAX], [3, 8]);
+eq("★ 알림 글", groupNote([P("e.jpg", 9), P("b.jpg", 5)], 6),
+   "2장 (6장 가운데 얼굴 3명 이상) — e.jpg 얼굴 9명, b.jpg 얼굴 5명");
+eq("올린 것이 없으면 빈 글자", groupNote([], 6), "");
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);

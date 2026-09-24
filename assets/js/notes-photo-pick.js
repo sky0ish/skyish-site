@@ -68,6 +68,40 @@ export function pickBest(list) {
 /** 얼굴 수가 이만큼 차이 안 나면 「비긴 것」 으로 보고 눈까지 봅니다 */
 export const TIE = 1;
 
+/* ── 단체사진 — 「3인이상 사람 얼굴이 있으면 업로드해줘」 ──────────
+   회의·세미나 폴더의 pictures 안에서 **얼굴이 셋 이상**인 사진을 모두 올립니다.
+   한 글에 너무 많이 붙지 않게 윗수를 둡니다 (나머지는 앨범에 그대로 담깁니다). */
+export const GROUP_MIN = 3;        // 몇 명부터 단체사진으로 볼지
+export const GROUP_MAX = 8;        // 글 하나에 붙일 윗수
+
+/** 얼굴이 min 명 이상인 사진들 — 얼굴 많은 차례, 같으면 눈 뜬 차례, 그다음 폴더 차례
+ *  @param list bestPhoto() 가 돌려준 [{name, file, faces, open, w, h}]
+ *  @param min  몇 명부터 (기본 GROUP_MIN)
+ *  @param max  몇 장까지 (기본 GROUP_MAX, 0 이면 모두)
+ */
+export function groupPhotos(list, min, max) {
+  const m = typeof min === "number" ? min : GROUP_MIN;
+  const cap = typeof max === "number" ? max : GROUP_MAX;
+  const L = (Array.isArray(list) ? list : []).filter((x) => x && x.name);
+  const picked = L.map((x, i) => [x, i])
+    .filter(([x]) => (typeof x.faces === "number" ? x.faces : -1) >= m)
+    .sort((A, B) =>
+      (B[0].faces || 0) - (A[0].faces || 0) ||
+      ((typeof B[0].open === "number" ? B[0].open : -1) - (typeof A[0].open === "number" ? A[0].open : -1)) ||
+      A[1] - B[1])
+    .map(([x]) => x);
+  return cap > 0 ? picked.slice(0, cap) : picked;
+}
+
+/** 올린 단체사진을 사람 말로 — 알림에 씁니다 */
+export function groupNote(picked, n, min) {
+  const L = Array.isArray(picked) ? picked : [];
+  const m = typeof min === "number" ? min : GROUP_MIN;
+  if (!L.length) return "";
+  return L.length + "장 (" + n + "장 가운데 얼굴 " + m + "명 이상) — " +
+    L.map((x) => x.name + " 얼굴 " + x.faces + "명").join(", ");
+}
+
 /** 눈을 봐야 할 사진들 — 얼굴이 가장 많은 것들 (한 장뿐이면 볼 것도 없습니다) */
 export function needEyes(list) {
   const L = (Array.isArray(list) ? list : []).filter((x) => x && x.name);

@@ -18,7 +18,7 @@ import * as FT from "./notes-facetag.js?v=202609111500";
 import * as MN from "./notes-minutes.js?v=202609181000";
 import * as PP from "./notes-photo-pick.js?v=202609101300";
 import * as CD from "./notes-cards.js?v=202609051200";
-import * as UP from "./notes-uploads.js?v=202609081500";
+import * as UP from "./notes-uploads.js?v=202609230900";
 import * as WS from "./notes-workshop.js?v=202609181000";
 import * as HX from "./hwpx.js?v=202609101300";
 import * as WK from "./notes-weekly.js?v=202609112100";
@@ -773,13 +773,18 @@ export async function initNotes(mountId = "notesapp") {
 
     /* 분류 단추의 숫자는 「지금 고른 게시판·찾는 말」 안에서 셉니다 —
        눌러 보면 몇 개가 나올지 숫자가 그대로 알려 줍니다. */
-    const inBoard = UP.pickFiles(all, "all", s, upBoard);
-    const hit = UP.pickFiles(all, upGroup, s, upBoard);
+    /* 같은 자료가 Schedule 과 회의록 게시판에 함께 붙어 있으면 한 줄로 —
+       「같은 자료는 스케쥴쪽에서 한번만 올라오게」. 게시판을 하나 고르셨을 때는
+       그 게시판의 것을 그대로 보여 드립니다 (골라 놓고 안 보이면 더 이상합니다). */
+    const one = (l) => (upBoard === "all" ? UP.dedupeBoards(l, ["schedule"]) : l);
+    const inBoard = one(UP.pickFiles(all, "all", s, upBoard));
+    const hit = one(UP.pickFiles(all, upGroup, s, upBoard));
     const cnt = UP.counts(inBoard);
 
     /* 「자료 3개」 — 거르개를 걸었으면 전체 수도 함께 알려 줍니다 */
+    const allN = one(UP.pickFiles(all, "all", s, "all")).length;
     countEl.textContent = UP.summary(hit) +
-      (all.length !== hit.length ? ` (전체 ${all.length}개 가운데)` : "");
+      (allN !== hit.length ? ` (전체 ${allN}개 가운데)` : "");
 
     if (!all.length) {
       list.innerHTML = "";
@@ -838,6 +843,8 @@ export async function initNotes(mountId = "notesapp") {
       "</span>" +
       '<span class="uwhere">' +
         `<span class="ncat" style="--c:${CAT_COLOR[x.cat] || "#888"}">${esc(x.catLabel)}</span>` +
+        ((x.alsoLabels || []).length
+          ? `<span class="ualso" title="같은 자료가 ${esc(x.alsoLabels.join(" · "))} 게시판에도 붙어 있습니다">＋${esc(x.alsoLabels.join(" · "))}</span>` : "") +
         `<button type="button" class="ulink" data-post="${esc(x.postId)}" ` +
         `title="이 자료가 붙은 글 열기">${esc(x.postTitle)}</button>` +
       "</span>" +
@@ -1494,8 +1501,14 @@ export async function initNotes(mountId = "notesapp") {
       if (btn) btn.disabled = false;
       return false;
     }
-    // 글이 지워진 뒤에 파일을 치웁니다 (실패해도 글은 이미 없어졌습니다)
+    // 글이 지워진 뒤에 파일을 치웁니다 (실패해도 글은 이미 없어졌습니다).
+    //   다른 글이 같은 파일을 함께 쓰고 있으면(일정 글 ↔ 회의록 게시판) 보관함에 그대로 둡니다 —
+    //   한쪽을 지웠다고 다른 쪽 붙임이 깨지면 안 됩니다.
+    const shared = (path) => rows.some((o) =>
+      o && String(o.id) !== String(r.id) &&
+      (Array.isArray(o.files) ? o.files : []).some((g) => g && g.path === path));
     for (const f of (Array.isArray(r.files) ? r.files : [])) {
+      if (!f || !f.path || shared(f.path)) continue;
       try { await NF.remove(f.path); } catch (e) {}
     }
     await load();
@@ -3121,7 +3134,7 @@ export async function initNotes(mountId = "notesapp") {
     return await new Promise((ok) => c.toBlob(ok, "image/jpeg", 0.9));
   }
 
-  document.getElementById("nWs").addEventListener("click", async () => {
+  onceClick("nWs", "wsWired", async () => {
     if (wsBusy) return;
     if (typeof window.showDirectoryPicker !== "function") {
       alert("컴퓨터에서 쓰는 기능입니다 — 자료가 컴퓨터 폴더에 있기 때문입니다.");
@@ -3137,12 +3150,27 @@ export async function initNotes(mountId = "notesapp") {
     await attachWorkshops(dir);
   });
 
+  /* 단추 하나에 듣는 이는 한 번만, 그리고 누르자마자 잠급니다 —
+     화면을 다시 그려 듣는 이가 겹치거나 두 번 눌러도 한 번만 돕니다.
+     (겹치면 같은 자료가 두 벌씩 올라갑니다 — 「두번씩 자료가 올라와」) */
+  function onceClick(id, key, fn) {
+    const el = document.getElementById(id);
+    if (!el || el.dataset[key] === "1") return;
+    el.dataset[key] = "1";
+    let busy = false;
+    el.addEventListener("click", async () => {
+      if (busy) return;
+      busy = true;
+      try { await fn(); } finally { busy = false; }
+    });
+  }
+
   /* ── 회의록 붙이기 ──
      1.Record/받아쓰기.py 가 만든 txt(글로바꾼것 폴더)를 골라
      그날 Schedule 글에 합칩니다 — 요약은 본문에, 전문 txt 는 붙임으로.
      그날 글이 없으면 새로 만듭니다. 같은 이름이 이미 붙어 있으면 건너뜁니다. */
   let recBusy = false;                     // 도는 동안 두 번 눌리지 않게
-  document.getElementById("nRec").addEventListener("click", async () => {
+  onceClick("nRec", "recWired", async () => {
     if (recBusy) return;
     if (typeof window.showDirectoryPicker !== "function") {
       alert("컴퓨터에서 쓰는 기능입니다 — 회의록이 컴퓨터 폴더에 있기 때문입니다.");
@@ -3337,11 +3365,16 @@ export async function initNotes(mountId = "notesapp") {
             } catch (e) {}
           }
 
+          /* 올린 파일 하나를 두 게시판이 함께 씁니다 — 「같은 자료는 스케쥴쪽에서 한번만」.
+             이미 붙어 있으면 그 글에 적힌 붙임을 그대로 가리킵니다. */
+          let pdfUp = pdfDone && row
+            ? (row.files || []).find((f) => f && f.name === job.pdf) : null;
           if (!pdfDone) {
-            ups.push(await NF.upload(await pdfH.getFile()));
-            /* 회의록 게시판에도 따로 모읍니다 — 아래에서 한꺼번에 올립니다 */
-            minutesJobs.push({ job: job, h: pdfH, title: MN.titleOf(job, jsonTitle) });
+            pdfUp = await NF.upload(await pdfH.getFile());
+            ups.push(pdfUp);
           }
+          /* 회의록 게시판에도 모읍니다 — 아래에서 한꺼번에, 같은 파일로 */
+          minutesJobs.push({ job: job, h: pdfH, up: pdfUp, title: MN.titleOf(job, jsonTitle) });
           any = true;
 
           /* 발표자료 — presentation 폴더가 있으면 그 안의 **PDF 를 모두** 올립니다.
@@ -3357,12 +3390,16 @@ export async function initNotes(mountId = "notesapp") {
             catch (e) { failed.push(nm + " — 발표자료를 올리지 못했습니다"); }
           }
 
-          /* 그날 사진 폴더(pictures·사진)에서 **단체사진 한 장**만 함께 올립니다.
-             얼굴이 가장 많은 것을 고릅니다. 얼굴 세는 일은 이 브라우저 안에서만
-             일어나고, 고른 한 장만 글의 붙임 파일로 올라갑니다. */
+          /* 그날 사진 폴더(pictures·사진)에서 **단체사진을 모두** 함께 올립니다 —
+             「3인이상 사람 얼굴이 있으면 업로드해줘」. 얼굴 셋 이상인 사진을
+             얼굴 많은 차례로 여덟 장까지 붙입니다(나머지는 아래 앨범에 그대로 담깁니다).
+             셋 이상이 한 장도 없으면 전처럼 얼굴이 가장 많은 한 장만 올립니다.
+             얼굴 세는 일은 이 브라우저 안에서만 일어납니다. */
           if ((job.pics || []).length) {
-            /* 지난번에 이미 한 장 올렸으면 또 올리지 않습니다 */
-            const had = row && job.pics.some((nm) => MN.alreadyHas(row.files, nm));
+            /* 폴더의 사진이 모두 이미 붙어 있으면 다시 보지 않습니다.
+               한 장이라도 새것이 있으면 다시 세어 단체사진만 더 붙입니다
+               (이미 붙은 것은 아래에서 건너뜁니다). */
+            const had = row && job.pics.every((nm) => MN.alreadyHas(row.files, nm));
             if (!had) {
               try {
                 const ph = picHandles.get(job.raw) || {};
@@ -3371,14 +3408,23 @@ export async function initNotes(mountId = "notesapp") {
                   if (ph[nm]) cand.push({ name: nm, file: await ph[nm].getFile() });
                 }
                 if (cand.length) {
-                  const { best } = await PP.bestPhoto(cand, (i, n) => {
+                  const { best, list } = await PP.bestPhoto(cand, (i, n) => {
                     recBtn.textContent = "사진 고르는 중… " + i + "/" + n;
                   });
                   recBtn.textContent = "붙이는 중…";
-                  if (best && !ups.some((u) => u.name === best.name)) {
-                    ups.push(await NF.upload(best.file));
-                    picNote.push(job.raw + " → " + PP.whyPicked(best, cand.length));
+                  /* 얼굴 셋 이상인 단체사진 — 없으면 가장 많은 한 장 */
+                  const group = PP.groupPhotos(list);
+                  const pick = group.length ? group : (best ? [best] : []);
+                  for (const g of pick) {
+                    if (!g || !g.file || ups.some((u) => u.name === g.name)) continue;
+                    if (row && MN.alreadyHas(row.files, g.name)) continue;
+                    recBtn.textContent = "단체사진 올리는 중… " + (pick.indexOf(g) + 1) + "/" + pick.length;
+                    try { ups.push(await NF.upload(g.file)); }
+                    catch (e) { failed.push(g.name + " — 사진을 올리지 못했습니다"); }
                   }
+                  recBtn.textContent = "붙이는 중…";
+                  if (group.length) picNote.push(job.raw + " → " + PP.groupNote(group, cand.length));
+                  else if (best) picNote.push(job.raw + " → " + PP.whyPicked(best, cand.length));
                   /* 사진이 여러 장이면 앨범에도 통째로 담습니다 —
                      「pictures에 사진이 많은건 앨범에 자동으로 넣어줘.
                        앨범 이름은 폴더명으로 하면되」 */
@@ -3482,14 +3528,16 @@ export async function initNotes(mountId = "notesapp") {
         const has = rows.some((r) => r.category === "minutes" &&
           MN.alreadyHas(r.files, m.job.pdf));
         if (has) continue;
-        const up = await NF.upload(await m.h.getFile());
+        /* 일정 글에 올린 그 파일을 그대로 씁니다 — 두 번 올리지 않습니다.
+           (못 찾았을 때만 새로 올립니다) */
+        const up = m.up || await NF.upload(await m.h.getFile());
         const r2 = await sb.from("notes").insert({
           category: "minutes", tag: "", title: (m.title || m.job.raw).slice(0, 200),
           body: "", event_date: m.job.date, place: m.job.place || null,
           people: (m.job.people || []).join(", ") || null,
           files: [up], created_by: user.id,
         }).select();
-        if (r2.error) { await NF.remove(up.path); throw r2.error; }
+        if (r2.error) { if (!m.up) { await NF.remove(up.path); } throw r2.error; }
         const made = (r2.data && r2.data[0]) || null;
         if (made) rows.unshift(made);
         minuteDone.push(m.job.pdf);

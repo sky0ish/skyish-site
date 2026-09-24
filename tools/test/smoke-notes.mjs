@@ -858,12 +858,13 @@ await check("사진이 많으면 앨범에도 담고 이름은 폴더 이름", a
   if (!al.length) throw new Error("앨범을 안 만들었습니다");
   if ((globalThis.__gal || []).length !== 4)
     throw new Error("앨범에 담은 사진이 " + (globalThis.__gal || []).length + "장입니다");
-  /* 일정 글에는 단체사진 한 장만 */
+  /* 일정 글에는 얼굴 셋 이상인 단체사진만 — 「3인이상 사람 얼굴이 있으면 업로드해줘」
+     가.jpg 2명 · 나.jpg 7명 · 다.jpg 1명 · 라.jpg 3명 → 나·라 두 장 */
   const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name);
-  if (names.filter((n) => /\.jpg$/.test(n)).length !== 1)
-    throw new Error("일정 글에 사진이 여러 장 붙었습니다 — " + names);
-  if (!names.includes("나.jpg")) throw new Error("단체사진이 아닙니다 — " + names);
+  const jpg = names.filter((n) => /\.jpg$/.test(n));
+  if (JSON.stringify(jpg) !== JSON.stringify(["나.jpg", "라.jpg"]))
+    throw new Error("단체사진이 아닙니다 — " + jpg);
 });
 
 await check("사진이 적으면 앨범은 안 만든다", async () => {
@@ -904,9 +905,14 @@ await check("어느 사진을 왜 골랐는지 알려 준다", async () => {
 
 await check("회의록 PDF 가 없는 폴더는 왜 건너뛰는지 알려 준다", async () => {
   globalThis.__dirs = { "20260903_어디_아무개": ["자문회의 개최건의.pdf"] };
+  globalThis.__pics = {}; globalThis.__pres = {};
   calls.length = 0;
   alerts.length = 0;
+  /* 「워크샵 폴더로 보고 올릴까요?」 에는 「아니요」 — 여기서는 건너뛰는 까닭을 봅니다 */
+  const keep = globalThis.confirm;
+  globalThis.confirm = (m) => { confirms.push(String(m)); return !/워크샵/.test(String(m)); };
   await fire("nRec", "click");
+  globalThis.confirm = keep;
   await new Promise((r) => setTimeout(r, 50));
   if (calls.some((c) => c[0] === "insert")) throw new Error("글을 만들었습니다");
   const last = alerts[alerts.length - 1] || "";
