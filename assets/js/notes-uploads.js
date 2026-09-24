@@ -167,4 +167,55 @@ export function duplicates(items) {
   return [...by.values()].filter((l) => l.length > 1);
 }
 
+/** 같은 자료가 두 게시판에 붙어 있으면 한 줄로 모읍니다 —
+ *  「이상하게 회의록/스케쥴 쪽에서 두번씩 자료가 올라와 같은 자료는 스케쥴쪽에서 한번만 올라오게」
+ *  회의록 붙이기는 그날 일정 글과 회의록 게시판에 같은 회의록을 붙입니다.
+ *  같은 것으로 보는 기준 — 보관함 자리(path)가 같거나, 이름·크기·날짜가 모두 같을 때
+ *  (크기나 날짜를 모르면 자리만 봅니다. 서로 다른 자료를 잘못 묶지 않게).
+ *  남기는 줄은 order 에 앞선 게시판(기본 Schedule), 같으면 먼저 온 것.
+ *  남긴 줄에는 also(갈래)·alsoLabels(이름표)로 「회의록에도」 를 적어 둡니다.
+ *  @param items fileRows() 의 결과
+ *  @param order 남기고 싶은 게시판 차례 — 기본 ["schedule"]
+ */
+export function dedupeBoards(items, order) {
+  const list = Array.isArray(items) ? items.filter(Boolean) : [];
+  const ord = Array.isArray(order) && order.length ? order.map(String) : ["schedule"];
+  const rank = (c) => { const i = ord.indexOf(String(c || "")); return i < 0 ? ord.length : i; };
+  /* 열쇠 — 자리(path)와, 알 수 있으면 이름·크기·날짜 */
+  const keysOf = (x) => {
+    const k = ["p|" + x.path];
+    if (Number(x.size) > 0 && x.date) k.push("n|" + x.name + "|" + x.size + "|" + x.date);
+    return k;
+  };
+  const gidOf = new Map();
+  let next = 0;
+  const gid = (x) => {
+    const ks = keysOf(x);
+    let g = null;
+    ks.forEach((k) => { if (g == null && gidOf.has(k)) g = gidOf.get(k); });
+    if (g == null) g = next++;
+    ks.forEach((k) => gidOf.set(k, g));
+    return g;
+  };
+  const groups = new Map();
+  list.forEach((x, i) => {
+    const g = gid(x);
+    const l = groups.get(g) || [];
+    l.push({ x: x, i: i });
+    groups.set(g, l);
+  });
+  const keepAt = new Map();          // 남길 줄의 자리 → 만들어 둔 줄
+  groups.forEach((l) => {
+    const best = l.slice().sort((a, b) =>
+      rank(a.x.cat) - rank(b.x.cat) || a.i - b.i)[0];
+    const others = l.filter((o) => o !== best);
+    const also = [], alsoLabels = [];
+    others.forEach((o) => {
+      if (o.x.cat && also.indexOf(o.x.cat) < 0) { also.push(o.x.cat); alsoLabels.push(o.x.catLabel || o.x.cat); }
+    });
+    keepAt.set(best.i, Object.assign({}, best.x, { also: also, alsoLabels: alsoLabels }));
+  });
+  return list.map((x, i) => keepAt.get(i)).filter(Boolean);
+}
+
 export const groupName = (k) => GROUP_NAME[k] || k;

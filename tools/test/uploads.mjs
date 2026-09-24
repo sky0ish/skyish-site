@@ -2,7 +2,7 @@
 //
 //   돌리는 법 :  node tools/test/uploads.mjs
 
-import { fileRows, pickFiles, matchFile, counts, summary, groupOf, duplicates, byBoard, GROUPS }
+import { fileRows, pickFiles, matchFile, counts, summary, groupOf, duplicates, byBoard, dedupeBoards, GROUPS }
   from "../../assets/js/notes-uploads.js";
 
 /* 자료는 Schedule·회의록·일상 등 여러 게시판에서 올라옵니다 */
@@ -179,6 +179,39 @@ eq("path 없는 붙임은 뺀다", fileRows([{ id: "x", files: [{ name: "a" }] }
 eq("이름이 없어도 터지지 않는다",
    fileRows([{ id: "x", files: [{ path: "p" }] }])[0].name, "(이름 없음)");
 eq("찾는 말이 비면 다 통과", matchFile(items[0], "   "), true);
+
+/* ── 같은 자료가 두 게시판에 — 한 줄로 (「스케쥴쪽에서 한번만 올라오게」) ── */
+const DUP = fileRows([
+  { id: "s1", category: "schedule", title: "9월 17일", event_date: "2026-09-17",
+    files: [{ path: "a/1.pdf", name: "회의록.pdf", type: "pdf", size: 100 }] },
+  { id: "m1", category: "minutes", title: "회의록 글", event_date: "2026-09-17",
+    files: [{ path: "a/1.pdf", name: "회의록.pdf", type: "pdf", size: 100 }] },
+], { schedule: "Schedule", minutes: "회의록" });
+eq("모으기 전에는 두 줄", DUP.length, 2);
+const D1 = dedupeBoards(DUP, ["schedule"]);
+eq("★ 같은 자리면 한 줄", D1.length, 1);
+eq("★ 남는 쪽은 Schedule", D1[0].cat, "schedule");
+eq("★ 어디에도 있는지 적어 둔다", D1[0].alsoLabels, ["회의록"]);
+/* 따로 올려 자리가 달라도 — 이름·크기·날짜가 같으면 같은 자료 */
+const DUP2 = fileRows([
+  { id: "s2", category: "schedule", event_date: "2026-09-17", title: "일정",
+    files: [{ path: "a/2.pdf", name: "회의록.pdf", type: "pdf", size: 100 }] },
+  { id: "m2", category: "minutes", event_date: "2026-09-17", title: "회의록",
+    files: [{ path: "b/2.pdf", name: "회의록.pdf", type: "pdf", size: 100 }] },
+], { schedule: "Schedule", minutes: "회의록" });
+eq("★ 두 벌로 올린 것도 한 줄", dedupeBoards(DUP2, ["schedule"]).length, 1);
+/* 날짜가 다르면 다른 자료 — 잘못 묶지 않습니다 */
+const NOT = fileRows([
+  { id: "s3", category: "schedule", event_date: "2026-09-17", files: [{ path: "a/3.pdf", name: "회의록.pdf", type: "pdf", size: 100 }] },
+  { id: "s4", category: "schedule", event_date: "2026-08-01", files: [{ path: "b/3.pdf", name: "회의록.pdf", type: "pdf", size: 100 }] },
+]);
+eq("날짜가 다르면 그대로 둘", dedupeBoards(NOT, ["schedule"]).length, 2);
+eq("크기를 모르면 자리만 본다", dedupeBoards(fileRows([
+  { id: "x1", category: "schedule", files: [{ path: "a/9.pdf", name: "ㄱ.pdf" }] },
+  { id: "x2", category: "minutes", files: [{ path: "b/9.pdf", name: "ㄱ.pdf" }] },
+])).length, 2);
+eq("빈 목록", dedupeBoards([]).length, 0);
+eq("아무것도 아닌 것", dedupeBoards(null).length, 0);
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 process.exit(bad ? 1 : 0);
