@@ -2691,7 +2691,10 @@ export async function initNotes(mountId = "notesapp") {
       return k !== "file";
     });
     if (!todo.length) {
-      fMsg.textContent = "다시 읽을 엑셀·PDF·문서가 없습니다 (그림은 개최개요·안내문·포스터 이름일 때만 읽습니다).";
+      /* 붙임이 아예 없으면 읽을 것도 없습니다 — 어디서 채우는지 알려 드립니다 */
+      fMsg.textContent = all.length
+        ? "다시 읽을 엑셀·PDF·문서가 없습니다 (그림은 개최개요·안내문·포스터 이름일 때만 읽습니다)."
+        : "붙임 파일이 없어 읽을 것이 없습니다 — 행사 폴더째 올리시려면 글 목록 위의 「📂 워크샵 올리기」 로 1.세미나_토론 폴더를 고르시거나, 여기에 개최개요 그림·PDF 를 끌어다 놓아 주세요.";
       return;
     }
 

@@ -81,5 +81,14 @@ eq("★ 포스터 — 만난 사람(나 빼고)에 헛이름이 없다",
    briefPeople(bp, ["남지현"]).map((x) => x.split(" (")[0]),
    ["홍성우", "김선주", "이강훈", "이영은", "한중석", "김경기", "오정석", "장인선", "장창훈", "황성주"]);
 
+/* ── 그날 글이 하나뿐이면 제목이 달라도 그 글에 — 「구글에서 온 LH이미홍ㅡ토론」 ── */
+const ONE = [{ id: "g1", category: "schedule", event_date: "2026-09-17", title: "LH이미홍ㅡ토론", tag: "" }];
+const jobOne = { raw: "20260917_[토론] LH_평화와공존공간의탐색", date: "2026-09-17", rest: "평화와공존공간의탐색" };
+eq("★ 그날 글 하나면 제목이 달라도 그 글",
+   (pickRow(ONE, jobOne, { date: "2026-09-17", title: "", host: "", organizer: "" }) || {}).id, "g1");
+eq("그날 글이 둘이면 함부로 고르지 않는다",
+   pickRow(ONE.concat([{ id: "g2", category: "schedule", event_date: "2026-09-17", title: "딴 일정", tag: "" }]),
+           jobOne, { date: "2026-09-17", title: "", host: "", organizer: "" }), null);
+
 console.log(bad ? "\n✗ " + bad + " 군데 어긋납니다" : "\n✓ 모두 지납니다");
 process.exit(bad ? 1 : 0);

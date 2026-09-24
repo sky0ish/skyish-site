@@ -392,6 +392,9 @@ export function pickRow(rows, info, b, sameTitle) {
   if (ranked[0][0] > 0) return ranked[0][1];
   const tagged = day.filter((r) => /토론|발표|세미나|참석|자문|위원회|GRI행사/.test(String(r.tag || "")));
   if (tagged.length === 1) return tagged[0];
+  /* 그날 일정 글이 하나뿐이면 그 글이 이 행사입니다 —
+     구글에서 온 「LH이미홍ㅡ토론」 처럼 제목이 폴더와 전혀 달라도 새 글을 또 만들지 않게. */
+  if (day.length === 1) return day[0];
   return null;
 }
 
