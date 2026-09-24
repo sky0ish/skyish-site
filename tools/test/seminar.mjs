@@ -68,5 +68,18 @@ eq("되읽은 발제자", b2.presenters.map((p) => p.name), ["이현주", "김�
 eq("되읽은 시각", [b2.time, b2.date], ["13:30", "2026-09-17"]);
 eq("옛 꼴(외부만)도 읽는다", briefFromJson({ "일시": "2026.9.2 14:00", "장소": "x", "외부": "김고은 (국토연구원), 박철수" }, { date: "2026-09-02" }).attendees.map((p) => p.name), ["김고은", "박철수"]);
 
+/* ── 행사 포스터(그림) 꼴 — 「info에 행사정보가 있으니 … 토론자, 발표자가 안 들어가있어」 ── */
+const POSTER = readFileSync(new URL("./fixtures_seminar_poster.txt", import.meta.url), "utf8");
+const bp = parseBrief(POSTER, { date: "2026-09-23" });
+eq("★ 포스터 — 시각", [bp.time, bp.end], ["09:30", "12:00"]);
+eq("★ 포스터 — 장소", bp.place, "국회의원회관 제2소회의실");
+eq("★ 포스터 — 사회·좌장", [bp.mc.map((p) => p.name), bp.chair.map((p) => p.name)], [["홍성우"], ["김선주"]]);
+eq("★ 포스터 — 발제자 셋", bp.presenters.map((p) => p.name), ["이강훈", "이영은", "한중석"]);
+eq("★ 포스터 — 발제 제목", bp.presenters[1].topic, "청년도심거주를 위한 특화형 매입임대의 진단과 향후과제");
+eq("★ 포스터 — 토론자 여섯", bp.discussants.map((p) => p.name), ["김경기", "남지현", "오정석", "장인선", "장창훈", "황성주"]);
+eq("★ 포스터 — 만난 사람(나 빼고)에 헛이름이 없다",
+   briefPeople(bp, ["남지현"]).map((x) => x.split(" (")[0]),
+   ["홍성우", "김선주", "이강훈", "이영은", "한중석", "김경기", "오정석", "장인선", "장창훈", "황성주"]);
+
 console.log(bad ? "\n✗ " + bad + " 군데 어긋납니다" : "\n✓ 모두 지납니다");
 process.exit(bad ? 1 : 0);

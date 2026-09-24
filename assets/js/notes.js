@@ -2593,6 +2593,9 @@ export async function initNotes(mountId = "notesapp") {
      손으로 적어 두신 것은 지우지 않습니다 —
      행사명은 비었을 때만 채우고, 사람은 있는 것에 더하고,
      본문은 같은 파일의 옛 덩이만 갈아 끼웁니다. */
+  /* 행사 안내문으로 볼 그림 이름 — 이 이름일 때만 글자를 읽습니다(무거운 일이라) */
+  const BRIEF_PIC = /(개최\s*개요|개최\s*건의|안내|포스터|프로그램|초청|리플렛|식순|일정표|brief|poster|program)/i;
+
   async function applyOne(f, opt) {
     const body  = document.getElementById("nmB");
     const evEl  = document.getElementById("nmE");
@@ -2629,6 +2632,18 @@ export async function initNotes(mountId = "notesapp") {
         if (el.value.trim() && !(opt && opt.force)) return;   // 적어 두신 것이 먼저
         el.value = v;
       };
+      /* 세미나·토론회 안내문이면 발제자·토론자·사회·좌장까지 —
+         readBrief 는 「참석자」 줄만 보지만, 안내문에는 발제·토론이 따로 적힙니다. */
+      try {
+        const txt = (r.lines || []).join(String.fromCharCode(10));
+        const br = SM.parseBrief(txt, { date: document.getElementById("nmD").value || "" });
+        const ppl = SM.briefPeople(br, NF.MINE);
+        if (ppl.length) whoEl.value = mergePeople(whoEl.value, ppl);
+        if (br.title && (!evEl.value.trim() || (opt && opt.force))) evEl.value = br.title;
+        if (br.time) fill("nmTm", br.time);
+        if (br.place) { fill("nmP", br.place); autoFill.place = br.place; }
+        if (br.date)  fill("nmD", br.date);
+      } catch (e) { /* 안내문이 아니면 그냥 지나갑니다 */ }
       if (b.event) fill("nmE", b.event);
       if (b.date)  fill("nmD", ymd(b.date));
       if (b.time)  fill("nmTm", b.time);
@@ -2667,11 +2682,18 @@ export async function initNotes(mountId = "notesapp") {
      예전에 올린 글도 이 단추로 요약·사람·행사명을 채울 수 있습니다. */
   async function reExtract(btn) {
     const all = attached.concat(picked.map((f) => ({ name: f.name, _file: f })));
+    /* 그림도 읽습니다 — 행사 안내문(개최개요 포스터)이 그림으로 붙는 일이 많고,
+       거기에 발제자·토론자가 적혀 있습니다. 「info에 행사정보가 있으니…
+       토론자, 발표자가 안 들어가있어」 */
     const todo = all.filter((f) => {
       const k = NF.kind(f._file || { name: f.name, type: "" });
-      return k !== "image" && k !== "file";
+      if (k === "image") return BRIEF_PIC.test(f.name);     // 개최개요·포스터·안내문만
+      return k !== "file";
     });
-    if (!todo.length) { fMsg.textContent = "다시 읽을 엑셀·PDF·문서가 없습니다."; return; }
+    if (!todo.length) {
+      fMsg.textContent = "다시 읽을 엑셀·PDF·문서가 없습니다 (그림은 개최개요·안내문·포스터 이름일 때만 읽습니다).";
+      return;
+    }
 
     if (btn) btn.disabled = true;
     dirty = true;
@@ -2681,7 +2703,8 @@ export async function initNotes(mountId = "notesapp") {
       fMsg.textContent = "다시 읽는 중… (" + (i + 1) + "/" + todo.length + ") " + f.name;
       try {
         const file = f._file || await NF.fileFromStore(f);
-        await applyOne(file, { force: true });
+        /* 그림이면 글자를 읽어(OCR) 뽑습니다 */
+        await applyOne(file, { force: true, ocr: NF.kind(file) === "image" });
       } catch (err) {
         fMsg.textContent = f.name + " — 내려받지 못했습니다: " + friendly(err.message);
       }

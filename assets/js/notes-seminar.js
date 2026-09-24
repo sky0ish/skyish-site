@@ -50,6 +50,8 @@ const NOT_NAME = /^(발제|발표|토론|사회|좌장|참석|주제|일시|장�
 
 /** 「[발제1] 제목 (이름 직함, 소속)」 「[발제2] 제목」 줄 다음 「(이름 직함, 소속)」 */
 const BRACKET = /\[\s*((?:기조)?(?:발제|발표|강연|토론|세션)\s*\d*)\s*\]\s*(.*)/;
+/** 「1주제: 매입임대 주택 현황 진단과 전망 - 이강훈 (변호사)」 — 포스터의 주제발표 줄 */
+const TOPIC_LINE = /^\s*(?:제\s*)?(\d+)\s*주제\s*[:：]\s*(.+)$/;
 
 const clean = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
 const strip = (s) => clean(s).replace(/^[ㅇ○●■□▪◦・•\-–—※*]\s*/, "");
@@ -63,14 +65,49 @@ export function peopleInLine(line) {
   const out = [];
   const s = clean(line);
   if (!s) return out;
+
+  /* 괄호마다 살펴봅니다 —
+       ① 안에 「이름 직함」이 또렷이(괄호 첫머리나 쉼표 뒤에) 있으면 그 괄호가 **사람**을 담은 것
+          「[발제1] 평화경제특구의 과제와 전망 (이현주 연구위원, 국토연구원)」
+       ② 아니면 앞에 적힌 이름의 **소속·직함**을 적은 것
+          「남지현 (경기연구원 균형발전지원센터장)」 — 여기서 「전지원 센터장」 같은 헛이름이 나오지 않게 합니다 */
+  const parens = [];
+  const PAREN_RE = /[(（][^()（）]*[)）]/g;
+  let pm;
+  while ((pm = PAREN_RE.exec(s))) {
+    parens.push({ a: pm.index, b: pm.index + pm[0].length, inner: pm[0].slice(1, -1) });
+  }
+  /* 괄호 안에 또렷한 「이름 직함」이 있는가 — 첫머리이거나 앞이 한글이 아닐 때만 또렷한 것으로 봅니다 */
+  const clearIn = (txt) => {
+    const re = new RegExp("([가-힣]{2,4})\\s*(" + TITLE_RE + ")(?![가-힣])", "g");
+    let m2;
+    while ((m2 = re.exec(txt))) {
+      if (NOT_NAME.test(m2[1]) || isTitleWord(m2[1]) || isTitleWord(m2[1] + m2[2])) continue;   // 「선임연구+위원」 은 직함 한 낱말
+      const before = m2.index === 0 || !/[가-힣]/.test(txt[m2.index - 1]);
+      const after = /^\s*(?:[,，]|$)/.test(txt.slice(m2.index + m2[0].length));
+      if (before && after) return true;   // 「이현주 연구위원, 국토연구원」 · 「토지주택연구원 선임연구위원」 은 아님
+    }
+    return false;
+  };
+  parens.forEach((x) => { x.person = clearIn(x.inner); });
+  const inParen = (i) => parens.find((x) => i > x.a && i < x.b) || null;
+
+  /* ① 「이름 직함」 — 「이현주 연구위원」 「김두환연구위원」 */
   NAME_TITLE.lastIndex = 0;
   let m;
   while ((m = NAME_TITLE.exec(s))) {
     let name = m[1];
     const title = m[2];
-    /* 「과제김두환연구위원」 처럼 앞에 다른 글자가 붙어 경계가 흐리면 — 이름은 대개 석 자 */
-    if (name.length === 4 && m.index > 0 && /[가-힣]/.test(s[m.index - 1])) name = name.slice(-3);
-    if (NOT_NAME.test(name)) continue;
+    const pr = inParen(m.index);
+    if (pr) {
+      if (!pr.person) continue;          // 소속·직함을 적은 괄호 — 여기엔 사람 이름이 없습니다
+      /* 사람을 담은 괄호라도 또렷한 자리(첫머리·쉼표 뒤)일 때만 */
+      if (m.index !== pr.a + 1 && /[가-힣]/.test(s[m.index - 1])) continue;
+    } else if (name.length === 4 && m.index > 0 && /[가-힣]/.test(s[m.index - 1])) {
+      /* 「과제김두환연구위원」 처럼 앞에 다른 글자가 붙어 경계가 흐리면 — 이름은 대개 석 자 */
+      name = name.slice(-3);
+    }
+    if (NOT_NAME.test(name) || isTitleWord(name) || isTitleWord(name + title)) continue;
     /* 뒤에 붙은 (소속) 또는 「, 소속」 — 소속 안의 「고양연구원」 이 또 사람으로 잡히지 않게 건너뜁니다 */
     let org = "";
     const rest = s.slice(m.index + m[0].length);
@@ -82,11 +119,50 @@ export function peopleInLine(line) {
         org = clean(comma[1]); NAME_TITLE.lastIndex = m.index + m[0].length + comma[0].length;   // 「, LH 토지주택연구원」 도 건너뜁니다
       }
     }
-    /* 「이름 직함」 앞에 「(소속)」 가 오는 꼴 — 「(국토연구원) 이현주 연구위원」 은 드물어 두지 않습니다 */
-    if (!out.some((p) => p.name === name)) out.push({ name, title, org });
+    if (!out.some((q) => q.name === name)) out.push({ name, title, org });
   }
+
+  /* ② 「이름 (소속 직함)」 — 행사 포스터가 즐겨 쓰는 꼴.
+     「김선주 (경기대학교 부동산자산관리학과 주임교수)」 「이강훈 (변호사)」 */
+  parens.filter((x) => !x.person).forEach((x) => {
+    const before = s.slice(0, x.a).match(/([가-힣]{2,4})\s*$/);
+    if (!before) return;
+    const name = before[1];
+    const at = x.a - before[0].length;                   // 이름이 시작하는 자리
+    if (at > 0 && /[가-힣]/.test(s[at - 1])) return;      // 「…추진전략박기태차장(…)」 처럼 붙어 있으면 이름이 아닙니다
+    const inside = clean(x.inner);
+    if (NOT_NAME.test(name)) return;
+    if (new RegExp("^" + TITLE_RE + "$").test(name)) return;     // 「이미홍 실장(LHRI)」 의 「실장」
+    if (/^\d/.test(inside)) return;                              // 「(2,460호)」 같은 숫자 괄호
+    const ti = titleIn(inside);
+    if (!ti && !ORG_TAIL.test(inside)) return;                   // 직함도 소속도 아니면 사람이 아닙니다
+    if (out.some((q) => q.name === name)) return;
+    /* 소속은 괄호 글에서 직함을 뗀 나머지 — 「경기대학교 부동산자산관리학과 주임교수」 → 「경기대학교 부동산자산관리학과」 */
+    const org = ti
+      ? clean(inside.replace(new RegExp("\\s*(?:주임|수석|책임|선임|전임|겸임|초빙|객원|특임|상임|부|정|조)?\\s*" + ti + "\\s*$"), ""))
+      : inside;
+    out.push({ name: name, title: ti, org: org || inside });
+  });
+  /* 글에 적힌 차례대로 */
+  out.sort((a, b2) => s.indexOf(a.name) - s.indexOf(b2.name));
   return out;
 }
+
+/** 「이름 (소속 직함)」 — 「김선주 (경기대학교 부동산자산관리학과 주임교수)」 「이강훈 (변호사)」
+    괄호 안에 직함이나 소속 꼬리가 있을 때만 사람으로 봅니다 (「매입임대(2,460호)」 같은 것을 거르려고). */
+const NAME_PAREN = new RegExp("(^|[^가-힣])([가-힣]{2,4})\\s*[(（]\\s*([^()（）]{2,60}?)\\s*[)）]", "g");
+
+/** 괄호 안 글에서 직함 하나 — 끝에 붙은 것을 먼저 봅니다 (「경기연구원 균형발전지원센터장」 → 센터장) */
+function titleIn(org) {
+  const t = String(org || "");
+  const tail = t.match(new RegExp("(?:주임|수석|책임|선임|전임|겸임|초빙|객원|특임|상임)?\s*" + TITLE_RE + "\s*$"));
+  if (tail) return clean(tail[0]).replace(/^(?:주임|수석|책임|선임|전임|겸임|초빙|객원|특임|상임)\s*/, "");
+  const m = t.match(new RegExp(TITLE_RE + "(?![가-힣])"));
+  return m ? m[0] : "";
+}
+
+/** 이 낱말이 직함인가 — 「주임」 「수석」 처럼 이름 자리에 와도 사람이 아닙니다 */
+const isTitleWord = (n) => new RegExp("^(?:주임|수석|책임|선임|전임|겸임|초빙|객원|특임|상임)$|^(?:주임|수석|책임|선임|전임|겸임|초빙|객원|특임|상임)?(?:" + TITLE_RE + ")$").test(String(n || ""));
 
 /** 여러 줄에서 — 같은 이름은 한 번만, 먼저 나온 차례대로 */
 export function peopleInLines(lines) {
@@ -141,9 +217,12 @@ export function timeIn(text) {
 
 /** 표제어로 시작하는 줄이면 그 값 (여러 줄에 걸치면 뒤 줄은 부르는 쪽이 이어 붙입니다) */
 function labeled(line, LABEL) {
-  const re = new RegExp("^\\s*" + BULLET + LABEL + SEP + "(.*)$");
-  const m = clean(line).match(re);
-  return m ? clean(m[1]) : null;
+  const t = clean(line);
+  const m = t.match(new RegExp("^\\s*" + BULLET + LABEL + SEP + "(.*)$"));
+  if (m) return clean(m[1]);
+  /* 「:」 없이 띄어쓰기로만 나눈 꼴 — 행사 포스터에 흔합니다 (일 시 … · 장 소 …) */
+  const m2 = t.match(new RegExp("^\\s*" + BULLET + LABEL + "\\s+(\\S.*)$"));
+  return m2 ? clean(m2[1]) : null;
 }
 /** 표제어만 있고 값이 다음 줄에 오는가 (「토론자 :」 로 끝나는 줄) */
 function labelOnly(line, LABEL) {
@@ -187,6 +266,9 @@ export function parseBrief(text, info) {
     if ((v = labeled(ln, L_PRES)) != null || labelOnly(ln, L_PRES)) { mode = "pres"; if (v) bucket.pres.push(v); continue; }
     if ((v = labeled(ln, L_DISC)) != null || labelOnly(ln, L_DISC)) { mode = "disc"; if (v) bucket.disc.push(v); continue; }
     if ((v = labeled(ln, L_ATT)) != null || labelOnly(ln, L_ATT)) { mode = "att"; if (v) bucket.att.push(v); continue; }
+    /* 「1주제: 매입임대 주택 현황 진단과 전망 - 이강훈 (변호사)」 — 포스터의 주제발표 줄 */
+    const tm0 = clean(ln).match(TOPIC_LINE);
+    if (tm0 && peopleInLine(tm0[2]).length) { bucket.pres.push("[발제" + tm0[1] + "] " + clean(tm0[2])); mode = ""; continue; }
     /* 프로그램 표 — 「13:30 - 13:40 개회, 참석자소개 사회: 이승은 주임연구원」 */
     const pm = clean(ln).match(/^(\d{1,2}\s*[:：]\s*\d{2})\s*[~∼～\-–—]\s*(\d{1,2}\s*[:：]\s*\d{2})?\s*(.*)$/);
     if (pm && pm[3]) {
@@ -222,8 +304,11 @@ export function parseBrief(text, info) {
     const body = m ? m[2] : s;
     const who = peopleInLine(body);
     let topic = body.replace(/[(（][^()（）]*[)）]\s*$/, "");   // 끝의 (이름 …) 를 뗍니다
-    who.forEach((p) => { topic = topic.replace(new RegExp(p.name + "\\s*" + p.title + ".*$"), ""); });
-    topic = clean(topic).replace(/[,，]\s*$/, "");
+    who.forEach((p) => {
+      topic = topic.replace(new RegExp(p.name + "\\s*" + p.title + ".*$"), "");
+      topic = topic.replace(new RegExp("\\s*[-\u2013\u2014]\\s*" + p.name + "\\s*$"), "");   // 「제목 - 이강훈」 의 꼬리
+    });
+    topic = clean(topic).replace(/[,，(（]\s*$/, "").trim();   // 이름을 뗀 뒤 남은 여는 괄호도
     if (!who.length && !topic) return;
     if (who.length) who.forEach((p, k) => b.presenters.push({ ...p, topic: k === 0 ? topic : "" }));
     else b.presenters.push({ name: "", title: "", org: "", topic });
