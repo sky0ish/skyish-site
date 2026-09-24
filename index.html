@@ -29,9 +29,15 @@
     /* 달력은 여기서 곧바로 시작합니다 — 문서 끝에 두면 다 읽은 뒤에야 움직입니다.
        모듈 대본은 문서를 막지 않으므로 화면이 늦어지지 않습니다. */
     import { initHomeCal } from "./assets/js/home-cal.js?v=202609080900";
+    import { initTodo } from "./assets/js/todo.js?v=202609250900";
+    /* 해야할일 — 주인으로 들어오셨을 때만 히어로 바로 아래에 펼칩니다.
+       아니면 initTodo 가 그 자리를 통째로 걷어 갑니다. */
+    const todoUp = () => initTodo("todoapp", "hotodo")
+      .then((ok) => { const s = document.getElementById("hotodo"); if (ok && s) s.hidden = false; })
+      .catch(() => {});
     if (document.readyState === "loading")
-      document.addEventListener("DOMContentLoaded", () => initHomeCal());
-    else initHomeCal();
+      document.addEventListener("DOMContentLoaded", () => { initHomeCal(); todoUp(); });
+    else { initHomeCal(); todoUp(); }
   </script>
 </head>
 <body data-hero>
@@ -65,6 +71,17 @@
       <a href="#education" class="scroll-cue" aria-label="Scroll down">
         <span>SCROLL</span><span class="line"></span>
       </a>
+    </section>
+
+    <!-- What to do — 로그인한 주인에게만 보입니다 (다른 분에게는 이 자리가 아예 없습니다) -->
+    <section class="section" id="hotodo" hidden style="padding-bottom:0">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">해야할일</span>
+          <h2 class="section-title">What to do...</h2>
+        </div>
+        <div id="todoapp"><p class="nempty">확인 중…</p></div>
+      </div>
     </section>
 
     <!-- education + career -->

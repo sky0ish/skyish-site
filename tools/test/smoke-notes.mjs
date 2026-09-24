@@ -286,6 +286,12 @@ const load = (p, extra = (s) => s) => {
     Buffer.from(readFileSync(REPO + "/assets/js/hwpx.js", "utf8")).toString("base64");
   s = s.replace(/^import \* as HX from "\.\/hwpx\.js[^"]*";$/m,
     "const HX = await import(" + JSON.stringify(hxUrl) + ");");
+  /* 고른 폴더 기억(fs-keep.js) — 셈은 진짜를 씁니다. 시늉 화면에는 indexedDB 가 없어
+     기억은 늘 비어 있고, 그때마다 폴더 고르기로 갑니다(지금까지와 같은 흐름). */
+  const fkUrl = "data:text/javascript;base64," +
+    Buffer.from(readFileSync(REPO + "/assets/js/fs-keep.js", "utf8")).toString("base64");
+  s = s.replace(/^import \* as FK from "\.\/fs-keep\.js[^"]*";$/m,
+    "const FK = await import(" + JSON.stringify(fkUrl) + ");");
   /* 세미나 개요 셈(notes-seminar.js)도 진짜를 씁니다 — 셈 자체는 tools/test/seminar.mjs 가 봅니다 */
   const smUrl = "data:text/javascript;base64," +
     Buffer.from(readFileSync(REPO + "/assets/js/notes-seminar.js", "utf8")).toString("base64");

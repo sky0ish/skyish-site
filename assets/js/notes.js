@@ -15,6 +15,7 @@ import * as ST from "./notes-stats.js?v=202609112000";
 import * as NW from "./notes-network.js?v=202609010300";
 import { alumniNames, cards as addrCards, photo as addrPhoto, savePhoto as addrSavePhoto, saveToFaceFolder as addrToFolder, dropPhoto as addrDropPhoto } from "./addressbook.js?v=202609170900";
 import * as FT from "./notes-facetag.js?v=202609111500";
+import * as FK from "./fs-keep.js?v=202609250900";
 import * as MN from "./notes-minutes.js?v=202609181000";
 import * as PP from "./notes-photo-pick.js?v=202609101300";
 import * as CD from "./notes-cards.js?v=202609051200";
@@ -3177,18 +3178,20 @@ export async function initNotes(mountId = "notesapp") {
     return await new Promise((ok) => c.toBlob(ok, "image/jpeg", 0.9));
   }
 
-  onceClick("nWs", "wsWired", async () => {
+  onceClick("nWs", "wsWired", async (ev) => {
     if (wsBusy) return;
     if (typeof window.showDirectoryPicker !== "function") {
       alert("컴퓨터에서 쓰는 기능입니다 — 자료가 컴퓨터 폴더에 있기 때문입니다.");
       return;
     }
-    let dir;
-    /* 읽고 쓰기 — 행사 정보에서 읽은 개최개요.json 을 폴더에 놓아 두려고. 쓰기를 안 허락하셔도 읽기로 갑니다 */
-    try { dir = await window.showDirectoryPicker({ id: "skyish-ws", mode: "readwrite" }); }
-    catch (err) {
+    /* 한 번 고른 폴더는 기억해 둡니다 — 「한번 세팅하면 계속 유지되게」.
+       Shift 를 누른 채 누르시면 폴더를 새로 고릅니다.
+       읽고 쓰기 — 행사 정보에서 읽은 개최개요.json 을 폴더에 놓아 두려고. 쓰기를 안 허락하시면 읽기로 갑니다 */
+    let dir = (await FK.pick("ws", { mode: "readwrite", id: "skyish-ws", again: !!(ev && ev.shiftKey) })).handle;
+    if (!dir) {
       try { dir = await window.showDirectoryPicker({ id: "skyish-ws", mode: "read" }); }
       catch (e2) { return; }                // 고르다 닫으신 것
+      await FK.remember("ws", dir);
     }
     await attachWorkshops(dir);
   });
@@ -3201,10 +3204,10 @@ export async function initNotes(mountId = "notesapp") {
     if (!el || el.dataset[key] === "1") return;
     el.dataset[key] = "1";
     let busy = false;
-    el.addEventListener("click", async () => {
+    el.addEventListener("click", async (ev) => {
       if (busy) return;
       busy = true;
-      try { await fn(); } finally { busy = false; }
+      try { await fn(ev); } finally { busy = false; }
     });
   }
 
@@ -3213,18 +3216,17 @@ export async function initNotes(mountId = "notesapp") {
      그날 Schedule 글에 합칩니다 — 요약은 본문에, 전문 txt 는 붙임으로.
      그날 글이 없으면 새로 만듭니다. 같은 이름이 이미 붙어 있으면 건너뜁니다. */
   let recBusy = false;                     // 도는 동안 두 번 눌리지 않게
-  onceClick("nRec", "recWired", async () => {
+  onceClick("nRec", "recWired", async (ev) => {
     if (recBusy) return;
     if (typeof window.showDirectoryPicker !== "function") {
       alert("컴퓨터에서 쓰는 기능입니다 — 회의록이 컴퓨터 폴더에 있기 때문입니다.");
       return;
     }
-    let dir;
-    try {
-      /* readwrite — 개최개요가 없는 폴더에 「개최개요.json」 을 놓아 두려면
-         쓰기가 있어야 합니다. 그 파일 말고는 아무것도 건드리지 않습니다. */
-      dir = await window.showDirectoryPicker({ id: "skyish-rec", mode: "readwrite" });
-    } catch (err) { return; }               // 고르다 닫으신 것
+    /* 한 번 고른 폴더는 기억해 둡니다 (Shift 를 누른 채 누르면 새로 고릅니다).
+       readwrite — 개최개요가 없는 폴더에 「개최개요.json」 을 놓아 두려면
+       쓰기가 있어야 합니다. 그 파일 말고는 아무것도 건드리지 않습니다. */
+    const dir = (await FK.pick("rec", { mode: "readwrite", id: "skyish-rec", again: !!(ev && ev.shiftKey) })).handle;
+    if (!dir) return;                       // 고르다 닫으신 것
 
     /* 1.회의록 안은 회의 하나가 폴더 하나입니다.
        폴더 이름에서 날짜·기관·만난 사람을 읽고, 안의 「…_회의록.pdf」 를 붙입니다.
