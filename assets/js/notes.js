@@ -436,6 +436,12 @@ export async function initNotes(mountId = "notesapp") {
           '<h3 id="nmTitle">새 글</h3>' +
           '<div class="nmodal__acts">' +
             '<button type="button" class="nbtn nbtn--go nmini" id="nmSaveTop">저장</button>' +
+            /* 달력에서 날짜를 누르면 그날 일정이 열립니다 —
+               그날에 **다른 일정**을 더 적으시려고 찾는 단추입니다.
+               「칼렌다에서 날짜를 클릭하면 … 기존 스케쥴을 클릭하고 들어가게 되어있어.
+                 이 스케쥴과 완전히 다른 스케쥴을 추가할 수 있도록 새글쓰기 버튼을」 */
+            '<button type="button" class="nbtn nmini" id="nmNewDay" ' +
+              'title="이 날짜로 새 글을 씁니다 — 지금 글은 그대로 둡니다">✎ 이 날 새 글</button>' +
             '<button type="button" class="nbtn nmini" id="nmXTop">취소</button>' +
             /* 일정이 바뀌어 없어졌을 때 여기서 바로 지웁니다 —
                아래까지 내려가지 않아도 되게 취소 옆에 둡니다. */
@@ -2430,6 +2436,17 @@ export async function initNotes(mountId = "notesapp") {
 
   const nNewBtn = document.getElementById("nNew");
   if (nNewBtn) nNewBtn.addEventListener("click", () => open(null));
+  /* 「✎ 이 날 새 글」 — 열려 있는 글의 날짜를 그대로 안고 빈 글을 엽니다.
+     달력에서 날짜를 눌러 들어온 뒤, 그날에 다른 일정을 하나 더 적을 때 씁니다. */
+  const newDayBtn = document.getElementById("nmNewDay");
+  if (newDayBtn) newDayBtn.addEventListener("click", () => {
+    if (busy) return;
+    if (dirty && !confirm("적으신 것이 저장되지 않았습니다. 새 글을 열까요?")) return;
+    const d = ymd(document.getElementById("nmD").value) ||
+              (editing && String(editing.event_date || "").slice(0, 10)) || "";
+    dirty = false;
+    open(null, d || undefined);
+  });
   document.getElementById("nmCancel").addEventListener("click", tryClose);
   /* 위 단추는 아래 단추와 같은 일을 합니다 —
      저장·지우기 규칙이 두 곳으로 갈라지지 않게, 아래 단추에 듣는 이를 겹쳐 답니다.

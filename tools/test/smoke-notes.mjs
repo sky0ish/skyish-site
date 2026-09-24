@@ -992,5 +992,27 @@ await check("없는 글을 가리키면 까닭을 알려 준다", async () => {
 });
 
 console.log("─".repeat(60));
+/* ── 달력에서 들어온 남의 일정에서 그날 새 글 쓰기 ──
+   「칼렌다에서 날짜를 클릭하면 … 기존 스케쥴을 클릭하고 들어가게 되어있어.
+     이 스케쥴과 완전히 다른 스케쥴을 추가할 수 있도록 새글쓰기 버튼을」 */
+await check("글 고치기에서 「이 날 새 글」 을 누르면 같은 날짜의 빈 글이 열린다", async () => {
+  globalThis.__rows = [{ id: "r9", category: "schedule", tag: "토론", title: "LH이미홍ㅡ토론",
+    body: "본문", event_date: "2026-09-17", event_time: "13:30", place: "LH", people: "이미홍", files: [] }];
+  await M.initNotes("notesapp");
+  await new Promise((r) => setTimeout(r, 30));
+  await fire("nrow__open-r9", "click");
+  await new Promise((r) => setTimeout(r, 30));
+  const t = document.getElementById("nmT");
+  if (t.value !== "LH이미홍ㅡ토론") throw new Error("글 고치기가 안 열렸습니다 — " + t.value);
+  await fire("nmNewDay", "click");
+  await new Promise((r) => setTimeout(r, 30));
+  if (document.getElementById("nmTitle").textContent !== "새 글")
+    throw new Error("새 글로 바뀌지 않았습니다 — " + document.getElementById("nmTitle").textContent);
+  if (t.value) throw new Error("제목이 비워지지 않았습니다 — " + t.value);
+  if (document.getElementById("nmB").value) throw new Error("내용이 비워지지 않았습니다");
+  const d = document.getElementById("nmD").value;
+  if (!/2026[.-]09[.-]17/.test(d)) throw new Error("날짜를 안고 가지 않았습니다 — " + d);
+});
+
 console.log(bad ? bad + "개 어긋났습니다" : "모두 지나갔습니다");
 process.exit(bad ? 1 : 0);
