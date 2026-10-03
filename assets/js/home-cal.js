@@ -126,16 +126,22 @@ export async function initHomeCal(id = "hocal") {
   }
 
   let gErr = "";                 // 구글에서 통째로 못 받아 왔을 때의 까닭
-  async function pullG() {
+  async function pullG(soft) {
     if (!GC.ready()) return;
+    const y0 = at.getFullYear(), m0 = at.getMonth();   // 받는 사이 달을 넘기면 버립니다
     /* 열쇠가 만료됐어도 전에 이어 두었다면 창 없이 조용히 다시 받아 옵니다 */
     if (!GC.connected() && GC.silent) { try { await GC.silent(); } catch (e) {} }
     /* 아직 안 이어졌으면 아래 「구글 달력 잇기」 단추가 말해 줍니다 — 겹쳐 말하지 않습니다 */
     if (!GC.connected()) { gErr = ""; return; }
     try {
-      gEvents = await GC.month(at.getFullYear(), at.getMonth()) || [];
+      const got = await GC.month(y0, m0) || [];
+      if (y0 !== at.getFullYear() || m0 !== at.getMonth()) return;   // 그새 다른 달로 갔습니다
+      gEvents = got;
       gErr = "";
     } catch (e) {
+      if (y0 !== at.getFullYear() || m0 !== at.getMonth()) return;
+      /* 저절로 새로 받다가 잠깐 실패한 것이면 보이던 일정을 그대로 둡니다 */
+      if (soft) return;
       /* 전에는 말없이 비웠습니다 — 그래서 「일정이 빠졌다」 로만 보였습니다 */
       gEvents = [];
       gErr = (e && e.message) || "구글에서 받아 오지 못했습니다";
@@ -419,4 +425,36 @@ export async function initHomeCal(id = "hocal") {
   }
 
   draw();
+
+  /* ── 저절로 새로 받기 ──
+     「캘린더 스케쥴이 항상 자동으로 …」 — 열어 둔 채로 있어도 구글·게시판에서
+     바뀐 일정이 들어오게 합니다.
+     · 화면이 보이는 동안 5분마다
+     · 다른 앱·탭에 갔다가 돌아왔을 때 (1분 넘게 지났으면)
+     바뀐 것이 없으면 다시 그리지 않고, 「어느 게시판에 쓸지」 창이 열려 있으면
+     닫히지 않게 다음 차례로 미룹니다. */
+  const EVERY = 5 * 60 * 1000, AGAIN = 60 * 1000;
+  let lastPull = Date.now(), pulling = false;
+  const sig = () => JSON.stringify([notes, gEvents, gErr]);
+  async function refresh() {
+    if (pulling || !document.body.contains(box)) return;
+    if (document.visibilityState === "hidden") return;
+    pulling = true;
+    try {
+      const before = sig();
+      await Promise.all([loadNotes(), pullG(true)]);
+      lastPull = Date.now();
+      if (sig() === before) return;                  // 바뀐 것 없음
+      keep();
+      if (box.querySelector(".hopick")) return;      // 고르는 중 — 다음 차례에
+      draw();
+    } finally { pulling = false; }
+  }
+  setInterval(refresh, EVERY);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && Date.now() - lastPull > AGAIN) refresh();
+  });
+  window.addEventListener("focus", () => {
+    if (Date.now() - lastPull > AGAIN) refresh();
+  });
 }
