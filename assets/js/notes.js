@@ -7,7 +7,7 @@
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as NF from "./notes-files.js?v=202609051200";
-import * as GC from "./gcal.js?v=202610031000";
+import * as GC from "./gcal.js?v=202610031500";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";

@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202610031000";
+import * as GC from "./gcal.js?v=202610031500";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as CO from "./cal-open.js?v=202609301200";
 

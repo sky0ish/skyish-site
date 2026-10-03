@@ -22,7 +22,73 @@
 //      「이어져 있나」(linked) 로 판단합니다. 그래야 한 시간마다
 //      「연결이 풀렸습니다」 가 뜨지 않습니다.
 //    · 「다시 잇기」 단추는 조용히 잇기가 **정말 실패했을 때만** 나옵니다.
-import { GCAL_CLIENT_ID } from "../../auth/config.js";
+import { GCAL_CLIENT_ID, SUPABASE_URL, SUPABASE_KEY } from "../../auth/config.js";
+
+/* ── 「구글에 로그인돼 있으면 늘 연결」 — 서버가 간직한 갱신 열쇠 ──────
+   브라우저만으로는 1시간짜리 열쇠밖에 못 받고, 창 없이 새로 받는 길(prompt:none)은
+   「사람이 누르지 않은 팝업」 이라 브라우저가 자주 막습니다. 그래서 연결이 자꾸 풀렸습니다.
+   이제 처음 한 번 이을 때 구글이 주는 **갱신 열쇠**를 Supabase 서버 함수(gcal-token)가
+   간직하고, 열쇠가 필요할 때마다 서버에 조용히 받아 옵니다 — 창이 뜨지 않습니다.
+   skyish.kr 에 관리자로 로그인돼 있으면 폰·PC 어디서나 이어져 있습니다.
+   서버 함수가 아직 없거나 로그인 전이면 예전 방식 그대로 갑니다. */
+const FN = (SUPABASE_URL || "") + "/functions/v1/gcal-token";
+let srv = null;            // null 모름 · "on" 서버 쓸 수 있음 · "off" 서버 없음/로그인 안 함
+let srvLinked = null;      // 서버에 갱신 열쇠가 있나 (null 모름)
+
+async function session() {
+  try {
+    const m = await import("../../auth/auth.js");
+    const { data } = await m.sb.auth.getSession();
+    return (data && data.session && data.session.access_token) || "";
+  } catch (e) { return ""; }
+}
+
+/** 서버 함수를 부릅니다 — 쓸 수 없으면 null */
+async function server(action, extra) {
+  if (srv === "off" || !SUPABASE_URL || typeof fetch !== "function") return null;
+  const jwt = await session();
+  if (!jwt) { srv = "off"; return null; }
+  let r;
+  try {
+    r = await fetch(FN, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + jwt, apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(Object.assign({ action }, extra || {})),
+    });
+  } catch (e) { return null; }                 // 잠깐 끊김 — 서버가 없다고 단정하지 않습니다
+  let j = {};
+  try { j = await r.json(); } catch (e) {}
+  /* 함수가 아직 올라가 있지 않으면 Supabase 가 404 NOT_FOUND 를 줍니다 (우리 404 는 relink 를 답니다) */
+  if ((r.status === 404 && !j.relink) || r.status === 403 ||
+      (r.status === 500 && /GOOGLE_CLIENT/.test(j.error || ""))) { srv = "off"; return null; }   // 아직 준비 전
+  srv = "on";
+  return Object.assign({ ok: r.ok, status: r.status }, j);
+}
+
+/** 서버에서 새 1시간 열쇠 — 창 없음 */
+async function serverRefresh() {
+  const x = await server("refresh");
+  if (!x) return null;
+  if (x.ok && x.access_token) {
+    srvLinked = true;
+    token = x.access_token;
+    keep(token, x.expires_in || 3600);
+    return token;
+  }
+  if (x.relink) srvLinked = false;
+  return null;
+}
+
+/** 화면이 열릴 때 서버를 쓸 수 있는지 미리 알아 둡니다.
+    잇기 단추를 누른 「뒤」 에 물으면 그 사이 「사람이 눌렀다」 는 효력이 끝나
+    브라우저가 구글 창을 막습니다. */
+let probing = null;
+function probe() {
+  if (srv !== null || probing) return probing;
+  probing = serverRefresh().catch(() => null).finally(() => { probing = null; });
+  return probing;
+}
+export const serverMode = () => srv === "on";
 
 /* calendar.events — 일정을 읽고 「쓸 수도」 있는 권한입니다.
    전에는 readonly 였는데, 게시판에서 쓴 일정을 구글로도 넣으려면 이게 필요합니다.
@@ -99,6 +165,12 @@ let silentJob = null;
 export async function silent() {
   const t = saved(FRESH);
   if (t) { token = t; return t; }
+  /* ① 서버가 간직한 갱신 열쇠로 — 창이 뜨지 않고, 이 기기에서 처음이어도 됩니다 */
+  if (srv !== "off") {
+    const s = await serverRefresh().catch(() => null);
+    if (s) return s;
+    if (srv === "on") { lastFail = Date.now(); return null; }   // 서버는 있는데 아직 안 이음
+  }
   if (!GCAL_CLIENT_ID || !everLinked()) return null;
   if (silentJob) return silentJob;                 // 돌고 있으면 그것을 기다립니다
   if (lastFail && Date.now() - lastFail < COOL) return null;   // 방금 실패했으면 쉽니다
@@ -197,6 +269,7 @@ export const ready = () => !!GCAL_CLIENT_ID;
 export const warm = () => {
   if (!GCAL_CLIENT_ID) return;
   loadGis().catch(() => {});
+  probe();
   keepAlive();
 };
 
@@ -213,6 +286,36 @@ export async function connect(force) {
     let clock = 0;
     const win = (t) => { if (!done) { done = true; try { clearTimeout(clock); } catch (e) {} ok(t); } };
     const lose = (e) => { if (!done) { done = true; try { clearTimeout(clock); } catch (e2) {} no(e); } };
+    /* 서버를 쓸 수 있으면 「코드」 를 받아 서버가 갱신 열쇠로 바꿔 간직합니다 —
+       이것 한 번이면 그 뒤로는 창 없이 이어집니다. */
+    if (srv === "on" && google.accounts.oauth2.initCodeClient) {
+      const cc = google.accounts.oauth2.initCodeClient({
+        client_id: GCAL_CLIENT_ID,
+        scope: SCOPE,
+        ux_mode: "popup",
+        select_account: !!force,
+        callback: async (r) => {
+          if (!r || !r.code) { lose(new Error("권한을 받지 못했습니다")); return; }
+          const x = await server("exchange", { code: r.code });
+          if (x && x.ok && x.access_token) {
+            srvLinked = !!x.kept || srvLinked;
+            token = x.access_token;
+            keep(token, x.expires_in || 3600);
+            win(token);
+            /* 구글이 갱신 열쇠를 주지 않았으면(전에 이미 허락한 계정) 한 번 더 받아야 합니다 */
+            if (!x.kept && !srvLinked) {
+              try { console.warn("구글이 갱신 열쇠를 주지 않았습니다 — 「다시 잇기」 를 한 번 더 눌러 주세요"); } catch (e) {}
+            }
+          } else lose(new Error((x && x.error) || "서버에 열쇠를 맡기지 못했습니다"));
+        },
+        error_callback: (e) => lose(new Error((e && e.message) || "구글 창이 닫혔습니다")),
+      });
+      cc.requestCode();
+      if (typeof setTimeout === "function") {
+        clock = setTimeout(() => lose(new Error("구글이 답하지 않았습니다 — 다시 눌러 주세요")), 180000);
+      }
+      return;
+    }
     const cli = google.accounts.oauth2.initTokenClient({
       client_id: GCAL_CLIENT_ID,
       scope: SCOPE,
@@ -250,7 +353,11 @@ export function disconnect(forget) {
     localStorage.removeItem(KEY);
     if (forget) localStorage.removeItem(OKKEY);
   } catch (e) {}
-  if (forget) lastFail = 0;
+  if (forget) {
+    lastFail = 0;
+    /* 손수 끊을 때만 서버의 갱신 열쇠도 구글에 돌려주고 지웁니다 */
+    if (srv === "on") { srvLinked = false; server("forget").catch(() => {}); }
+  }
   try { clearTimeout(timer); } catch (e) {}
 }
 
