@@ -141,7 +141,7 @@
       });
       tbl.querySelector("thead").innerHTML = "<tr>" + (opts.rank ? '<th class="n">순위</th>' : "") + cols.map(function (c) {
         var on = c.k === sk;
-        return '<th scope="col"' + (c.num ? ' class="n"' : "") + (on ? ' aria-sort="' + (sd > 0 ? "ascending" : "descending") + '"' : "") + '><button type="button" class="fb-sort" data-k="' + esc(c.k) + '" title="' + (on ? "다시 누르면 반대 방향" : "이 칸으로 줄 세우기") + '">' + esc(c.label) + ' <span class="fb-sort__a">' + (on ? (sd > 0 ? "▲" : "▼") : "↕") + "</span></button></th>";
+        return '<th scope="col"' + (c.num ? ' class="n"' : "") + (on ? ' aria-sort="' + (sd > 0 ? "ascending" : "descending") + '"' : "") + '><button type="button" class="fb-sort" data-k="' + esc(c.k) + '" title="' + esc((c.tip ? c.tip + " — " : "") + (on ? "다시 누르면 반대 방향" : "이 칸으로 줄 세우기")) + '">' + esc(c.label) + ' <span class="fb-sort__a">' + (on ? (sd > 0 ? "▲" : "▼") : "↕") + "</span></button></th>";
       }).join("") + "</tr>";
       tbl.querySelector("tbody").innerHTML = L2.map(function (r, i) {
         var u = opts.unit ? opts.unit(r) : null;
@@ -655,15 +655,15 @@
         "<div><b>" + (m["GTX역세권산단수"] == null ? "—" : m["GTX역세권산단수"] + "곳") + "</b><span>GTX 역세권(1km) 산단</span></div>";
       sortTable("ag-tbl", rows, [
         { k: "DAN_NAME", label: "산업단지", cell: function (r) { return "<b>" + esc(r.DAN_NAME) + "</b>" + (r["단지명"] && r["단지명"] !== r.DAN_NAME ? "<br><small>" + esc(r["단지명"]) + "</small>" : ""); } },
-        { k: "단지유형", label: "유형", cell: function (r) { return esc(r["단지유형"] || ""); } },
-        { k: "노후년도", label: "노후년도", num: true, cell: function (r) { var a = r["노후년도"]; return sw(ageColor(a), "border-color:#232323") + (a == null ? "—" : a); } },
-        { k: "산단면적_ha", label: "산단 ha", num: true, cell: function (r) { return num(Math.round(r["산단면적_ha"] || 0)); } },
-        { k: "역세권면적_ha", label: "역세권 안 ha", num: true, cell: function (r) { return num(Math.round(r["역세권면적_ha"] || 0)); } },
-        { k: "역세권비율", label: "비율", num: true, cell: function (r) { return pc(r["역세권비율"] || 0); } },
-        { k: "역세권_역", label: "해당 역", cell: function (r) { return esc(r["역세권_역"] || "") + (r["GTX역세권"] ? ' <span class="ag-tag">GTX</span>' : ""); } },
-        { k: "최근접역거리_m", label: "가장 가까운 역", cell: function (r) { return esc(r["최근접역"] || "") + (r["최근접역거리_m"] != null ? mute(r["최근접역거리_m"] === 0 ? "안에" : num(Math.round(r["최근접역거리_m"])) + " m") : ""); } },
+        { k: "단지유형", label: "단지 유형", cell: function (r) { return esc(r["단지유형"] || ""); } },
+        { k: "노후년도", label: "노후년도(년)", tip: "2026 − 지정 연도", num: true, cell: function (r) { var a = r["노후년도"]; return sw(ageColor(a), "border-color:#232323") + (a == null ? "—" : a); } },
+        { k: "산단면적_ha", label: "산단 면적(ha)", num: true, cell: function (r) { return num(Math.round(r["산단면적_ha"] || 0)); } },
+        { k: "역세권면적_ha", label: "역세권 안 면적(ha)", tip: "철도역 반경 1km 원과 겹치는 산단 면적", num: true, cell: function (r) { return num(Math.round(r["역세권면적_ha"] || 0)); } },
+        { k: "역세권비율", label: "역세권 면적 비율", tip: "역세권 안 면적 ÷ 산단 면적 (공실률 아님)", num: true, cell: function (r) { return pc(r["역세권비율"] || 0); } },
+        { k: "역세권_역", label: "1km 안 철도역", cell: function (r) { return esc(r["역세권_역"] || "") + (r["GTX역세권"] ? ' <span class="ag-tag">GTX</span>' : ""); } },
+        { k: "최근접역거리_m", label: "가장 가까운 역 · 거리", tip: "산단 경계에서 역까지 직선거리", cell: function (r) { return esc(r["최근접역"] || "") + (r["최근접역거리_m"] != null ? mute(r["최근접역거리_m"] === 0 ? "안에" : num(Math.round(r["최근접역거리_m"])) + " m") : ""); } },
       ], "역세권면적_ha", -1, { unit: function (r) { return r.DAN_ID ? "D_" + r.DAN_ID : null; } });
-      $("ag-tbl-note").textContent = "비율 = 역세권 안 면적 ÷ 산단 면적. 거리는 산단 경계에서 역까지의 직선거리이고 「안에」는 역이 경계 안에 있다는 뜻입니다.";
+      $("ag-tbl-note").textContent = "역세권 면적 비율 = 역세권(철도역 1km) 안 면적 ÷ 산단 면적 — 공실률이 아니라, 산단이 역세권에 얼마나 걸치는지입니다. 거리는 산단 경계에서 역까지의 직선거리이고 「안에」는 역이 경계 안에 있다는 뜻입니다.";
     }).catch(function (e) {
       $("ag-tbl-src").textContent = "표 자료를 불러오지 못했습니다 — " + e.message;
     });
@@ -863,14 +863,14 @@
       var cols = [
         { k: "name", label: "행정동", cell: function (r) { return "<b>" + esc(r.name) + "</b>"; } },
         { k: "판정", label: "판정", cell: function (r) { return sw(rc[r["판정"]] || "#999") + esc((r["판정"] || "").replace("지역", "")); } },
-        { k: "준공업면적_ha", label: "준공업 ha", num: true, cell: function (r) { return num(Math.round((r["준공업면적_ha"] || 0) * 10) / 10); } },
-        { k: "필지수", label: "필지", num: true, cell: function (r) { return num(r["필지수"] || 0); } },
-        { k: "용도확인건물수", label: "용도 확인 건물", num: true, cell: function (r) { return num(Math.round(r["용도확인건물수"] || 0)) + "/" + num(Math.round(r["건물수"] || 0)); } },
-        { k: "주거_연면적비율", label: "주거 연면적", num: true, cell: function (r) { return pc(r["주거_연면적비율"]); } },
-        { k: "산업_연면적비율", label: "산업 연면적", num: true, cell: function (r) { return pc(r["산업_연면적비율"]); } },
-        { k: "상업근생_연면적비율", label: "상업근생", num: true, cell: function (r) { return pc(r["상업근생_연면적비율"]); } },
-        { k: "건물30년이상비율", label: "30년↑건물", num: true, cell: function (r) { return pc(r["건물30년이상비율"]); } },
-        { k: "쇠퇴유형", label: "쇠퇴유형", cell: function (r) { return esc((r["쇠퇴유형"] || "—").replace("지역", "")); } },
+        { k: "준공업면적_ha", label: "준공업지역 면적(ha)", num: true, cell: function (r) { return num(Math.round((r["준공업면적_ha"] || 0) * 10) / 10); } },
+        { k: "필지수", label: "필지 수", num: true, cell: function (r) { return num(r["필지수"] || 0); } },
+        { k: "용도확인건물수", label: "용도 확인 건물 / 전체", num: true, cell: function (r) { return num(Math.round(r["용도확인건물수"] || 0)) + "/" + num(Math.round(r["건물수"] || 0)); } },
+        { k: "주거_연면적비율", label: "주거 연면적 비율", num: true, cell: function (r) { return pc(r["주거_연면적비율"]); } },
+        { k: "산업_연면적비율", label: "산업 연면적 비율", num: true, cell: function (r) { return pc(r["산업_연면적비율"]); } },
+        { k: "상업근생_연면적비율", label: "상업·근생 연면적 비율", num: true, cell: function (r) { return pc(r["상업근생_연면적비율"]); } },
+        { k: "건물30년이상비율", label: "30년 이상 건물 비율", num: true, cell: function (r) { return pc(r["건물30년이상비율"]); } },
+        { k: "쇠퇴유형", label: "도시쇠퇴 유형", cell: function (r) { return esc((r["쇠퇴유형"] || "—").replace("지역", "")); } },
       ];
       var judged = rows.filter(function (r) { return r["판정"] !== "소규모(판정 제외)"; }).length;
       var cur = "판정됨";
@@ -895,25 +895,25 @@
   var LOGIC_COLOR = ["var(--ag-s1)", "var(--ag-s2)", "var(--ag-s3)", "var(--ag-s4)"];   // aging-charts.js 의 점수 막대와 같은 차례
   var NAMES = { "노후년도": "지정 경과", "old30": "30년↑ 건물", "year_mean": "평균 승인연도", "low_rise": "저층", "dist_sta": "최근접역 거리", "sta1km": "역 1km 면적비", "dist_gtx": "GTX", "decl": "쇠퇴 유형 가중", "semi_ind": "준공업", "ind_zone": "공업지역", "nonind": "비공업 이용", "nonfactory": "비공장 연면적", "vacant": "나지", "gap_res": "주거 지가격차", "far_low": "저용적률", "gap_com": "상업 지가격차", "pop": "인구밀도", "rescom_adj": "주거·상업 인접", "parcel": "필지", "gam": "공공기관 이전",
     "busi_decline": "사업체 감소율", "busi_fac_share": "사업체 쇠퇴 면적비", "busi_dec3y_share": "3년 연속 감소 면적비", "unsold": "산단 미분양율", "sgg_unsold": "시군 산단 미분양율" };
-  var REASON_COL = { k: "판정사유", label: "0단계 판정", cell: reasonChip };
+  var REASON_COL = { k: "판정사유", label: "0단계 전제(산업체 감소)", cell: reasonChip };
   var unitOf = function (r) { return r.unit_id; };
   var BASE_COLS = [
     { k: "시군", label: "시군", cell: function (r) { return esc(r["시군"] || ""); } },
-    { k: "area_ha", label: "ha", num: true, cell: function (r) { return num(Math.round(r.area_ha || 0)); } },
-    { k: "dist_station_m", label: "최근접역", num: true, cell: stTxt },
-    { k: "decl_class", sort: "busi_decline", desc: true, label: "쇠퇴유형(사업체↓)", cell: declTxt },
-    { k: "unsold_ratio", desc: true, label: "미분양 산단/시군", num: true, cell: unsoldTxt },   // v6
-    { k: "semi_ind_ratio", label: "준공업", num: true, cell: function (r) { return pc(r.semi_ind_ratio); } },
-    { k: "old30_ratio_gfa", label: "30년↑건물", num: true, cell: function (r) { return pc(r.old30_ratio_gfa); } },
-    { k: "res_gfa_ratio", label: "내부 주거/상업/업무", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
-    { k: "ring_res_ratio", label: "주변300m 주거/상업/업무", num: true, cell: function (r) { return pct3(r.ring_res_ratio, r.ring_com_ratio, r.ring_off_ratio); } },
+    { k: "area_ha", label: "면적(ha)", num: true, cell: function (r) { return num(Math.round(r.area_ha || 0)); } },
+    { k: "dist_station_m", label: "가장 가까운 역 · 거리", num: true, cell: stTxt },
+    { k: "decl_class", sort: "busi_decline", desc: true, label: "도시쇠퇴 유형(사업체 감소율)", tip: "괄호 = 행정동 사업체 최대치 대비 감소율", cell: declTxt },
+    { k: "unsold_ratio", desc: true, label: "미분양률 산단 / 시군", tip: "산단 자체 미분양률 / 같은 시군 산단 전체 미분양률(공고면적 가중)", num: true, cell: unsoldTxt },   // v6
+    { k: "semi_ind_ratio", label: "준공업지역 비율", tip: "단위 면적 가운데 준공업지역의 몫", num: true, cell: function (r) { return pc(r.semi_ind_ratio); } },
+    { k: "old30_ratio_gfa", label: "30년 이상 건물 비율(연면적)", num: true, cell: function (r) { return pc(r.old30_ratio_gfa); } },
+    { k: "res_gfa_ratio", label: "내부 용도 비율 주거/상업/업무", tip: "단위 안 건축물(용도 확인분) 연면적 비율", num: true, cell: function (r) { return pct3(r.res_gfa_ratio, r.com_gfa_ratio, r.off_gfa_ratio); } },
+    { k: "ring_res_ratio", label: "주변 300m 용도 비율 주거/상업/업무", tip: "경계 밖 300m 이내 건축물 연면적 비율", num: true, cell: function (r) { return pct3(r.ring_res_ratio, r.ring_com_ratio, r.ring_off_ratio); } },
   ];
   var nameCol = function (label) { return { k: "name", label: label, cell: function (r) { return "<b>" + esc(r.name) + "</b>"; } }; };
-  var AGE_COL = { k: "노후년도", label: "노후", num: true, cell: function (r) { return r["노후년도"] == null ? "—" : Math.round(r["노후년도"]); } };
-  var scoreCol = function (k) { return { k: k, label: "점수", num: true, cell: function (r) { return "<b>" + r[k] + "</b>"; } }; };
+  var AGE_COL = { k: "노후년도", label: "노후년도(년)", num: true, cell: function (r) { return r["노후년도"] == null ? "—" : Math.round(r["노후년도"]); } };
+  var scoreCol = function (k) { return { k: k, label: k === "점수" ? "용도 점수" : "종합점수", num: true, cell: function (r) { return "<b>" + r[k] + "</b>"; } }; };
   var GRADE_COL = { k: "등급", label: "등급", cell: function (r) { return gradeChip(r["등급"]); } };
   var METHOD_COL = { k: "종상향_방식", label: "종상향 방식", small: true, cell: function (r) { return esc(r["종상향_방식"] || "–"); } };
-  var USE_COL = { k: "추천용도", label: "추천", cell: useChip };
+  var USE_COL = { k: "추천용도", label: "추천 용도", cell: useChip };
   var USE_NOTE = "쇠퇴유형 괄호 = 행정동 사업체 최대치 대비 감소율(↓). 미분양 = 산단 자체 / 같은 시군 산단 전체 미분양율(공고면적 가중, 분양현황 2026.7). 내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).";
 
   function ranking() {
