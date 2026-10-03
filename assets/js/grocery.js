@@ -215,8 +215,7 @@ export async function initGrocery(mountId = "groapp") {
     const px = e.target.closest(".gro__px");
     if (px) {
       const src = px.closest("figure").dataset.src;
-      if (!src || !confirm("이 사진과 거기서 읽은 품목을 지울까요?
-「📂 장보기 폴더 읽기」 를 누르면 다시 읽습니다.")) return;
+      if (!src || !confirm("이 사진과 거기서 읽은 품목을 지울까요?\n「📂 장보기 폴더 읽기」 를 누르면 다시 읽습니다.")) return;
       const ids = rows.filter((r) => r.src === src || String(r.src || "").startsWith(src + "#")).map((r) => r.id);
       try { await remove(ids); render(); } catch (err) { alert("지우지 못했습니다 — " + err.message); }
       return;
