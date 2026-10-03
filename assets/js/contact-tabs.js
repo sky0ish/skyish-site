@@ -12,7 +12,7 @@ import { initAddr } from "./addressbook.js?v=202609170900";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
 import { initTodo } from "./todo.js?v=202609111800";
-import { initNews } from "./news.js?v=202610031200";
+import { initNews } from "./news.js?v=202610031600";
 
 export async function initContactTabs() {
   const tabs = document.getElementById("cTabs");

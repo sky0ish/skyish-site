@@ -3,7 +3,7 @@
 최신뉴스 모으기 — Contact 「최신뉴스」 갈래가 읽는 assets/data/news/*.json 을 만듭니다.
 
   갈래와 출처
-    ai      GeekNews(news.hada.io) 가운데 AI 관련 글 — 최근 2년
+    ai      GeekNews(news.hada.io) 가운데 AI 관련 글 · 테크월드뉴스(epnc.co.kr) AI 갈래 — 최근 2년
     arch    대한건축사협회 건축뉴스(kira.or.kr) · ArchDaily — 최근 1년
     city    한국도시정비신문(citynews.co.kr) · 국토연구원 세계도시사례 ·
             대한국토·도시계획학회 국토·도시계획 10대 뉴스
@@ -15,6 +15,7 @@
     python tools/news/collect.py            매일 — 새 글만 더합니다
     python tools/news/collect.py --처음     처음 한 번 — 지난 글을 기간만큼 거슬러 받습니다
     python tools/news/collect.py --only ai  한 갈래만
+    python tools/news/collect.py --처음 --src 테크월드뉴스  출처 하나만 (새로 더한 출처의 지난 글 받기)
 
   · 받아 둔 것에 **더해 가며** 쌓습니다 (주소가 같으면 한 번만). 기간이 지난 것은 버립니다.
   · 제목·날짜·출처·주소(+GeekNews 는 한 줄 요약)만 담습니다. 본문은 가져오지 않습니다.
@@ -30,9 +31,10 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
 TODAY = datetime.date.today()
 FIRST = "--처음" in sys.argv
 ONLY = sys.argv[sys.argv.index("--only") + 1] if "--only" in sys.argv else ""
+SRC = sys.argv[sys.argv.index("--src") + 1] if "--src" in sys.argv else ""   # 출처 하나만 (나머지는 받아 둔 것 그대로)
 
 # 갈래마다 담아 둘 기간(일)과 출처당 많아야 몇 건
-KEEP = {"ai": (730, 4000), "arch": (365, 2000), "city": (3650, 400), "estate": (365, 600)}
+KEEP = {"ai": (730, 8000), "arch": (365, 2000), "city": (3650, 400), "estate": (365, 600)}
 NAMES = {"ai": "AI", "arch": "건축", "city": "도시", "estate": "부동산"}
 
 _last = {}
@@ -134,6 +136,40 @@ def geeknews():
             print("   GeekNews …", d)
     got = [g for g in got if g and AI_RE.search(g["t"] + " " + g.get("s", ""))]
     return got
+
+
+def epnc():
+    """테크월드뉴스 AI 갈래(S1N32) — 갈래 자체가 AI 라 낱말로 거르지 않습니다.
+       날짜는 올해 것은 「10-02 17:18」, 지난해부터는 「2024-06-18」 꼴입니다."""
+    got, lo = [], (TODAY - datetime.timedelta(days=KEEP["ai"][0])).isoformat()
+    for p in range(1, 220 if FIRST else 3):
+        x = get("https://www.epnc.co.kr/news/articleList.html?page=%d&sc_section_code=S1N32&view_type=sm" % p)
+        rows = re.findall(r'<li class="altlist-webzine-item">(.*?)</li>\s*(?=<li class="altlist-webzine-item">|</ul>)', x, re.S)
+        if not rows:
+            break
+        last = ""
+        for r in rows:
+            a = re.search(r'<H2 class="altlist-subject">\s*<a href="([^"]+)"[^>]*>(.*?)</a>', r, re.S | re.I)
+            sm = re.search(r'<p class="altlist-summary">(.*?)</p>', r, re.S)
+            ds = [v.strip() for v in re.findall(r'<div class="altlist-info-item">([^<]*)</div>', r)]
+            d = ""
+            for v in ds:
+                m = re.match(r"(20\d\d)-(\d\d)-(\d\d)", v) or None
+                if m:
+                    d = m.group(0); break
+                m = re.match(r"(\d\d)-(\d\d) \d\d:\d\d", v)
+                if m:
+                    yy = TODAY.year if "%s-%s" % m.groups() <= TODAY.strftime("%m-%d") else TODAY.year - 1
+                    d = "%d-%s-%s" % (yy, m.group(1), m.group(2)); break
+            if a and d:
+                summ = re.sub(r"^\[테크월드=[^\]]*\]\s*", "", clean(sm.group(1))) if sm else ""
+                got.append(item(a.group(2), a.group(1), d, "테크월드뉴스", summ))
+                last = d
+        if FIRST and p % 25 == 0:
+            print("   테크월드 …", p, last)
+        if last and last < lo:
+            break
+    return [g for g in got if g]
 
 
 # ── 건축 ────────────────────────────────────────────────────
@@ -247,7 +283,8 @@ def naver_estate():
 
 
 SOURCES = {
-    "ai":     [("GeekNews", "https://news.hada.io/", geeknews)],
+    "ai":     [("GeekNews", "https://news.hada.io/", geeknews),
+               ("테크월드뉴스 AI", "https://www.epnc.co.kr/news/articleList.html?sc_section_code=S1N32&view_type=sm", epnc)],
     "arch":   [("대한건축사협회 건축뉴스", "https://www.kira.or.kr/jsp/main/01/04_03.jsp", kira),
                ("ArchDaily", "https://www.archdaily.com/", archdaily)],
     "city":   [("한국도시정비신문", "https://citynews.co.kr/", citynews),
@@ -257,12 +294,21 @@ SOURCES = {
 }
 
 
+FRONT = 600     # 첫 파일에 담을 최근 글 수 — 나머지는 <갈래>-old.json (요약 없이)
+
+
 def load(cat):
     p = os.path.join(OUT, cat + ".json")
     try:
-        return json.load(io.open(p, encoding="utf-8"))
+        doc = json.load(io.open(p, encoding="utf-8"))
     except Exception:
         return {"items": []}
+    try:   # 지난 글 묶음도 함께 읽어 합칩니다
+        doc["items"] = doc.get("items", []) + json.load(
+            io.open(os.path.join(OUT, cat + "-old.json"), encoding="utf-8")).get("items", [])
+    except Exception:
+        pass
+    return doc
 
 
 def main():
@@ -277,6 +323,11 @@ def main():
         byurl = {x["u"]: x for x in old.get("items", [])}
         report = []
         for name, home, fn in srcs:
+            if SRC and SRC not in name:
+                prev = next((r for r in old.get("sources", []) if r.get("name") == name), None)
+                if prev:
+                    report.append(prev)
+                continue
             try:
                 new = fn()
                 for x in new:
@@ -302,10 +353,16 @@ def main():
             r["count"] = sum(1 for x in keep if x.get("k") == r["name"])
             if r["ok"]:
                 r["last_ok"] = TODAY.isoformat()
+        # 화면이 빨리 뜨게 둘로 나눕니다 —
+        #   <갈래>.json      최근 FRONT 건 (요약 포함) · 처음 열 때 읽음
+        #   <갈래>-old.json  그 앞의 글 (제목만)      · 「더 보기」·찾기 때 읽음
+        front, rest = keep[:FRONT], [{k: v for k, v in x.items() if k != "s"} for x in keep[FRONT:]]
         doc = {"cat": cat, "name": NAMES[cat], "updated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-               "days": KEEP[cat][0], "sources": report, "items": keep}
-        io.open(os.path.join(OUT, cat + ".json"), "w", encoding="utf-8", newline="\n").write(
-            json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
+               "days": KEEP[cat][0], "sources": report, "total": len(keep), "more": len(rest),
+               "items": front}
+        for fn, body in ((cat + ".json", doc), (cat + "-old.json", {"items": rest})):
+            io.open(os.path.join(OUT, fn), "w", encoding="utf-8", newline=chr(10)).write(
+                json.dumps(body, ensure_ascii=False, separators=(",", ":")))
         print("   → %s.json  %d건" % (cat, len(keep)))
 
 

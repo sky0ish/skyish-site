@@ -51,3 +51,13 @@
   .nws__s { grid-column: 2; }
   .nws__q { flex: 1 1 100%; }
 }
+
+/* 출처 배지 — 줄 오른쪽 끝 */
+.nws__badge {
+  justify-self: end; white-space: nowrap; font-size: .72rem; font-weight: 600;
+  padding: .18rem .6rem; border-radius: 6px; letter-spacing: -.01em;
+}
+.nws__sub { font-size: .72rem; font-weight: 400; color: var(--mauve); margin-left: 4px; }
+@media (max-width: 640px) {
+  .nws__badge { grid-column: 2; justify-self: start; }
+}
