@@ -255,9 +255,31 @@ def buildings():
         if wd.get("site") and own: refs.append({"t": "공식 홈페이지", "u": wd["site"]})
         refs += b.get("refs", [])
         more = adlinks.more_drawings(cache, "b:" + b["id"], b["t"], b.get("more", []))
+        more = dict(more, drawings=list(more.get("drawings", [])))      # 캐시를 건드리지 않게 복사
         if more.get("wa"):
             refs.append({"t": "WikiArquitectura", "u": more["wa"]})
-        out.append(dict(b, imgs=imgs, refs=refs, ad=ad, more=more.get("drawings", [])))
+        # 그림을 보고 붙인 이름표 (drawing_labels.py) · 홈피에 바로 보여 줄 그림 파일 주소
+        import drawing_labels
+        def fix(lst):
+            outl, seen = [], set()
+            for d in lst:
+                d = dict(d)
+                hit = next((v for k, v in drawing_labels.L.items() if k in d["u"]), "없음")
+                if hit is None:
+                    continue
+                if hit != "없음":
+                    d["kind"], d["label"] = hit
+                d["img"] = d.get("img") or adlinks.image_of(cache, d["u"])
+                key = d["img"].rsplit("/", 1)[-1] if "wikiarquitectura.com" in d["img"] else d["img"]   # 영문 · 스페인어판에 같은 그림
+                if d["img"] and key not in seen:
+                    seen.add(key); outl.append(d)
+            return outl
+        if ad:
+            ad = dict(ad, drawings=fix(ad.get("drawings", [])))
+        for img, kind, label in b.get("draw", []):          # 직접 골라 넣은 도면 (그림을 보고 이름 붙임)
+            more.setdefault("drawings", []).append({"u": b.get("drawsrc") or img, "img": img, "kind": kind, "label": label,
+                                                    "site": urllib.parse.urlparse(b.get("drawsrc") or img).netloc.replace("www.", "")})
+        out.append(dict(b, imgs=imgs, refs=refs, ad=ad, more=fix(more.get("drawings", []))))
         print("%-20s 분류:%-28s 파일 %3d → 컨셉 %d · 도면 %d · 구조 %d · ArchDaily %s" % (b["id"], (cat or "-")[:28], nfile,
               len(imgs["concept"]), len(imgs["plan"]), len(imgs["build"]),
               ("도면 %d" % len(ad["drawings"])) if ad else "못 찾음") + " · 그 밖 도면 %d" % len(out[-1]["more"]))

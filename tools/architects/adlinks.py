@@ -126,7 +126,10 @@ def collect(cache, bid, title, firm):
 
 # ── ArchDaily 에 도면이 없을 때 — WikiArquitectura · 건축가 공식 페이지에서 ──
 WA_KIND = [
- (r"empl|situaci|site|emplazamiento", "plan", "배치도"),
+ (r"(^|[_.-])sec([_.-]|\d|$)|_corte|corte_", "plan", "단면도"),
+ (r"esq|esquema", "concept", "다이어그램"),
+ (r"(^|[_.-])sop([_.-]|$)", "build", "상세도"),
+ (r"empl|situaci|site|emplazamiento|implantacion|planimetria", "plan", "배치도"),
  (r"planta|plan|floor|piso|nivel|subt", "plan", "평면도"),
  (r"secci|secc|section|corte", "plan", "단면도"),
  (r"alz|elev|fachada", "plan", "입면도"),
@@ -196,9 +199,24 @@ def more_drawings(cache, bid, title, extra_urls=()):
     if wa:
         for d in page_drawings(wa, only_section='id="building-drawings"', site="WikiArquitectura"):
             got.append(d)
-    for u in extra_urls:                              # "주소" 또는 "주소|그림 주소에 꼭 든 말"
+    for u in extra_urls:                              # "주소" · "주소|그림 주소에 꼭 든 말" · "wa:주소"(WikiArquitectura 다른 언어판)
+        if u.startswith("wa:"):
+            got += page_drawings(u[3:], only_section='id="building-drawings"', site="WikiArquitectura")
+            continue
         u, _, hint = u.partition("|")
         site = urllib.parse.urlparse(u).netloc.replace("www.", "")
         got += [d for d in page_drawings(u, site=site) if not hint or hint in d["u"]]
     cache[key] = {"wa": wa, "drawings": got}
+    return cache[key]
+
+
+def image_of(cache, u):
+    """그림을 홈피에 바로 보여 줄 그림 파일 주소 — ArchDaily 그림 페이지면 그 페이지의 큰 그림(og:image)"""
+    if re.search(r"\.(jpe?g|png|gif|webp)(\?|$)", u, re.I):
+        return u
+    key = "img:" + u
+    if key not in cache:
+        s = fetch(u, pause=1.0)
+        m = re.search(r'og:image" content="([^"]+)"', s) or re.search(r"og:image' content='([^']+)'", s)
+        cache[key] = html.unescape(m.group(1)) if m else ""
     return cache[key]

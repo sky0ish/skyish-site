@@ -24,7 +24,7 @@ B = [
               "제작동 외벽은 미술가와 협업해 무늬를 찍은 흰 알루미늄 패널이며, 로비의 큰 유리벽은 가는 유리 지느러미로 버팁니다."],
 },
 {
- "id": "maxxi", "t": "MAXXI – National Museum of the 21st Century Arts", "ko": "MAXXI 국립 21세기 미술관", "y": 2010, "at": "이탈리아 로마 플라미니오", "nat": "이탈리아",
+ "id": "maxxi", "more": ['wa:https://es.wikiarquitectura.com/edificio/maxxi-museo-nacional-de-arte-del-siglo-xxi-de-roma/'], "t": "MAXXI – National Museum of the 21st Century Arts", "ko": "MAXXI 국립 21세기 미술관", "y": 2010, "at": "이탈리아 로마 플라미니오", "nat": "이탈리아",
  "arch": "zaha", "archName": "자하 하디드", "award": "RIBA 스털링상 2010", "wiki": "MAXXI",
  "archAbout": "이라크 출신 영국 건축가로, 2004년 여성 최초 프리츠커 수상자입니다. MAXXI 는 그가 국제 공모에서 당선(1999)되어 10년 넘게 공들인 대표작입니다.",
  "spec": [["위치", "이탈리아 로마 플라미니오 지구 (Flaminio, Rome, Italy) — 옛 몬텔로 군 막사 (Caserma Montello) 부지"],
@@ -81,7 +81,7 @@ B = [
               "안쪽은 매끈한 노출 콘크리트 벽과 바닥, 매달린 유리 천장 — 재료를 극도로 줄였습니다."],
 },
 {
- "id": "menil", "more": ['https://www.rpbw.com/project/the-menil-collection'], "t": "The Menil Collection", "ko": "메닐 컬렉션", "y": 1987, "at": "미국 휴스턴", "nat": "미국",
+ "id": "menil", "drawsrc": "https://www.fondazionerenzopiano.org/en/project/menil-collection/", "draw": [['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/594bdce209f8a817525792.jpg', 'concept', '렌초 피아노의 컨셉 스케치'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/594bdd928afd9976933957.jpg', 'concept', '렌초 피아노의 컨셉 스케치'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/594bde792d3ef734042956.jpg', 'concept', '스케치 — 지붕 잎으로 거르는 빛'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c122dcd32e4f854171398.jpg', 'plan', '배치도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/594be31aa977c170481463.jpg', 'plan', '지하층 평면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c122d72521fb502794311.jpg', 'plan', '1층(전시층) 평면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c122e33b9128327177929.jpg', 'plan', '위층(보물 창고) 평면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c122e8c7ad9a142398826.jpg', 'plan', '단면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c122efc8ed57929604653.jpg', 'plan', '단면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c122fd52c46e463685196.jpg', 'plan', '단면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/594be6d70dcf2971457072.jpg', 'plan', '동 · 서 입면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c12314cf3bc0420016850.jpg', 'plan', '입면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c12317dd4ec0533606310.jpg', 'plan', '입면도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/594bef1061934222878526.jpg', 'concept', '지붕 잎 · 트러스 액소노메트릭'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/594bef7406d4f859467321.jpg', 'concept', '공기 분배 원리 다이어그램'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_model/5a54e575b2034696808361.jpg', 'concept', '채광 실험 모형'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/59f1d62b0842c607513738.jpg', 'build', '지붕 잎(루버) 단면 상세'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c1231d219489190472352.jpg', 'build', '지붕 잎 상세도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c1232070a3b8467052567.jpg', 'build', '트러스 상세도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_drawing/5c12323eeb9bb666599228.jpg', 'build', '트러스 상세도'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_model/5a54ee0a536f8097173125.jpg', 'build', '페로시멘트 잎 — 실물 부재'], ['https://www.fondazionerenzopiano.org/media/cache/app_660/media/project_model/5a54f1077b218285961025.jpg', 'build', '연철 트러스 부재']], "more": ['https://www.rpbw.com/project/the-menil-collection'], "t": "The Menil Collection", "ko": "메닐 컬렉션", "y": 1987, "at": "미국 휴스턴", "nat": "미국",
  "arch": "piano", "archName": "렌초 피아노 (구조: 피터 라이스 · 오브 아럽)", "award": "AIA 25년상 2013", "wiki": "Menil Collection",
  "archAbout": "이탈리아 건축가로 퐁피두 센터(리처드 로저스와) 이후 빛과 구조의 정교함으로 1998년 프리츠커를 받았습니다. 메닐 컬렉션은 그의 단독 첫 미술관입니다.",
  "spec": [["위치", "미국 텍사스 휴스턴 몬트로즈 주택가 (Montrose, Houston, Texas, USA) — 메닐 캠퍼스 (Menil Campus)"],
@@ -119,7 +119,7 @@ B = [
               "공연장 안쪽은 붉은색으로 마감해 화산의 열기를 표현했습니다."],
 },
 {
- "id": "grand-parc", "t": "Transformation of 530 dwellings, Grand Parc Bordeaux", "ko": "그랑 파르크 530세대 개조", "y": 2017, "at": "프랑스 보르도", "nat": "프랑스",
+ "id": "grand-parc", "drawsrc": "https://www.lacatonvassal.com/index.php?idp=80", "draw": [['https://www.lacatonvassal.com/data/images/full/20140129-125354-z152.jpg', 'plan', '배치도 — G · H · I동'], ['https://www.lacatonvassal.com/data/images/full/20140129-142303-z500.jpg', 'plan', '단면 투시도 — H · I동 (기존 · 개조 · 계획)'], ['https://www.lacatonvassal.com/data/images/full/20140129-131115-z740.jpg', 'plan', '단면 투시도 — G동 (기존 · 개조 · 계획)'], ['https://www.lacatonvassal.com/data/images/full/20140129-130848-z180.jpg', 'plan', '기준층 평면 액소노메트릭 — H · I동 기존'], ['https://www.lacatonvassal.com/data/images/full/20140129-131522-z844.jpg', 'plan', '기준층 평면 액소노메트릭 — H · I동 계획'], ['https://www.lacatonvassal.com/data/images/full/20140129-131236-z406.jpg', 'plan', '기준층 평면 액소노메트릭 — G동 기존'], ['https://www.lacatonvassal.com/data/images/full/20140129-131720-z396.jpg', 'plan', '기준층 평면 액소노메트릭 — G동 계획'], ['https://www.lacatonvassal.com/data/images/full/20140129-131924-z603.jpg', 'build', '증축 시공 순서 1 · 2 — 기존 · 증축 모듈 설치'], ['https://www.lacatonvassal.com/data/images/full/20140129-132015-z981.jpg', 'build', '증축 시공 순서 3 · 4 — 기둥 · 창 열기'], ['https://www.lacatonvassal.com/data/images/full/20140129-132050-z557.jpg', 'build', '증축 시공 순서 5 · 6 — 겨울정원 · 완성']], "t": "Transformation of 530 dwellings, Grand Parc Bordeaux", "ko": "그랑 파르크 530세대 개조", "y": 2017, "at": "프랑스 보르도", "nat": "프랑스",
  "arch": "lacatonvassal", "archName": "라카통 & 바살 · 프레데리크 드뤼오 · 크리스토프 위탱", "award": "미스 반 데어 로에상 2019", "wiki": "Lacaton & Vassal", "cat": "",
  "archAbout": "안 라카통과 장-필리프 바살은 \"절대 철거하지 않는다\"는 원칙으로 낡은 공공 주택을 되살려 2021년 프리츠커를 받았습니다.",
  "spec": [["위치", "프랑스 보르도 그랑 파르크 단지 (Cité du Grand Parc, Bordeaux, France) — 1960년대 공공 주택 (logements sociaux)"],
@@ -156,7 +156,7 @@ B = [
  "material": ["노출 콘크리트 기둥 · 보와 큰 유리, 목재 마감 — 무게감 있는 골조와 가벼운 유리를 대비시켰습니다."],
 },
 {
- "id": "gando-school", "t": "Gando Primary School", "ko": "간도 초등학교", "y": 2001, "at": "부르키나파소 간도", "nat": "부르키나파소",
+ "id": "gando-school", "more": ['wa:https://es.wikiarquitectura.com/edificio/escuela-primaria-en-gando/'], "t": "Gando Primary School", "ko": "간도 초등학교", "y": 2001, "at": "부르키나파소 간도", "nat": "부르키나파소",
  "arch": "kere", "archName": "디에베도 프랑시스 케레", "award": "아가 칸 건축상 2004", "wiki": "Gando Primary School", "cat": "Primary School, Gando",
  "archAbout": "부르키나파소 간도 마을 출신으로 독일에서 건축을 공부했고, 고향에 지은 이 학교로 이름을 알렸습니다. 2022년 아프리카 출신 첫 프리츠커 수상자입니다.",
  "spec": [["위치", "부르키나파소 간도 마을 (Gando, Burkina Faso)"],
@@ -175,7 +175,7 @@ B = [
               "구멍 뚫린 흙 벽돌 천장 위로 골함석 지붕을 철근 트러스로 띄워, 더운 공기가 천장 구멍을 통해 위로 빠져나갑니다 (굴뚝 효과)."],
 },
 {
- "id": "gherkin", "t": "30 St Mary Axe", "ko": "30 세인트 메리 액스 (거킨)", "y": 2004, "at": "영국 런던 시티", "nat": "영국",
+ "id": "gherkin", "more": ['wa:https://es.wikiarquitectura.com/edificio/swiss-re-30-st-mary-axe/'], "t": "30 St Mary Axe", "ko": "30 세인트 메리 액스 (거킨)", "y": 2004, "at": "영국 런던 시티", "nat": "영국",
  "arch": "foster", "archName": "포스터 + 파트너스 (구조: 아럽)", "award": "RIBA 스털링상 2004", "wiki": "30 St Mary Axe",
  "archAbout": "영국 건축가 노먼 포스터가 이끄는 사무소로, 하이테크 건축과 친환경 기술로 1999년 프리츠커를 받았습니다.",
  "spec": [["위치", "영국 런던 시티 (City of London, UK) — 옛 발틱 거래소 (Baltic Exchange) 부지"],
@@ -195,7 +195,7 @@ B = [
               "이중 유리 외피 사이로 공기가 흘러 단열과 자연 환기를 돕습니다. 곡면처럼 보이지만 유리는 모두 평판입니다 (꼭대기 렌즈만 곡면)."],
 },
 {
- "id": "st-ignatius", "t": "Chapel of St. Ignatius", "ko": "성 이그나티우스 성당", "y": 1997, "at": "미국 시애틀 (시애틀 대학교)", "nat": "미국",
+ "id": "st-ignatius", "more": ['wa:https://es.wikiarquitectura.com/edificio/capilla-san-ignacio/'], "t": "Chapel of St. Ignatius", "ko": "성 이그나티우스 성당", "y": 1997, "at": "미국 시애틀 (시애틀 대학교)", "nat": "미국",
  "arch": "holl", "archName": "스티븐 홀", "award": "AIA 25년상 2022", "wiki": "Chapel of St. Ignatius",
  "archAbout": "빛과 지각의 현상학적 건축으로 알려진 미국 건축가입니다. 매일 그리는 수채화에서 설계를 시작합니다.",
  "spec": [["위치", "미국 워싱턴주 시애틀 대학교 캠퍼스 (Seattle University, Seattle, Washington, USA)"],
@@ -214,7 +214,7 @@ B = [
               "천창 안에 색 유리 렌즈와 반대 색으로 칠한 배플을 짝지어 두어, 벽에 번지는 은은한 보색의 빛을 만들었습니다."],
 },
 {
- "id": "scottish-parliament", "t": "Scottish Parliament Building", "ko": "스코틀랜드 의회 의사당", "y": 2004, "at": "영국 에든버러 홀리루드", "nat": "영국 (스코틀랜드)",
+ "id": "scottish-parliament", "more": ['wa:https://es.wikiarquitectura.com/edificio/parlamento-de-escocia/'], "t": "Scottish Parliament Building", "ko": "스코틀랜드 의회 의사당", "y": 2004, "at": "영국 에든버러 홀리루드", "nat": "영국 (스코틀랜드)",
  "arch": None, "archName": "엔리크 미랄레스 · 베네데타 탈리아부에 (EMBT) · RMJM", "award": "RIBA 스털링상 2005", "wiki": "Scottish Parliament Building",
  "archAbout": "스페인 바르셀로나의 건축가 엔리크 미랄레스가 아내 베네데타 탈리아부에와 함께 이끈 EMBT 가 설계했고, 영국 RMJM 이 함께했습니다. 미랄레스는 공사 중인 2000년에 세상을 떠났습니다.",
  "spec": [["위치", "영국 스코틀랜드 에든버러 홀리루드 (Holyrood, Edinburgh, Scotland, UK) — 아서스 시트 (Arthur's Seat) 언덕 아래"],

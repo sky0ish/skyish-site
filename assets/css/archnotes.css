@@ -132,3 +132,8 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
 .ab__ad a { color: #2d5d9f; background: #fff; border: 1px solid #d6e0ef; border-radius: 999px; padding: 1px 9px; text-decoration: none; white-space: nowrap; }
 .ab__ad a:hover { background: #eef3fa; }
 .ab__ad a small { color: #8a7f79; font-size: .72rem; }
+.ab__fig--d img { object-fit: contain; background: #fff; border: 1px solid #ece6e0; }
+.ab__fig--d figcaption a { color: #2d5d9f; }
+.ab__fig--x { display: none; }
+.ab__src { font-size: .74rem; color: #8a7f79; margin: -4px 0 12px !important; }
+.ab__none a { color: #2d5d9f; }
