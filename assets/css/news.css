@@ -251,3 +251,15 @@
 .gro__px:hover { background: #a5532a; }
 .gro__n { cursor: pointer; } .gro__n:hover { color: var(--navy); text-decoration: underline dotted; }
 .col__tx small.col__card { font-size: .66rem; color: #fff; background: #8a7f7a; border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+
+/* 맨 아래 — 대분류 / 중분류 / 해당 가게 */
+.col__shops { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.col__shops th, .col__shops td { border-bottom: 1px solid var(--line-soft); padding: .55rem .65rem; text-align: left; vertical-align: top; }
+.col__shops thead th { background: #f3efe9; font-size: .78rem; }
+.col__shops th.g { background: #faf8f5; white-space: nowrap; font-size: .9rem; border-right: 1px solid var(--line-soft); }
+.col__shops th.g small, .col__shops td.k small { display: block; font-weight: 400; font-size: .7rem; color: var(--mauve); margin-top: 2px; }
+.col__shops td.k { white-space: nowrap; font-weight: 600; width: 9rem; }
+.col__shops td.k i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.col__shops td.shops { line-height: 1.9; }
+.col__shops td.shops span { display: inline-block; margin: 0 4px 3px 0; padding: 1px 8px; border-radius: 999px; background: #f4f1ec; font-size: .74rem; color: #4a4542; }
+.col__shops td.shops em { font-style: normal; color: #a0958f; font-size: .68rem; }

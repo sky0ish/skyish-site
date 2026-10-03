@@ -38,8 +38,9 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
   let focus = "";                    // 눌러서 강조한 항목 (상세가 아래에 펼쳐짐)
   let animate = true;                // 처음 그릴 때만 선이 그려지는 움직임
   let lastX = null, lastStx = [];
-  /* 「대분류」 · 「세부」 — 그래프를 어느 묶음으로 볼지 (이 브라우저에 기억) */
-  let level = get("skyish-cost-level", "big");
+  /* 「대분류」 · 「중분류」 — 그래프를 어느 묶음으로 볼지 (이 브라우저에 기억) */
+  /* 기본은 중분류 — 「그냥 중분류로 그래프 만들어줘」 (예전 기억 「big」 은 새 열쇠로 버립니다) */
+  let level = get("skyish-cost-level2", "small");
   const isG = (k) => String(k).startsWith("g:");
   const nameOf = (k) => isG(k) ? C.GROUP_NAME[k.slice(2)] : C.CAT_NAME[k];
   const colorOf = (k) => isG(k) ? C.GROUP_COLOR[k.slice(2)] : C.CAT_COLOR[k];
@@ -63,6 +64,8 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
       '<div class="col__tablewrap"><table class="col__table" id="colTable"></table></div>' +
 
       '<div id="colMonth"></div>' +
+      '<h3 class="gro__h">항목별 해당 가게 <small>— 대분류 · 중분류 · 이 기간에 쓴 가게 (많이 쓴 차례 · 금액은 천원)</small></h3>' +
+      '<div class="col__tablewrap"><table class="col__shops" id="colShops"></table></div>' +
     "</div>";
   const $ = (id) => document.getElementById(id);
 
@@ -78,7 +81,7 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
     if (!M.length) {
       $("colMeta").textContent = "";
       $("colCards").innerHTML = '<p class="gro__none">아직 읽은 카드 내역이 없습니다 — 「📂 카드내역 읽기」 로 10.장보기/카드내역 폴더를 골라 주세요.</p>';
-      ["colLegend", "colChart", "colCat", "colTable", "colMonth"].forEach((id) => { $(id).innerHTML = ""; });
+      ["colLegend", "colChart", "colCat", "colTable", "colMonth", "colShops"].forEach((id) => { $(id).innerHTML = ""; });
       return;
     }
     const X = C.matrix(stx, fix, 12);
@@ -110,13 +113,13 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
 
     const V = level === "big" ? C.groupMatrix(X) : X;
     lastX = V;
-    drawLegend(V); drawChart(V); drawCat(); drawTable(X); drawMonth();
+    drawLegend(V); drawChart(V); drawCat(); drawTable(X); drawMonth(); drawShops();
   }
   const card = (h, v, s) => '<div class="col__card"><span>' + esc(h) + "</span><b>" + esc(v) + "</b><small>" + esc(s) + "</small></div>";
 
   function drawLegend(X) {
     const sw = '<span class="col__lv"><button type="button" data-lv="big" class="' + (level === "big" ? "on" : "") + '">대분류</button>' +
-      '<button type="button" data-lv="small" class="' + (level === "small" ? "on" : "") + '">세부</button></span>';
+      '<button type="button" data-lv="small" class="' + (level === "small" ? "on" : "") + '">중분류</button></span>';
     $("colLegend").innerHTML = sw +
       '<button type="button" data-k="__total" class="' + (showTotal ? "on" : "") + '"><i style="background:#1c1a19"></i>합계</button>' +
       X.rows.map((r) => '<button type="button" data-k="' + r.k + '" class="' + (hide.indexOf(r.k) < 0 ? "on" : "") + '">' +
@@ -230,7 +233,7 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
     const lo = nz.length ? nz.reduce((a, b) => (b[0] < a[0] ? b : a))[1] : -1;
     const total = X.totals.reduce((a, b) => a + b, 0);
     const merch = C.byMerchant(lastStx, fix).filter((m) => inFocus(m.k)).slice(0, 12);
-    /* 대분류면 그 안의 세부 항목이 얼마씩인지 */
+    /* 대분류면 그 안의 중분류가 얼마씩인지 */
     const subs = isG(focus) ? (r.subs || []).slice().sort((a, b) => b.sum - a.sum) : [];
     const tcls = r.trend == null ? "" : r.trend > 0.05 ? "up" : r.trend < -0.05 ? "down" : "";
     const trend = r.trend == null ? "—" : (Math.abs(r.trend) < 0.05 ? "비슷함"
@@ -252,7 +255,7 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
           '<em>' + (v ? Math.round(v / 10000) + "만" : "") + "</em>" +
           '<i style="height:' + (100 * v / maxV).toFixed(1) + '%"></i>' +
           "<span>" + ymLabel(X.months[i]) + "</span></button>").join("") + "</div>" +
-        (subs.length ? '<h4 class="col__h4">세부 항목</h4><div class="col__bars">' + subs.map((q) =>
+        (subs.length ? '<h4 class="col__h4">중분류</h4><div class="col__bars">' + subs.map((q) =>
           '<div class="col__barrow"><span>' + esc(C.CAT_NAME[q.k]) + '</span><div><i style="width:' + (100 * q.sum / (subs[0].sum || 1)).toFixed(1) +
           "%;background:" + C.CAT_COLOR[q.k] + '"></i></div><b>' + C.man(q.sum) + "</b><small>" + Math.round(100 * q.sum / (r.sum || 1)) + "%</small></div>").join("") + "</div>" : "") +
         (!isG(focus) ? '<p class="col__desc">' + esc(C.DESC[focus] || "") + "</p>" : "") +
@@ -274,17 +277,13 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
       : '<span class="tr ' + (t > 0 ? "up" : "down") + '">' + (t > 0 ? "▲" : "▼") + Math.round(Math.abs(t) * 100) + "%</span>");
     const cell = (v) => v ? Math.round(v / 1000).toLocaleString("ko-KR") : '<span class="z">·</span>';
     const GX = C.groupMatrix(X);
-    /* 세부 항목마다 이 기간에 많이 쓴 가게 — 예시로 열 곳까지 (이 브라우저 안에서만 보입니다) */
-    const merch = C.byMerchant(lastStx, fix);
-    const ex = (k) => merch.filter((m) => m.k === k).slice(0, 10).map((m) => m.m.replace(/\s*\(?주식회사\)?\s*|\(주\)\s*|\(유\)\s*/g, " ").trim());
     /* 왼쪽 칸 — 이름 + 들어가는 것 + 예시 (작은 글씨) */
     const left = (r, kind) => {
       let sub = "";
       if (kind === "sub" || (kind === "big" && r.subs.length === 1)) {
         const k = kind === "sub" ? r.k : r.subs[0].k;
-        const e = ex(k);
         sub = '<small class="col__d">' + esc(C.DESC[k] || "") + "</small>" +
-              (e.length ? '<small class="col__ex">예: ' + e.map(esc).join(" · ") + "</small>" : "");
+              "";
       } else if (kind === "big") {
         sub = '<small class="col__d">' + esc(r.subs.slice().sort((a, b) => b.sum - a.sum).map((q) => C.CAT_NAME[q.k]).join(" · ")) + "</small>";
       }
@@ -295,13 +294,36 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
       r.vals.map((v) => "<td>" + cell(v) + "</td>").join("") +
       "<td>" + cell(r.avg) + "</td><td>" + trend(r.trend) + "</td></tr>";
     $("colTable").innerHTML =
-      '<thead><tr><th>항목 <small>— 들어가는 것 · 예시</small></th>' + X.months.map((ym) =>
+      '<thead><tr><th>항목 <small>— 들어가는 것 (가게는 맨 아래 표)</small></th>' + X.months.map((ym) =>
         '<th><button type="button" data-ym="' + ym + '" class="' + (sel === ym ? "on" : "") + '">' + ymLabel(ym) + "</button></th>").join("") +
       '<th>월평균</th><th title="최근 3달 한 달 평균 vs 그 앞 3달 한 달 평균">추세</th></tr></thead><tbody>' +
       GX.rows.map((G) => row(G, "big") +
         (G.subs.length > 1 ? G.subs.slice().sort((a, b) => b.sum - a.sum).map((q) => row(q, "sub")).join("") : "")).join("") +
       '</tbody><tfoot><tr><th>합계</th>' + X.totals.map((v) => "<td>" + cell(v) + "</td>").join("") +
       "<td>" + cell(X.totals.filter((v) => v).reduce((a, b) => a + b, 0) / (X.totals.filter((v) => v).length || 1)) + "</td><td></td></tr></tfoot>";
+  }
+
+  /* 대분류 / 중분류 / 해당 가게 — 「각 항목별 해당하는 가게 명은 따로 맨 아래쪽에 표를 만들어서」 */
+  function drawShops() {
+    const merch = C.byMerchant(lastStx, fix);
+    const nice = (m) => m.replace(/\s*\(?주식회사\)?\s*|\(주\)\s*|\(유\)\s*|\(사\)\s*/g, " ").replace(/\s+/g, " ").trim();
+    const sumK = {};
+    merch.forEach((m) => { sumK[m.k] = (sumK[m.k] || 0) + m.a; });
+    const groups = C.GROUPS.map((G) => ({ G, ks: G.ks.filter((k) => sumK[k]).sort((a, b) => sumK[b] - sumK[a]) }))
+      .filter((x) => x.ks.length)
+      .sort((a, b) => b.ks.reduce((t, k) => t + sumK[k], 0) - a.ks.reduce((t, k) => t + sumK[k], 0));
+    $("colShops").innerHTML =
+      "<thead><tr><th>대분류</th><th>중분류</th><th>해당 가게</th></tr></thead><tbody>" +
+      groups.map(({ G, ks }) => ks.map((k, j) => {
+        const list = merch.filter((m) => m.k === k);
+        return "<tr>" +
+          (j === 0 ? '<th rowspan="' + ks.length + '" class="g" style="border-left:4px solid ' + G.color + '">' + esc(G.name) +
+            "<small>" + C.man(ks.reduce((t, q) => t + sumK[q], 0)) + "</small></th>" : "") +
+          '<td class="k"><i style="background:' + C.CAT_COLOR[k] + '"></i>' + esc(C.CAT_NAME[k]) +
+            "<small>" + C.man(sumK[k]) + " · " + list.length + "곳</small></td>" +
+          '<td class="shops">' + list.map((m) => '<span title="' + esc(m.m + " · " + m.n + "번 · " + C.won(m.a)) + '">' + esc(nice(m.m)) +
+            " <em>" + Math.round(m.a / 1000).toLocaleString("ko-KR") + "</em></span>").join("") + "</td></tr>";
+      }).join("")).join("") + "</tbody>";
   }
 
   /* 달 하나 자세히 — 항목 막대 · 많이 쓴 곳 · 내역 (갈래를 바꾸면 그 가맹점은 앞으로도 그 갈래) */
@@ -334,7 +356,7 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
     if (rk) {
       const k = rk.dataset.fk;
       const want = isG(k) ? "big" : "small";
-      if (level !== want) { level = want; put("skyish-cost-level", level); }
+      if (level !== want) { level = want; put("skyish-cost-level2", level); }
       const hi = hide.indexOf(k); if (hi >= 0) { hide.splice(hi, 1); put(K_HIDE, hide); }   // 꺼 둔 선이면 다시 켭니다
       focus = focus === k ? "" : k;
       render();
@@ -342,7 +364,7 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
       return;
     }
     const lv = e.target.closest("#colLegend button[data-lv]");
-    if (lv) { level = lv.dataset.lv; put("skyish-cost-level", level); focus = ""; render(); return; }
+    if (lv) { level = lv.dataset.lv; put("skyish-cost-level2", level); focus = ""; render(); return; }
     const lg = e.target.closest("#colLegend button[data-k]");
     if (lg) {
       const k = lg.dataset.k;
