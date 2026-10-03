@@ -9,7 +9,7 @@ import { decorate } from "./noteimg.js?v=202610051200";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610052300";
+const V = "202610052330";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -584,8 +584,8 @@ export async function drawRenovations(el, qv) {
       (!q || fold([x.t, x.ko, x.at, x.archName, x.from, x.to].join(" ")).includes(q)));
     el.querySelector("#rnList").innerHTML = items.length ? `<ol class="an__list">${items.map((x) => `
       <li><details class="an" id="rn-${esc(x.id)}" data-id="${esc(x.id)}">
-        <summary><span class="an__t"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
-          ${flow(x.from, x.to)} ${kindChips(x)}
+        <summary><span class="an__t">${kindChips(x)} <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
+          ${flow(x.from, x.to)}
           <span class="an__life">(개조 ${esc(x.y)} · ${esc(x.archName || "")})</span></span></summary>
       </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
     el.querySelectorAll(".an__chips button").forEach((bt) => bt.classList.toggle("on", bt.dataset.g === g));
@@ -657,8 +657,8 @@ export async function drawRegenerations(el, qv) {
       (!q || fold([x.t, x.ko, x.city, x.nat, x.from, x.to].join(" ")).includes(q)));
     el.querySelector("#rgList").innerHTML = items.length ? `<ol class="an__list">${items.map((x) => `
       <li><details class="an" id="rg-${esc(x.id)}" data-id="${esc(x.id)}">
-        <summary><span class="an__t"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
-          ${flow(x.from, x.to)} ${kindChips(x)}
+        <summary><span class="an__t">${kindChips(x)} <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
+          ${flow(x.from, x.to)}
           <span class="an__life">(${esc(x.period || "")})</span></span></summary>
       </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
     el.querySelectorAll(".an__chips button").forEach((bt) => bt.classList.toggle("on", bt.dataset.g === g));
@@ -701,7 +701,7 @@ export async function drawNote(el, kind, id) {
       const arch = d.items.find((a) => a.id === x.arch);
       document.title = `${x.ko} — Architectural Renovation`;
       el.innerHTML = `<section class="annote an--page"><p class="an__crumb"><a href="gallery.html?cat=renovation">← Architectural Renovation</a></p>
-        <h2 class="an__ptitle"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)} ${kindChips(x)}
+        <h2 class="an__ptitle">${kindChips(x)} <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)}
         <span class="an__life">(개조 ${esc(x.y)} · ${esc(x.archName || "")})</span></h2>
         <div class="an" data-id="${esc(x.id)}">${rnvBody(x, arch)}</div></section>`;
     } else {
@@ -710,7 +710,7 @@ export async function drawNote(el, kind, id) {
       if (!x) throw 0;
       document.title = `${x.ko} — Urban Regeneration`;
       el.innerHTML = `<section class="annote an--page"><p class="an__crumb"><a href="gallery.html?cat=regeneration">← Urban Regeneration</a></p>
-        <h2 class="an__ptitle"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)} ${kindChips(x)} <span class="an__life">(${esc(x.period || "")})</span></h2>
+        <h2 class="an__ptitle">${kindChips(x)} <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)} <span class="an__life">(${esc(x.period || "")})</span></h2>
         <div class="an" data-id="${esc(x.id)}">${rgnBody(x)}</div></section>`;
     }
     decorate(el.querySelector(".an"), kind, id);

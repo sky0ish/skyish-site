@@ -4,7 +4,7 @@
 //   album.html    사진첩 하나 열기 (사진 격자 · 크게 보기 · 올리기)
 // 자료는 Supabase 의 gallery_albums · gallery_photos 표에 쌓입니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import { drawArchitects, drawBuildings, drawRenovations, drawRegenerations } from "./archnotes.js?v=202610052300";
+import { drawArchitects, drawBuildings, drawRenovations, drawRegenerations } from "./archnotes.js?v=202610052330";
 
 export const CATS = [
   ["urban",      "Urban"],

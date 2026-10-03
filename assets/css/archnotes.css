@@ -217,6 +217,6 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
 .rg__type--k-biz,  .an__chips button.rg__type--k-biz  { background: #2f7a3f; }
 .rg__type--k-shop, .an__chips button.rg__type--k-shop { background: #8b1e2d; }
 .rg__type--k-cult, .an__chips button.rg__type--k-cult { background: #2b5d9b; }
-.fl__chips { white-space: nowrap; margin-left: 2px; }
+.fl__chips { white-space: nowrap; margin-right: 2px; }
 .fl__chips .rg__type { margin: 0 3px 0 0; }
 .fl__k--ind { color: #9a6a3c; }   /* 옛 산업 용도 — 첨단산업(#7a4a24)보다 밝은 갈색 */
