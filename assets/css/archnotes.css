@@ -211,3 +211,12 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
 .fl__k--shop { color: #8b1e2d; }
 .fl__k--cult { color: #2b5d9b; }
 .fl__k--etc  { color: #5f5652; }
+/* 용도 구성 버튼 — 첨단산업 갈색 · 주거 노랑 · 업무 초록 · 상업 레드 · 문화 파랑 */
+.rg__type--k-tech, .an__chips button.rg__type--k-tech { background: #7a4a24; }
+.rg__type--k-home, .an__chips button.rg__type--k-home { background: #d1a21a; }
+.rg__type--k-biz,  .an__chips button.rg__type--k-biz  { background: #2f7a3f; }
+.rg__type--k-shop, .an__chips button.rg__type--k-shop { background: #8b1e2d; }
+.rg__type--k-cult, .an__chips button.rg__type--k-cult { background: #2b5d9b; }
+.fl__chips { white-space: nowrap; margin-left: 2px; }
+.fl__chips .rg__type { margin: 0 3px 0 0; }
+.fl__k--ind { color: #9a6a3c; }   /* 옛 산업 용도 — 첨단산업(#7a4a24)보다 밝은 갈색 */

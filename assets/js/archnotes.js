@@ -9,7 +9,7 @@ import { decorate } from "./noteimg.js?v=202610051200";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610052200";
+const V = "202610052300";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -493,9 +493,13 @@ const USE_KIND = [
   ["biz", /업무|사무|오피스|본사|금융|은행|비즈니스|CBD|기업/],
   ["cult", /문화|미술|박물관|갤러리|공연|극장|예술|공원|전시|콘서트|도서관|교육|대학|유산|역사관|건축관|창작|디자인|음악|스포츠|올림픽|광장|정원|캠퍼스|학교/],
   ["shop", /상업|상점|쇼핑|레스토랑|식당|시장|마켓|호텔|리테일|카페|관광|레저|소매|푸드|맥주|행사 거리/],
+  ["ind",  /공장|공업|산업|제철|발전소|창고|사일로|부두|항만|항구|조선|철도|화물|가스|석탄|탱크|저장|정유|도크|하역|양조|증류|도축|제분|방직|섬유|기계|광산|탄광|코크스|정수|변전|용광로|제련|거래소|세관|미곡|곡물|해운|선로|고가|크레인|공업지대|공단|군수|인쇄|맥주 공장|와이너리|물류|차고|정비|기차역|제작|가축|전차|트램/],
 ];
-const useKind = (w) => (USE_KIND.find(([, rx]) => rx.test(w)) || ["etc"])[0];
-const useHtml = (v) => {                               // 괄호 밖의 「 · 」에서만 나눕니다
+const useKind = (w, from) => {                         // 원래 용도(A)는 옛 산업 낱말을 먼저 봅니다
+  if (from && USE_KIND.find(([k]) => k === "ind")[1].test(w)) return "ind";
+  return (USE_KIND.find(([, rx]) => rx.test(w)) || ["etc"])[0];
+};
+const useParts = (v) => {                              // 괄호 밖의 「 · 」에서만 나눕니다
   const parts = []; let cur = "", depth = 0;
   const str = String(v || "");
   for (let i = 0; i < str.length; i++) {
@@ -506,9 +510,22 @@ const useHtml = (v) => {                               // 괄호 밖의 「 · �
     cur += c;
   }
   parts.push(cur);
-  return parts.map((w) => `<span class="fl__k fl__k--${useKind(w)}">${esc(w)}</span>`).join('<i> · </i>');
+  return parts;
 };
-const flow = (a, b) => `<span class="an__tag an__flow"><i>(</i>${useHtml(a)}<i>)에서 (</i>${useHtml(b)}<i>)${ro(b)}</i></span>`;
+const useHtml = (v, from) => useParts(v).map((w) => `<span class="fl__k fl__k--${useKind(w, from)}">${esc(w)}</span>`).join('<i> · </i>');
+/* 용도 구성 버튼 — 변경 용도(B)의 낱말에서 (도시재생은 분류해 둔 종류도 더해서) */
+const KINDS = [["tech", "첨단산업"], ["home", "주거"], ["biz", "업무"], ["shop", "상업"], ["cult", "문화"]];
+const TYPE_KIND = { "첨단산업형": ["tech"], "주거형": ["home"], "문화 · 복합형": ["cult"] };
+const kindsOf = (x) => {
+  const k = new Set(useParts(x.to).map((w) => useKind(w)).filter((c) => c !== "etc" && c !== "ind"));
+  (x.types || []).forEach((t) => {
+    if (t === "업무 · 상업형") { if (!k.has("biz") && !k.has("shop")) k.add("biz"); }
+    else (TYPE_KIND[t] || []).forEach((c) => k.add(c));
+  });
+  return KINDS.map(([c]) => c).filter((c) => k.has(c));
+};
+const kindChips = (x) => `<span class="fl__chips">${kindsOf(x).map((c) => `<span class="rg__type rg__type--k-${c}">${KINDS.find(([k]) => k === c)[1]}</span>`).join("")}</span>`;
+const flow = (a, b) => `<span class="an__tag an__flow"><i>(</i>${useHtml(a, true)}<i>)에서 (</i>${useHtml(b)}<i>)${ro(b)}</i></span>`;
 const bullets = (v) => (v || []).length ? `<ul class="rg__ul">${v.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
 let RNV = null, RGN = null;
 const loadJ = (f) => fetch("assets/data/" + f + "?v=" + V).then((r) => (r.ok ? r.json() : { items: [] })).catch(() => ({ items: [] }));
@@ -568,7 +585,7 @@ export async function drawRenovations(el, qv) {
     el.querySelector("#rnList").innerHTML = items.length ? `<ol class="an__list">${items.map((x) => `
       <li><details class="an" id="rn-${esc(x.id)}" data-id="${esc(x.id)}">
         <summary><span class="an__t"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
-          ${flow(x.from, x.to)}
+          ${flow(x.from, x.to)} ${kindChips(x)}
           <span class="an__life">(개조 ${esc(x.y)} · ${esc(x.archName || "")})</span></span></summary>
       </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
     el.querySelectorAll(".an__chips button").forEach((bt) => bt.classList.toggle("on", bt.dataset.g === g));
@@ -633,18 +650,16 @@ export async function drawRegenerations(el, qv) {
   let r;
   try { r = await (RGN || (RGN = loadJ("regenerations.json"))); } catch (e) { el.innerHTML = '<p class="an__wait">불러오지 못했습니다.</p>'; return; }
   const q = fold(qv || "").trim();
-  const TYPES = ["첨단산업형", "주거형", "업무 · 상업형", "문화 · 복합형"];
-  const TC = { "첨단산업형": "tech", "주거형": "home", "업무 · 상업형": "biz", "문화 · 복합형": "cult" };   // 종류별 색 (archnotes.css .rg__type--*)
-  const tcls = (t) => TC[t] ? " rg__type--" + TC[t] : "";
+  (r.items || []).forEach((x) => { x._k = kindsOf(x); });
   let g = "";
   const paint = () => {
-    const items = (r.items || []).filter((x) => (!g || (x.types || []).includes(g)) &&
+    const items = (r.items || []).filter((x) => (!g || x._k.includes(g)) &&
       (!q || fold([x.t, x.ko, x.city, x.nat, x.from, x.to].join(" ")).includes(q)));
     el.querySelector("#rgList").innerHTML = items.length ? `<ol class="an__list">${items.map((x) => `
       <li><details class="an" id="rg-${esc(x.id)}" data-id="${esc(x.id)}">
-        <summary><span class="an__t">${[...(x.types || [])].sort((a, b) => TYPES.indexOf(a) - TYPES.indexOf(b)).map((t) => `<span class="rg__type${tcls(t)}">${esc(t)}</span>`).join("")}
-          <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
-          ${flow(x.from, x.to)} <span class="an__life">(${esc(x.period || "")})</span></span></summary>
+        <summary><span class="an__t"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
+          ${flow(x.from, x.to)} ${kindChips(x)}
+          <span class="an__life">(${esc(x.period || "")})</span></span></summary>
       </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
     el.querySelectorAll(".an__chips button").forEach((bt) => bt.classList.toggle("on", bt.dataset.g === g));
     const map = Object.fromEntries((r.items || []).map((x) => [x.id, x]));
@@ -654,8 +669,8 @@ export async function drawRegenerations(el, qv) {
     <div class="an__head"><h3>도시재생 노트 — 노후 산업지역은 어떻게 바뀌었나</h3>
       <p>쇠퇴한 공업지역 · 항만 · 철도 부지가 ① 첨단산업 ② 주거 ③ 업무 · 상업으로 바뀐 사례 — 모두 철거하지 않고 <b>옛 건물 일부를 보존 · 활용한 사례</b>만 모았습니다. 원래 용도(지구) → 변경 용도(지구)를 맨 위에 밝히고,
          1) 개발개요 · 2) 개발주체 · 3) 근거법 및 규제완화 · 4) 지구지정 및 관리 · 5) 개발수단 · 6) 재원 및 보조금 · 7) 시사점(유명한 이유 · 성과 · 교훈)으로 정리했습니다. 제목을 누르면 새 창에서 자세히 봅니다. 최근 사업을 위로.</p>
-      <div class="an__chips"><button type="button" data-g="">전체 ${(r.items || []).length}</button>${TYPES.map((t) =>
-        `<button type="button" class="rg__chip${tcls(t)}" data-g="${esc(t)}">${esc(t)} ${(r.items || []).filter((y) => (y.types || []).includes(t)).length}</button>`).join("")}</div>
+      <div class="an__chips"><button type="button" data-g="">전체 ${(r.items || []).length}</button>${KINDS.map(([c, t]) =>
+        `<button type="button" class="rg__chip rg__type--k-${c}" data-g="${c}">${t} ${(r.items || []).filter((y) => y._k.includes(c)).length}</button>`).join("")}</div>
     </div><div id="rgList"></div></section>`;
   el.querySelectorAll(".an__chips button").forEach((bt) => bt.addEventListener("click", () => { g = bt.dataset.g; paint(); }));
   paint();
@@ -686,7 +701,7 @@ export async function drawNote(el, kind, id) {
       const arch = d.items.find((a) => a.id === x.arch);
       document.title = `${x.ko} — Architectural Renovation`;
       el.innerHTML = `<section class="annote an--page"><p class="an__crumb"><a href="gallery.html?cat=renovation">← Architectural Renovation</a></p>
-        <h2 class="an__ptitle"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)}
+        <h2 class="an__ptitle"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)} ${kindChips(x)}
         <span class="an__life">(개조 ${esc(x.y)} · ${esc(x.archName || "")})</span></h2>
         <div class="an" data-id="${esc(x.id)}">${rnvBody(x, arch)}</div></section>`;
     } else {
@@ -695,8 +710,7 @@ export async function drawNote(el, kind, id) {
       if (!x) throw 0;
       document.title = `${x.ko} — Urban Regeneration`;
       el.innerHTML = `<section class="annote an--page"><p class="an__crumb"><a href="gallery.html?cat=regeneration">← Urban Regeneration</a></p>
-        <h2 class="an__ptitle">${(x.types || []).map((t) => `<span class="rg__type${({ "첨단산업형": " rg__type--tech", "주거형": " rg__type--home", "업무 · 상업형": " rg__type--biz", "문화 · 복합형": " rg__type--cult" })[t] || ""}">${esc(t)}</span>`).join("")}<br>
-        <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)} <span class="an__life">(${esc(x.period || "")})</span></h2>
+        <h2 class="an__ptitle"><span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}<br>${flow(x.from, x.to)} ${kindChips(x)} <span class="an__life">(${esc(x.period || "")})</span></h2>
         <div class="an" data-id="${esc(x.id)}">${rgnBody(x)}</div></section>`;
     }
     decorate(el.querySelector(".an"), kind, id);
