@@ -89,6 +89,10 @@ function probe() {
   return probing;
 }
 export const serverMode = () => srv === "on";
+/** 서버에 갱신 열쇠가 있나 — true 있음 · false 없음 · null 아직 모름 */
+export const serverLinked = () => srvLinked;
+/** 서버를 쓸 수 있는지·열쇠가 있는지 알아봅니다 (살아 있는 열쇠가 있어도) */
+export const probeServer = () => probe() || Promise.resolve(null);
 
 /* calendar.events — 일정을 읽고 「쓸 수도」 있는 권한입니다.
    전에는 readonly 였는데, 게시판에서 쓴 일정을 구글로도 넣으려면 이게 필요합니다.
@@ -274,9 +278,10 @@ export const warm = () => {
 };
 
 /** 권한 받기 — 처음 한 번은 구글 창이 뜹니다 */
-export async function connect(force) {
+export async function connect(force, opt) {
   if (!GCAL_CLIENT_ID) throw new Error("먼저 auth/config.js 에 GCAL_CLIENT_ID 를 적어주세요.");
-  if (!force) {
+  /* opt.server — 「늘 연결 켜기」: 지금 열쇠가 살아 있어도 서버에 갱신 열쇠를 맡기러 갑니다 */
+  if (!force && !(opt && opt.server)) {
     const t = saved();
     if (t) { token = t; return t; }
   }

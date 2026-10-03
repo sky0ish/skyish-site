@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202610031500";
+import * as GC from "./gcal.js?v=202610031700";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as CO from "./cal-open.js?v=202609301200";
 
@@ -293,6 +293,11 @@ export async function initHomeCal(id = "hocal") {
           + "</button>"
         : "") +
       note +
+      (GC.serverMode && GC.serverMode() && GC.serverLinked && GC.serverLinked() === false &&
+       GC.connected && GC.connected()
+        ? '<button type="button" class="hocal__gc" id="hocalKeep">' +
+          "🔒 늘 연결 켜기 — 한 번 누르면 앞으로 구글 창 없이 계속 이어집니다</button>"
+        : "") +
       '<a class="hocal__more" href="blog.html?cat=schedule">일정 전체 보기 →</a>';
 
     /* 「모두 / 간단히」 — 고른 것은 이 브라우저에 남습니다 */
@@ -306,6 +311,21 @@ export async function initHomeCal(id = "hocal") {
       await pullG();
       keep();
       draw();
+    });
+
+    /* 「🔒 늘 연결 켜기」 — 지금은 이어져 있지만 서버에 갱신 열쇠가 아직 없을 때.
+       한 번 누르면 그 뒤로는 창 없이 이어집니다 (폰·PC 어디서나). */
+    const keepBtn = document.getElementById("hocalKeep");
+    if (keepBtn) keepBtn.addEventListener("click", async () => {
+      keepBtn.disabled = true;
+      keepBtn.textContent = "구글에 묻는 중…";
+      try {
+        await GC.connect(false, { server: true });
+        draw();
+      } catch (e) {
+        keepBtn.disabled = false;
+        keepBtn.textContent = (e && e.message) || "잇지 못했습니다 — 다시 눌러 주세요";
+      }
     });
 
     const gcBtn = document.getElementById("hocalGc");
@@ -425,6 +445,13 @@ export async function initHomeCal(id = "hocal") {
   }
 
   draw();
+
+  /* 서버(갱신 열쇠 보관함)를 살펴보고, 아직 맡기지 않았으면 「늘 연결 켜기」 단추를 띄웁니다 */
+  if (GC.probeServer) {
+    GC.probeServer().then(() => {
+      if (GC.serverMode() && GC.serverLinked() === false) { GC.warm && GC.warm(); draw(); }
+    }).catch(() => {});
+  }
 
   /* ── 저절로 새로 받기 ──
      「캘린더 스케쥴이 항상 자동으로 …」 — 열어 둔 채로 있어도 구글·게시판에서
