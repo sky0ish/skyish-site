@@ -4,12 +4,14 @@
 //   album.html    사진첩 하나 열기 (사진 격자 · 크게 보기 · 올리기)
 // 자료는 Supabase 의 gallery_albums · gallery_photos 표에 쌓입니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import { drawArchitects, drawBuildings } from "./archnotes.js?v=202610042000";
+import { drawArchitects, drawBuildings, drawRenovations, drawRegenerations } from "./archnotes.js?v=202610051700";
 
 export const CATS = [
   ["urban",      "Urban"],
   ["arch",       "Architecture"],
   ["architects", "Architects"],
+  ["renovation", "Architectural Renovation"],
+  ["regeneration", "Urban Regeneration"],
   ["house",      "House"],
   ["daily",      "Daily Life"],
   ["etc",        "ETC"],
@@ -451,8 +453,9 @@ export async function initGallery(mountId = "galapp") {
     if (k === notesKey) return;
     notesKey = k;
     clearTimeout(notesT);
-    if (cur !== "architects" && cur !== "arch") { notesEl.innerHTML = ""; return; }
-    notesT = setTimeout(() => (cur === "architects" ? drawArchitects : drawBuildings)(notesEl, q.value), notesEl.innerHTML ? 250 : 0);
+    const DRAW = { architects: drawArchitects, arch: drawBuildings, renovation: drawRenovations, regeneration: drawRegenerations };
+    if (!DRAW[cur]) { notesEl.innerHTML = ""; return; }
+    notesT = setTimeout(() => DRAW[cur](notesEl, q.value), notesEl.innerHTML ? 250 : 0);
   }
 
   function draw() {

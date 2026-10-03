@@ -1,3 +1,4 @@
+import { decorate } from "./noteimg.js?v=202610051200";
 /* Gallery › Architects · Architecture 의 「노트」
    ─ 건축가 노트 : 1. 이력  2. 유명해진 이유  3. 건축특성 및 이론(+대표 저서)  4. 건축가 및 예술가 네트워크  5. 대표작품  + References
                    프리츠커 수상자 전체를 먼저(수상 연도 차례), 그다음 ArchDaily 의 다른 세계적 건축가
@@ -8,7 +9,7 @@
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610042000";
+const V = "202610051700";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -317,7 +318,7 @@ export async function drawArchitects(el, qv) {
     listEl.innerHTML = listHtml();
     el.querySelectorAll(".an__chips button").forEach((b) => b.classList.toggle("on", b.dataset.f === filt));
     listEl.querySelectorAll("details.an").forEach((det) => det.addEventListener("toggle", () => {
-      if (det.open && !det.querySelector(".an__body")) det.insertAdjacentHTML("beforeend", bodyHtml(byId[det.dataset.id], byId, awardName));
+      if (det.open && !det.querySelector(".an__body")) { det.insertAdjacentHTML("beforeend", bodyHtml(byId[det.dataset.id], byId, awardName)); decorate(det, "architects", det.dataset.id); }
     }));
   };
   paint();
@@ -428,6 +429,7 @@ export async function drawBuildings(el, qv) {
     if (det.open && !det.querySelector(".an__body")) {
       const x = map[det.dataset.id];
       det.insertAdjacentHTML("beforeend", bldBody(x, byId[x.arch]));
+      decorate(det, "buildings", x.id);
     }
   }));
   el.onclick = (e) => {          // 다시 그려도 한 번만 걸리게
@@ -436,4 +438,187 @@ export async function drawBuildings(el, qv) {
     e.preventDefault();
     location.href = "gallery.html?cat=architects#ar-" + a.dataset.go;
   };
+}
+
+/* ── 그림 격자 (건축물 · 리노베이션 · 도시재생 공용) ──
+   Commons 자유 이용 사진은 그대로, ArchDaily · WikiArquitectura · 공식 페이지의 도면은 원래 자리에서 불러와 보여 줍니다 */
+const SITE_NAME = { "fondazionerenzopiano.org": "렌초 피아노 재단", "lacatonvassal.com": "Lacaton & Vassal",
+                    "davidchipperfield.com": "David Chipperfield Architects", "rpbw.com": "Renzo Piano Building Workshop" };
+const D_ORDER = ["배치도", "평면", "입면", "단면", "액소", "분해", "다이어그램", "스케치", "모형", "상세", "구조", "도면"];
+function gridFor(b) {
+  const AD = b.ad || null;
+  const rank = (lb) => { const i = D_ORDER.findIndex((w) => lb.includes(w)); return i < 0 ? 99 : i; };
+  const cfig = (im) => `<figure class="ab__fig">
+      <a href="${esc(im.page)}" target="_blank" rel="noopener"><img src="${esc(im.src)}" alt="${esc(im.cap || "")}" loading="lazy"></a>
+      <figcaption>${im.cap ? `<b>${esc(im.cap)}</b> · ` : ""}${esc(im.artist || "")} · ${esc(im.license || "")} · Wikimedia Commons</figcaption></figure>`;
+  const dfig = (d) => `<figure class="ab__fig ab__fig--d">
+      <a href="${esc(d.u)}" target="_blank" rel="noopener"><img src="${esc(d.img)}" alt="${esc(d.name)}" loading="lazy" referrerpolicy="no-referrer"
+        onerror="this.closest(&quot;figure&quot;).classList.add(&quot;ab__fig--x&quot;)"></a>
+      <figcaption><b>${esc(d.name)}</b> · 출처 <a href="${esc(d.u)}" target="_blank" rel="noopener">${esc(SITE_NAME[d.site] || d.site)} ↗</a></figcaption></figure>`;
+  return (kind, emptyNote) => {
+    const all = (((AD && AD.drawings) || []).map((d) => Object.assign({ site: "ArchDaily" }, d)))
+      .concat(b.more || []).filter((d) => d.kind === kind && d.img);
+    all.sort((x, y) => rank(x.label) - rank(y.label));
+    const cnt = {}, tot = {};
+    all.forEach((d) => (tot[d.label] = (tot[d.label] || 0) + 1));
+    const dr = all.map((d) => { cnt[d.label] = (cnt[d.label] || 0) + 1; return Object.assign({ name: d.label + (tot[d.label] > 1 ? " " + cnt[d.label] : "") }, d); });
+    const cm = (b.imgs && b.imgs[kind]) || [];
+    if (!dr.length && !cm.length)
+      return emptyNote ? `<p class="ab__none">${emptyNote}${AD ? ` — <a href="${esc(AD.u)}" target="_blank" rel="noopener">ArchDaily 프로젝트 페이지 ↗</a>` : ""}</p>` : "";
+    return `<div class="ab__figs">${dr.map(dfig).join("")}${cm.map(cfig).join("")}</div>` +
+      (dr.length ? `<p class="ab__src">도면 · 그림의 저작권은 건축가와 각 출처에 있으며, 원본 페이지에서 불러와 보여 줍니다. 그림을 누르면 원본 페이지로 갑니다.</p>` : "");
+  };
+}
+/* 줄 끝이 주소(https://…)면 첫 칸(법 · 계획 · 가이드라인 이름)을 그 원문으로 잇습니다 */
+const kvTable = (rows) => (rows || []).length
+  ? `<table class="ab__spec"><tbody>${rows.map((r0) => {
+      const r = [...r0];
+      const u = r.length > 2 && /^https?:\/\//.test(r[r.length - 1] || "") ? r.pop() : "";
+      const k = u ? `<a href="${esc(u)}" target="_blank" rel="noopener" class="rg__law">${esc(r[0])} ↗</a>` : esc(r[0]);
+      return r.length > 2
+        ? `<tr><th class="rg__k">${k}</th><td><b>${esc(r[1])}</b><br><span class="rg__role">${esc(r[2])}</span></td></tr>`
+        : `<tr><th>${k}</th><td>${esc(r[1])}</td></tr>`;
+    }).join("")}</tbody></table>` : "";
+const bullets = (v) => (v || []).length ? `<ul class="rg__ul">${v.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+let RNV = null, RGN = null;
+const loadJ = (f) => fetch("assets/data/" + f + "?v=" + V).then((r) => (r.ok ? r.json() : { items: [] })).catch(() => ({ items: [] }));
+
+/* ── Architectural Renovation — 원래 용도 → 변경 용도 ── */
+function rnvBody(b, arch) {
+  const show = gridFor(b);
+  const A = arch ? `<p><a href="gallery.html?cat=architects#ar-${esc(arch.id)}" class="ab__arch">${titleHtml(arch)} →</a></p>` : "";
+  const st = b.strategy || {};
+  return `<div class="an__body">
+    <div class="rn__flip"><div><small>원래 용도</small><b>${esc(b.from)}</b><span>${esc(b.y0 || "")}</span></div>
+      <i>→</i><div><small>변경 용도</small><b>${esc(b.to)}</b><span>${esc(b.y || "")}</span></div></div>
+    <h4>1) 건축가 개요</h4>
+    ${A}${paras(b.archAbout)}
+    <h4>2) 건축개요 — 원 건축물과 리노베이션</h4>
+    ${kvTable(b.spec)}
+    <h4>3) 리노베이션 컨셉 및 우수한 이유</h4>
+    ${show("concept")}
+    ${paras(b.concept)}
+    ${(st.keep || st.change || st.add) ? `<div class="rn__st">
+      ${st.keep ? `<div><b>남긴 것</b>${bullets(st.keep)}</div>` : ""}
+      ${st.change ? `<div><b>바꾼 것</b>${bullets(st.change)}</div>` : ""}
+      ${st.add ? `<div><b>더한 것</b>${bullets(st.add)}</div>` : ""}</div>` : ""}
+    ${b.quote ? `<blockquote class="ab__q">${esc(b.quote)}<small>— 건축가의 설명 (요약 · 번역)</small></blockquote>` : ""}
+    <div class="ab__why"><b>우수한 이유</b>${bullets(b.why)}</div>
+    <h4>4) 건축물 공간특성 — 평면도 · 입면도 · 단면도</h4>
+    ${show("plan", "공개된 도면을 찾지 못했습니다")}
+    ${paras(b.space)}
+    <h4>5) 건축물 재료 및 구조</h4>
+    ${show("build")}
+    ${paras(b.material)}
+    <h4 class="an__refh">References</h4>
+    <p class="an__refs an__refs--big">${refsHtml(b.refs)}</p>
+  </div>`;
+}
+
+export async function drawRenovations(el, qv) {
+  el.innerHTML = '<p class="an__wait">리노베이션 노트를 불러오는 중…</p>';
+  let d, r;
+  try { [d, r] = await Promise.all([load(), RNV || (RNV = loadJ("renovations.json"))]); } catch (e) { el.innerHTML = '<p class="an__wait">불러오지 못했습니다.</p>'; return; }
+  const byId = Object.fromEntries(d.items.map((a) => [a.id, a]));
+  const q = fold(qv || "").trim();
+  const GROUPS = [...new Set((r.items || []).map((x) => x.group).filter(Boolean))];
+  let g = "";
+  const paint = () => {
+    const items = (r.items || []).filter((x) => (!g || x.group === g) &&
+      (!q || fold([x.t, x.ko, x.at, x.archName, x.from, x.to].join(" ")).includes(q)));
+    el.querySelector("#rnList").innerHTML = items.length ? `<ol class="an__list">${items.map((x) => `
+      <li><details class="an" id="rn-${esc(x.id)}" data-id="${esc(x.id)}">
+        <summary><span class="an__t"><span class="an__tag an__tag--r">&lt;${esc(x.from)} → ${esc(x.to)}&gt;</span>
+          <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
+          <span class="an__life">(개조 ${esc(x.y)} · ${esc(x.archName || "")})</span></span></summary>
+      </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
+    el.querySelectorAll(".an__chips button").forEach((bt) => bt.classList.toggle("on", bt.dataset.g === g));
+    const map = Object.fromEntries((r.items || []).map((x) => [x.id, x]));
+    el.querySelectorAll("#rnList details.an").forEach((det) => det.addEventListener("toggle", () => {
+      if (det.open && !det.querySelector(".an__body")) { const x = map[det.dataset.id]; det.insertAdjacentHTML("beforeend", rnvBody(x, byId[x.arch])); decorate(det, "renovation", x.id); }
+    }));
+  };
+  el.innerHTML = `<section class="annote">
+    <div class="an__head"><h3>건축 리노베이션 노트</h3>
+      <p>쓰임을 다한 건축물을 허물지 않고 보존하면서 새 용도로 바꾼 사례 (적응적 재사용 · adaptive reuse) — 원래 용도 → 변경 용도를 맨 위에 밝히고,
+         1) 건축가 개요 · 2) 건축개요 · 3) 리노베이션 컨셉(남긴 것 · 바꾼 것 · 더한 것)과 우수한 이유 · 4) 공간특성(도면) · 5) 재료 및 구조로 정리했습니다. 최근 개조를 위로.</p>
+      <div class="an__chips"><button type="button" data-g="">전체 ${(r.items || []).length}</button>${GROUPS.map((x) =>
+        `<button type="button" data-g="${esc(x)}">${esc(x)} ${(r.items || []).filter((y) => y.group === x).length}</button>`).join("")}</div>
+    </div><div id="rnList"></div></section>`;
+  el.querySelectorAll(".an__chips button").forEach((bt) => bt.addEventListener("click", () => { g = bt.dataset.g; paint(); }));
+  paint();
+}
+
+/* ── Urban Regeneration — 노후 산업지역의 재생 ── */
+function rgnBody(x) {
+  /* 사진을 항목마다 나눠 싣기 — 조감 · 전경(맨 위) / 보존 건물(1) 옆) / 지도 · 계획도(5)) / 나머지(6)) */
+  const ph = (x.imgs && x.imgs.build) || [], pl = (x.imgs && x.imgs.plan) || [], ae = (x.imgs && x.imgs.concept) || [];
+  const fig = (im) => `<figure class="ab__fig"><a href="${esc(im.page)}" target="_blank" rel="noopener"><img src="${esc(im.src)}" alt="${esc(im.cap || "")}" loading="lazy"></a>
+      <figcaption>${im.cap ? `<b>${esc(im.cap)}</b> · ` : ""}${esc(im.artist || "")} · ${esc(im.license || "")} · Wikimedia Commons</figcaption></figure>`;
+  const row = (list) => list.length ? `<div class="ab__figs">${list.map(fig).join("")}</div>` : "";
+  const NONE = (what) => `<p class="rg__none">${esc(what)} — 확인된 자료를 찾지 못했습니다. (찾는 대로 보완합니다)</p>`;
+  const sec = (rows, note, what) => (rows && rows.length) || (note && note.length) ? kvTable(rows) + paras(note) : NONE(what);
+  return `<div class="an__body">
+    <div class="rn__flip"><div><small>원래 용도 · 용도지구</small><b>${esc(x.from)}</b><span>${esc(x.zoneFrom || "")}</span></div>
+      <i>→</i><div><small>변경 용도 · 용도지구</small><b>${esc(x.to)}</b><span>${esc(x.zoneTo || "")}</span></div></div>
+    ${row(ae.concat(ph.slice(0, 1)).slice(0, 3))}
+    ${(x.keep || []).length ? `<div class="rg__keep"><b>보존 · 활용한 옛 건물</b>${bullets(x.keep)}</div>` : ""}
+    <h4>1) 개발개요 — 원래 용도 · 변경 용도 · 문제점과 개발 이유</h4>
+    ${kvTable(x.spec)}
+    ${(x.timeline || []).length ? `<p class="rg__lab">연혁</p><table class="ab__spec rg__tl"><tbody>${x.timeline.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table>` : ""}
+    <p class="rg__lab">문제점 및 개발 이유</p>${(x.problem || []).length ? bullets(x.problem) : NONE("문제점 · 개발 이유")}
+    ${paras(x.overview)}
+    ${row(ph.slice(1, 4))}
+    <h4>2) 개발주체 — 기관 · 관련 기관 · 전문가 단체 · 시민단체</h4>
+    ${sec(x.actors, x.actorsNote, "개발주체")}
+    <h4>3) 개발 근거법 및 규제완화</h4>
+    ${sec(x.laws, x.lawsNote, "근거법 · 규제완화")}
+    <h4>4) 지구지정 및 관리</h4>
+    ${gridFor(x)("plan")}
+    ${sec(x.zoning, x.zoningNote, "지구지정 · 관리")}
+    <h4>5) 개발수단 — 용적률 완화 · 용도변경 · 재원 · 인센티브</h4>
+    ${sec(x.tools, x.toolsNote, "개발수단")}
+    <h4>6) 성과와 시사점 — 노후 산업단지 재생에 주는 교훈</h4>
+    ${x.result ? `<p class="rg__lab">성과</p>${bullets(x.result)}` : NONE("성과")}
+    ${x.lesson ? `<p class="rg__lab">시사점</p>${bullets(x.lesson)}` : ""}
+    ${row(ph.slice(4))}
+    ${(x.missing || []).length ? `<div class="rg__miss"><b>찾지 못한 자료</b>${bullets(x.missing)}</div>` : ""}
+    <h4 class="an__refh">References</h4>
+    <p class="an__refs an__refs--big">${refsHtml(x.refs)}</p>
+  </div>`;
+}
+
+export async function drawRegenerations(el, qv) {
+  el.innerHTML = '<p class="an__wait">도시재생 노트를 불러오는 중…</p>';
+  let r;
+  try { r = await (RGN || (RGN = loadJ("regenerations.json"))); } catch (e) { el.innerHTML = '<p class="an__wait">불러오지 못했습니다.</p>'; return; }
+  const q = fold(qv || "").trim();
+  const TYPES = ["첨단산업형", "주거형", "업무 · 상업형", "문화 · 복합형"];
+  const TC = { "첨단산업형": "tech", "주거형": "home", "업무 · 상업형": "biz", "문화 · 복합형": "cult" };   // 종류별 색 (archnotes.css .rg__type--*)
+  const tcls = (t) => TC[t] ? " rg__type--" + TC[t] : "";
+  let g = "";
+  const paint = () => {
+    const items = (r.items || []).filter((x) => (!g || (x.types || []).includes(g)) &&
+      (!q || fold([x.t, x.ko, x.city, x.nat, x.from, x.to].join(" ")).includes(q)));
+    el.querySelector("#rgList").innerHTML = items.length ? `<ol class="an__list">${items.map((x) => `
+      <li><details class="an" id="rg-${esc(x.id)}" data-id="${esc(x.id)}">
+        <summary><span class="an__t">${[...(x.types || [])].sort((a, b) => TYPES.indexOf(a) - TYPES.indexOf(b)).map((t) => `<span class="rg__type${tcls(t)}">${esc(t)}</span>`).join("")}
+          <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
+          <span class="an__life">(${esc(x.from)} → ${esc(x.to)} · ${esc(x.period || "")})</span></span></summary>
+      </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
+    el.querySelectorAll(".an__chips button").forEach((bt) => bt.classList.toggle("on", bt.dataset.g === g));
+    const map = Object.fromEntries((r.items || []).map((x) => [x.id, x]));
+    el.querySelectorAll("#rgList details.an").forEach((det) => det.addEventListener("toggle", () => {
+      if (det.open && !det.querySelector(".an__body")) { det.insertAdjacentHTML("beforeend", rgnBody(map[det.dataset.id])); decorate(det, "regeneration", det.dataset.id); }
+    }));
+  };
+  el.innerHTML = `<section class="annote">
+    <div class="an__head"><h3>도시재생 노트 — 노후 산업지역은 어떻게 바뀌었나</h3>
+      <p>쇠퇴한 공업지역 · 항만 · 철도 부지가 ① 첨단산업 ② 주거 ③ 업무 · 상업으로 바뀐 사례 — 모두 철거하지 않고 <b>옛 건물 일부를 보존 · 활용한 사례</b>만 모았습니다. 원래 용도(지구) → 변경 용도(지구)를 맨 위에 밝히고,
+         1) 개발개요 · 2) 개발주체 · 3) 근거법 및 규제완화 · 4) 지구지정 및 관리 · 5) 개발수단 · 6) 성과와 시사점으로 정리했습니다. 최근 사업을 위로.</p>
+      <div class="an__chips"><button type="button" data-g="">전체 ${(r.items || []).length}</button>${TYPES.map((t) =>
+        `<button type="button" class="rg__chip${tcls(t)}" data-g="${esc(t)}">${esc(t)} ${(r.items || []).filter((y) => (y.types || []).includes(t)).length}</button>`).join("")}</div>
+    </div><div id="rgList"></div></section>`;
+  el.querySelectorAll(".an__chips button").forEach((bt) => bt.addEventListener("click", () => { g = bt.dataset.g; paint(); }));
+  paint();
 }

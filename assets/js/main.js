@@ -52,6 +52,8 @@
         { label: "Urban",        file: "gallery.html?cat=urban"      },
         { label: "Architecture", file: "gallery.html?cat=arch"       },
         { label: "Architects",   file: "gallery.html?cat=architects" },
+        { label: "Architectural Renovation", file: "gallery.html?cat=renovation" },
+        { label: "Urban Regeneration",       file: "gallery.html?cat=regeneration" },
         { label: "House",        file: "gallery.html?cat=house"      },
         { label: "Daily Life",   file: "gallery.html?cat=daily"      },
         { label: "ETC",          file: "gallery.html?cat=etc"        }

@@ -46,15 +46,16 @@ def fold(s):
     return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
 
-def find_project(title, firm):
-    """ArchDaily 검색 API → 제목과 설계자가 가장 잘 맞는 프로젝트 하나"""
-    q = (title + " " + firm).strip()
+def find_project(title, firm, query=None):
+    """ArchDaily 검색 API → 제목과 설계자가 가장 잘 맞는 프로젝트 하나
+       (건물 이름의 주요 낱말이 절반 이상 제목에 들어 있어야 — 같은 도시 · 같은 건축가의 다른 작품을 막음)"""
+    q = (query or (title + " " + firm)).strip()
     raw = fetch("https://www.archdaily.com/search/api/v1/us/projects?q=" + urllib.parse.quote(q))
     try:
         res = json.loads(raw).get("results", [])
     except Exception:
         return None
-    tw = [w for w in fold(re.sub(r"\(.*?\)", "", title)).split() if len(w) > 2 and w not in ("the", "and", "for", "museum", "house", "building", "center", "centre", "hall")]
+    tw = [w for w in fold(re.sub(r"\(.*?\)", "", title)).split() if len(w) > 1 and w not in ("the", "and", "for", "of", "de", "la", "le", "museum", "house", "building", "center", "centre", "hall")]
     fw = [w for w in fold(firm).split() if len(w) > 2 and w not in ("and", "architects", "architecture", "partners", "associates", "the")]
     best, score = None, 0
     for r in res[:20]:
@@ -62,7 +63,12 @@ def find_project(title, firm):
         sc = sum(2 for w in tw if w in t) + sum(1 for w in fw if w in t)
         if sc > score:
             best, score = r, sc
-    if not best or score < 2 or (tw and not any(w in fold(best.get("title", "")) for w in tw)):
+    if not best or score < 2:
+        return None
+    bt = fold(best.get("title", "")).split(" / ")[0] if " / " in best.get("title", "") else fold(best.get("title", ""))
+    hit = sum(1 for w in tw if w in bt)
+    need = len(tw) if len(tw) <= 2 else -(-len(tw) * 6 // 10)   # 두 낱말 이하면 모두, 그보다 많으면 60% 이상
+    if tw and hit < max(1, need):
         return None
     return {"u": best["url"].split("?")[0], "title": best.get("title", ""), "year": best.get("year")}
 
@@ -110,11 +116,11 @@ def drawings(project_url):
     return out, photos[:1], len(links)
 
 
-def collect(cache, bid, title, firm):
+def collect(cache, bid, title, firm, query=None):
     key = "ad:" + bid
     if key in cache:
         return cache[key]
-    p = find_project(title, firm)
+    p = find_project(title, firm, query)
     if not p:
         cache[key] = None
         return None

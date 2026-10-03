@@ -137,3 +137,57 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
 .ab__fig--x { display: none; }
 .ab__src { font-size: .74rem; color: #8a7f79; margin: -4px 0 12px !important; }
 .ab__none a { color: #2d5d9f; }
+/* 리노베이션 · 도시재생 */
+.an__tag--r { color: #8a4b12; }
+.rn__flip { display: flex; align-items: stretch; gap: 10px; margin: 6px 0 10px; flex-wrap: wrap; }
+.rn__flip > div { flex: 1 1 220px; background: #fff; border: 1px solid #e4ded8; border-radius: 10px; padding: 10px 14px; display: grid; gap: 2px; }
+.rn__flip > div:last-child { border-color: #4f9d92; background: #f2f9f7; }
+.rn__flip small { color: #8a7f79; font-size: .76rem; }
+.rn__flip b { font-size: 1.05rem; color: #2c2725; }
+.rn__flip span { font-size: .82rem; color: #6b625d; }
+.rn__flip i { align-self: center; font-style: normal; font-size: 1.4rem; color: #4f9d92; }
+.rn__st { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 10px 0; }
+.rn__st > div { background: #faf7f3; border-radius: 8px; padding: 8px 12px; }
+.rn__st b { color: #2f6a62; font-size: .9rem; }
+.rg__ul { margin: 4px 0 10px; padding-left: 20px; }
+.rg__ul li { margin: 3px 0; }
+.rg__lab { font-weight: 700; color: #4d4440; margin: 10px 0 2px !important; }
+.rg__type { display: inline-block; font-size: .74rem; font-weight: 700; color: #fff; background: #4f9d92; border-radius: 5px; padding: 0 7px; margin-right: 4px; }
+.ab__spec td { line-height: 1.6; }
+.rg__k { color: #2f6a62 !important; }
+.rg__role { color: #6b625d; font-size: .88rem; }
+.rg__keep { background: #f2f9f7; border: 1px solid #cfe5e0; border-radius: 10px; padding: 8px 14px; margin: 4px 0 12px; }
+.rg__keep b { color: #2f6a62; }
+/* 항목별 그림 더하기 · 빼기 (관리자) */
+.ni__add { margin-left: 10px; font-size: .74rem; font-weight: 600; color: #2f6a62; background: #fff; border: 1px dashed #4f9d92;
+  border-radius: 999px; padding: 1px 10px; cursor: pointer; vertical-align: 2px; }
+.ni__add:hover { background: #eef7f5; }
+.ni__grid:empty { display: none; }
+.ni__fig, .ni__mine { position: relative; }
+.ni__x { position: absolute; top: 6px; right: 6px; font-size: .72rem; border: 0; border-radius: 6px; padding: 2px 7px;
+  background: rgba(160, 40, 40, .85); color: #fff; cursor: pointer; opacity: 0; transition: opacity .15s; }
+.ni__fig:hover .ni__x, .ni__mine:hover .ni__x { opacity: 1; }
+.ni__mine img { border: 2px solid #cfe5e0; }
+.ni__form { display: grid; gap: 6px; background: #f7f3ef; border: 1px solid #e4ded8; border-radius: 10px; padding: 10px 12px; margin: 6px 0 10px; max-width: 720px; }
+.ni__form input[type=url], .ni__form input[type=text] { width: 100%; padding: 6px 8px; border: 1px solid #d9d2cc; border-radius: 6px; font-size: .86rem; }
+.ni__drop { display: block; border: 2px dashed #c9bfb7; border-radius: 8px; padding: 14px; text-align: center; font-size: .84rem; color: #6b625d; cursor: pointer; background: #fff; }
+.ni__drop.on, .ni__drop:focus { border-color: #4f9d92; outline: none; background: #f2f9f7; }
+.ni__msg { margin: 0 !important; font-size: .8rem; color: #8a4b12; min-height: 1em; }
+.ni__btns { display: flex; gap: 6px; }
+.ni__btns button { border: 1px solid #4f9d92; border-radius: 999px; padding: 3px 14px; background: #fff; color: #2f6a62; cursor: pointer; font-size: .84rem; }
+.ni__go { background: #4f9d92 !important; color: #fff !important; }
+.rg__none { font-size: .84rem; color: #8a7f79; background: #f7f3ef; border-radius: 8px; padding: 6px 12px; }
+.rg__miss { font-size: .84rem; color: #6b625d; background: #fbf7f0; border: 1px dashed #d9c9a8; border-radius: 8px; padding: 6px 12px; margin-top: 10px; }
+.rg__tl th { white-space: nowrap; color: #2f6a62; }
+
+/* 도시재생 종류별 색 — 첨단산업 갈색 · 주거 머스터드 · 업무(초록)+상업(다크레드) · 문화 블루 */
+.rg__type--tech, .an__chips button.rg__type--tech { background: #7a4a24; }
+.rg__type--home, .an__chips button.rg__type--home { background: #d1a21a; }
+.rg__type--biz, .an__chips button.rg__type--biz  { background: linear-gradient(90deg, #2f7a3f 0 50%, #8b1e2d 50% 100%); }
+.rg__type--cult, .an__chips button.rg__type--cult { background: #2b5d9b; }
+.an__chips button.rg__chip { color: #fff; border-color: transparent; }
+.an__chips button.rg__chip:not(.on) { opacity: .62; }
+.an__chips button.rg__chip.on { font-weight: 700; opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2c2725; }
+#rgList details.an > summary { flex-wrap: nowrap; }
+#rgList details.an > summary > .an__t { flex: 1 1 auto; min-width: 0; }
+.rg__law { color: #2b5d9b; text-decoration: underline; text-underline-offset: 2px; }
