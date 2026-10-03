@@ -126,3 +126,9 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
 
 .ab__why ul { margin: 6px 0 0; padding-left: 20px; }
 .ab__why li { margin: 3px 0; }
+.ab__ad { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .84rem; margin: 2px 0 12px;
+  background: #f7f3ef; border-radius: 8px; padding: 8px 12px; }
+.ab__ad span { color: #6b625d; margin-right: 4px; }
+.ab__ad a { color: #2d5d9f; background: #fff; border: 1px solid #d6e0ef; border-radius: 999px; padding: 1px 9px; text-decoration: none; white-space: nowrap; }
+.ab__ad a:hover { background: #eef3fa; }
+.ab__ad a small { color: #8a7f79; font-size: .72rem; }

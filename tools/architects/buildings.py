@@ -43,7 +43,7 @@ B = [
               "지붕은 유리와 콘크리트 지느러미(루버)로 되어 있어 위에서 내려오는 자연광을 거르고 조절합니다."],
 },
 {
- "id": "neues-museum", "t": "Neues Museum", "ko": "노이에스 무제움 (복원)", "y": 2009, "at": "독일 베를린 박물관 섬", "nat": "독일",
+ "id": "neues-museum", "more": ['https://davidchipperfield.com/projects/neues-museum|/Projects/346-Neues-Museum/'], "t": "Neues Museum", "ko": "노이에스 무제움 (복원)", "y": 2009, "at": "독일 베를린 박물관 섬", "nat": "독일",
  "arch": "chipperfield", "archName": "데이비드 치퍼필드 (율리안 하라프와 협업)", "award": "미스 반 데어 로에상 2011", "wiki": "Neues Museum",
  "archAbout": "영국 건축가로 절제된 형태와 복원 철학으로 알려져 있으며 2023년 프리츠커를 받았습니다. 서울 아모레퍼시픽 본사도 그의 작품입니다.",
  "spec": [["위치", "독일 베를린 박물관 섬 (Museumsinsel, Berlin, Germany) — 유네스코 세계유산 (UNESCO World Heritage)"],
@@ -81,7 +81,7 @@ B = [
               "안쪽은 매끈한 노출 콘크리트 벽과 바닥, 매달린 유리 천장 — 재료를 극도로 줄였습니다."],
 },
 {
- "id": "menil", "t": "The Menil Collection", "ko": "메닐 컬렉션", "y": 1987, "at": "미국 휴스턴", "nat": "미국",
+ "id": "menil", "more": ['https://www.rpbw.com/project/the-menil-collection'], "t": "The Menil Collection", "ko": "메닐 컬렉션", "y": 1987, "at": "미국 휴스턴", "nat": "미국",
  "arch": "piano", "archName": "렌초 피아노 (구조: 피터 라이스 · 오브 아럽)", "award": "AIA 25년상 2013", "wiki": "Menil Collection",
  "archAbout": "이탈리아 건축가로 퐁피두 센터(리처드 로저스와) 이후 빛과 구조의 정교함으로 1998년 프리츠커를 받았습니다. 메닐 컬렉션은 그의 단독 첫 미술관입니다.",
  "spec": [["위치", "미국 텍사스 휴스턴 몬트로즈 주택가 (Montrose, Houston, Texas, USA) — 메닐 캠퍼스 (Menil Campus)"],

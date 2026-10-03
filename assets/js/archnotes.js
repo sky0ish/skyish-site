@@ -8,7 +8,7 @@
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610041400";
+const V = "202610041600";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -345,9 +345,34 @@ function bldBody(b, arch) {
       <figcaption>${im.cap ? `<b>${esc(im.cap)}</b> · ` : ""}${esc(im.artist || "")} · ${esc(im.license || "")} · Wikimedia Commons</figcaption></figure>`;
   const figs = (list, none) => (list || []).length ? `<div class="ab__figs">${list.map(fig).join("")}</div>`
     : (none ? `<p class="ab__none">${none}</p>` : "");
-  const look = (refs, word) => {
-    const ad = (refs || []).find((r) => r.t === "ArchDaily");
-    return ad ? `자유 이용 그림이 없어 ${word} 은(는) <a href="${esc(ad.u)}" target="_blank" rel="noopener">ArchDaily ↗</a> 에서 보실 수 있습니다.` : "";
+  /* ArchDaily 의 그 그림 한 장 한 장으로 바로 가는 링크 (그림은 저작권이 있어 싣지 않고 이어 줍니다) */
+  const AD = b.ad || null;
+  const adLinks = (kind) => {
+    if (!AD && !(b.more || []).some((d) => d.kind === kind)) return "";
+    const list = ((AD && AD.drawings) || []).filter((d) => d.kind === kind);
+    const seen = {};
+    const one = (d) => {
+      seen[d.label] = (seen[d.label] || 0) + 1;
+      const n = list.filter((x) => x.label === d.label).length > 1 ? " " + seen[d.label] : "";
+      return `<a href="${esc(d.u)}" target="_blank" rel="noopener">${esc(d.label + n)} ↗</a>`;
+    };
+    const other = (b.more || []).filter((d) => d.kind === kind);
+    const seen2 = {};
+    const two = (d) => {
+      const k = d.site + d.label;
+      seen2[k] = (seen2[k] || 0) + 1;
+      const n = other.filter((x) => x.site + x.label === k).length > 1 ? " " + seen2[k] : "";
+      return `<a href="${esc(d.u)}" target="_blank" rel="noopener">${esc(d.label + n)} <small>${esc(d.site)}</small> ↗</a>`;
+    };
+    if (list.length || other.length) return list.map(one).join("") + other.map(two).join("");
+    if (kind === "concept" || kind === "build")
+      return AD && AD.photo ? `<a href="${esc(AD.photo)}" target="_blank" rel="noopener">ArchDaily 사진 갤러리 ↗</a>` : "";
+    return AD ? `<a href="${esc(AD.u)}" target="_blank" rel="noopener">ArchDaily 프로젝트 페이지 ↗</a>` : "";
+  };
+  const look = (kind, has) => {
+    const l = adLinks(kind);
+    if (!l) return "";
+    return `<p class="ab__ad"><span>${has ? "더 보기" : "자유 이용 그림이 없어 여기 싣지 못했습니다 — 바로 보기"}</span>${l}</p>`;
   };
   const A = arch ? `<p><a href="gallery.html?cat=architects#ar-${esc(arch.id)}" class="ab__arch">${titleHtml(arch)} →</a></p>` : "";
   return `<div class="an__body">
@@ -356,15 +381,15 @@ function bldBody(b, arch) {
     <h4>2) 건축개요</h4>
     <table class="ab__spec"><tbody>${(b.spec || []).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table>
     <h4>3) 건축물 컨셉 및 우수한 이유</h4>
-    ${figs(b.imgs && b.imgs.concept, look(b.refs, "조감도 · 분해도 · 컨셉드로잉"))}
+    ${figs(b.imgs && b.imgs.concept, "")}${look("concept", b.imgs && b.imgs.concept.length)}
     ${paras(b.concept)}
     ${b.quote ? `<blockquote class="ab__q">${esc(b.quote)}<small>— 건축가의 설명 (요약 · 번역)</small></blockquote>` : ""}
     <div class="ab__why"><b>우수한 이유</b>${Array.isArray(b.why) ? `<ul>${b.why.map((w) => `<li>${esc(w)}</li>`).join("")}</ul>` : ` ${esc(b.why || "")}`}</div>
     <h4>4) 건축물 공간특성 — 평면도 · 입면도 · 단면도</h4>
-    ${figs(b.imgs && b.imgs.plan, look(b.refs, "평면도 · 입면도"))}
+    ${figs(b.imgs && b.imgs.plan, "")}${look("plan", b.imgs && b.imgs.plan.length)}
     ${paras(b.space)}
     <h4>5) 건축물 재료 및 구조</h4>
-    ${figs(b.imgs && b.imgs.build, "")}
+    ${figs(b.imgs && b.imgs.build, "")}${look("build", b.imgs && b.imgs.build.length)}
     ${paras(b.material)}
     <h4 class="an__refh">References</h4>
     <p class="an__refs an__refs--big">${refsHtml(b.refs)}</p>

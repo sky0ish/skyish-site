@@ -212,7 +212,7 @@ def main():
 
 def buildings():
     """건축물 노트 — tools/architects/buildings.py + 위키미디어 공용 그림 → assets/data/buildings.json"""
-    import bimages
+    import bimages, adlinks
     ns = {}
     f = os.path.join(HERE, "buildings.py")
     exec(compile(io.open(f, encoding="utf-8").read(), f, "exec"), ns)
@@ -242,12 +242,25 @@ def buildings():
             refs.append({"t": "Wikipedia", "u": wurl(wm["title"])})
             if wm["ko"]: refs.append({"t": "위키백과", "u": wurl(wm["ko"], "ko")})
         if cat: refs.append({"t": "Wikimedia Commons", "u": "https://commons.wikimedia.org/wiki/Category:" + urllib.parse.quote(cat.replace(" ", "_"))})
-        refs.append({"t": "ArchDaily", "u": adurl(b["t"])})
+        # ArchDaily — 그 건축물의 프로젝트 페이지와 도면 한 장 한 장의 페이지
+        firm = ""
+        for k, v in b.get("spec", []):
+            if k.startswith("설계") or k.startswith("복원 설계"):
+                m = re.search(r"\(([^)]+)\)", v)
+                firm = m.group(1) if m else ""
+                if k.startswith("복원"):
+                    break
+        ad = adlinks.collect(cache, "b:" + b["id"], b["t"], firm)
+        refs.append({"t": "ArchDaily", "u": ad["u"] if ad else adurl(b["t"])})
         if wd.get("site") and own: refs.append({"t": "공식 홈페이지", "u": wd["site"]})
         refs += b.get("refs", [])
-        out.append(dict(b, imgs=imgs, refs=refs))
-        print("%-20s 분류:%-28s 파일 %3d → 컨셉 %d · 도면 %d · 구조 %d" % (b["id"], (cat or "-")[:28], nfile,
-              len(imgs["concept"]), len(imgs["plan"]), len(imgs["build"])))
+        more = adlinks.more_drawings(cache, "b:" + b["id"], b["t"], b.get("more", []))
+        if more.get("wa"):
+            refs.append({"t": "WikiArquitectura", "u": more["wa"]})
+        out.append(dict(b, imgs=imgs, refs=refs, ad=ad, more=more.get("drawings", [])))
+        print("%-20s 분류:%-28s 파일 %3d → 컨셉 %d · 도면 %d · 구조 %d · ArchDaily %s" % (b["id"], (cat or "-")[:28], nfile,
+              len(imgs["concept"]), len(imgs["plan"]), len(imgs["build"]),
+              ("도면 %d" % len(ad["drawings"])) if ad else "못 찾음") + " · 그 밖 도면 %d" % len(out[-1]["more"]))
     io.open(CACHE, "w", encoding="utf-8").write(json.dumps(cache, ensure_ascii=False))
     io.open(BOUT, "w", encoding="utf-8").write(json.dumps({"made": time.strftime("%Y-%m-%d"), "items": out},
                                                         ensure_ascii=False, separators=(",", ":")))
