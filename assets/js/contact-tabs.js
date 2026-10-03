@@ -11,7 +11,9 @@
 import { initAddr } from "./addressbook.js?v=202609170900";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
-import { initTodo } from "./todo.js?v=202609111800";
+import { initTodo } from "./todo.js?v=202610032000";
+import { initCost } from "./cost.js?v=202610032200";
+import { initGrocery } from "./grocery.js?v=202610032100";
 import { initNews } from "./news.js?v=202610031600";
 
 export async function initContactTabs() {
@@ -24,6 +26,8 @@ export async function initContactTabs() {
     news:  document.getElementById("newssec"),
     addr:  document.getElementById("addrsec"),
     todo:  document.getElementById("todosec"),
+    buy:   document.getElementById("buysec"),     // To BUY — 살 것 목록 (관리자)
+    cost:  document.getElementById("costsec"),    // Cost of Living — 카드 내역 생활비 (관리자)
   };
 
   function show(k) {
@@ -67,16 +71,22 @@ export async function initContactTabs() {
 
   /* 주소록·Sites 는 관리자에게만 열립니다.
      각 모듈이 스스로 판단해 아니면 자기 자리를 지웁니다. */
-  const [okAddr, okSites, okTodo] = await Promise.all([
+  const [okAddr, okSites, okTodo, okBuy, okCost] = await Promise.all([
     initAddr().catch(() => false),
     initSites("sitesapp", "w-sites").catch(() => false),
     initTodo().catch(() => false),
+    initTodo("buyapp", "buysec", "buy").catch(() => false),
+    initCost("costapp", "costsec").catch(() => false),
   ]);
 
   const btn = (k) => tabs.querySelector(`button[data-p="${k}"]`);
   if (!okOrgs && !okSites) { const b = btn("web"); if (b) b.remove(); }
   if (okAddr)  btn("addr").hidden = false;  else btn("addr").remove();
   if (okTodo)  btn("todo").hidden = false;  else btn("todo").remove();
+  if (okBuy)   btn("buy").hidden = false;   else btn("buy").remove();
+  if (okCost)  btn("cost").hidden = false;  else btn("cost").remove();
+  /* 장본 것 · 제철 · 만들 수 있는 요리 — 장볼 것 아래 */
+  if (okBuy) initGrocery("groapp").catch(() => {});
   /* 여섯째 단추 — 달력(APP 첫 화면)으로 돌아가기. 관리자에게만 (달력이 관리자 것이라). */
   const cal = document.getElementById("cCal");
   if (cal) { if (okTodo) cal.hidden = false; else cal.remove(); }

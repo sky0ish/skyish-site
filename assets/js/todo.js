@@ -12,7 +12,6 @@ import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as TL from "./todo-list.js?v=202609101700";
 
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
-const LS_KEY = "skyish-todos";
 const NL = String.fromCharCode(10);
 
 const esc = (s) => String(s == null ? "" : s)
@@ -22,7 +21,20 @@ const esc = (s) => String(s == null ? "" : s)
 const noTable = (e) => !!e && /does not exist|relation|schema cache|42P01|Could not find the table/i
   .test(String(e.message || e.details || e.hint || ""));
 
-export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
+/* 같은 틀을 「To BUY」(살 것 목록) 에도 씁니다 — 표·저장소·화면 이름표만 다릅니다.
+   한 페이지에 둘이 함께 떠도 id 가 겹치지 않게 앞머리(pre)를 달리 붙입니다. */
+const KINDS = {
+  todo: { table: "todos",  ls: "skyish-todos",  pre: "td", sql: "auth/todo_setup.sql",
+          ph: "곧 해야 할 일을 적고 Enter", aria: "할 일", left: "남은 일",
+          empty: "아직 적은 일이 없습니다 — 위에 적어 보세요.", name: "해야할일" },
+  buy:  { table: "tobuys", ls: "skyish-tobuys", pre: "tb", sql: "auth/tobuy_setup.sql",
+          ph: "살 것을 적고 Enter", aria: "살 것", left: "살 것",
+          empty: "아직 적은 살 것이 없습니다 — 위에 적어 보세요.", name: "살 것 목록" },
+};
+
+export async function initTodo(mountId = "todoapp", sectionId = "todosec", kind = "todo") {
+  const K = KINDS[kind] || KINDS.todo;
+  const T = K.table, LS_KEY = K.ls, P = K.pre;
   const mount = document.getElementById(mountId);
   if (!mount) return false;
   const section = document.getElementById(sectionId);
@@ -41,7 +53,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
 
   let migrated = 0;                    // 이번에 브라우저 저장소에서 표로 옮긴 줄 수
   async function load() {
-    let r = await sb.from("todos").select("*").order("created_at", { ascending: true });
+    let r = await sb.from(T).select("*").order("created_at", { ascending: true });
     if (r.error) {
       if (!noTable(r.error)) throw r.error;
       local = true; rows = readLocal();
@@ -54,7 +66,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
       try {
         migrated = await moveToTable();
         if (migrated) {
-          r = await sb.from("todos").select("*").order("created_at", { ascending: true });
+          r = await sb.from(T).select("*").order("created_at", { ascending: true });
           if (!r.error) rows = r.data || [];
         }
       } catch (e) { /* 못 옮겨도 표의 것은 보여 줍니다 */ }
@@ -69,7 +81,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
       rows.push(Object.assign({ id: "l" + Date.now() + Math.random().toString(36).slice(2, 6) }, it));
       writeLocal(); return;
     }
-    const r = await sb.from("todos").insert(Object.assign({ created_by: user.id }, it)).select().single();
+    const r = await sb.from(T).insert(Object.assign({ created_by: user.id }, it)).select().single();
     if (r.error) throw r.error;
     rows.push(r.data);
   }
@@ -81,7 +93,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     if ("sort" in change && change.sort !== it.sort) p.sort = change.sort;
     if (!Object.keys(p).length) return;
     if (!local) {
-      const r = await sb.from("todos").update(p).eq("id", id);
+      const r = await sb.from(T).update(p).eq("id", id);
       if (r.error) throw r.error;
     }
     Object.assign(it, p);
@@ -90,7 +102,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
 
   async function remove(id) {
     if (!local) {
-      const r = await sb.from("todos").delete().eq("id", id);
+      const r = await sb.from(T).delete().eq("id", id);
       if (r.error) throw r.error;
     }
     rows = rows.filter((x) => x.id !== id);
@@ -110,7 +122,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     if (!mine.length) return 0;
     let n = 0;
     for (const it of mine) {
-      const r = await sb.from("todos").insert({
+      const r = await sb.from(T).insert({
         created_by: user.id, text: it.text, due: it.due || null, done: !!it.done,
         star: !!it.star, done_at: it.done_at || null, created_at: it.created_at || new Date().toISOString(),
         sort: typeof it.sort === "number" ? it.sort : null,
@@ -124,24 +136,24 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
   /* ── 화면 ── */
   mount.innerHTML =
     '<div class="todo">' +
-      '<div class="todo__head"><h3 id="tdTitle"></h3><p class="todo__count" id="tdCount"></p></div>' +
+      '<div class="todo__head"><h3 id="' + P + 'Title"></h3><p class="todo__count" id="' + P + 'Count"></p></div>' +
       /* 한 줄 — 글 칸 · 작은 날짜 단추(📅) · 추가.  날짜 칸은 숨겨 두고 단추가 엽니다
          (「내가 해야할일과 날짜선택이 두줄로 나눠져. 한줄로, 날짜선택을 작은 버튼으로」) */
-      '<form class="todo__add" id="tdAdd" autocomplete="off">' +
-        '<input type="text" id="tdText" maxlength="300" placeholder="곧 해야 할 일을 적고 Enter" aria-label="할 일">' +
-        '<button type="button" class="todo__duebtn" id="tdDueBtn" title="마감 날짜 (없어도 됩니다)" aria-label="마감 날짜">📅</button>' +
-        '<input type="date" id="tdDue" class="todo__duein" aria-label="마감" tabindex="-1">' +
+      '<form class="todo__add" id="' + P + 'Add" autocomplete="off">' +
+        '<input type="text" id="' + P + 'Text" maxlength="300" placeholder="' + esc(K.ph) + '" aria-label="' + esc(K.aria) + '">' +
+        '<button type="button" class="todo__duebtn" id="' + P + 'DueBtn" title="마감 날짜 (없어도 됩니다)" aria-label="마감 날짜">📅</button>' +
+        '<input type="date" id="' + P + 'Due" class="todo__duein" aria-label="마감" tabindex="-1">' +
         '<button type="submit" class="nbtn nbtn--go todo__addbtn" title="추가">＋</button>' +
       "</form>" +
-      '<p class="todo__hint" id="tdHint" hidden></p>' +
-      '<ul class="todo__list" id="tdList"></ul>' +
-      '<p class="nempty" id="tdEmpty" hidden>아직 적은 일이 없습니다 — 위에 적어 보세요.</p>' +
-      '<div class="todo__foot" id="tdFoot" hidden>' +
-        '<button type="button" class="nbtn" id="tdClear">완료한 것 모두 지우기</button>' +
+      '<p class="todo__hint" id="' + P + 'Hint" hidden></p>' +
+      '<ul class="todo__list" id="' + P + 'List"></ul>' +
+      '<p class="nempty" id="' + P + 'Empty" hidden>' + esc(K.empty) + '</p>' +
+      '<div class="todo__foot" id="' + P + 'Foot" hidden>' +
+        '<button type="button" class="nbtn" id="' + P + 'Clear">완료한 것 모두 지우기</button>' +
       "</div>" +
     "</div>";
 
-  const $ = (id) => document.getElementById(id);
+  const $ = (id) => document.getElementById(id.replace(/^td/, P));
   const say = (t) => { const h = $("tdHint"); h.hidden = !t; h.innerHTML = t || ""; };
 
   /* 📅 단추 → 숨은 날짜 칸을 엽니다. 고르면 단추에 「9.18」 처럼 보입니다 */
@@ -180,7 +192,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     $("tdTitle").textContent = TL.todayTitle();
     const c = TL.counts(rows);
     $("tdCount").textContent = c.total
-      ? "남은 일 " + c.open + (c.star ? " · 중요 " + c.star : "") + (c.today ? " · 오늘까지 " + c.today : "") +
+      ? K.left + " " + c.open + (c.star ? " · 중요 " + c.star : "") + (c.today ? " · 오늘까지 " + c.today : "") +
         " · 완료 " + c.done
       : "";
     const list = TL.sortItems(rows);
@@ -188,15 +200,15 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
     $("tdEmpty").hidden = list.length > 0;
     $("tdFoot").hidden = !c.done;
     if (local) {
-      say("지금은 <b>이 브라우저에만</b> 저장됩니다 (todos 표가 아직 없습니다). " +
-          "다른 기기에서도 보시려면 Supabase → SQL Editor 에서 <code>auth/todo_setup.sql</code> 을 한 번 돌리신 뒤 " +
-          '<a href="#" id="tdMove">표로 옮기기</a> 를 누르세요.');
+      say("지금은 <b>이 브라우저에만</b> 저장됩니다 (" + T + " 표가 아직 없습니다). " +
+          "다른 기기에서도 보시려면 Supabase → SQL Editor 에서 <code>" + K.sql + "</code> 을 한 번 돌리신 뒤 " +
+          '<a href="#" id="' + P + 'Move">표로 옮기기</a> 를 누르세요.');
       const mv = $("tdMove");
       if (mv) mv.addEventListener("click", async (e) => {
         e.preventDefault();
         try {
-          const probe = await sb.from("todos").select("id").limit(1);
-          if (probe.error) { alert("아직 todos 표가 없습니다 — SQL 을 먼저 돌려 주세요." + NL + probe.error.message); return; }
+          const probe = await sb.from(T).select("id").limit(1);
+          if (probe.error) { alert("아직 " + T + " 표가 없습니다 — SQL 을 먼저 돌려 주세요." + NL + probe.error.message); return; }
           const n = await moveToTable();
           await load(); render();
           alert(n + "줄을 표로 옮겼습니다.");
@@ -302,7 +314,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec") {
   });
 
   try { await load(); }
-  catch (err) { mount.innerHTML = '<p class="nempty">해야할일을 읽지 못했습니다 — ' + esc(err && err.message) + "</p>"; return true; }
+  catch (err) { mount.innerHTML = '<p class="nempty">' + K.name + '을(를) 읽지 못했습니다 — ' + esc(err && err.message) + "</p>"; return true; }
   render();
   return true;
 }

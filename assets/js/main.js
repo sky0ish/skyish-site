@@ -81,6 +81,8 @@
         { label: "주소록",   file: "contact.html?p=addr",  own: true },
         { label: "Websites", file: "contact.html?p=web"    },
         { label: "NEWS",     file: "contact.html?p=news"   },
+        { label: "To BUY",   file: "contact.html?p=buy",   own: true },
+        { label: "Cost of Living", file: "contact.html?p=cost", own: true },
         { label: "To Me",   file: "contact.html"          }
       ] }
     ],
