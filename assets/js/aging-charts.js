@@ -152,7 +152,7 @@
     chartStack(items, LOGIC, logicName, short, go);
     chartUse(top, short, go);
     chartWeights(meta, LOGIC, logicName);
-    chartScatter(items, short, go);
+    chartScatter(items, short, go, LOGIC[0]);
     chartMix(items, short, go);
     chartHeat(items, short);
     chartRecov(items, short, go);
@@ -310,7 +310,7 @@
   /* ⑦ 30년↑ 산단 유형 — 논문 g3_typology 와 같은 축:
        x = 최근접 철도역 거리(m, 로그), y = 도시쇠퇴 활용도 가중치 + 사업체 감소율
        기준선 역세권 1.5km · 산업계 쇠퇴 0.6 → 네 칸이 ⑦ 유형화 표의 Ⅰ~Ⅳ */
-  function chartScatter(items, short, go) {
+  function chartScatter(items, short, go, aging) {   // aging = 노후도 축 열쇠 (「① 노후도(30)」)
     var card = cardOf("scatter"); if (!card) return;
     var GX = 1500, GY = 0.6, X0 = 10;
     var pts = items.filter(function (x) { return x.unit_type === "산업단지" && x["핵심필터_30년노후"] && x.dist_station_m != null; });
@@ -370,6 +370,9 @@
         tip: function (i) {
           var u = pts[i];
           return "<b>" + esc(short(u)) + "</b> " + (u["시군"] ? '<span class="ag-mute">' + esc(u["시군"]) + "</span>" : "") +
+            row(null, "노후년도", u["노후년도"] != null ? "지정 후 " + Math.round(u["노후년도"]) + "년" : "—") +
+            row(null, "30년 이상 건물", pct(u.old30_ratio_gfa) + ' <span class="ag-mute">(연면적)</span>') +
+            (aging ? row(S[0], "노후도 점수", (Math.round((u[aging] || 0) * 10) / 10) + " / 30") : "") +
             row(null, "최근접역", esc(u.nearest_station || "") + " " + num(Math.round(u.dist_station_m)) + " m") +
             row(null, "쇠퇴 가중치", (u.decl_w != null ? u.decl_w : "—") + " · " + esc((u.decl_class || "—").replace("지역", ""))) +
             row(null, "사업체 감소", u.busi_decline == null ? "자료 없음" : "↓" + Math.round(u.busi_decline * 100) + "%") +
