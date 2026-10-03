@@ -8,7 +8,7 @@
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610040900";
+const V = "202610041400";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -263,8 +263,10 @@ export async function drawArchitects(el, qv) {
   const all = d.items;
   const byId = Object.fromEntries(all.map((a) => [a.id, a]));
   const awardName = Object.fromEntries(d.awards.architect.concat(d.awards.building).map((a) => [a.id, a.ko]));
-  const pz = all.filter((a) => a.pritzker).sort((a, b) => a.pritzker - b.pritzker);
-  const others = all.filter((a) => !a.pritzker);
+  /* 수상 연도 차례 — 최근 수상을 위로, 옛 수상을 아래로 */
+  const lastAw = (a) => Math.max(0, ...(a.awards || []).map((x) => x.y));
+  const pz = all.filter((a) => a.pritzker).sort((a, b) => b.pritzker - a.pritzker);
+  const others = all.filter((a) => !a.pritzker).sort((a, b) => lastAw(b) - lastAw(a));
   const q = fold(qv || "").trim();
   const hit = (a) => !q || fold([a.name, a.ko, a.person, a.firm, a.nat, a.why, (a.works || []).map((w) => w.ko + " " + w.t).join(" ")].join(" ")).includes(q);
   let filt = "all";
@@ -282,7 +284,7 @@ export async function drawArchitects(el, qv) {
     <section class="annote">
       <div class="an__head">
         <h3>건축가 노트</h3>
-        <p>ArchDaily 가 다루는 건축가들 — <b>프리츠커 수상자 ${pz.length}명</b>(1979~)을 먼저, 그다음 세계적 건축가 ${others.length}명.
+        <p>ArchDaily 가 다루는 건축가들 — <b>프리츠커 수상자 ${pz.length}명</b>(최근 수상부터)을 먼저, 그다음 세계적 건축가 ${others.length}명(최근 수상부터).
            각 글은 1. 이력 · 2. 유명해진 이유 · 3. 건축특성 및 이론 · 4. 건축가 및 예술가 네트워크 · 5. 대표작품 차례입니다.
            생몰일 · 수상 연도는 위키데이터 · 위키백과에서, 사진은 위키미디어 공용의 자유 이용 사진만 씁니다.</p>
         <div class="an__chips">
@@ -336,6 +338,7 @@ export async function drawArchitects(el, qv) {
 }
 
 /* ── 건축물 노트 그리기 (Architecture) ── */
+const paras = (v) => (Array.isArray(v) ? v : v ? [v] : []).map((p) => `<p>${esc(p)}</p>`).join("");
 function bldBody(b, arch) {
   const fig = (im) => `<figure class="ab__fig">
       <a href="${esc(im.page)}" target="_blank" rel="noopener"><img src="${esc(im.src)}" alt="${esc(im.cap || "")}" loading="lazy"></a>
@@ -349,20 +352,20 @@ function bldBody(b, arch) {
   const A = arch ? `<p><a href="gallery.html?cat=architects#ar-${esc(arch.id)}" class="ab__arch">${titleHtml(arch)} →</a></p>` : "";
   return `<div class="an__body">
     <h4>1) 건축가 개요</h4>
-    ${A}<p>${esc(b.archAbout || "")}</p>
+    ${A}${paras(b.archAbout)}
     <h4>2) 건축개요</h4>
     <table class="ab__spec"><tbody>${(b.spec || []).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table>
     <h4>3) 건축물 컨셉 및 우수한 이유</h4>
     ${figs(b.imgs && b.imgs.concept, look(b.refs, "조감도 · 분해도 · 컨셉드로잉"))}
-    ${(b.concept || []).map((p) => `<p>${esc(p)}</p>`).join("")}
+    ${paras(b.concept)}
     ${b.quote ? `<blockquote class="ab__q">${esc(b.quote)}<small>— 건축가의 설명 (요약 · 번역)</small></blockquote>` : ""}
-    <p class="ab__why"><b>우수한 이유</b> ${esc(b.why || "")}</p>
+    <div class="ab__why"><b>우수한 이유</b>${Array.isArray(b.why) ? `<ul>${b.why.map((w) => `<li>${esc(w)}</li>`).join("")}</ul>` : ` ${esc(b.why || "")}`}</div>
     <h4>4) 건축물 공간특성 — 평면도 · 입면도 · 단면도</h4>
     ${figs(b.imgs && b.imgs.plan, look(b.refs, "평면도 · 입면도"))}
-    ${(b.space || []).map((p) => `<p>${esc(p)}</p>`).join("")}
+    ${paras(b.space)}
     <h4>5) 건축물 재료 및 구조</h4>
     ${figs(b.imgs && b.imgs.build, "")}
-    ${(b.material || []).map((p) => `<p>${esc(p)}</p>`).join("")}
+    ${paras(b.material)}
     <h4 class="an__refh">References</h4>
     <p class="an__refs an__refs--big">${refsHtml(b.refs)}</p>
   </div>`;
@@ -386,7 +389,7 @@ export async function drawBuildings(el, qv) {
       ${items.length ? `<ol class="an__list">${items.map((x) => `
         <li><details class="an" id="bd-${esc(x.id)}" data-id="${esc(x.id)}">
           <summary><span class="an__t"><span class="an__tag an__tag--b">&lt;${esc(x.award || "")}&gt;</span> <span class="an__nat">[${esc(x.nat || "")}]</span>
-            <b>${esc(x.ko)}</b>_${esc(x.t)} <span class="an__life">(${esc(x.y)} · ${esc(x.archName || "")})</span></span></summary>
+            <b>${esc(x.ko)}</b>_${esc(x.t)} <span class="an__life">(준공 ${esc(x.y)} · ${esc(x.archName || "")})</span></span></summary>
         </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 건축물 노트가 없습니다.</p>'}
       <h3 class="an__sec" id="ab-awards">건축물에 주는 상</h3>
       <p class="an__note">건축가 이름을 누르면 Architects 의 건축가 노트로 갑니다. 기준일 ${esc(d.made)}.</p>

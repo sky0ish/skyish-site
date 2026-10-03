@@ -216,6 +216,16 @@ def buildings():
     ns = {}
     f = os.path.join(HERE, "buildings.py")
     exec(compile(io.open(f, encoding="utf-8").read(), f, "exec"), ns)
+    f2 = os.path.join(HERE, "buildings_more.py")             # 더 자세한 본문으로 덮어쓰기
+    if os.path.exists(f2):
+        ns2 = {}
+        exec(compile(io.open(f2, encoding="utf-8").read(), f2, "exec"), ns2)
+        for b in ns["B"]:
+            b.update(ns2["D"].get(b["id"], {}))
+    for b in ns["B"]:                                          # 수상 연도(가장 최근) — 최근 수상을 위로
+        ys = [int(y) for y in re.findall(r"(?:19|20)\d\d", b.get("award", ""))]
+        b["ay"] = max(ys) if ys else b.get("y", 0)
+    ns["B"].sort(key=lambda b: -b["ay"])
     print("■ 건축물")
     out = []
     for b in ns["B"]:
