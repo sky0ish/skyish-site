@@ -5,8 +5,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>경기도 노후 산업단지 — 역세권과 인구밀도 — Jee-Hyun NAM</title>
-  <meta name="description" content="경기도 산업단지 229곳의 노후년도를 철도역 역세권·인구밀도 격자와 겹쳐 확대해 보는 지도. 역을 누르면 반경 안 산단을 세고, 거리를 잴 수 있습니다.">
+  <title>경기도 노후 산업단지 활용 방향 — Jee-Hyun NAM</title>
+  <meta name="description" content="경기도 산업단지 215곳과 산단 밖 공업지역 102곳을 노후도·역세권·도시쇠퇴·토지특성 네 축으로 매겨 전환 우선순위(A~D)와 상업·주거·업무 용도를 가린 분석. 움직이는 지도와 차트로 봅니다.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,180 +17,133 @@
   <link rel="stylesheet" href="assets/css/style.css?v=202609112000">
   <!-- 자료(assets/data/aging/)는 공개 저장소에 함께 둡니다 — 화면은 위 guard.js 로 회원만 -->
   <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css?v=202609010300">
-  <style>
-    /* ① 지도 — QGIS 화면과 같은 흰 바탕 */
-    .ag-map .fb-map{background:#fff}
-    .ag-grid{display:grid;gap:1rem;grid-template-columns:minmax(0,2.2fr) minmax(300px,1fr);align-items:start}
-    @media (max-width:900px){.ag-grid{grid-template-columns:minmax(0,1fr)}}
-    .ag-right{display:grid;gap:1rem;align-content:start}
-    .ag-side{max-height:360px;overflow:auto;font-size:.9rem}
-    .ag-side h4{margin:0 0 .3rem;font-size:1rem}
-    .ag-side .sub{color:#6b6360;font-size:.82rem;margin:0 0 .6rem}
-    .ag-list{list-style:none;margin:.5rem 0 0;padding:0}
-    .ag-list li{padding:.42rem 0;border-top:1px solid rgba(0,0,0,.08);cursor:pointer;display:flex;gap:.5rem;align-items:baseline}
-    .ag-list li:hover{background:#f7f4ef}
-    .ag-list .nm{flex:1 1 auto;min-width:0}
-    .ag-list .age{font-size:.76rem;padding:.05rem .4rem;border-radius:999px;color:#fff;background:#8b8280;flex:0 0 auto}
-    .ag-list .km{color:#8b8280;font-variant-numeric:tabular-nums;flex:0 0 auto;font-size:.84rem}
-    .ag-kv{display:grid;grid-template-columns:auto 1fr;gap:.2rem .7rem;font-size:.88rem;margin:.4rem 0 .6rem}
-    .ag-kv b{color:#6b6360;font-weight:500}
-    .ag-hint{color:#6b6360;font-size:.84rem;line-height:1.7}
-    /* 이름표 — 시군은 진한 회색, 산단은 파란색 (QGIS 화면 그대로) */
-    .lbl{background:none;border:0;box-shadow:none;padding:0;white-space:nowrap;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;pointer-events:none}
-    .lbl::before{display:none}
-    .lbl-si{color:#323232;font-size:13px;font-weight:500;letter-spacing:.02em;paint-order:stroke fill;-webkit-text-stroke:3px rgba(255,255,255,.9);
-            text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 0 4px #fff}
-    .lbl-dan{color:#3232fa;font-size:11px;font-weight:600;paint-order:stroke fill;-webkit-text-stroke:3px rgba(255,255,255,.95);
-             text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 0 4px #fff}
-    .lbl-st{color:#1c1a19;font-size:11px;background:rgba(255,255,255,.92);border:1px solid #cfc8bf;border-radius:4px;padding:.15rem .4rem;box-shadow:0 1px 3px rgba(0,0,0,.15)}
-    .z-lo .lbl-dan{display:none}
-    .no-si .lbl-si{display:none}
-    .no-dan .lbl-dan{display:none}
-    .measuring .leaflet-container{cursor:crosshair}
-    .ag-ruler{background:#1c1a19;color:#fff;font-size:11px;border:0;border-radius:4px;padding:.15rem .45rem;box-shadow:none;font-variant-numeric:tabular-nums}
-    .ag-ruler::before{display:none}
-    /* 범례 — 지도 밖 오른쪽 카드, 두 칸 */
-    .ag-legend{display:grid;grid-template-columns:1fr 1fr;gap:.18rem .8rem;align-items:start;font-size:.78rem}
-    .ag-legend h4{grid-column:1/-1;margin:0 0 .2rem;font-size:1rem}
-    .ag-legend b{grid-column:1/-1;font-size:.72rem;color:#6b6360;margin:.35rem 0 .05rem;font-weight:600;letter-spacing:.03em}
-    .ag-legend span{display:flex;align-items:center;gap:.4rem;font-size:.76rem;white-space:nowrap;min-width:0}
-    .ag-legend span em{font-style:normal;color:#8b8280;margin-left:.15rem}
-    .ag-legend i{display:inline-block;width:12px;height:12px;border:1px solid rgba(0,0,0,.3);border-radius:2px;flex:0 0 auto}
-    .ag-legend i.buf{background:#c6dbef;border-color:#5b8fbf;border-radius:50%}
-    .ag-legend i.zn{background:rgba(232,180,80,.65);border-color:#a16207}
-    .ag-legend i.st{border-radius:50%;background:#fff;border:1.5px solid #000;position:relative}
-    .ag-legend i.st::after{content:"";position:absolute;left:3px;top:3px;width:4px;height:4px;border-radius:50%;background:#000}
-    .ag-legend i.zone{background:rgba(255,23,68,.55);border-color:#b3001b}
-    .ag-legend__t{all:unset;cursor:pointer;font-size:.74rem;font-weight:600;color:var(--teal-text);justify-self:end}
-    /* ④ 미니 지도 둘 — 지도 | 범례 카드, 전체화면 단추 */
-    .ag-mini{display:grid;gap:.8rem;grid-template-columns:minmax(0,1fr) minmax(220px,.5fr);align-items:start;margin-top:.8rem}
-    @media (max-width:900px){.ag-mini{grid-template-columns:minmax(0,1fr)}}
-    .ag-mini .fb-map{height:440px;min-height:300px;background:#fff}
-    .ag-mini .fb-mapbox:fullscreen{background:#fff}
-    .ag-mini .fb-mapbox:fullscreen .fb-map{height:100vh}
-    .ag-fs{position:absolute;top:10px;right:10px;z-index:600;all:unset;cursor:pointer;background:#fff;border:1px solid #cfc8bf;border-radius:6px;padding:.25rem .55rem;font-size:.8rem;box-shadow:0 1px 3px rgba(0,0,0,.15);position:absolute}
-    .ag-fs:hover{border-color:var(--teal);color:var(--teal-text)}
-    .ag-mini h3{margin:0 0 .3rem;font-size:1rem}
-    .ag-mini .fb-sub{margin:.4rem 0 0}
-    .ag-legend.folded > *:not(.ag-legend__t):not(h4){display:none}
-    /* 그림 확대 — 눌러서 크게, 휠로 더 크게, 끌어서 이동 */
-    .ag-zoom{cursor:zoom-in}
-    .ag-lb{position:fixed;inset:0;z-index:2000;background:rgba(20,18,16,.92);display:none;align-items:center;justify-content:center;overflow:hidden}
-    .ag-lb.on{display:flex}
-    .ag-lb img{max-width:none;user-select:none;cursor:grab;transform-origin:0 0;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#fff}
-    .ag-lb img.drag{cursor:grabbing}
-    .ag-lb__x{position:absolute;top:14px;right:16px;all:unset;cursor:pointer;color:#fff;font-size:1.6rem;line-height:1;padding:.2rem .5rem;border-radius:6px;background:rgba(255,255,255,.12)}
-    .ag-lb__hint{position:absolute;left:16px;bottom:14px;color:#ddd;font-size:.8rem}
-    .ag-lb__cap{position:absolute;left:16px;top:16px;right:70px;color:#fff;font-size:.9rem;text-shadow:0 1px 3px #000}
-    .fb-table th button .arr{font-size:.7em;color:#c3bcb8;margin-left:.2rem}
-    .fb-table th.on button .arr{color:var(--teal)}
-    /* ② 표 */
-    .ag-stat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:0 0 1rem}
-    .ag-stat div{padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-md)}
-    .ag-stat b{display:block;font-size:1.4rem;font-family:var(--font-display);font-weight:400;line-height:1.15}
-    .ag-stat span{font-size:.76rem;color:var(--mauve)}
-    .fb-table td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-    .fb-table th button{all:unset;cursor:pointer;font:inherit;color:inherit}
-    .fb-table th button:hover{color:var(--teal-text)}
-    .fb-table th.on button{color:var(--teal-text);font-weight:700}
-    .ag-shot{margin-top:1rem;border:1px solid var(--line-soft);border-radius:var(--radius-md);overflow:hidden;background:#fff}
-    .ag-shot img{display:block;width:100%;height:auto}
-    .ag-shot figcaption{padding:.6rem .9rem;font-size:.82rem;color:var(--mauve);border-top:1px solid var(--line-soft)}
-    .ag-bul{margin:.4rem 0 0;padding-left:1.1rem;line-height:1.75;font-size:.94rem;color:#4a4442}
-    .ag-bul li{margin:.15rem 0}
-    .ag-paper{display:grid;gap:1rem;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-    @media (max-width:760px){.ag-paper{grid-template-columns:minmax(0,1fr)}}
-    .ag-paper .ag-shot{margin-top:0}
-    .ag-next{border:1px dashed var(--line);border-radius:var(--radius-md);padding:1rem 1.2rem;color:var(--mauve);font-size:.9rem;line-height:1.7}
-    .ag-grade{display:inline-block;min-width:1.5em;text-align:center;padding:.05rem .4rem;border-radius:4px;color:#fff;font-weight:700;font-size:.78rem}
-    .ag-use{display:inline-block;padding:.05rem .45rem;border-radius:999px;font-size:.74rem;background:#eef2ff;color:#3730a3}
-    .fb-table td.s{font-size:.78rem;color:#6b6360;max-width:22ch}
-    .ag-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:.2rem 0 .7rem}
-    .ag-logic{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:.6rem 0 1rem}
-    .ag-logic div{padding:10px 12px;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:#fff;font-size:.84rem;line-height:1.6}
-    .ag-logic b{display:block;font-size:.95rem;margin-bottom:.15rem}
-    .ag-logic small{color:#6b6360}
-    .ag-logic .pre{background:#f4f2ef;border-color:#d9d4cf}
-    .ag-stat #ag-rk-pre b small{font-size:.9rem;color:#8b8280}
-    .ag-keep,.ag-gate,.ag-ok{display:inline-block;padding:.05rem .45rem;border-radius:999px;font-size:.74rem;white-space:nowrap}
-    .ag-keep{background:#e5e5e5;color:#4a4a4a;font-weight:700}
-    .ag-gate{background:#f4f2ef;color:#8b8280}
-    .ag-ok{background:#e6f4ea;color:#1e6b3a}
-    .dn{color:#8b8280;font-size:.72rem;white-space:nowrap}
-    .ag-basis{margin:-.3rem 0 .8rem;font-size:.8rem;color:#6b6360}
-    .tag-out{font-size:.72rem;font-weight:600;color:#92400e;background:#fef3c7;border-radius:999px;padding:.05rem .4rem;vertical-align:1px}
-  </style>
+  <link rel="stylesheet" href="assets/css/aging.css?v=202610031200">
 </head>
 <body>
   <div id="site-header"></div>
 
   <main id="main">
-    <article class="section fb-wrap">
+    <article class="section fb-wrap ag">
       <div class="container container--wide">
+
+        <!-- 머리말 -->
         <span class="eyebrow">Data Analysis</span>
-        <h1 class="fb-title">[경기도 노후 산업단지 — 역세권과 인구밀도]</h1>
-        <p class="ag-basis" id="ag-basis">자료 기준: 2026-09-18 v6 (미분양 지표 추가 · 경계: 분양현황 단지코드 연결 · 경기도 소재 산단 215곳)</p>
+        <h1 class="fb-title">[경기도 노후 산업단지 — 어디를, 무엇으로 바꿀 것인가]</h1>
+        <p class="ag-basis" id="ag-basis">자료 기준: 2026-09-18 v6 · 경기도 소재 산단 215곳 + 산단 밖 공업지역 클러스터 102곳 · 미분양 분양현황 2026.7</p>
         <p class="fb-lead">
-          경기도 산업단지 경계를 <strong>지정 후 몇 년이 지났는지(노후년도)</strong>로 색칠하고,
-          철도역 307곳과 <strong>인구 100m 격자</strong>를 같은 지도에 겹쳤습니다.
-          휠로 확대하면 QGIS 화면처럼 시군·산단 이름이 보이고, <strong>역을 누르면 반경 안의 산단</strong>을 세어 주며,
-          <strong>거리 재기</strong>로 아무 두 점 사이를 잴 수 있습니다. 그림은 앞으로 계속 보강합니다.
+          첨단산업단지를 새로 짓는 데 필요한 공업지역 물량을, <strong>산업 기능을 잃은 노후 산단과 공업지역의 전환</strong>으로 되찾을 수 있을지 묻는 분석입니다.
+          산단마다 <strong>노후도 · 역세권 · 도시쇠퇴(산업체 감소·미분양) · 토지특성</strong> 네 축을 100점으로 매겨 전환 우선순위(A~D)를 정하고,
+          둘러싼 도시와 쇠퇴한 부문에 따라 <strong>상업 · 주거 · 업무</strong> 가운데 어디로 바꿀지 가립니다.
+          지도와 차트는 모두 움직입니다 — 마우스를 올리면 값이, 누르면 그 산단이 지도에 나옵니다.
         </p>
-        <p class="fb-crumb" style="margin-top:1.2rem">
+        <p class="fb-crumb">
           <a class="btn btn--ghost" href="pictures.html?cat=industry">← 목록으로</a>
           <a class="btn btn--ghost" href="defense-cluster.html">방위산업 클러스터 →</a>
         </p>
 
-        <!-- ① 노후산단 × 역세권 × 인구밀도 -->
+        <!-- 핵심 수치 — 자료가 오면 JS 가 채웁니다 -->
+        <div class="ag-hero" id="ag-hero">
+          <div><b>229<small>곳</small></b><span>경기도 산업단지 (목록) · 경계 215</span></div>
+          <div><b>47<small>곳</small></b><span>지정 후 30년 이상 (21%)</span></div>
+          <div><b data-hero="sta">—</b><span>철도역 1km 역세권에 걸치는 산단</span></div>
+          <div><b data-hero="ab">—</b><span>전환 우선(A) · 복합화(B) 단위</span></div>
+          <div><b data-hero="recov">—</b><span>회수 가능 공업지역</span></div>
+        </div>
+
+        <!-- 절 차례 — 내려가면 지금 절이 진하게 -->
+        <nav class="ag-toc" id="ag-toc" aria-label="절 차례">
+          <a href="#fig1">① 개요·현황</a>
+          <a href="#fig2">② 지도</a>
+          <a href="#fig3">③ 역세권</a>
+          <a href="#fig4">④ 쇠퇴·공업지역</a>
+          <a href="#fig5">⑤ 전환 우선순위</a>
+          <a href="#fig6">⑥ 준공업지역 판정</a>
+          <a href="#fig7">⑦ 용도 판정 근거</a>
+          <a href="#sources">※ 자료 출처</a>
+        </nav>
+
+        <!-- ① 연구 개요 · 노후도 현황 -->
         <section class="fb-fig" id="fig1">
           <div class="fb-fig__head">
             <span class="fb-fig__no">①</span>
-            <h2>노후 산업단지 × 철도역 역세권 × 인구밀도 격자</h2>
+            <h2>연구 개요와 경기도 산업단지 노후도 현황</h2>
+            <span class="fb-fig__src">목록 기준 · 2026년</span>
+          </div>
+          <div class="ag-two">
+            <div class="fb-card">
+              <h3>묻는 것</h3>
+              <ol class="ag-qs">
+                <li>경기도 산단 가운데 <strong>산업 기능을 잃어 전환해도 되는 곳</strong>은 어디인가? — 노후하고, 사업체가 줄고, 분양이 안 되는 곳</li>
+                <li>그곳을 <strong>무엇으로</strong> 바꿀 것인가? — 역세권·주변 용도·쇠퇴 유형으로 상업 · 주거 · 업무를 가름</li>
+                <li>전환으로 <strong>얼마만큼의 공업지역 물량</strong>을 되찾아 첨단산단에 재배분할 수 있는가?</li>
+              </ol>
+            </div>
+            <div class="fb-card">
+              <h3>노후도 현황</h3>
+              <ul class="ag-bul">
+                <li>경기도 산단 <strong>229개</strong> (일반 194 · 도시첨단 17 · 국가 17 · 농공 1)</li>
+                <li>지정 후 <strong>20년 이상 83개(36%)</strong>, <strong>30년 이상 47개(21%)</strong>, 40년 이상 13개</li>
+                <li>1970~80년대 지정된 반월·시화(안산·시흥), 아산(평택), 성남일반, 서울온수(부천), 안성1·2 등은 도시 안쪽으로 편입돼 주거지와 섞여 있음</li>
+                <li>과밀억제권역 14개 시의 20년 이상 산단은 11개 — 공업지역을 새로 지정할 수 없는 곳이라 전환 시 회수 가치가 가장 큼</li>
+              </ul>
+            </div>
+          </div>
+          <div class="fb-card ag-chart" style="margin-top:1.2rem" data-chart="age">
+            <div class="ag-chart__head">
+              <h3>노후년도 분포 — 산단 경계 215곳</h3>
+              <div class="ag-tabs" role="group" aria-label="세는 기준">
+                <button type="button" class="chip active" data-v="n">개소</button>
+                <button type="button" class="chip" data-v="ha">면적(ha)</button>
+              </div>
+            </div>
+            <p class="ag-chart__sub">노후년도 = 2026 − 지정 연도, 5년 구간. 막대 색은 ② 지도의 노후년도 색과 같습니다. 막대에 올리면 그 구간의 큰 산단이 나옵니다.</p>
+            <div class="ag-plot"></div>
+          </div>
+        </section>
+
+        <!-- ② 노후산단 × 역세권 × 인구밀도 — 큰 지도 -->
+        <section class="fb-fig" id="fig2">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">②</span>
+            <h2>한 지도에 겹쳐 보기 — 노후 산단 × 역세권 × 인구밀도 × 쇠퇴 × 등급</h2>
             <span class="fb-fig__src" id="ag-src">자료를 불러오는 중…</span>
           </div>
           <p class="fb-fig__desc">
-            산단은 <strong>노후년도(2026 − 지정 연도)</strong>가 클수록 진한 붉은색, 인구 격자는 <strong>인구밀도가 높을수록 진한 초록색</strong>입니다.
-            체크를 끄고 켜서 두 층을 따로 또는 겹쳐서 보실 수 있습니다.
-            <strong>역세권 1km 안 산단 영역</strong>은 역 반경 1km 원과 산단 경계가 겹치는 부분만 잘라 붉게 얹은 것입니다.
-            시군 이름은 진한 회색, 산단 이름은 파란색으로 QGIS 화면과 같게 두었습니다 (산단 이름은 확대해야 나옵니다).
+            산단은 <strong>노후년도</strong>가 클수록 진한 붉은색, 인구 격자는 <strong>인구밀도</strong>가 높을수록 진한 초록색입니다.
+            층을 켜고 끄며 겹쳐 보세요. <strong>역을 누르면</strong> 반경 안 산단을 세고, 산단을 누르면 노후년도·가장 가까운 역·등급이,
+            행정동을 누르면 쇠퇴 유형이, 빈 곳을 누르면 그 자리 인구밀도가 오른쪽에 나옵니다.
           </p>
-          <div class="fb-controls">
-            <fieldset>
-              <legend>큰 층 (켜고 끄기)</legend>
-              <label class="fb-check"><input type="checkbox" id="ag-l-cx" checked><span class="sw" style="background:#c57171;border-color:#232323"></span>① 산단 노후년도</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-pop" checked><span class="sw" style="background:#74c476;border-color:#006d2c"></span>② 인구밀도 격자 (6단계)</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-dec" checked><span class="sw" style="background:#6a2fe0;border-color:#1f1fff"></span>③ 도시쇠퇴도 (8유형)</label>
-              <label class="fb-check" id="ag-l-ind-w"><input type="checkbox" id="ag-l-ind" checked><span class="sw" style="background:#e8b450;border-color:#a16207"></span>④ 토지특성 — 공업 용도지역 <span class="fb-fig__src" id="ag-l-ind-n"></span></label>
-              <label class="fb-check" id="ag-l-grade-w"><input type="checkbox" id="ag-l-grade" checked><span class="sw" style="background:#fc8d59;border-color:#d7301f"></span>⑤ 전환 우선순위 A·B 등급 <span class="fb-fig__src" id="ag-l-grade-n"></span></label>
-            </fieldset>
-          </div>
-          <div class="fb-controls">
-            <fieldset>
-              <legend>겹쳐 볼 것</legend>
-              <label class="fb-check"><input type="checkbox" id="ag-l-buf" checked><span class="sw" style="border-radius:50%;background:#c6dbef;border-color:#5b8fbf"></span>역세권 1km 버퍼(원)</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-zone" checked><span class="sw" style="background:rgba(255,23,68,.6);border-color:#b3001b"></span>역세권 1km 안 산단 영역</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-st" checked><span class="sw" style="border-radius:50%;background:#fff;border-color:#000"></span>철도역</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-emd" checked><span class="sw" style="background:#fff;border-color:rgba(0,0,0,.35)"></span>읍면동 경계</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-lsi" checked><span class="sw" style="background:#323232"></span>시군 이름</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-ldan" checked><span class="sw" style="background:#3232fa"></span>산단 이름</label>
-              <label class="fb-check"><input type="checkbox" id="ag-l-base"><span class="sw" style="background:#e5e3df"></span>배경지도</label>
-            </fieldset>
-          </div>
-          <div class="fb-controls">
-            <fieldset>
-              <legend>역세권 반경</legend>
-              <button type="button" class="chip" data-r="500">500m</button>
-              <button type="button" class="chip active" data-r="1000">1km</button>
-              <button type="button" class="chip" data-r="1500">1.5km</button>
-              <button type="button" class="chip" data-r="2000">2km</button>
-              <span class="fb-fig__src">역을 누르면 원을 그리고 안에 걸치는 산단을 셉니다</span>
-            </fieldset>
-            <fieldset>
-              <legend>거리 재기</legend>
-              <button type="button" class="chip" id="ag-measure">📏 재기 시작</button>
-              <button type="button" class="chip" id="ag-clear">지우기</button>
-              <span class="fb-fig__src" id="ag-measure-hint">지도를 차례로 누르면 선이 이어지고, 두 번 누르면 끝납니다</span>
-            </fieldset>
+          <div class="fb-controls ag-layers">
+              <fieldset>
+                <legend>주제 층</legend>
+                <label class="fb-check"><input type="checkbox" id="ag-l-cx" checked><span class="sw" style="background:#c57171;border-color:#232323"></span>산단 노후년도</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-pop" checked><span class="sw" style="background:#74c476;border-color:#006d2c"></span>인구밀도 격자</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-dec" checked><span class="sw" style="background:#6a2fe0;border-color:#1f1fff"></span>도시쇠퇴도 8유형</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-ind" checked><span class="sw" style="background:#e8b450;border-color:#a16207"></span>공업 용도지역 <span class="fb-fig__src" id="ag-l-ind-n"></span></label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-grade" checked><span class="sw" style="background:#c88278;border-color:#821e32"></span>전환 A·B 등급 <span class="fb-fig__src" id="ag-l-grade-n"></span></label>
+              </fieldset>
+              <fieldset>
+                <legend>겹쳐 볼 것</legend>
+                <label class="fb-check"><input type="checkbox" id="ag-l-buf" checked><span class="sw" style="border-radius:50%;background:#c6dbef;border-color:#5b8fbf"></span>역세권 1km 원</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-zone" checked><span class="sw" style="background:rgba(130,30,50,.6);border-color:#634b4f"></span>역세권 안 산단 영역</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-st" checked><span class="sw" style="border-radius:50%;background:#fff;border-color:#000"></span>철도역</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-emd" checked><span class="sw" style="background:#fff;border-color:rgba(0,0,0,.35)"></span>읍면동 경계</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-lsi" checked><span class="sw" style="background:#323232"></span>시군 이름</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-ldan" checked><span class="sw" style="background:#3232fa"></span>산단 이름</label>
+                <label class="fb-check"><input type="checkbox" id="ag-l-base"><span class="sw" style="background:#e5e3df"></span>배경지도</label>
+              </fieldset>
+              <fieldset>
+                <legend>역세권 반경</legend>
+                <button type="button" class="chip" data-r="500">500m</button>
+                <button type="button" class="chip active" data-r="1000">1km</button>
+                <button type="button" class="chip" data-r="1500">1.5km</button>
+                <button type="button" class="chip" data-r="2000">2km</button>
+              </fieldset>
+              <fieldset>
+                <legend>거리 재기</legend>
+                <button type="button" class="chip" id="ag-measure">📏 재기 시작</button>
+                <button type="button" class="chip" id="ag-clear">지우기</button>
+              </fieldset>
           </div>
           <div class="ag-grid">
             <div class="fb-mapbox ag-map">
@@ -198,95 +151,40 @@
               <div class="fb-busy" id="ag-busy0">자료를 불러오는 중입니다…</div>
             </div>
             <div class="ag-right">
-              <div class="fb-card ag-side" id="ag-side">
-                <h4>역세권 · 거리</h4>
-                <p class="ag-hint">역을 누르면 반경 안 산단이 여기에 나옵니다. 산단을 누르면 노후년도와 가장 가까운 역, 행정동을 누르면 쇠퇴 유형, 빈 곳을 누르면 그 자리의 인구밀도가 나옵니다.</p>
-              </div>
-              <!-- 범례 — 지도 그림과 겹치지 않게 오른쪽 여백에 -->
+              <div class="fb-card ag-side" id="ag-side"></div>
               <div class="fb-card ag-legend" id="ag-legend0"></div>
             </div>
           </div>
-          <p class="fb-fig__src" style="margin-top:.6rem">
-            자료: 산업입지정보망 산단 경계(DAM_DAN)·목록(2026), 경기 철도역 307(GTX 포함), SGIS 인구 100m 격자, 도시쇠퇴도 8유형(행정동 1,121 — 인구감소·사업체감소·노후건축물 조합), 토지특성(공업 용도지역), 2026 행정구역.
-            노후년도 = 2026 − 지정 연도. 회색 산단은 경계는 있으나 목록과 아직 짝이 맞지 않은 곳.
+          <p class="ag-note">
+            노후년도 = 2026 − 지정 연도. 회색 산단은 경계는 있으나 목록과 짝이 맞지 않은 곳. 역세권 안 산단 영역 = 역 반경 1km 원 ∩ 산단 경계.
+            시군 이름은 진한 회색, 산단 이름은 파란색(확대해야 나옴)으로 QGIS 화면과 같게 두었습니다.
           </p>
         </section>
 
-        <!-- ② 역세권 1km 안 산단 — 표 -->
-        <section class="fb-fig" id="fig2">
+        <!-- ③ 역세권(철도역 1km) 안 산단 -->
+        <section class="fb-fig" id="fig3">
           <div class="fb-fig__head">
-            <span class="fb-fig__no">②</span>
+            <span class="fb-fig__no">③</span>
             <h2>역세권(철도역 1km) 안에 들어오는 산업단지</h2>
             <span class="fb-fig__src" id="ag-tbl-src">—</span>
           </div>
           <p class="fb-fig__desc">
-            철도역 307곳의 반경 1km 원과 경기 산단 경계 215곳을 교차해, <strong>역세권에 걸치는 면적</strong>과 그 비율을 산단마다 셌습니다.
-            노후년도가 크고(30년 이상) 역세권 비율이 높은 곳이 역세권 상업·업무 복합 전환의 1차 후보이고,
-            지정 10년 안쪽의 새 산단은 역세권이라도 보호·고도화 대상입니다. 머리글을 누르면 그 칸으로 줄을 세웁니다.
+            철도역 307곳의 반경 1km 원과 산단 경계 215곳을 교차해 <strong>역세권에 걸치는 면적과 비율</strong>을 셌습니다.
+            노후년도가 크고(30년 이상) 역세권 비율이 높은 곳이 상업·업무 복합 전환의 1차 후보이고, 지정 10년 안쪽의 새 산단은 역세권이라도 보호·고도화 대상입니다.
+            머리글을 누르면 줄을 세우고, 줄을 누르면 ② 지도에서 그 산단을 보여 줍니다.
           </p>
           <div class="ag-stat" id="ag-stat"></div>
           <div class="fb-card">
-            <div class="fb-scroll">
-              <table class="fb-table" id="ag-tbl">
-                <thead><tr>
-                  <th scope="col"><button type="button" data-k="DAN_NAME">산업단지</button></th>
-                  <th scope="col"><button type="button" data-k="단지유형">유형</button></th>
-                  <th scope="col"><button type="button" data-k="노후년도">노후년도</button></th>
-                  <th scope="col"><button type="button" data-k="산단면적_ha">산단면적 ha</button></th>
-                  <th scope="col"><button type="button" data-k="역세권면적_ha">역세권 내 ha</button></th>
-                  <th scope="col"><button type="button" data-k="역세권비율">비율</button></th>
-                  <th scope="col"><button type="button" data-k="역세권_역">해당 역</button></th>
-                  <th scope="col"><button type="button" data-k="최근접역거리_m">가장 가까운 역</button></th>
-                </tr></thead>
-                <tbody id="ag-tbody"></tbody>
-              </table>
-            </div>
-            <p class="fb-sub" id="ag-tbl-note" style="margin-top:.6rem"></p>
+            <div class="fb-scroll"><table class="fb-table" id="ag-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="ag-note" id="ag-tbl-note"></p>
           </div>
-          <h3 style="margin:1.4rem 0 .2rem">역세권(철도역 1km) 포함 영역 — 움직이는 지도</h3>
-          <div class="fb-controls ag-mini-ctl" id="ag-ctl-sta" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
-          <div class="ag-mini" style="margin-top:.5rem">
-            <div class="fb-mapbox" id="ag-box-sta">
-              <div class="fb-map" id="ag-map-sta"></div>
-              <button type="button" class="ag-fs" data-fs="ag-box-sta" title="전체화면">⛶ 전체화면</button>
-              <div class="fb-busy" id="ag-busy-sta">자료를 불러오는 중입니다…</div>
-            </div>
-            <div class="fb-card ag-legend" id="ag-legend-sta"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
-          </div>
-          <p class="fb-sub">휠로 확대·끌어서 이동. 붉은 영역을 누르면 역세권 안 면적·비율, 역을 누르면 노선. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_station_1km.png" data-cap="역세권 1km 안 산단 영역 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
+          <h3 class="ag-h3">역세권 포함 영역 <small>움직이는 지도</small></h3>
+          <div class="ag-mini" data-mini="sta"
+               data-note="휠로 확대·끌어서 이동. 붉은 영역을 누르면 역세권 안 면적·비율."
+               data-png="assets/data/aging/analysis/map_station_1km.png" data-cap="역세권 1km 안 산단 영역 — 정적 그림"></div>
         </section>
 
-        <!-- ③ 노후도 현황 · 자료 -->
-        <section class="fb-fig" id="fig3">
-          <div class="fb-fig__head">
-            <span class="fb-fig__no">③</span>
-            <h2>경기도 산업단지 노후도 현황과 자료</h2>
-            <span class="fb-fig__src">목록 기준 · 2026년</span>
-          </div>
-          <div class="fb-chart" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
-            <div class="fb-card">
-              <h3>노후도 현황</h3>
-              <ul class="ag-bul">
-                <li>경기도 산단 <strong>229개</strong> (일반 194 · 도시첨단 17 · 국가 17 · 농공 1)</li>
-                <li>지정 후 <strong>20년 이상 83개(36%)</strong>, <strong>30년 이상 47개(21%)</strong>, 40년 이상 13개</li>
-                <li>1970~80년대 지정된 반월·시화(안산·시흥), 아산(평택), 성남일반, 서울온수(부천), 안성1·2 등은 도시 안쪽으로 편입돼 주거지와 섞여 있음</li>
-                <li>과밀억제권역 14개 시의 20년 이상 산단은 11개 — 이곳 공업지역은 새로 지정할 수 없는 물량이라 전환 시 회수 가치가 가장 큼</li>
-                <li>분석 목적: 첨단산단 조성에 필요한 공업지역 물량을, 산업기능을 잃은 노후산단·공업지역의 주거·상업 전환으로 회수해 재배분하는 방안의 공간 근거</li>
-              </ul>
-            </div>
-            <div class="fb-card">
-              <h3>구축한 자료</h3>
-              <ul class="ag-bul">
-                <li>산단 목록 1,475 → 경계(DAM_DAN 1,363)와 분양현황 단지코드(DAN_ID)로 직접 연결, 못 찾은 것은 지오코딩(네이버·카카오)으로 보조 — 경기 229 중 228 짝, 고유 경계 215 (v5). 유치업종도면으로 단지별 상위 3 업종·필지면적 붙임</li>
-                <li>노후년도 = 2026 − 지정 연도 (목록의 지정일 기준)</li>
-                <li>철도역 307 (GTX 포함) · SGIS 인구 100m 격자 1,029,094칸 · 2026 시도·시군구·읍면동</li>
-                <li>토지특성(경기 약 450만 필지)·건축물(2,298,133동)은 통합 중 — 끝나면 전환 우선순위(4축 지표, A~D 등급)를 여기에 더합니다</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <!-- ④ 도시쇠퇴도 8유형 · 공업 용도지역 — ① 지도의 ③·④ 층을 정적 그림으로 -->
+        <!-- ④ 도시쇠퇴도 8유형 · 공업 용도지역 -->
         <section class="fb-fig" id="fig4">
           <div class="fb-fig__head">
             <span class="fb-fig__no">④</span>
@@ -294,76 +192,156 @@
             <span class="fb-fig__src" id="ag-dec-src">행정동 1,121 · 인구감소·사업체감소·노후건축물 조합</span>
           </div>
           <p class="fb-fig__desc">
-            행정동마다 인구 감소·사업체 감소·노후 건축물(20년 이상 비율) 세 지표를 조합해 8유형으로 나눈 것입니다.
-            전환 활용도 가중치는 산업쇠퇴 1.0 &gt; 산업건물·인구산업 0.8 &gt; 절대쇠퇴 0.6 &gt; 인구건물 0.35 &gt; 건물·인구 0.3 &gt; 성장 0 입니다.
-            공업 용도지역은 토지특성(필지)에서 일반·준·전용공업지역을 녹여 만든 것입니다. ① 지도에서 같은 층을 켜고 끌 수 있습니다.
+            행정동마다 인구 감소·사업체 감소·노후 건축물(20년 이상 비율) 세 지표를 조합해 8유형으로 나눴습니다.
+            전환 활용 가중치는 산업쇠퇴 1.0 &gt; 산업건물·인구산업 0.8 &gt; 절대쇠퇴 0.6 &gt; 인구건물 0.35 &gt; 건물·인구 0.3 &gt; 성장 0 입니다.
+            공업 용도지역은 토지특성(필지)에서 일반·준·전용공업지역을 녹여 만든 것입니다. ② 지도에서도 같은 층을 켜고 끌 수 있습니다.
           </p>
-          <h3 style="margin:1.2rem 0 .2rem">도시쇠퇴도 8유형 — 움직이는 지도</h3>
-          <div class="fb-controls ag-mini-ctl" id="ag-ctl-dec" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
-          <div class="ag-mini" style="margin-top:.5rem">
-            <div class="fb-mapbox" id="ag-box-dec">
-              <div class="fb-map" id="ag-map-dec"></div>
-              <button type="button" class="ag-fs" data-fs="ag-box-dec" title="전체화면">⛶ 전체화면</button>
-              <div class="fb-busy" id="ag-busy-dec">자료를 불러오는 중입니다…</div>
-            </div>
-            <div class="fb-card ag-legend" id="ag-legend-dec"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
+          <div class="ag-tabs" id="ag-dec-tabs" role="tablist" aria-label="지도 고르기">
+            <button type="button" class="chip active" data-pane="dec">도시쇠퇴도 8유형</button>
+            <button type="button" class="chip" data-pane="ind">공업 용도지역</button>
           </div>
-          <p class="fb-sub">행정동을 누르면 유형·가중치·지표. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_decline_8class.png" data-cap="도시쇠퇴도 8유형 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
-
-          <h3 style="margin:1.6rem 0 .2rem">토지특성 — 공업 용도지역 — 움직이는 지도</h3>
-          <div class="fb-controls ag-mini-ctl" id="ag-ctl-ind" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
-          <div class="ag-mini" style="margin-top:.5rem">
-            <div class="fb-mapbox" id="ag-box-ind">
-              <div class="fb-map" id="ag-map-ind"></div>
-              <button type="button" class="ag-fs" data-fs="ag-box-ind" title="전체화면">⛶ 전체화면</button>
-              <div class="fb-busy" id="ag-busy-ind">자료를 불러오는 중입니다…</div>
-            </div>
-            <div class="fb-card ag-legend" id="ag-legend-ind"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
-          </div>
-          <p class="fb-sub">구역을 누르면 용도지역명·면적. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_industrial_zone.png" data-cap="토지특성 — 공업 용도지역 정적 그림">정적 그림(PNG) 크게 보기</button></p>
+          <div class="ag-mini" data-mini="dec"
+               data-note="행정동을 누르면 유형·가중치·지표."
+               data-png="assets/data/aging/analysis/map_decline_8class.png" data-cap="도시쇠퇴도 8유형 — 정적 그림"></div>
+          <div class="ag-mini" data-mini="ind" hidden
+               data-note="구역을 누르면 용도지역명·면적."
+               data-png="assets/data/aging/analysis/map_industrial_zone.png" data-cap="토지특성 — 공업 용도지역 정적 그림"></div>
         </section>
 
-        <!-- ⑤ 전환 우선순위 — 4대 로직 100점 · A~D 등급 · 용도별 상위 10 -->
+        <!-- ⑤ 전환 우선순위 -->
         <section class="fb-fig" id="fig5">
           <div class="fb-fig__head">
             <span class="fb-fig__no">⑤</span>
-            <h2>전환 우선순위 — 4대 로직 100점, A~D 등급, 용도별 상위 10</h2>
+            <h2>전환 우선순위 — 4대 로직 100점, A~D 등급</h2>
             <span class="fb-fig__src" id="ag-rk-src">자료를 불러오는 중…</span>
           </div>
           <p class="fb-fig__desc">
-            경기도 산단 215곳과 산단 밖 공업지역 클러스터 102곳(준공업·공업지역 필지를 묶은 것), 모두 317개 단위를
-            <strong>① 노후도 30 · ② 역세권 20 · ③ 도시쇠퇴·산업체감소·미분양 25 · ④ 토지특성·종상향 조건 25</strong>의 100점으로 매겨
-            산단과 클러스터 각각 상위 15%를 <strong>A(전환 우선)</strong>, 40%까지를 <strong>B(복합화)</strong>, 나머지를 C(고도화 유지)로 두고,
-            지정 20년 미만·건물 3동 미만·가동 중인 산단은 <strong>D(보호·게이트)</strong>로 뺐습니다.
-            점수에 앞서 <strong>0단계 전제 — 산업체 감소</strong>(행정동 사업체가 최대치보다 5% 이상 줄었거나, 사업체 쇠퇴 행정동이 면적의 절반 이상)를 두어,
-            산업이 유지되는 곳은 노후·역세권 점수와 관계없이 <strong>「산업 유지」(C)</strong>로 둡니다.
-            ③에는 <strong>미분양</strong>(분양현황 2026.7)을 넣었습니다 — 산단 자체 미분양율(3점, 0~30%)과 같은 시군 산단 전체 미분양율(2점, 0~20%, 공고면적 가중).
-            산업용지 수요가 소진된 곳일수록 전환 정당성이 높다고 보는 것으로, 산단이 완판이어도 같은 시군 신규 산단이 대량 미분양이면 지역 수요가 약한 것으로 봅니다(미분양 있는 산단 36곳 · 시군 미분양율 상위 고양 92%·동두천 33%·연천 23%·양주 14%).
-            상업·주거·업무 용도별로는 가중치를 달리한 점수로 30년 이상 산단 가운데 상위 10을 따로 뽑았습니다.
+            산단 215곳과 산단 밖 공업지역 클러스터 102곳, 모두 317개 단위를 <strong>노후도 30 · 역세권 20 · 도시쇠퇴·산업체감소·미분양 25 · 토지특성·종상향 조건 25</strong>의 100점으로 매겨,
+            산단과 클러스터 각각 상위 15%를 <strong>A(전환 우선)</strong>, 40%까지를 <strong>B(복합화)</strong>, 나머지를 <strong>C(고도화 유지)</strong>로,
+            지정 20년 미만·건물 3동 미만·가동 중인 산단은 <strong>D(보호·게이트)</strong>로 둡니다.
           </p>
+          <details class="ag-more">
+            <summary>0단계 전제와 미분양 지표 — 자세히</summary>
+            <p>점수에 앞서 <strong>0단계 전제 — 산업체 감소</strong>(행정동 사업체가 최대치보다 5% 이상 줄었거나, 사업체 쇠퇴 행정동이 면적의 절반 이상)를 두어,
+              산업이 유지되는 곳은 노후·역세권 점수와 관계없이 <strong>「산업 유지」(C)</strong>로 둡니다.</p>
+            <p>도시쇠퇴 축에는 <strong>미분양</strong>(분양현황 2026.7)을 넣었습니다 — 산단 자체 미분양율(3점, 0~30%)과 같은 시군 산단 전체 미분양율(2점, 0~20%, 공고면적 가중).
+              산업용지 수요가 소진된 곳일수록 전환 정당성이 높다고 보는 것으로, 산단이 완판이어도 같은 시군 신규 산단이 대량 미분양이면 지역 수요가 약한 것으로 봅니다
+              (미분양 있는 산단 36곳 · 시군 미분양율 상위 고양 92%·동두천 33%·연천 23%·양주 14%).</p>
+          </details>
           <div class="ag-stat" id="ag-rk-stat"></div>
           <div class="ag-logic" id="ag-rk-logic"></div>
-          <figure class="ag-shot" style="margin-top:0">
+
+          <div class="fb-card ag-chart" data-chart="stack">
+            <div class="ag-chart__head">
+              <h3>종합 점수 상위 20 — 로직별 점수 구성</h3>
+              <div class="ag-tabs" role="group" aria-label="대상">
+                <button type="button" class="chip active" data-v="core">30년↑ 산단</button>
+                <button type="button" class="chip" data-v="danji">산단 전체</button>
+                <button type="button" class="chip" data-v="cluster">산단 밖 클러스터</button>
+              </div>
+            </div>
+            <p class="ag-chart__sub">막대 하나가 100점 만점의 종합점수이고, 네 토막이 로직별 점수입니다. 막대 끝 알약은 등급, <span class="ag-mute">회색 이름</span>은 0단계 전제 미충족(「산업 유지」). 누르면 ② 지도에서 그 단위를 보여 줍니다.</p>
+            <div class="ag-plot"></div>
+          </div>
+
+          <h3 class="ag-h3">등급 지도 <small>움직이는 지도</small></h3>
+          <div class="ag-mini" data-mini="grade"
+               data-note="A·B 등급 폴리곤을 누르면 종합점수·추천 용도·등급 뜻. C·D 는 옅은 붉은 산단 경계로 보입니다."
+               data-png="assets/data/aging/analysis/map_grade.png" data-cap="전환 우선순위 등급 지도 — 정적 그림"></div>
+
+          <h3 class="ag-h3">용도별 전환 상위 10 <small>30년 이상 산단</small></h3>
+          <p class="fb-fig__desc">상업용은 역세권·상업 지가격차·인구, 주거용은 인구·주거 지가격차·주변 주거, 업무시설용은 역·GTX·공공기관 이전(GAM)에 무게를 둔 점수입니다.</p>
+          <div class="ag-tabs" id="ag-use-tabs" role="tablist" aria-label="용도">
+            <button type="button" class="chip active" data-use="상업용">상업용</button>
+            <button type="button" class="chip" data-use="주거용">주거용</button>
+            <button type="button" class="chip" data-use="업무시설용">업무시설용</button>
+          </div>
+          <div class="ag-two">
+            <div class="fb-card ag-chart" data-chart="use">
+              <div class="ag-chart__head"><h3 id="ag-use-h">상업용 점수 상위 10</h3></div>
+              <div class="ag-plot"></div>
+            </div>
+            <div class="fb-card ag-chart" data-chart="weights">
+              <div class="ag-chart__head"><h3>용도별 가중치 프로파일</h3></div>
+              <p class="ag-chart__sub">지표마다 몇 점을 주는지 — 진할수록 무게가 큽니다. 고른 용도 열이 강조됩니다.</p>
+              <div class="ag-plot"></div>
+            </div>
+          </div>
+          <div class="fb-card" style="margin-top:1rem">
+            <div class="fb-scroll"><table class="fb-table" id="ag-use-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="ag-note">내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).</p>
+          </div>
+
+          <h3 class="ag-h3">종합 우선순위 상위 15 <small>30년 이상 산단</small></h3>
+          <div class="fb-card">
+            <div class="fb-scroll"><table class="fb-table" id="ag-top-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="ag-note" id="ag-top-note"></p>
+          </div>
+
+          <h3 class="ag-h3">산단 밖 공업지역 클러스터 상위 15</h3>
+          <div class="fb-card">
+            <div class="fb-scroll"><table class="fb-table" id="ag-cl-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="ag-note">산단이 아닌 준공업·공업지역 필지를 30m 버퍼로 묶은 클러스터(3ha 이상, 과밀억제권역 1ha 이상) 102곳 가운데 종합점수 상위 15.</p>
+          </div>
+
+          <figure class="ag-shot">
             <img class="ag-zoom" src="assets/data/aging/analysis/fig_framework.png" alt="전환 우선순위 분석의 틀 — 4대 로직과 등급 기준" loading="lazy">
             <figcaption>분석의 틀 — 4대 로직(100점)과 게이트·등급 기준 (누르면 크게)</figcaption>
           </figure>
-          <h3 style="margin:1.4rem 0 .2rem">등급 지도 — 움직이는 지도</h3>
-          <div class="fb-controls ag-mini-ctl" id="ag-ctl-grade" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
-          <div class="ag-mini" style="margin-top:.5rem">
-            <div class="fb-mapbox" id="ag-box-grade">
-              <div class="fb-map" id="ag-map-grade"></div>
-              <button type="button" class="ag-fs" data-fs="ag-box-grade" title="전체화면">⛶ 전체화면</button>
-              <div class="fb-busy" id="ag-busy-grade">자료를 불러오는 중입니다…</div>
-            </div>
-            <div class="fb-card ag-legend" id="ag-legend-grade"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
-          </div>
-          <p class="fb-sub">A·B 등급 폴리곤을 누르면 종합점수·추천 용도·등급 뜻. C·D 는 붉은 반투명 산단 경계로 보입니다. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_grade.png" data-cap="전환 우선순위 등급 지도 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
+        </section>
 
-          <h3 style="margin:1.6rem 0 .3rem">30년 이상 노후산단 유형화</h3>
+        <!-- ⑥ 준공업지역의 실제 기능 판정 -->
+        <section class="fb-fig" id="fig6">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">⑥</span>
+            <h2>준공업지역의 실제 기능 판정 — 주거기능전환지역</h2>
+            <span class="fb-fig__src" id="ag-rs-src">자료를 불러오는 중…</span>
+          </div>
+          <p class="fb-fig__desc">
+            서울시 준공업지역 산업기반평가모델과 같은 방식으로, 토지특성의 용도지역(<strong>준공업지역 1,907 ha · 8,026필지</strong>)과
+            PNU로 조인한 건축물의 <strong>실제 용도(연면적)</strong>를 행정동별로 집계해 판정했습니다.
+          </p>
+          <details class="ag-more">
+            <summary>판정 기준 — 자세히</summary>
+            <p><strong>주거 연면적 ≥ 50% · 산업 ≤ 20% → 주거기능전환지역</strong>, 주거+상업근생 ≥ 60% · 산업 ≤ 25% → 주거·상업 복합전환지역, 산업 ≥ 50% → 산업기능유지지역,
+              산업 30~50% → 주공혼재(산업우세), 그 외 → 주공혼재(주거우세). 1 ha 미만이거나 용도를 확인한 건물이 10동 미만이면 판정에서 뺐습니다.</p>
+          </details>
+          <div class="ag-stat" id="ag-rs-stat"></div>
+          <div class="ag-mini" data-mini="resid"
+               data-note="행정동 폴리곤을 누르면 판정과 주거·산업·상업 연면적 비율."
+               data-png="assets/data/aging/analysis/map_residential_shift.png" data-cap="준공업지역 실제 기능 판정 — 정적 그림"></div>
+          <h3 class="ag-h3">행정동별 판정 표</h3>
+          <div class="fb-card">
+            <div class="ag-tabs" id="ag-rs-tabs"></div>
+            <div class="fb-scroll"><table class="fb-table" id="ag-rs-tbl"><thead></thead><tbody></tbody></table></div>
+            <p class="ag-note" id="ag-rs-note"></p>
+          </div>
+        </section>
+
+        <!-- ⑦ 용도 판정 근거와 결과 — 논문 v7 그림을 움직이는 차트로 -->
+        <section class="fb-fig" id="fig7">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">⑦</span>
+            <h2>용도 판정 근거와 결과</h2>
+            <span class="fb-fig__src">논문 원고 v7 · 2026-09-19</span>
+          </div>
+          <p class="fb-fig__desc">
+            노후산단의 전환 용도는 <strong>「무엇에 둘러싸여 있고, 그 지역의 무엇이 쇠퇴했는가」</strong>로 갈립니다.
+            인구·건물은 유지되는데 사업체가 줄고(산업건물쇠퇴·인구산업쇠퇴) 역세권이면 <strong>상업·업무</strong>,
+            인구·산업·건물이 모두 쇠퇴(절대쇠퇴)하면 <strong>공공주택 중심 주거</strong>, 사업체가 유지되면 노후해도 <strong>산업 고도화</strong>로 둡니다.
+          </p>
+
+          <div class="fb-card ag-chart" data-chart="scatter">
+            <div class="ag-chart__head"><h3>30년 이상 산단의 유형 — 역 거리 × 사업체 감소</h3></div>
+            <p class="ag-chart__sub">점 하나가 산단(면적만큼 큼), 색은 등급. 점선은 역세권 1km 와 0단계 전제(사업체 5% 감소). 점을 누르면 ② 지도로 갑니다.</p>
+            <div class="ag-plot"></div>
+          </div>
+
+          <h3 class="ag-h3">30년 이상 노후산단 유형화</h3>
           <div class="fb-card">
             <div class="fb-scroll">
               <table class="fb-table">
-                <thead><tr><th>유형</th><th>개소</th><th>면적 ha</th><th>건물 30년↑</th><th>종합점수</th><th>A/B</th><th>대표 산단</th></tr></thead>
+                <thead><tr><th>유형</th><th class="n">개소</th><th class="n">면적 ha</th><th class="n">건물 30년↑</th><th class="n">종합점수</th><th class="n">A/B</th><th>대표 산단</th></tr></thead>
                 <tbody>
                   <tr><td>Ⅰ 역세권·산업쇠퇴형</td><td class="n">5</td><td class="n">209</td><td class="n">26%</td><td class="n">43.9</td><td class="n">2/1</td><td>동두천상봉암, 송탄, 동두천</td></tr>
                   <tr><td>Ⅱ 역세권·비쇠퇴형</td><td class="n">4</td><td class="n">1,641</td><td class="n">25%</td><td class="n">43.4</td><td class="n">0/1</td><td>용현, 반월특수(안산신도시), 서울온수</td></tr>
@@ -372,135 +350,78 @@
                 </tbody>
               </table>
             </div>
-            <p class="fb-sub" style="margin-top:.5rem">역세권 = 역 1km 안 면적 비율이 있는 곳, 산업쇠퇴 = 도시쇠퇴 8유형 가운데 산업 관련 쇠퇴형. 30년 이상·조성완료 산단 41곳 기준. Ⅱ·Ⅳ의 반월특수(안산신도시)·서울온수·아산(원정지구)·양주도하 등은 0단계 전제 미충족으로 「산업 유지」(C). v6에서 동두천시 산단 미분양율 33%로 동두천상봉암이 A로 올라오고 용현은 B.</p>
+            <p class="ag-note">역세권 = 역 1km 안 면적 비율이 있는 곳, 산업쇠퇴 = 도시쇠퇴 8유형 가운데 산업 관련 쇠퇴형. 30년 이상·조성완료 산단 41곳 기준. Ⅱ·Ⅳ의 반월특수(안산신도시)·서울온수·아산(원정지구)·양주도하 등은 0단계 전제 미충족으로 「산업 유지」(C). v6에서 동두천시 산단 미분양율 33%로 동두천상봉암이 A로 올라오고 용현은 B.</p>
           </div>
 
-          <h3 style="margin:1.6rem 0 .3rem">용도별 전환 상위 10 (30년 이상 산단)</h3>
-          <p class="fb-fig__desc" style="margin:.2rem 0 .6rem">상업용은 역세권·상업 지가격차·인구, 주거용은 인구·주거 지가격차·주변 주거, 업무시설용은 역·GTX·공공기관 이전(GAM)에 무게를 둔 점수입니다. 머리글을 누르면 정렬됩니다.</p>
-          <div class="ag-tabs" id="ag-use-tabs">
-            <button type="button" class="chip active" data-use="상업용">상업용</button>
-            <button type="button" class="chip" data-use="주거용">주거용</button>
-            <button type="button" class="chip" data-use="업무시설용">업무시설용</button>
+          <div class="fb-card ag-chart" style="margin-top:1.2rem" data-chart="mix">
+            <div class="ag-chart__head"><h3>종합 상위 15 산단 — 내부와 주변 300m 의 건축물 용도</h3></div>
+            <p class="ag-chart__sub">산단마다 위 막대는 단지 안, 아래 막대는 경계 밖 300m 의 연면적 구성입니다. 주변이 주거로 둘러싸였는지, 상업이 붙어 있는지를 봅니다.</p>
+            <div class="ag-plot"></div>
           </div>
-          <div class="fb-card">
-            <div class="fb-scroll"><table class="fb-table" id="ag-use-tbl"><thead></thead><tbody></tbody></table></div>
-            <p class="fb-sub" style="margin-top:.5rem">내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).</p>
-          </div>
-          <figure class="ag-shot">
-            <img class="ag-zoom" src="assets/data/aging/analysis/top10_by_use.png" alt="용도별(상업·주거·업무) 전환 상위 10 산업단지 막대그림" loading="lazy">
-            <figcaption>용도별 상위 10 — 상업용 · 주거용 · 업무시설용 (누르면 크게)</figcaption>
-          </figure>
 
-          <h3 style="margin:1.6rem 0 .3rem">종합 우선순위 상위 15 (30년 이상 산단)</h3>
-          <div class="fb-card">
-            <div class="fb-scroll"><table class="fb-table" id="ag-top-tbl"><thead></thead><tbody></tbody></table></div>
-            <p class="fb-sub" style="margin-top:.5rem" id="ag-top-note"></p>
-          </div>
-          <figure class="ag-shot">
-            <img class="ag-zoom" src="assets/data/aging/analysis/top20_danji.png" alt="종합 점수 상위 20 산업단지의 로직별 점수 구성" loading="lazy">
-            <figcaption>상위 20 산단의 로직별 점수 구성 — 노후도 · 역세권 · 도시쇠퇴·산업체감소·미분양 · 토지특성 (누르면 크게)</figcaption>
-          </figure>
-
-          <h3 style="margin:1.6rem 0 .3rem">산단 밖 공업지역 클러스터 상위 15</h3>
-          <div class="fb-card">
-            <div class="fb-scroll"><table class="fb-table" id="ag-cl-tbl"><thead></thead><tbody></tbody></table></div>
-            <p class="fb-sub" style="margin-top:.5rem">산단이 아닌 준공업·공업지역 필지를 30m 버퍼로 묶은 클러스터(3ha 이상, 과밀억제권역 1ha 이상) 102곳 가운데 종합점수 상위 15. 내부 = 단위 안 건축물(용도 확인분) 연면적 비율, 주변300m = 경계 밖 300m 이내 건물의 비율 (주거/상업/업무 차례).</p>
-          </div>
-        </section>
-
-        <!-- ⑥ 준공업지역의 실제 기능 판정 — 주거기능전환지역 -->
-        <section class="fb-fig" id="fig6">
-          <div class="fb-fig__head">
-            <span class="fb-fig__no">⑥</span>
-            <h2>준공업지역의 실제 기능 판정 — 주거기능전환지역</h2>
-            <span class="fb-fig__src" id="ag-rs-src">자료를 불러오는 중…</span>
-          </div>
-          <p class="fb-fig__desc">
-            서울시 준공업지역 산업기반평가모델(주거기능전환지역 25개 행정동)과 같은 방식으로, 토지특성정보의 용도지역(<strong>준공업지역 1,907 ha · 8,026필지</strong>)과
-            PNU로 조인한 건축물의 <strong>실제 용도(연면적)</strong>를 행정동별로 집계해 판정했습니다.
-            기준: <strong>주거 연면적 ≥ 50% · 산업 ≤ 20% → 주거기능전환지역</strong>, 주거+상업근생 ≥ 60% · 산업 ≤ 25% → 주거·상업 복합전환지역, 산업 ≥ 50% → 산업기능유지지역,
-            산업 30~50% → 주공혼재(산업우세), 그 외 → 주공혼재(주거우세). 1 ha 미만이거나 용도를 확인한 건물이 10동 미만이면 판정에서 뺐습니다.
-          </p>
-          <div class="ag-stat" id="ag-rs-stat"></div>
-          <div class="fb-controls ag-mini-ctl" id="ag-ctl-resid" style="margin-top:.8rem"><span class="fb-fig__src">자료를 불러오는 중…</span></div>
-          <div class="ag-mini" style="margin-top:.5rem">
-            <div class="fb-mapbox" id="ag-box-resid">
-              <div class="fb-map" id="ag-map-resid"></div>
-              <button type="button" class="ag-fs" data-fs="ag-box-resid" title="전체화면">⛶ 전체화면</button>
-              <div class="fb-busy" id="ag-busy-resid">자료를 불러오는 중입니다…</div>
+          <div class="ag-two" style="margin-top:1.2rem">
+            <div class="fb-card ag-chart" data-chart="heat">
+              <div class="ag-chart__head"><h3>A·B 등급 — 쇠퇴유형 × 추천 용도</h3></div>
+              <p class="ag-chart__sub">칸의 수는 단위 수. 칸에 올리면 해당 단위 이름이 나옵니다.</p>
+              <div class="ag-plot"></div>
             </div>
-            <div class="fb-card ag-legend" id="ag-legend-resid"><h4>범례</h4><span class="fb-sub">자료를 불러오는 중…</span></div>
+            <div class="fb-card ag-chart" data-chart="recov">
+              <div class="ag-chart__head"><h3>A·B 등급 — 회수 가능 공업지역 물량과 종상향 방식</h3></div>
+              <p class="ag-chart__sub">종상향 방식별로 묶고, 막대 색은 등급입니다.</p>
+              <div class="ag-plot"></div>
+            </div>
           </div>
-          <p class="fb-sub">행정동 폴리곤을 누르면 판정과 주거·산업·상업 연면적 비율. <button type="button" class="chip ag-png" data-png="assets/data/aging/analysis/map_residential_shift.png" data-cap="준공업지역 실제 기능 판정 — 정적 그림">정적 그림(PNG) 크게 보기</button></p>
-          <h3 style="margin:1.4rem 0 .3rem">행정동별 판정 표</h3>
-          <div class="fb-card">
-            <div class="ag-tabs" id="ag-rs-tabs"></div>
-            <div class="fb-scroll"><table class="fb-table" id="ag-rs-tbl"><thead></thead><tbody></tbody></table></div>
-            <p class="fb-sub" style="margin-top:.5rem" id="ag-rs-note"></p>
-          </div>
-        </section>
 
-        <!-- ⑦ 논문 v7 — 용도 판정 근거와 결과 그림 (assets/data/aging/analysis/paper/) -->
-        <section class="fb-fig" id="fig7">
-          <div class="fb-fig__head">
-            <span class="fb-fig__no">⑦</span>
-            <h2>논문 v7 — 용도 판정 근거와 결과 그림</h2>
-            <span class="fb-fig__src">그림 10장 · 2026-09-19</span>
-          </div>
-          <p class="fb-fig__desc">
-            노후산단의 전환 용도는 <strong>「무엇에 둘러싸여 있고, 그 지역의 무엇이 쇠퇴했는가」</strong>로 갈립니다.
-            인구·건물은 유지되는데 사업체가 줄고(산업건물쇠퇴·인구산업쇠퇴) 역세권이면 <strong>상업·업무</strong>,
-            인구·산업·건물이 모두 쇠퇴(절대쇠퇴)하면 <strong>공공주택 중심 주거</strong>,
-            사업체가 유지되면 노후해도 <strong>산업 고도화</strong>로 둡니다.
-            근거 문헌: Alonso(1964) · Huff(1963) · Cervero &amp; Kockelman(1997) · Longo &amp; Campbell(2016) · 土屋 외(2019) · 서울시(2016·2024) · 류경수 외(2024) · 선전 JUPD(2024).
-            아래는 논문 원고(v7)의 그림 가운데 ⑤절에 없는 열 장입니다 — 누르면 크게 보입니다.
-          </p>
+          <h3 class="ag-h3">논문 그림 <small>도식 · 위치도 (누르면 크게)</small></h3>
           <div class="ag-paper">
             <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g1_data.png" alt="그림 1. 분석 자료의 구성과 결합 체계" loading="lazy">
-              <figcaption>자료 결합 체계 — 산단 목록·경계·분양현황·건축물·토지특성·역·도시쇠퇴 일곱 원천의 연결 (누르면 크게)</figcaption>
+              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g1_data.png" alt="분석 자료의 구성과 결합 체계" loading="lazy">
+              <figcaption>자료 결합 체계 — 산단 목록·경계·분양현황·건축물·토지특성·역·도시쇠퇴 일곱 원천의 연결</figcaption>
             </figure>
             <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g3_typology.png" alt="그림 2. 30년 이상 노후산단의 유형 분포(역 거리 × 쇠퇴·사업체 감소)" loading="lazy">
-              <figcaption>30년↑ 산단 41곳의 유형 산점도 — 역 거리 × 쇠퇴·사업체 감소 (누르면 크게)</figcaption>
+              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g11_rule.png" alt="전환 용도 판정 규칙" loading="lazy">
+              <figcaption>전환 용도 판정 규칙 — 둘러싼 것과 쇠퇴한 것으로 상업·업무 / 주거 / 산업 고도화를 가름</figcaption>
             </figure>
             <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g3b_typebar.png" alt="그림 3. 유형별 개소·면적·종합점수" loading="lazy">
-              <figcaption>유형별 개소 · 면적 · 종합점수 (누르면 크게)</figcaption>
+              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g8_map_use.png" alt="용도별 전환 상위 10의 위치" loading="lazy">
+              <figcaption>용도별 상위 10의 위치 — 상업 · 주거 · 업무 세 패널</figcaption>
             </figure>
             <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g5_useweights.png" alt="그림 5. 용도별 가중치 프로파일" loading="lazy">
-              <figcaption>용도별(상업·주거·업무) 가중치 프로파일 (누르면 크게)</figcaption>
+              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g3b_typebar.png" alt="유형별 개소·면적·종합점수" loading="lazy">
+              <figcaption>유형별 개소 · 면적 · 종합점수</figcaption>
             </figure>
-            <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g8_map_use.png" alt="그림 9. 용도별 전환 상위 10의 위치" loading="lazy">
-              <figcaption>용도별 상위 10의 위치 — 상업 · 주거 · 업무 세 패널 (누르면 크게)</figcaption>
-            </figure>
-            <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g9_usemix.png" alt="그림 10. 종합 상위 15 산단의 내부·주변 300m 건축물 용도 구성" loading="lazy">
-              <figcaption>종합 상위 15 산단의 내부 / 주변 300m 건축물 용도 구성 (누르면 크게)</figcaption>
-            </figure>
-            <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g11_rule.png" alt="그림 11. 전환 용도 판정 규칙" loading="lazy">
-              <figcaption>전환 용도 판정 규칙 — 둘러싼 것과 쇠퇴한 것으로 상업·업무 / 주거 / 산업 고도화를 가름 (누르면 크게)</figcaption>
-            </figure>
-            <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g10_heat.png" alt="그림 12. A·B등급 대상지의 도시쇠퇴 유형 × 추천 용도" loading="lazy">
-              <figcaption>A·B 등급 대상지의 쇠퇴유형 × 추천 용도 히트맵 (누르면 크게)</figcaption>
-            </figure>
-            <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g12_recov.png" alt="그림 13. A·B등급 산단의 회수 가능 물량과 종상향 방식" loading="lazy">
-              <figcaption>A·B 등급 산단의 회수 가능 공업지역 물량과 종상향 방식 (누르면 크게)</figcaption>
-            </figure>
-            <figure class="ag-shot">
-              <img class="ag-zoom" src="assets/data/aging/analysis/paper/g13_cluster.png" alt="그림 14. 산단 외 공업지역 클러스터 종합 상위 15" loading="lazy">
-              <figcaption>산단 밖 공업지역 클러스터 종합 상위 15 (누르면 크게)</figcaption>
-            </figure>
+          </div>
+          <p class="ag-note">근거 문헌: Alonso(1964) · Huff(1963) · Cervero &amp; Kockelman(1997) · Longo &amp; Campbell(2016) · 土屋 외(2019) · 서울시(2016·2024) · 류경수 외(2024) · 선전 JUPD(2024).</p>
+        </section>
+
+        <!-- ※ 자료 출처 -->
+        <section class="fb-fig" id="sources">
+          <div class="fb-fig__head">
+            <span class="fb-fig__no">※</span>
+            <h2>자료 출처</h2>
+          </div>
+          <div class="fb-card">
+            <table class="fb-table fb-src-table">
+              <thead><tr><th>자료</th><th>출처 · 식별자</th><th>비고</th></tr></thead>
+              <tbody>
+                <tr><td>산업단지 목록 · 경계</td><td>산업입지정보망 산단 목록(2026) · 단지경계 <code>DAM_DAN</code> · 분양현황 단지코드(<code>DAN_ID</code>)</td>
+                    <td>목록 1,475 → 경계 1,363과 단지코드로 직접 연결, 못 찾은 것은 지오코딩(네이버·카카오)으로 보조. 경기 229 중 228 짝, 고유 경계 215 (v5)</td></tr>
+                <tr><td>분양현황 · 미분양</td><td>산업입지정보망 분양현황 (2026.7)</td><td>산단 자체 미분양율 · 같은 시군 산단 전체 미분양율(공고면적 가중)</td></tr>
+                <tr><td>유치업종</td><td>유치업종도면</td><td>단지별 상위 3 업종 · 필지면적</td></tr>
+                <tr><td>철도역</td><td>경기 철도역 307 (GTX 포함)</td><td>역세권 반경 1km · 거리는 직선거리</td></tr>
+                <tr><td>인구</td><td>SGIS 인구 100m 격자</td><td>1,029,094칸 · 밀도 = 격자 인구 × 100 (명/㎢)</td></tr>
+                <tr><td>도시쇠퇴도</td><td>도시쇠퇴 8유형 (행정동 1,121)</td><td>인구감소 · 사업체감소 · 노후건축물 조합</td></tr>
+                <tr><td>토지특성</td><td>국가공간정보 토지특성 (경기 약 450만 필지)</td><td>용도지역(일반·준·전용공업) · 지가</td></tr>
+                <tr><td>건축물</td><td>건축물대장 (2,298,133동)</td><td>PNU 조인 · 용도별 연면적 · 사용승인연도</td></tr>
+                <tr><td>행정구역</td><td>2026 시도 · 시군구 · 읍면동</td><td>—</td></tr>
+                <tr><td>배경지도</td><td>Esri World Light Gray Base</td><td>② 지도에서 켤 때만</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
-        <p class="placeholder-note" lang="ko" style="margin-top:2rem">
-          ✎ 경계는 산업입지정보망 단지경계(DAM_DAN)이고 목록과 이름·위치로 짝을 맞춘 것이라, 지구 나눔이 다른 곳(반월·시화, 아산 등)은 한 경계에 목록 여러 줄이 붙습니다.
+        <p class="placeholder-note" lang="ko">
+          ✎ 경계는 산업입지정보망 단지경계(DAM_DAN)를 목록과 단지코드·이름·위치로 짝지은 것이라, 지구 나눔이 다른 곳(반월·시화, 아산 등)은 한 경계에 목록 여러 줄이 붙습니다.
           역세권 거리는 직선거리이며, 인구밀도는 100m 격자 인구 × 100 으로 셈한 명/㎢ 입니다.
         </p>
 
@@ -520,6 +441,7 @@
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
   <script src="assets/js/main.js?v=202609180900" defer></script>
-  <script src="assets/js/aging-complex.js?v=202609182230" defer></script>
+  <script src="assets/js/aging-complex.js?v=202610031200" defer></script>
+  <script src="assets/js/aging-charts.js?v=202610031200" defer></script>
 </body>
 </html>
