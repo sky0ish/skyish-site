@@ -3373,3 +3373,10 @@ th[aria-sort] .fb-sort__a { color: var(--teal); }
   background: rgba(255, 176, 96, .18); border: 1px solid rgba(255, 176, 96, .42);
   color: #ffd9b0; }
 .hocal__warn:hover { background: rgba(255, 176, 96, .3); }
+
+
+/* 첫 화면 달력: 일기는 날짜 칸 오른쪽 위 아이콘으로 (글은 넣지 않습니다) */
+.hoc .hodi { position: absolute; top: 4px; right: 5px; line-height: 0; color: #e0a458;
+  padding: 2px; border-radius: 4px; transition: transform .14s, background .14s; }
+.hoc .hodi:hover { background: rgba(255,255,255,.18); transform: scale(1.12); }
+.hocal--app .hoc .hodi svg { width: 15px; height: 15px; }

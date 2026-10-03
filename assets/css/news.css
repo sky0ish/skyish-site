@@ -61,3 +61,9 @@
 @media (max-width: 640px) {
   .nws__badge { grid-column: 2; justify-self: start; }
 }
+
+/* Contact 「Websites」 — 1. 활동기관 · 2. 자주 가는 사이트 */
+.websub { margin-top: 1.4rem; }
+.websub + .websub { margin-top: 3.2rem; padding-top: 2rem; border-top: 1px solid var(--line); }
+.websub__h { font: 600 1.25rem var(--font-body); color: var(--navy); margin: 0 0 .3rem; }
+.websub__lead { margin: 0 0 1.2rem; font-size: .92rem; }

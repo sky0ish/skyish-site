@@ -183,6 +183,23 @@ export async function initHomeCal(id = "hocal") {
      (제목·시각을 실어 보내 미리 채웁니다). */
   const linkTo = (x, day) => CO.linkTo(x, day, appMode);
 
+  /* 일기 아이콘 — 공책 모양. 누르면 그날 일기로 (여러 편이면 첫 편) */
+  const DIARY_SVG =
+    '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">' +
+      '<rect x="3" y="1.5" width="10" height="13" rx="1.6" fill="currentColor"/>' +
+      '<rect x="5.2" y="1.5" width="1" height="13" fill="rgba(0,0,0,.28)"/>' +
+      '<rect x="7.4" y="4.6" width="3.8" height="1" rx=".5" fill="#fff" opacity=".85"/>' +
+      '<rect x="7.4" y="6.8" width="2.8" height="1" rx=".5" fill="#fff" opacity=".85"/>' +
+    "</svg>";
+  function diaryIcon(list, day) {
+    if (!list || !list.length) return "";
+    const first = { id: list[0].id, cat: "diary", t: list[0].title };
+    const tip = list.length > 1 ? "일기 " + list.length + "편 — " : "일기 — ";
+    return `<a class="hodi" href="${esc(linkTo(first, day))}" ` +
+      `title="${esc(tip + list.map((n) => n.title || "").join(" · "))}" aria-label="그날 일기">` +
+      DIARY_SVG + "</a>";
+  }
+
   /* ── 그리기 ── */
   function draw() {
     const y = at.getFullYear(), m = at.getMonth();
@@ -193,8 +210,12 @@ export async function initHomeCal(id = "hocal") {
 
     // 날짜별로 모읍니다
     const byDay = {};
+    /* 일기(Diary)는 일정 줄에 글을 넣지 않고, 날짜 칸 오른쪽 위에 아이콘만 둡니다 —
+       「다이어리는 다른 일정표랑 동시에 보이게 날짜칸 오른쪽에 아이콘」 */
+    const diaryOf = {};
     notes.forEach((n) => {
       const k = (n.event_date || "").slice(0, 10);
+      if (k && n.category === "diary") { (diaryOf[k] ||= []).push(n); return; }
       if (k) (byDay[k] ||= []).push({
         t: n.title, c: CAT_COLOR[n.category] || "#4f9d92",
         id: n.id, cat: n.category,   // 눌렀을 때 그 글로 갑니다
@@ -236,6 +257,7 @@ export async function initHomeCal(id = "hocal") {
         `${list.length ? " has" : ""}" data-d="${k}"` +
         `${list.length ? ` title="${esc(list.map((x) => x.t).join(" · "))}"` : ""}>` +
         `<b class="${d.getDay() === 0 ? "sun" : d.getDay() === 6 ? "sat" : ""}">${d.getDate()}</b>` +
+        diaryIcon(diaryOf[k], k) +
         items + "</span>";
     }
 
@@ -399,6 +421,8 @@ export async function initHomeCal(id = "hocal") {
     if (grid) grid.addEventListener("click", (e) => {
       // 고르개 창 안의 항목은 제 길로 갑니다 — 칸 나누기가 가로채면 안 됩니다
       if (e.target.closest(".hopick") || e.target.closest(".hoday")) return;
+      // 일기 아이콘은 제 길(그날 일기)로 갑니다
+      if (e.target.closest(".hodi")) return;
       const cell = e.target.closest(".hoc");
       if (!cell || !cell.dataset.d) return;
       const day = cell.dataset.d;
