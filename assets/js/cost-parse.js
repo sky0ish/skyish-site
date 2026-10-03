@@ -176,3 +176,20 @@ export function matrix(list, fix, n = 12, nowYm) {
   const totals = months.map((ym) => (bm.get(ym) || {}).total || 0);
   return { months, rows, totals, partial };
 }
+
+/** 다 쓴 달만 — 「통계는 달마다 해야 하기 때문에 10월 1~3일치는 삭제하고」
+ *  내역의 마지막 날이 그 달 말일 전이면 그 달을 통째로 뺍니다 (자료는 그대로 두고 셈에서만).
+ *  @returns { list, cut: null | { ym, from, to, n, sum } } */
+export function completeOnly(list) {
+  const L = live(list);
+  const days = L.map((x) => x.d).sort();
+  const last = days[days.length - 1] || "";
+  if (!last) return { list: L, cut: null };
+  const ym = last.slice(0, 7);
+  const dim = new Date(+ym.slice(0, 4), +ym.slice(5), 0).getDate();
+  if (+last.slice(8) >= dim) return { list: L, cut: null };
+  const out = L.filter((x) => !x.d.startsWith(ym));
+  const cutL = L.filter((x) => x.d.startsWith(ym));
+  return { list: out, cut: { ym, from: cutL.map((x) => x.d).sort()[0], to: last,
+                             n: cutL.filter((x) => x.a > 0).length, sum: cutL.reduce((a, b) => a + b.a, 0) } };
+}

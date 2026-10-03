@@ -9,7 +9,7 @@
 //    카드번호 · 승인번호는 읽지도 않습니다.
 //  · 관리자만 봅니다.
 import { currentUser, myProfile } from "../../auth/auth.js";
-import * as C from "./cost-parse.js?v=202610032200";
+import * as C from "./cost-parse.js?v=202610032300";
 import * as FK from "./fs-keep.js?v=202609250900";
 
 const XLSX_LIB = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm";
@@ -54,30 +54,36 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
   const $ = (id) => document.getElementById(id);
 
   function render() {
-    const M = C.byMonth(tx, fix);
+    /* 통계는 다 쓴 달만 — 진행 중인 달(예: 10.01~10.03)은 셈에서 뺍니다 */
+    const cc = C.completeOnly(tx);
+    const stx = cc.list;
+    const M = C.byMonth(stx, fix);
     if (!M.length) {
       $("colMeta").textContent = "";
       $("colCards").innerHTML = '<p class="gro__none">아직 읽은 카드 내역이 없습니다 — 「📂 카드내역 읽기」 로 10.장보기/카드내역 폴더를 골라 주세요.</p>';
       ["colLegend", "colChart", "colTable", "colMonth"].forEach((id) => { $(id).innerHTML = ""; });
       return;
     }
-    const X = C.matrix(tx, fix, 12);
-    const live = C.live(tx);
+    const X = C.matrix(stx, fix, 12);
+    const live = C.live(stx);
     $("colMeta").textContent = (meta.file ? meta.file + " · " : "") + live.length + "건 · " +
       live[live.length - 1].d.replace(/-/g, ".") + " ~ " + live[0].d.replace(/-/g, ".") +
-      (meta.read ? " · 읽은 때 " + meta.read : "");
+      (meta.read ? " · 읽은 때 " + meta.read : "") +
+      (cc.cut ? " · " + ymLabel(cc.cut.ym) + "(" + cc.cut.from.slice(5).replace("-", ".") + "~" + cc.cut.to.slice(5).replace("-", ".") +
+        ", " + cc.cut.n + "건)은 아직 끝나지 않은 달이라 통계에서 뺐습니다" : "");
 
     /* 요약 카드 */
     const cur = M[0], prev = M[1];
     const real = (X.partial ? X.totals.slice(0, -1) : X.totals).filter((v) => v > 0);
     const avg = real.reduce((a, b) => a + b, 0) / (real.length || 1);
     const year = M.filter((x) => x.ym.slice(0, 4) === cur.ym.slice(0, 4)).reduce((a, b) => a + b.total, 0);
-    const pp = M[2];                 // 지난달의 그 전 달 — 지난달은 그 달과 견줍니다 (이번 달은 아직 진행 중일 수 있어서)
-    const diff = (prev && pp) ? (prev.total - pp.total) / (pp.total || 1) : null;
+    const pct = (a, b) => (a && b) ? (a.total - b.total) / (b.total || 1) : null;
+    const arrow = (d, b) => d == null ? "" : (d >= 0 ? "▲ " : "▼ ") + Math.abs(Math.round(d * 100)) + "% (" + ymLabel(b.ym) + " 대비)";
+    const diff = pct(cur, prev), diff2 = pct(prev, M[2]);
     $("colCards").innerHTML =
-      card(ymLabel(cur.ym) + (X.partial ? " (진행 중 · " + live[0].d.slice(5).replace("-", ".") + "까지)" : ""), C.man(cur.total), cur.n + "건") +
+      card(cur.ym.slice(0, 4) + "년 " + ymLabel(cur.ym) + " (다 쓴 마지막 달)", C.man(cur.total), cur.n + "건 · " + arrow(diff, prev)) +
       card(prev ? ymLabel(prev.ym) : "지난달", prev ? C.man(prev.total) : "—",
-           diff == null ? "" : (diff >= 0 ? "▲ " : "▼ ") + Math.abs(Math.round(diff * 100)) + "% (" + ymLabel(pp.ym) + " 대비)") +
+           arrow(diff2, M[2])) +
       card("월평균 (최근 " + real.length + "달)", C.man(avg), "") +
       card(cur.ym.slice(0, 4) + "년 합계", C.man(year), M.filter((x) => x.ym.startsWith(cur.ym.slice(0, 4))).length + "달");
 
@@ -150,7 +156,7 @@ export async function initCost(mountId = "costapp", sectionId = "costsec") {
   function drawMonth() {
     const box = $("colMonth");
     if (!sel) { box.innerHTML = ""; return; }
-    const list = C.live(tx).filter((x) => x.d.startsWith(sel));
+    const list = C.completeOnly(tx).list.filter((x) => x.d.startsWith(sel));
     const total = list.reduce((a, b) => a + b.a, 0);
     const cats = {};
     list.forEach((x) => { const k = C.category(x.m, fix); cats[k] = (cats[k] || 0) + x.a; });

@@ -56,5 +56,13 @@ eq("쿠팡 10월", X.rows.find((r) => r.k === "online").vals[9], 10000);
 eq("늘어나는 항목은 trend > 0", X.rows.find((r) => r.k === "online").trend > 0, true);
 eq("같은 항목은 trend 0", X.rows.find((r) => r.k === "move").trend, 0);
 
+console.log("── 다 쓴 달만 ──");
+const part = [{ d: "2026-09-10", t: "", m: "예시식당", a: 10000, x: 0 }, { d: "2026-09-30", t: "", m: "예시식당", a: 5000, x: 0 },
+              { d: "2026-10-01", t: "", m: "예시식당", a: 7000, x: 0 }, { d: "2026-10-03", t: "", m: "예시카페", a: 3000, x: 0 }];
+const cc = C.completeOnly(part);
+eq("10월 1~3일은 뺀다", cc.list.map((x) => x.d), ["2026-09-10", "2026-09-30"]);
+eq("뺀 것 알림", [cc.cut.ym, cc.cut.from, cc.cut.to, cc.cut.n, cc.cut.sum], ["2026-10", "2026-10-01", "2026-10-03", 2, 10000]);
+eq("말일까지 있으면 그대로", C.completeOnly(part.slice(0, 2)).cut, null);
+
 console.log(bad ? "\n✗ " + bad + " 군데 어긋납니다" : "\n✓ 모두 지납니다");
 process.exit(bad ? 1 : 0);
