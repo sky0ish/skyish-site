@@ -44,7 +44,7 @@ const lines = [
 ];
 const r = G.parseReceipt(lines);
 eq("날짜", r.date, "2026-10-03");
-eq("가게", r.store, "이마트 수원점");
+eq("가게 (이름 정리)", r.store, "이마트");
 eq("품목", r.items.map((x) => x.name), ["사과(부사)", "바나나", "한돈 삼겹살", "양파", "3겹 화장지"]);
 eq("값", r.items.map((x) => x.price), [9900, 3980, 15800, 5480, 12900]);
 eq("영수증으로 본다", G.looksLikeReceipt(lines, r), true);

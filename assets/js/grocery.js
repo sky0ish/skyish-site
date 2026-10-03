@@ -11,9 +11,9 @@
 //  · 표가 아직 없으면(auth/tobuy_setup.sql 을 안 돌리셨으면) 이 브라우저에만 둡니다.
 //  · 관리자만 봅니다 (To BUY 갈래가 관리자 것).
 import { sb, currentUser } from "../../auth/auth.js";
-import * as G from "./grocery-parse.js?v=202610032100";
+import * as G from "./grocery-parse.js?v=202610040300";
 import * as FK from "./fs-keep.js?v=202609250900";
-import { fromImage } from "./notes-files.js?v=202609051200";
+import { fromImage } from "./notes-files.js?v=202610040300";
 
 const LS = "skyish-groceries";
 const IMG = /\.(jpe?g|png|webp)$/i;
@@ -137,7 +137,7 @@ export async function initGrocery(mountId = "groapp") {
         .sort((a, b) => (b.bought_on || "").localeCompare(a.bought_on || "") || a.name.localeCompare(b.name));
       return '<section class="gro__col gro__col--' + k.k + '"><h4>' + esc(k.name) + " <small>" + list.length + "</small></h4>" +
         (list.length ? "<ul>" + list.map((x) =>
-          '<li data-id="' + esc(x.id) + '"><span class="gro__n">' + esc(x.name) + "</span>" +
+          '<li data-id="' + esc(x.id) + '"><span class="gro__n" title="눌러서 이름 고치기 (영수증 글자가 틀렸을 때)">' + esc(x.name) + "</span>" +
           '<span class="gro__d">' + esc((x.bought_on || "").slice(5).replace("-", ".")) + "</span>" +
           '<select class="gro__cat" aria-label="갈래 바꾸기">' + G.KINDS.map((o) =>
             '<option value="' + o.k + '"' + (o.k === (x.cat || "etc") ? " selected" : "") + ">" + esc(o.name) + "</option>").join("") +
@@ -149,7 +149,8 @@ export async function initGrocery(mountId = "groapp") {
     /* 그날의 사진 */
     const pics = rows.filter((r) => r.kind === "photo" && r.thumb && G.within(r.bought_on, t));
     $("groPics").innerHTML = pics.map((p) =>
-      '<figure><img src="' + esc(p.thumb) + '" alt="' + esc(p.name || "") + '" loading="lazy">' +
+      '<figure data-src="' + esc(p.src || "") + '"><button type="button" class="gro__px" title="이 사진(영수증)과 거기서 읽은 품목을 지웁니다 — 「장보기 폴더 읽기」 를 누르면 다시 읽습니다">✕</button>' +
+      '<img src="' + esc(p.thumb) + '" alt="' + esc(p.name || "") + '" loading="lazy">' +
       "<figcaption>" + esc((p.bought_on || "").slice(5).replace("-", ".")) +
       (p.data && p.data.receipt ? " · 영수증" : "") + "</figcaption></figure>").join("");
 
@@ -200,6 +201,26 @@ export async function initGrocery(mountId = "groapp") {
   mount.addEventListener("click", async (e) => {
     const r = e.target.closest(".gro__r");
     if (r) { openRecipe(r.dataset.r); return; }
+    /* 이름 고치기 — OCR 이 틀린 글자를 바로잡으면 갈래도 다시 매깁니다 */
+    const nm = e.target.closest(".gro__n");
+    if (nm) {
+      const id = nm.closest("li").dataset.id;
+      const cur = rows.find((r) => r.id === id);
+      const v = prompt("품목 이름을 고쳐 주세요", cur ? cur.name : "");
+      if (v == null || !v.trim() || !cur || v.trim() === cur.name) return;
+      try { await patch(id, { name: v.trim(), cat: G.classify(v.trim()) }); render(); }
+      catch (err) { alert("고치지 못했습니다 — " + err.message); }
+      return;
+    }
+    const px = e.target.closest(".gro__px");
+    if (px) {
+      const src = px.closest("figure").dataset.src;
+      if (!src || !confirm("이 사진과 거기서 읽은 품목을 지울까요?
+「📂 장보기 폴더 읽기」 를 누르면 다시 읽습니다.")) return;
+      const ids = rows.filter((r) => r.src === src || String(r.src || "").startsWith(src + "#")).map((r) => r.id);
+      try { await remove(ids); render(); } catch (err) { alert("지우지 못했습니다 — " + err.message); }
+      return;
+    }
     const x = e.target.closest(".gro__x");
     if (x) {
       const id = x.closest("li").dataset.id;
@@ -224,6 +245,19 @@ export async function initGrocery(mountId = "groapp") {
   });
 
   /* ── 장보기 폴더 읽기 ── */
+  /* 영수증 OCR 앞손질 — 사진 방향을 바로 세우고 긴 변을 2400 으로 (폰 사진 4000px · 캡처 1080px 모두)
+     「영수증을 못 읽어서 … 글자가 깨진」 까닭은 크기·방향 그대로 넣고 쪽 나누기를 자동으로 둔 탓이었습니다 */
+  async function forOcr(file) {
+    try {
+      const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+      const k = 2400 / Math.max(bmp.width, bmp.height);
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      const g = c.getContext("2d");
+      g.drawImage(bmp, 0, 0, c.width, c.height);
+      return c;
+    } catch (e) { return file; }
+  }
   async function thumb(file) {
     try {
       const bmp = await createImageBitmap(file);
@@ -265,7 +299,10 @@ export async function initGrocery(mountId = "groapp") {
           done.book = (data.recipes || []).length;
         } catch (e) { say("레시피.json 을 읽지 못했습니다 — " + esc(e.message)); }
       }
-      /* ② 그림 — 이미 읽은 것(이름·크기·날짜가 같은 것)은 건너뜁니다 */
+      /* ② 예전 읽개(v1)로 읽은 영수증은 지우고 다시 읽습니다 — 품목이 깨져 있었습니다 */
+      const stale = rows.filter((r) => r.kind === "photo" && r.data && r.data.receipt && !(r.data.v >= 2)).map((r) => r.src);
+      if (stale.length) await remove(rows.filter((r) => stale.some((k) => r.src === k || String(r.src || "").startsWith(k + "#"))).map((r) => r.id));
+      /* ③ 그림 — 이미 읽은 것(이름·크기·날짜가 같은 것)은 건너뜁니다 */
       const seen = new Set(rows.map((r) => r.src).filter(Boolean));
       const pics = files.filter((f) => IMG.test(f.path));
       const heic = files.filter((f) => /\.(heic|heif)$/i.test(f.path)).length;
@@ -281,14 +318,14 @@ export async function initGrocery(mountId = "groapp") {
         if (!G.within(fileDay, t, G.KEEP_DAYS + 7)) { done.skipped++; continue; }   // 오래된 것은 읽지 않습니다
         btn.textContent = "읽는 중… " + (i + 1) + "/" + pics.length;
         let lines = [];
-        try { lines = await fromImage(file, (m) => say(esc(f.h.name) + " — " + esc(m))); } catch (e) { lines = []; }
+        try { lines = await fromImage(await forOcr(file), (m) => say(esc(f.h.name) + " — " + esc(m)), { psm: 6 }); } catch (e) { lines = []; }
         const p = G.parseReceipt(lines);
         const isReceipt = G.looksLikeReceipt(lines, p);
         const day = (isReceipt && p.date) || fileDay;
         const th = await thumb(file);
         if (isReceipt) {
           await add([{ kind: "photo", name: p.store || "영수증", bought_on: day, src: key, thumb: th,
-                       data: { receipt: true, store: p.store, n: p.items.length } }].concat(
+                       data: { receipt: true, store: p.store, n: p.items.length, v: 2 } }].concat(
             p.items.map((it) => ({ kind: "item", name: it.name, price: it.price, cat: G.classify(it.name),
                                    bought_on: day, src: key + "#" + it.name }))));
           done.receipts++; done.items += p.items.length;

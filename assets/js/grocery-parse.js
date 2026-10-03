@@ -16,7 +16,7 @@ export const KINDS = [
 
 /* 낱말 사전 — 이름 안에 이 말이 들어 있으면 그 갈래로 봅니다 (긴 말을 먼저 봅니다) */
 const FRUIT = ["사과", "배", "귤", "감귤", "한라봉", "천혜향", "레드향", "오렌지", "자몽", "레몬", "라임",
-  "바나나", "딸기", "포도", "샤인머스캣", "청포도", "거봉", "수박", "참외", "멜론", "복숭아", "자두",
+  "바나나", "딸기", "포도", "메론", "샤인머스캣", "청포도", "거봉", "수박", "참외", "멜론", "복숭아", "자두",
   "살구", "체리", "블루베리", "라즈베리", "크랜베리", "키위", "골드키위", "망고", "파인애플", "아보카도",
   "석류", "감", "단감", "홍시", "곶감", "대추", "무화과", "매실", "유자", "용과", "리치", "코코넛",
   "토마토", "방울토마토", "대추토마토", "건포도", "푸룬"];
@@ -33,7 +33,7 @@ const FOOD = ["소고기", "한우", "쇠고기", "돼지", "삼겹", "목살", 
   "생크림", "두부", "순두부", "유부", "어묵", "맛살", "생선", "고등어", "연어", "참치", "꽁치", "갈치",
   "조기", "명태", "동태", "오징어", "낙지", "문어", "새우", "게", "꽃게", "조개", "바지락", "홍합",
   "굴", "전복", "멸치", "김", "미역", "다시마", "쌀", "현미", "잡곡", "보리", "귀리", "오트밀", "밀가루",
-  "부침가루", "튀김가루", "빵", "식빵", "베이글", "떡", "떡국", "라면", "국수", "소면", "우동", "파스타",
+  "부침가루", "튀김가루", "빵", "식빵", "베이글", "떡", "떡국", "라면", "사발면", "컵라면", "육개장", "쉐이크", "프로틴", "국수", "소면", "우동", "파스타",
   "스파게티", "만두", "김치", "깍두기", "단무지", "반찬", "젓갈", "된장", "고추장", "간장", "쌈장",
   "식초", "설탕", "소금", "후추", "참기름", "들기름", "식용유", "올리브유", "마요네즈", "케첩", "소스",
   "카레", "짜장", "시리얼", "그래놀라", "견과", "아몬드", "호두", "땅콩", "과자", "초콜릿", "아이스크림",
@@ -83,7 +83,8 @@ function ymd(y, mo, d) {
 
 /* ── 영수증 글줄 ── */
 const SKIP = /(합\s*계|총\s*액|소\s*계|부가세|과세|면세|공급가|받을|받은|거스름|결제|카드|승인|할부|현금|포인트|적립|할인|쿠폰|영수증|사업자|대표|전화|TEL|주소|매장|점포|POS|계산원|캐셔|교환|환불|반품|회원|잔액|봉투|봉지|단가|수량|금액|상품명|품명|감사|방문|NO\.|번호|일시|가맹|VAT|합\s*산|에누리|행사|증정|\d{2}:\d{2})/i;
-const PRICE = /(\d{1,3}(?:,\d{3})+|\d{3,7})\s*원?\s*$/;
+/* 한 줄 꼴의 값 — 이름과 값 사이가 띄어져 있어야 합니다 (「육개장사발면180」 의 180 은 값이 아님) */
+const PRICE = /\s(\d{1,3}(?:,\d{3})+|\d{3,7})\s*원?\s*$/;
 
 /** 한 줄에서 품목 이름 다듬기 — 바코드·순번·수량·무게 따위를 걷어 냅니다 */
 export function cleanName(s) {
@@ -98,28 +99,92 @@ export function cleanName(s) {
     .replace(/\s+/g, " ").trim();
 }
 
+/* OCR 이 「3, 200」 처럼 쉼표 뒤를 띄우거나 「부 가 세」 처럼 글자를 띄우는 일이 잦습니다 */
+const norm = (s) => String(s || "")
+  .replace(/(\d)\s*,\s*(\d{3})(?!\d)/g, "$1,$2")
+  .replace(/[“”‘’„]/g, "")
+  .trim();
+const tight = (s) => String(s || "").replace(/\s+/g, "");
+/* 할인 · 쿠폰 · 행사 줄 — 품목이 아닙니다 (코스트코 IRC · CPN, 이마트 「고래잇 행사」) */
+const DISCOUNT = /(IRC|CPN|쿠폰|행사|할인|에누리|포인트|증정|D\/C|DC\b)/i;
+
+/** 값 줄인가 — 「513710  1x  21,790  21,790 T」 · 「8805787957668  4,900  1  4,900」 */
+function priceLine(s) {
+  const t = norm(s);
+  const m = /(-?\d{1,3}(?:,\d{3})+|-?\d{3,7})\s*(-)?\s*[A-Za-zㅣ|ㅠㅜ1]{0,3}\s*$/.exec(t);
+  if (!m) return null;
+  const head = t.slice(0, m.index);
+  if ((head.match(/[가-힣]/g) || []).length >= 2) return null;     // 이름이 같이 있으면 한 줄 꼴
+  if (!/\d{3,}/.test(head)) return null;                         // 앞에 바코드·상품번호·단가가 있어야
+  const neg = /^-/.test(m[1]) || !!m[2];
+  return { amount: +m[1].replace(/[,-]/g, ""), neg };
+}
+
+/** 이름 줄 다듬기 — 순번 · 별표 · 앞뒤 OCR 찌꺼기 */
+function nameOf(raw) {
+  let s = norm(raw)
+    .replace(/^[^가-힣A-Za-z0-9]*/, "")
+    .replace(/^\d{1,3}\s*[\*xX※]?\s+/, "")                      // 01 · 04* · 04x
+    .replace(/^[가-힣]?\s{3,}/, "")                              // 앞에 떨어진 글자 하나
+    .replace(/^[A-Za-z]{1,3}\s+(?=[가-힣])/, "")                  // 앞에 붙은 영문 찌꺼기 몇 글자
+    .replace(/\s[a-z]{1,3}(?=\s|$)/g, " ")                       // 사이에 낀 소문자 찌꺼기 (「하미 at ofl」)
+    .replace(/[£¢€¥©®°±§¶•]/g, "")
+    .replace(/\s{2,}.*$/, "")                                    // 뒤에 멀리 떨어진 찌꺼기
+    .replace(/[|\\{}\[\]<>~^_=]+/g, " ")
+    .replace(/\s+/g, " ").trim();
+  /* 「슬 림쉐이 크」 처럼 글자 사이 빈칸 — 한글끼리면 붙입니다 */
+  if ((s.match(/[가-힣]\s[가-힣]/g) || []).length >= 2) s = s.replace(/([가-힣])\s(?=[가-힣])/g, "$1");
+  return s;
+}
+const nameLike = (s) => {
+  const h = (s.match(/[가-힣]/g) || []).length;
+  /* 한글 두 글자 넘게, 아니면 붙은 영문 낱말(4자 넘게)이 있어야 — 「SH KA wo」 같은 찌꺼기는 버립니다 */
+  return (h >= 2 || /[A-Za-z]{4,}/.test(s)) && s.length <= 40 &&
+         !/(대로|번길|\d+길|서초구|강남구|[가-힣]+구\s|[가-힣]+시\s|MEMBER|회원|만료|사업자|대표|TEL|전화)/i.test(s);
+};
+
 export function parseReceipt(lines) {
   const L = (Array.isArray(lines) ? lines : String(lines || "").split(/\r?\n/))
-    .map((x) => String(x).trim()).filter(Boolean);
+    .map((x) => norm(x)).filter(Boolean);
   const all = L.join("\n");
   const date = dateFrom(all);
-  const store = (L.find((x) => /(마트|이마트|홈플러스|롯데|코스트코|트레이더스|농협|하나로|GS|CU|세븐|쿠팡|컬리|노브랜드|시장|슈퍼|청과|정육|베이커리|올리브영|다이소)/.test(x)) || "")
-    .replace(/\s+/g, " ").slice(0, 40);
+  /* 가게 — OCR 이 첫 글자를 자주 놓쳐(「는 스트코」) 이름 조각으로 알아봅니다 */
+  const STORES = [[/코스트코|스트코|COSTCO|WHOLESALE/i, "코스트코"], [/트레이더스/, "트레이더스"], [/이마트|신세계포인트/, "이마트"],
+                  [/홈플러스/, "홈플러스"], [/롯데마트/, "롯데마트"], [/하나로|농협/, "하나로마트"], [/노브랜드/, "노브랜드"],
+                  [/컬리/, "컬리"], [/쿠팡/, "쿠팡"], [/올리브영/, "올리브영"], [/다이소/, "다이소"]];
+  const hit = STORES.find(([re]) => re.test(all));
+  const store = hit ? hit[1] : "";
   const items = [], seen = new Set();
-  for (const raw of L) {
-    if (SKIP.test(raw)) continue;
-    const pm = PRICE.exec(raw);
-    if (!pm) continue;
-    const name = cleanName(raw.slice(0, pm.index));
-    const hangul = (name.match(/[가-힣]/g) || []).length;
-    const letters = (name.match(/[A-Za-z]/g) || []).length;
-    if (hangul < 2 && letters < 3) continue;           // 이름 같지 않은 줄
-    if (name.length > 40) continue;
-    const price = +pm[1].replace(/,/g, "");
-    if (price < 100 || price > 2000000) continue;
-    if (seen.has(name)) continue;
+  const push = (name, price) => {
+    if (!name || !nameLike(name) || DISCOUNT.test(name) || SKIP.test(tight(name))) return;
+    if (price < 100 || price > 2000000 || seen.has(name)) return;
     seen.add(name);
     items.push({ name, price });
+  };
+  /* 품목은 「판매」·「상품명」 줄 다음부터 — 그 위는 가게 · 주소 · 회원번호 */
+  const startAt = L.findIndex((x) => /^(판매|상품명|품명|\[?구\s*매\]?)/.test(tight(x)) || /상품명|단가수량/.test(tight(x)));
+  let pending = "";
+  for (const raw of (startAt >= 0 ? L.slice(startAt + 1) : L)) {
+    const t = tight(raw);
+    if (/^(\*+)?(합계|결제대상|결제금액|받을금액|총구매)/.test(t)) break;         // 여기부터는 품목이 아닙니다
+    if (/^(\(\*\))?(과세|면세|부가세)/.test(t)) { pending = ""; continue; }
+    if (SKIP.test(t) && !priceLine(raw)) { pending = ""; continue; }
+    /* ① 이름 줄 다음의 값 줄 (코스트코 · 이마트) */
+    const pl = priceLine(raw);
+    if (pl) {
+      if (pending && !pl.neg) push(pending, pl.amount);
+      pending = "";
+      continue;
+    }
+    /* ② 한 줄 안에 이름과 값 */
+    const pm = PRICE.exec(raw);
+    if (pm) {
+      const nm = cleanName(raw.slice(0, pm.index));
+      if (nameLike(nm) && !SKIP.test(tight(raw))) { push(nameOf(nm), +pm[1].replace(/,/g, "")); pending = ""; continue; }
+    }
+    /* ③ 이름일 수 있는 줄 — 다음 값 줄을 기다립니다 */
+    const nm = nameOf(raw);
+    pending = nameLike(nm) && !DISCOUNT.test(nm) ? nm : "";
   }
   return { date, store, items };
 }

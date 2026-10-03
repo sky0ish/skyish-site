@@ -174,3 +174,80 @@
   .col__barrow small { display: none; }
 }
 .col__foot { font-size: .74rem; color: var(--mauve); margin: .3rem .4rem 0; }
+
+/* 움직이는 그래프 */
+.col__chart { position: relative; }
+.col__chart .guide { stroke: rgba(28,26,25,.35); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+.col__chart rect.hover { fill: transparent; cursor: crosshair; }
+.col__chart g.ln { cursor: pointer; transition: opacity .25s; }
+.col__chart g.ln .hit { fill: none; stroke: transparent; stroke-width: 14; }
+.col__chart g.ln.dim { opacity: .13; }
+.col__chart g.ln:hover .draw { filter: drop-shadow(0 0 2px rgba(0,0,0,.25)); }
+.col__tip { position: absolute; z-index: 5; pointer-events: none; background: rgba(28,26,25,.92); color: #fff; border-radius: 10px;
+  padding: .55rem .75rem; font-size: .76rem; line-height: 1.55; min-width: 170px; box-shadow: var(--shadow-md); }
+.col__tip[hidden] { display: none; }
+.col__tip b { display: block; margin-bottom: .2rem; font-size: .8rem; }
+.col__tip span { display: flex; align-items: center; gap: 6px; }
+.col__tip span.tot { border-bottom: 1px solid rgba(255,255,255,.2); padding-bottom: 2px; margin-bottom: 2px; font-weight: 700; }
+.col__tip i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.col__tip em { margin-left: auto; font-style: normal; font-variant-numeric: tabular-nums; padding-left: 10px; }
+/* 항목 상세 */
+.col__cat { margin-top: 1rem; background: var(--white); border: 1px solid var(--line-soft); border-left: 5px solid var(--c); border-radius: 12px; padding: 1rem 1.2rem; animation: colIn .35s ease; }
+@keyframes colIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.col__cathead { display: flex; align-items: center; gap: .6rem; }
+.col__cathead i { width: 14px; height: 14px; border-radius: 50%; background: var(--c); }
+.col__cathead b { font-size: 1.15rem; }
+.col__cathead button { margin-left: auto; }
+.col__catnums { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .6rem; margin: .9rem 0; }
+.col__catnums div { display: flex; flex-direction: column; background: #faf8f5; border-radius: 10px; padding: .55rem .7rem; }
+.col__catnums span { font-size: .72rem; color: var(--mauve); }
+.col__catnums b { font-size: 1.05rem; color: var(--navy); }
+.col__catnums b.up { color: #c0392b; } .col__catnums b.down { color: #2f7fb8; }
+.col__catnums small { font-size: .7rem; color: var(--mauve); }
+.col__catbars { display: flex; gap: 6px; align-items: flex-end; height: 160px; }
+.col__catbars button { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+  border: 0; background: none; cursor: pointer; padding: 0; }
+.col__catbars em { font-style: normal; font-size: .68rem; color: var(--mauve); margin-bottom: 2px; }
+.col__catbars i { width: 70%; background: var(--c); border-radius: 5px 5px 0 0; min-height: 2px; max-height: calc(100% - 34px); opacity: .85; transition: opacity .2s; }
+.col__catbars button:hover i { opacity: 1; }
+.col__catbars span { font-size: .72rem; color: #6b6461; margin-top: 4px; }
+@media (max-width: 760px) { .col__catnums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* 대분류 · 세부 */
+.col__lv { display: inline-flex; border: 1px solid var(--navy); border-radius: 999px; overflow: hidden; margin-right: 6px; }
+.col__lv button { border: 0 !important; border-radius: 0 !important; opacity: 1 !important; background: var(--white); color: var(--navy); font-weight: 600; padding: .25rem .8rem !important; }
+.col__lv button.on { background: var(--navy); color: #fff; }
+.col__table tr.big th, .col__table tr.big td { font-weight: 700; background: #faf8f5; }
+.col__table tr.sub th { font-weight: 400; padding-left: 1.6rem; color: #4a4542; }
+.col__table tr.sub td { color: #6b6461; }
+.col__cathead small { color: var(--mauve); font-size: .78rem; }
+.col__desc { font-size: .8rem; color: var(--mauve); margin: .6rem 0 0; }
+.col__rule { margin-top: 1.2rem; }
+.col__rule summary { cursor: pointer; font-weight: 600; color: var(--navy); }
+.col__ruletab { width: 100%; border-collapse: collapse; margin-top: .7rem; font-size: .8rem; background: var(--white); }
+.col__ruletab th, .col__ruletab td { border: 1px solid var(--line-soft); padding: .45rem .6rem; text-align: left; vertical-align: top; }
+.col__ruletab thead th { background: #f3efe9; }
+.col__ruletab tbody th { background: #faf8f5; white-space: nowrap; }
+.col__ruletab td i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.col__ruletab td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* 표의 항목 이름 — 누르면 그래프에서 그 선만 */
+.col__rowk { border: 0; background: none; padding: 2px 6px 2px 0; font: inherit; color: inherit; cursor: pointer; display: inline-flex; align-items: center; border-radius: 6px; text-align: left; }
+.col__rowk:hover { color: var(--navy); text-decoration: underline; }
+.col__table tr.on th, .col__table tr.on td { background: #eef2fb !important; }
+.col__table tr.on .col__rowk { color: var(--navy); font-weight: 700; }
+
+/* 표 왼쪽 칸 — 항목 · 들어가는 것 · 예시 */
+.col__table tbody th { white-space: normal; min-width: 260px; max-width: 360px; vertical-align: top; }
+.col__table tbody td { vertical-align: top; padding-top: .55rem; }
+.col__table small.col__d { display: block; font-weight: 400; font-size: .7rem; color: #7d7570; margin: 2px 0 0 15px; line-height: 1.45; }
+.col__table small.col__ex { display: block; font-weight: 400; font-size: .66rem; color: #a0958f; margin: 1px 0 2px 15px; line-height: 1.45; }
+.col__table thead th small { font-weight: 400; color: var(--mauve); font-size: .7rem; }
+.col__how { font-size: .76rem; color: var(--mauve); margin: -.3rem 0 .7rem; line-height: 1.6; }
+.col__how b { color: var(--navy); }
+.col__table thead th:first-child { text-align: left; }
+.gro__pics figure { position: relative; }
+.gro__px { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: .7rem; cursor: pointer; }
+.gro__px:hover { background: #a5532a; }
+.gro__n { cursor: pointer; } .gro__n:hover { color: var(--navy); text-decoration: underline dotted; }
+.col__tx small.col__card { font-size: .66rem; color: #fff; background: #8a7f7a; border-radius: 4px; padding: 0 5px; margin-left: 4px; }

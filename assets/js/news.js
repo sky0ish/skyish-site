@@ -7,7 +7,7 @@
 
 const CATS = [
   { k: "ai",     name: "AI",     note: "GeekNews 의 AI 관련 글 · 테크월드뉴스 AI · 최근 2년" },
-  { k: "arch",   name: "건축",   note: "대한건축사협회 건축뉴스 · ArchDaily · 최근 1년" },
+  { k: "arch",   name: "건축",   note: "대한건축사협회 건축뉴스 · ArchDaily (프리츠커상 수상자 · 세계적 건축가·사무소 작품만) · 최근 1년" },
   { k: "city",   name: "도시",   note: "한국도시정비신문 · 국토연구원 세계도시사례 · 도시계획학회 10대 뉴스" },
   { k: "estate", name: "부동산", note: "네이버 부동산 뉴스 · 최근 1년" },
 ];

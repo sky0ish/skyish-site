@@ -265,13 +265,15 @@ export function eventName(blocks, lines) {
    심포지엄 안내문을 사진·캡처로 받으실 때가 많습니다.
    그때만 글자 읽개를 내려받습니다 — 덩치가 커서 늘 들고 있지 않습니다.
    한국어 자료는 처음 한 번 몇십 초 걸립니다(글꼴 자료를 받습니다). */
-export async function fromImage(file, say) {
+export async function fromImage(file, say, opt) {
   const T = await import(/* @vite-ignore */ LIB.ocr);
   if (say) say("글자를 읽는 중… (처음 한 번은 조금 걸립니다)");
   const worker = await T.createWorker(["kor", "eng"], 1, {
     logger: () => {},                       // 자잘한 진행 알림은 삼킵니다
   });
   try {
+    /* 영수증처럼 한 덩어리 글이면 psm 6 이 훨씬 잘 읽습니다 */
+    if (opt && opt.psm) await worker.setParameters({ tessedit_pageseg_mode: String(opt.psm), preserve_interword_spaces: "1" });
     const { data } = await worker.recognize(file);
     return String((data && data.text) || "").split(/\r?\n/)
       .map((x) => x.trim()).filter(Boolean);

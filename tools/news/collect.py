@@ -195,6 +195,58 @@ def kira():
     return [g for g in got if g]
 
 
+# ── ArchDaily 는 이름난 건축가 · 사무소의 작품만 ──────────────
+#  「프리츠커상을 받았거나, 세계적으로 이름이 있는 유명한 건축가나 회사들의 작품들만 …
+#    나머지는 삭제해줘」 — 제목(「작품 / 설계자」)이나 기사에 이 이름이 있어야 남깁니다.
+PRITZKER = [
+    "Philip Johnson", "Luis Barragán", "Luis Barragan", "James Stirling", "Kevin Roche", "I. M. Pei", "I.M. Pei",
+    "Pei Cobb Freed", "Richard Meier", "Hans Hollein", "Gottfried Böhm", "Kenzo Tange", "Gordon Bunshaft",
+    "Oscar Niemeyer", "Frank Gehry", "Gehry Partners", "Aldo Rossi", "Robert Venturi", "Álvaro Siza", "Alvaro Siza",
+    "Fumihiko Maki", "Maki and Associates", "Christian de Portzamparc", "Tadao Ando", "Rafael Moneo",
+    "Sverre Fehn", "Renzo Piano", "RPBW", "Norman Foster", "Foster + Partners", "Foster+Partners",
+    "Rem Koolhaas", "OMA", "Jørn Utzon", "Jorn Utzon", "Glenn Murcutt", "Herzog & de Meuron", "Herzog de Meuron",
+    "Zaha Hadid", "Thom Mayne", "Morphosis", "Paulo Mendes da Rocha", "Richard Rogers", "Rogers Stirk Harbour",
+    "RSHP", "Jean Nouvel", "Peter Zumthor", "SANAA", "Kazuyo Sejima", "Ryue Nishizawa", "Souto de Moura",
+    "Wang Shu", "Amateur Architecture Studio", "Toyo Ito", "Shigeru Ban", "Frei Otto", "Alejandro Aravena",
+    "ELEMENTAL", "RCR Arquitectes", "RCR Architects", "Balkrishna Doshi", "Vastushilpa", "Arata Isozaki",
+    "Grafton Architects", "Lacaton & Vassal", "Lacaton Vassal", "Francis Kéré", "Kéré Architecture",
+    "Kere Architecture", "David Chipperfield", "Riken Yamamoto", "Liu Jiakun", "Jiakun Architects",
+]
+RENOWNED = [
+    "BIG", "Bjarke Ingels", "Snøhetta", "Snohetta", "MVRDV", "Heatherwick", "Kengo Kuma", "Sou Fujimoto",
+    "SOM", "Skidmore, Owings", "Diller Scofidio", "Steven Holl", "Studio Gang", "Jeanne Gang", "KPF",
+    "Kohn Pedersen Fox", "UNStudio", "Ben van Berkel", "Henning Larsen", "3XN", "Safdie", "Coop Himmelb",
+    "Daniel Libeskind", "Studio Libeskind", "Mecanoo", "Neri&Hu", "Neri & Hu", "MAD Architects", "Ma Yansong",
+    "Aires Mateus", "Adjaye", "Junya Ishigami", "Christ & Gantenbein", "WilkinsonEyre", "Wilkinson Eyre",
+    "Grimshaw", "Tatiana Bilbao", "Olson Kundig", "Bernard Tschumi", "Peter Eisenman", "Rafael Viñoly",
+    "Dominique Perrault", "Mario Botta", "Santiago Calatrava", "Fuksas", "Vo Trong Nghia", "VTN Architects",
+    "Sauerbruch Hutton", "Lina Ghotmeh", "Carlo Ratti", "Barozzi Veiga", "Christian Kerez", "Valerio Olgiati",
+    "Smiljan Radić", "Smiljan Radic", "Gensler", "Zaha Hadid Architects", "Atelier Jean Nouvel",
+    "Ateliers Jean Nouvel", "Kengo Kuma and Associates", "Kengo Kuma & Associates",
+    "Thomas Heatherwick", "Bjarke", "Studio Fuksas", "Massimiliano", "Diébédo",
+    "Anupama Kundoo", "Marina Tabassum", "Li Xiaodong", "Wang Shu", "Go Hasegawa", "Junya.ishigami",
+    "Toshiko Mori", "Annabelle Selldorf", "Selldorf Architects", "Weiss/Manfredi", "Allied Works",
+    "Brandlhuber", "Caruso St John", "6a architects", "Assemble", "Mass Design", "MASS Design",
+    "Atelier Bow-Wow", "Bofill", "Ricardo Bofill", "Hassan Fathy", "Gehry", "Calatrava",
+]
+_famous_words = sorted(set(PRITZKER + RENOWNED), key=len, reverse=True)
+# 짧은 머리글자(BIG · SOM · OMA · KPF · MAD)는 낱말로만 — 「big house」 같은 데서 잘못 걸리지 않게 대문자 그대로
+_short = [w for w in _famous_words if len(w) <= 4 and w.isupper()]
+_long = [w for w in _famous_words if w not in _short]
+FAMOUS_RE = re.compile(r"(?:" + "|".join(re.escape(w) for w in _long) + r")", re.I)
+FAMOUS_SHORT = re.compile(r"(?<![A-Za-z])(?:" + "|".join(re.escape(w) for w in _short) + r")(?![A-Za-z])")
+
+
+def famous(it):
+    """이름난 건축가 · 사무소의 작품(또는 그들에 관한 기사)인가"""
+    t = it.get("t", "")
+    return bool(FAMOUS_RE.search(t) or FAMOUS_SHORT.search(t))
+
+
+# 출처마다 남길 것을 거르는 규칙 — 받아 둔 옛것에도 그대로 적용합니다 (「나머지는 삭제」)
+KEEP_ONLY = {"ArchDaily": famous}
+
+
 def archdaily():
     got, lo = [], (TODAY - datetime.timedelta(days=KEEP["arch"][0])).isoformat()
     x = get("https://www.archdaily.com/feed")
@@ -204,7 +256,7 @@ def archdaily():
         d = re.search(r"<pubDate>(.*?)</pubDate>", it)
         c = re.search(r"<category>(.*?)</category>", it, re.S)
         if t and u and d:
-            got.append(item(t.group(1), u.group(1).strip(), day(d.group(1)),
+            got.append(item(t.group(1), u.group(1).strip().split("?")[0], day(d.group(1)),
                             "ArchDaily" + (" · " + clean(c.group(1)) if c else "")))
     for p in range(2, 420 if FIRST else 4):
         x = get("https://www.archdaily.com/page/%d" % p, pause=1.5)
@@ -286,7 +338,7 @@ SOURCES = {
     "ai":     [("GeekNews", "https://news.hada.io/", geeknews),
                ("테크월드뉴스 AI", "https://www.epnc.co.kr/news/articleList.html?sc_section_code=S1N32&view_type=sm", epnc)],
     "arch":   [("대한건축사협회 건축뉴스", "https://www.kira.or.kr/jsp/main/01/04_03.jsp", kira),
-               ("ArchDaily", "https://www.archdaily.com/", archdaily)],
+               ("ArchDaily", "https://www.archdaily.com/", archdaily)],      # ArchDaily 는 KEEP_ONLY 로 이름난 이들만
     "city":   [("한국도시정비신문", "https://citynews.co.kr/", citynews),
                ("국토연구원 세계도시사례", "https://www.krihs.re.kr/ubinBoardList.es?mid=a60101000000&ub_id=U01", krihs),
                ("도시계획학회 10대 뉴스", "https://kpa1959.or.kr/?menuno=33", kpa)],
@@ -341,6 +393,15 @@ def main():
                                "last_ok": prev.get("last_ok", "")})
                 print("   %s — 못 받음: %s" % (name, e))
         items = [x for x in byurl.values() if x.get("d", "") >= lo and x.get("d", "") <= TODAY.isoformat()]
+        items = [x for x in items if x.get("k") not in KEEP_ONLY or KEEP_ONLY[x["k"]](x)]
+        # 같은 기사가 받는 길(RSS · 목록)에 따라 주소 꼴만 달라 두 번 들어오는 일 — 출처·날짜·제목이 같으면 한 번만
+        seen_t, uniq = set(), []
+        for x in sorted(items, key=lambda x: len(x.get("s", "")), reverse=True):   # 요약이 있는 쪽을 남깁니다
+            key = (x.get("k"), x.get("d"), x.get("t", "").strip().lower())
+            if key in seen_t:
+                continue
+            seen_t.add(key); uniq.append(x)
+        items = uniq
         items.sort(key=lambda x: (x["d"], x["t"]), reverse=True)
         # 출처마다 많아야 cap 건
         per, keep = {}, []
