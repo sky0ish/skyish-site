@@ -56,9 +56,10 @@ D = {
  ],
  "laws": [
   ["바르셀로나 자치항 정관 (Estatut d'Autonomia del Port, 1978)", "항만을 자치항으로 운영할 수 있는 근거 — 항만청이 자기 용지의 계획 · 개발 주체가 됨"],
+  ["바르셀로나 항 전략계획 (Pla Estratègic del Port de Barcelona, 1987)", "항만을 상업 · 물류 · 옛 항구 (Port Vell) 세 구역으로 재편 — 옛 항구를 도시 용도로 돌리는 출발점"],
   ["포르트 벨 특별계획 (Pla Especial del Port Vell, 1988 의결 · 1989 승인)", "옛 항구를 11개 사업 구역으로 나누고 각 구역의 용도를 지정 — 상업 항만 대신 해양 스포츠 · 여객 · 「엄밀히 상업 항만은 아니지만 보완적인」 활동 · 호텔 · 문화 · 레저 허용"],
-  ["국가 항만 및 상선법 (Ley 27/1992 de Puertos del Estado y de la Marina Mercante)", "국가 항만의 서비스 구역을 「항만 공간 이용계획」으로 정하고, 공유수면 · 항만 용지의 독점적 이용은 양허 (concesión) · 허가로만 가능"],
-  ["바르셀로나 항 항만 공간 이용계획 (Orden de 30 de diciembre de 1999)", "포르트 벨 55.6ha 의 비 (非)상업항만 용도를 국가 차원에서 확인 — 근거: 도시와 맞닿은 입지 · 항만의 남쪽 확장 · 상업 항만 운영에 부정적 영향 없음"],
+  ["국가 항만 및 상선법 (Ley 27/1992 de Puertos del Estado y de la Marina Mercante)", "국가 항만의 서비스 구역을 「항만 공간 이용계획」으로 정하고, 공유수면 · 항만 용지의 독점적 이용은 양허 (concesión) · 허가로만 가능", "https://www.boe.es/buscar/doc.php?id=BOE-A-1992-26146"],
+  ["바르셀로나 항 항만 공간 이용계획 (Orden de 30 de diciembre de 1999)", "포르트 벨 55.6ha 의 비 (非)상업항만 용도를 국가 차원에서 확인 — 근거: 도시와 맞닿은 입지 · 항만의 남쪽 확장 · 상업 항만 운영에 부정적 영향 없음", "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2000-827"],
   ["북쪽 새 항구 입구 특별계획 (Pla Especial de la Nova Bocana, 2001 · 2006 · 2011 · 2018 변경)", "포르트 벨 남쪽 끝 14ha 추가 정비"],
  ],
  "lawsNote": ["규제완화의 핵심은 \"항만 용지의 용도 전환\"입니다. 땅의 소유 (국가 항만)는 그대로 둔 채, 특별계획과 국가 항만 공간 이용계획으로 상업 항만 전용 용도를 상업 · 레저 · 문화 · 호텔까지 넓혔습니다. 마레마그눔은 관광 지역으로 분류되어 바르셀로나에서 유일하게 연중 365일 영업이 허용된 쇼핑센터입니다."],
@@ -98,6 +99,7 @@ D = {
   {"t": "El nou Port Vell — Ara, Barcelona 92 (카탈루냐어)", "u": "https://interactius.ara.cat/barcelona-92/cronica/el-nou-port-vell"},
   {"t": "25 anys de la rambla de Mar — betevé (카탈루냐어)", "u": "https://beteve.cat/societat/25-anys-rambla-mar-port-vell-maremagnum/"},
   {"t": "BOE-A-2000-827 Orden de 30 de diciembre de 1999, Plan de utilización de los espacios portuarios del puerto de Barcelona", "u": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2000-827"},
+  {"t": "BOE-A-1992-26146 Ley 27/1992, de 24 de noviembre, de Puertos del Estado y de la Marina Mercante", "u": "https://www.boe.es/buscar/doc.php?id=BOE-A-1992-26146"},
   {"t": "Port Vell de Barcelona — Viquipèdia", "u": "https://ca.wikipedia.org/wiki/Port_Vell_de_Barcelona"},
   {"t": "Maremàgnum — Viquipèdia", "u": "https://ca.wikipedia.org/wiki/Maremàgnum"},
   {"t": "Palau de Mar — Viquipèdia", "u": "https://ca.wikipedia.org/wiki/Palau_de_Mar"},
@@ -162,10 +164,13 @@ D = {
  "laws": [
   ["오리건주 도시재생법 (Oregon Revised Statutes Chapter 457) · 오리건 헌법 제9조 1c", "도시재생 계획 수립과 조세증가분 금융 (ORS 457.420~457.450)의 근거"],
   ["중심시가지 계획 (Central City Plan, 1988) — 정책 17 리버 디스트릭트", "이 지역을 혼합 용도 중심지로 규정, 리버 디스트릭트 개발계획 이행을 정책화 (1995년 조례 168702호)"],
+  ["리버 디스트릭트 비전 (A Vision for Portland's North Downtown: The River District, 1992) · 리버 디스트릭트 개발계획 (River District Development Plan, 1994)", "민간 · 시민 운영위원회가 만든 비전과 개발계획 — 기반시설 1억 5,000만 달러로 개발 7억 5,000만 달러 · 주택 약 5,500호 목표"],
+  ["리버 디스트릭트 계획 실행표 (River District Plan Action Charts, 1995.4.12, 결의 35384호)", "구속력 없는 시 정책 — 실행 사업 · 프로그램 목록과 담당 기관", "https://www.portland.gov/policies/environment-built/community-neighborhood-planning/enb-1138-river-district-plan-action"],
   ["리버 디스트릭트 주택 실행 전략 (1994)", "신규 주택 소득계층 목표 — 극저 · 저소득 15~25%, 중간 이하 20~30%, 중산 · 상위 50~60% (총 5,555호 목표)"],
-  ["리버 디스트릭트 도시재생 계획 (River District Urban Renewal Plan, 1998.9.25)", "최대 부채 한도 2억 2,478만 350달러, 신규 부채는 2020년 10월 1일까지 — 공공 개선 · 주택 지원 · 토지 취득 · 공익 수용 권한"],
+  ["리버 디스트릭트 도시재생 계획 (River District Urban Renewal Plan, 1998.9.25)", "최대 부채 한도 2억 2,478만 350달러, 신규 부채는 2020년 10월 1일까지 — 공공 개선 · 주택 지원 · 토지 취득 · 공익 수용 권한", "https://prosperportland.us/wp-content/uploads/2016/07/River-District-Original-URA-Plan.pdf"],
   ["포틀랜드 시 — HSP 개발 협약 (1997 체결)", "공공 기반시설 이행과 연동한 최소 주택 밀도 · 저렴주택 비율 의무"],
-  ["펄 디스트릭트 개발계획 (2001) · 리버 디스트릭트 디자인 지침 (1998)", "주민이 참여한 지역 비전 · 디자인 기준"],
+  ["펄 디스트릭트 개발계획 (Pearl District Development Plan: A Future Vision for a Neighborhood in Transition, 2001.10)", "26명 운영위원회가 1년간 작성, 시의회 승인 — 주거 · 교통 · 건축환경 · 공원 목표", "https://prosperportland.us/wp-content/uploads/2016/07/Pearl-District-Development-Plan-Appendix-1.pdf"],
+  ["리버 디스트릭트 디자인 지침 (River District Design Guidelines, 1998)", "리버 디스트릭트 디자인 심의 기준"],
  ],
  "lawsNote": ["규제완화의 핵심은 공업지 (IG1 · IH)를 중심 고용 (EX) · 중심 주거 (RX) 같은 혼합 용도로 바꾼 것입니다. 중심시가지 계획지구 안의 EX 지역은 최소 주차 의무가 없고 최대 주차 비율만 있어 개발자가 주차장 대신 주거 · 상업 면적을 지을 수 있습니다. 동시에 \"완화\"만 하지 않고, 개발 협약으로 최소 밀도와 저렴주택 비율을 \"의무\"로 걸었다는 점이 특징입니다."],
  "tools": [
@@ -204,6 +209,8 @@ D = {
  ],
  "refs": [
   {"t": "River District Urban Renewal Plan, September 25, 1998 — Portland Development Commission (PDF)", "u": "https://prosperportland.us/wp-content/uploads/2016/07/River-District-Original-URA-Plan.pdf"},
+  {"t": "Pearl District Development Plan — Appendix, October 2001 (PDF)", "u": "https://prosperportland.us/wp-content/uploads/2016/07/Pearl-District-Development-Plan-Appendix-1.pdf"},
+  {"t": "ENB-11.38 River District Plan Action Charts — City of Portland", "u": "https://www.portland.gov/policies/environment-built/community-neighborhood-planning/enb-1138-river-district-plan-action"},
   {"t": "The Pearl District: An Urban Development Case Study — Energy Innovation (PDF)", "u": "https://energyinnovation.org/wp-content/uploads/Pearl-District-Case-Study.pdf"},
   {"t": "Sept. 8, 1997: The city agrees to tear down the old viaduct and sell the rail yards — Willamette Week", "u": "https://www.wweek.com/portland/article-23434-sept-8-1997-the-city-agrees-to-tear-down-the-old-viaduct-and-sell-the-rail-yards.html"},
   {"t": "Pearl District, Portland, Oregon — Wikipedia", "u": "https://en.wikipedia.org/wiki/Pearl_District,_Portland,_Oregon"},
@@ -265,10 +272,11 @@ D = {
  ],
  "laws": [
   ["로웰 역사 운하지구 위원회 설치법 (1975.1.4 승인)", "역사 운하지구의 보존 · 활용 계획을 연방 위원회가 조사 · 보고"],
-  ["공법 95-290 로웰 국립역사공원 설치법 (Public Law 95-290, 1978.6.5)", "국립역사공원 · 로웰 역사보존지구 · 로웰 역사보존위원회 설치 — 운하지구 위원회 보고서의 권고를 가능한 한 이행하도록 규정"],
-  ["같은 법 — 위원회 권한 (16 U.S.C. 410cc-31~35)", "보존계획 · 부동산 목록 (Index) 작성, 디자인 기준 제정, 소유자 보조금, LDFC 에 대한 대출, 부동산 취득 (공원 내 · 지정 부동산은 수용 가능, 내무장관 승인)"],
-  ["같은 법 — 예산 상한", "공원 취득 · 개발 1,850만 달러 이내, 위원회 보조금 · 대출 · 부동산 취득 · 교통 · 문화 사업 2,150만 달러 이내"],
-  ["같은 법 — 존속기간 (개정)", "위원회는 처음 10년 → 연장 개정으로 1978.6.5 부터 17년 (1995년) 존속"],
+  ["공법 95-290 로웰 국립역사공원 설치법 (Public Law 95-290, 1978.6.5)", "국립역사공원 · 로웰 역사보존지구 · 로웰 역사보존위원회 설치 — 운하지구 위원회 보고서의 권고를 가능한 한 이행하도록 규정", "https://www.govinfo.gov/content/pkg/STATUTE-92/pdf/STATUTE-92-Pg290.pdf"],
+  ["같은 법 — 위원회 권한 (16 U.S.C. 410cc-31~35)", "보존계획 · 부동산 목록 (Index) 작성, 디자인 기준 제정, 소유자 보조금, LDFC 에 대한 대출, 부동산 취득 (공원 내 · 지정 부동산은 수용 가능, 내무장관 승인)", "https://www.govinfo.gov/content/pkg/STATUTE-92/pdf/STATUTE-92-Pg290.pdf"],
+  ["같은 법 — 예산 상한", "공원 취득 · 개발 1,850만 달러 이내, 위원회 보조금 · 대출 · 부동산 취득 · 교통 · 문화 사업 2,150만 달러 이내", "https://www.govinfo.gov/content/pkg/STATUTE-92/pdf/STATUTE-92-Pg290.pdf"],
+  ["같은 법 — 존속기간 개정 (Public Law 100-134, 1987)", "위원회 존속을 처음 10년 → 1978.6.5 부터 17년 (1995년)으로 연장 (16 U.S.C. 410cc-31(i))", "https://www.law.cornell.edu/uscode/text/16/410cc-31"],
+  ["로웰 역사보존위원회 보존계획 (Preservation Plan, 1980) · 부동산 목록 (Index of Properties)", "보존지구 건물의 역사적 중요도 등급, 보조금 · 대출 프로그램, 시와 함께 만든 디자인 심의 기준"],
   ["연방 · 매사추세츠주 역사건물 재생 세액공제 · 저소득주택 세액공제 (LIHTC)", "공장 개조 주택 사업의 핵심 재원"],
  ],
  "lawsNote": ["로웰의 핵심은 \"규제 완화\"보다 \"연방법으로 만든 한시 공공 개발 조직\"입니다. 국립공원청은 기증으로만 땅을 얻을 수 있었지만, 보존위원회는 매년 예산을 받아 임차 · 매입 · 수용을 할 수 있었고, 디자인 기준을 지키는 조건으로 보조금 · 저리 대출을 주어 민간 투자를 끌어냈습니다. 보존지구 안의 개조는 위원회와 시가 함께 만든 디자인 심의 기준을 따라야 했습니다."],
@@ -306,6 +314,7 @@ D = {
  ],
  "refs": [
   {"t": "Public Law 95-290 (92 Stat. 290), June 5, 1978 — GovInfo (PDF)", "u": "https://www.govinfo.gov/content/pkg/STATUTE-92/pdf/STATUTE-92-Pg290.pdf"},
+  {"t": "16 U.S. Code § 410cc-31 — Lowell Historic Preservation Commission (Cornell LII)", "u": "https://www.law.cornell.edu/uscode/text/16/410cc-31"},
   {"t": "Lowell Historic Preservation Commission Records Finding Aid — NPS (PDF)", "u": "https://www.nps.gov/lowe/learn/historyculture/upload/LHPC-FindingAid-2012-UPDATED.pdf"},
   {"t": "Making the Park — Lowell National Historical Park (NPS)", "u": "https://nps.gov/lowe/learn/historyculture/making-the-park.htm"},
   {"t": "Redevelopment Rove — Lowell National Historical Park (NPS)", "u": "https://www.nps.gov/lowe/planyourvisit/redevelopment-rove.htm"},
@@ -369,9 +378,10 @@ D = {
  "laws": [
   ["계획법 개정 (Planning Act, 1989)", "URA 에 보존지구 지정 · 보존 지침 제정 · 보존지구 개발 승인 권한 부여"],
   ["보존 마스터플랜 (Conservation Master Plan, 1986)", "차이나타운 · 캄퐁글람 · 리틀인디아 · 싱가포르강 · 에메랄드힐 · 헤리티지 링크 6개 역사지역 지정"],
-  ["보존지구 고시 (1989.7.7)", "보트 키 · 클라크 키 등 10개 보존지구 3,200여 동 — 외관 · 지붕 · 재료 등 보존 원칙 · 계획 기준 · 복원 지침 준수 의무"],
-  ["보존 지침 (Conservation Guidelines) · 개별 복원 지침 (SRG)", "숍하우스 · 창고 유형별 복원 기준"],
-  ["싱가포르강 계획구역 계획 (Planning Report / DGP, 1994) · 도시설계 지침", "15m 강변 산책로 (보도 · 자전거길 · 조경), 1층 활성 용도 의무, 구역별 높이, 로버트슨 키 점토 기와 박공지붕 등"],
+  ["마스터플랜 1985 (Master Plan 1985) 재검토 — 개발지침계획 (Development Guide Plans, 1993~1998)", "전국을 55개 계획구역으로 나눠 구역별 상세 토지이용계획 — 싱가포르강 계획구역 포함"],
+  ["보존지구 고시 (1989.7.7)", "보트 키 · 클라크 키 등 10개 보존지구 3,200여 동 — 외관 · 지붕 · 재료 등 보존 원칙 · 계획 기준 · 복원 지침 준수 의무", "https://www.ura.gov.sg/conservation/about-conservation/ura-conservation-programme/"],
+  ["보존 지침 (Conservation Guidelines, URA) · 개별 복원 지침 (Specific Restoration Guidelines, SRG)", "숍하우스 · 창고 유형별 계획 기준 · 복원 기준 · 용도 지침 — 모든 증개축 · 용도 변경 전에 보존 허가 (Conservation Permission) 필요", "https://www.ura.gov.sg/Corporate/Guidelines/Conservation"],
+  ["싱가포르강 계획구역 계획 보고서 (Singapore River Planning Area: Planning Report, 1994) · 싱가포르강 계획구역 도시설계 지침 (Urban Design Guidelines for Singapore River Planning Area)", "15m 강변 산책로 (보도 · 자전거길 · 조경), 1층 활성 용도 의무, 구역별 높이, 로버트슨 키 점토 기와 박공지붕 등", "https://www.ura.gov.sg/Corporate/Guidelines/Urban-Design/Singapore-River/Singapore-River-Planning-Area"],
  ],
  "lawsNote": ["보존지구 지정은 외관을 엄격히 묶는 대신, 내부 용도를 식당 · 바 · 상업 · 호텔 등으로 바꿀 수 있게 하고, 개발부담금 (land betterment charge) 면제와 주차장 설치 의무 면제 · 주차 부족 부담금 면제 같은 인센티브를 주었습니다. 즉 \"외관 보존 의무 ↔ 용도 · 부담금 완화\"의 교환 구조입니다."],
  "tools": [
@@ -407,6 +417,7 @@ D = {
  ],
  "refs": [
   {"t": "URA Conservation Programme — Urban Redevelopment Authority", "u": "https://www.ura.gov.sg/conservation/about-conservation/ura-conservation-programme/"},
+  {"t": "Conservation Guidelines — URA", "u": "https://www.ura.gov.sg/Corporate/Guidelines/Conservation"},
   {"t": "Boat Quay Conservation Area — URA Conservation Portal", "u": "https://www.ura.gov.sg/conservation/find-a-building/conservation-portal/btqy/"},
   {"t": "Guidelines for Singapore River Planning Area — URA", "u": "https://www.ura.gov.sg/Corporate/Guidelines/Urban-Design/Singapore-River/Singapore-River-Planning-Area"},
   {"t": "To Wreck or to Recreate: Giving New Life to Singapore's Built Heritage — BiblioAsia (NLB)", "u": "https://biblioasia.nlb.gov.sg/vol-15/issue-2/jul-sep-2019/preservation-buildings/"},
@@ -474,7 +485,8 @@ D = {
  "laws": [
   ["연방 추밀원령 (Order-in-Council, 1972)", "섬의 관리를 CMHC 에 맡김 — 연방 소유지로 남겨 시 조닝 · 규제의 적용을 받지 않음"],
   ["CMHC 의 직접 관리 (1973~)", "CMHC 가 계획 · 임차인 선정 · 임대 조건을 직접 정함 — 예술가에게는 일반 사업체보다 낮은 임대료"],
-  ["그랜빌 아일랜드 2040 계획 (Granville Island 2040, CMHC, 2017)", "토지이용 · 예술문화 · 교통 · 경제 · 거버넌스 4개 연구 — 퍼블릭 마켓 확장 · 보행 공간 · 700석 극장 등 제안"],
+  ["핫슨 바커 재개발 계획 · 개발 지침 (Hotson Bakker, 1970년대)", "기존 건물 재사용 · 산업 해양 유산 유지 · 공공 · 민간 용도 혼합 · \"사람의 장소\" 원칙"],
+  ["그랜빌 아일랜드 2040 계획 (Granville Island 2040, CMHC, 2017)", "토지이용 · 예술문화 · 교통 · 경제 · 거버넌스 4개 연구 — 퍼블릭 마켓 확장 · 보행 공간 · 700석 극장 등 제안", "https://granvilleisland2040.ca/about/"],
  ],
  "lawsNote": ["그랜빌 아일랜드의 \"규제 완화\"는 조닝 변경이 아니라 소유 구조에서 나옵니다. 연방 소유지라 시 조닝을 받지 않으므로, CMHC 가 공업 · 시장 · 예술 · 숙박 · 수상 주택을 한 섬에 자유롭게 섞을 수 있었고, 대신 입주 업종을 직접 골라 체인점보다 지역 상인 · 공방 · 예술 단체를 우선했습니다. 한편 별도 법인이 아니어서 큰 시설 투자를 위해 차입할 수 없다는 거버넌스 한계가 지적됩니다."],
  "tools": [

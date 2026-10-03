@@ -9,7 +9,7 @@ import { decorate } from "./noteimg.js?v=202610051200";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610051700";
+const V = "202610051800";
 let DATA = null, BLD = null;
 
 async function load() {
