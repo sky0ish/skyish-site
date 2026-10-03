@@ -9,7 +9,7 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202610031700";
+import * as GC from "./gcal.js?v=202610040700";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as CO from "./cal-open.js?v=202609301200";
 
@@ -200,6 +200,60 @@ export async function initHomeCal(id = "hocal") {
       DIARY_SVG + "</a>";
   }
 
+  /* ── 낱말로 일정 찾기 — 「스케쥴표에서 키워드로 스케쥴을 찾을 수 있게」 ──
+     게시판 글(일정·일기: 제목·본문·장소)과 구글 일정(지난 2년 ~ 앞으로 1년)을 함께 찾습니다. */
+  let findQ = "", findRes = null, findBusy = false, findSeq = 0;
+  async function runFind(qv) {
+    findQ = qv;
+    const q = qv.trim();
+    if (!q) { findRes = null; draw(); return; }
+    const my = ++findSeq;
+    findBusy = true; draw();
+    const safe = q.replace(/[,()%*\\]/g, " ").trim();
+    const now = new Date();
+    const lo = new Date(now); lo.setFullYear(lo.getFullYear() - 2);
+    const hi = new Date(now); hi.setFullYear(hi.getFullYear() + 1);
+    const ymdOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    let mine = [], goo = [];
+    try {
+      const r = await sb.from("notes").select("id,title,category,event_date,tag,gcal_id")
+        .in("category", ["schedule", "diary"])
+        .or(`title.ilike.%${safe}%,body.ilike.%${safe}%,place.ilike.%${safe}%`)
+        .order("event_date", { ascending: false }).limit(80);
+      if (!r.error) mine = r.data || [];
+    } catch (e) {}
+    try { if (GC.connected() && GC.search) goo = await GC.search(safe, ymdOf(lo), ymdOf(hi)); } catch (e) {}
+    if (my !== findSeq) return;                       // 그새 다른 낱말로 찾았으면 버립니다
+    const list = mine.filter((n) => n.event_date).map((n) => ({
+      k: String(n.event_date).slice(0, 10), t: n.title || "(제목 없음)", id: n.id, cat: n.category,
+      c: CAT_COLOR[n.category] || "#4f9d92", src: n.category === "diary" ? "일기" : "일정" }));
+    dropMirrors(mine, goo).forEach((e) => list.push({ k: e.date, t: e.title, g: 1, time: e.time, place: e.place,
+      gid: e.gid, calId: e.calId, c: e.color || "#4285f4", src: e.cal || "구글" }));
+    const today = iso(new Date());
+    /* 앞으로의 일정을 가까운 차례로 먼저, 그다음 지난 일정을 최근 차례로 */
+    list.sort((a, b) => {
+      const fa = a.k >= today, fb = b.k >= today;
+      if (fa !== fb) return fa ? -1 : 1;
+      return fa ? a.k.localeCompare(b.k) : b.k.localeCompare(a.k);
+    });
+    findRes = list; findBusy = false; draw();
+  }
+  function findHtml() {
+    const box = '<div class="hocal__find"><input type="search" id="hocalQ" placeholder="🔍 일정 찾기 — 낱말을 넣고 Enter (게시판 · 구글 일정)" ' +
+      'value="' + esc(findQ) + '" aria-label="일정 낱말로 찾기">' +
+      (findQ ? '<button type="button" id="hocalQx" aria-label="찾기 지우기">✕</button>' : "") + "</div>";
+    if (findBusy) return box + '<p class="hocal__none">찾는 중…</p>';
+    if (!findRes) return box;
+    const today = iso(new Date());
+    return box + (findRes.length
+      ? '<div class="hocal__found"><p class="hocal__fh">「' + esc(findQ.trim()) + '」 ' + findRes.length + "건</p>" +
+        findRes.slice(0, 60).map((s) =>
+          `<a href="${esc(linkTo(s, s.k))}" class="${s.k < today ? "past" : ""}"><i style="background:${esc(s.c)}"></i>` +
+          `<span class="d">${esc(s.k.replace(/-/g, "."))}</span><span class="t">${esc(s.t)}</span>` +
+          `<small>${esc(s.src || "")}</small></a>`).join("") + "</div>"
+      : '<p class="hocal__none">「' + esc(findQ.trim()) + '」 이 든 일정이 없습니다 (지난 2년 ~ 앞으로 1년).</p>');
+  }
+
   /* ── 그리기 ── */
   function draw() {
     const y = at.getFullYear(), m = at.getMonth();
@@ -297,7 +351,8 @@ export async function initHomeCal(id = "hocal") {
       '<div class="hocal__wd">' + WEEK.map((w, i) =>
         `<span class="${i === 0 ? "sun" : i === 6 ? "sat" : ""}">${w}</span>`).join("") + "</div>" +
       '<div class="hocal__grid">' + cells + "</div>" +
-      (soon.length
+      findHtml() +
+      (findRes || findBusy ? "" : soon.length
         ? '<div class="hocal__soon">' + soon.map((s) =>
             `<a href="${esc(linkTo(s, s.k))}"><i style="background:${esc(s.c)}"></i>` +
             `<span class="d">${esc(s.k.slice(5).replace("-", "."))}</span>` +
@@ -334,6 +389,16 @@ export async function initHomeCal(id = "hocal") {
       keep();
       draw();
     });
+
+    /* 일정 찾기 — Enter 로 찾고, 비우면 원래대로 */
+    const qIn = document.getElementById("hocalQ");
+    if (qIn) {
+      qIn.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); runFind(qIn.value); } });
+      qIn.addEventListener("search", () => { if (!qIn.value) runFind(""); });
+      if (findQ && document.activeElement !== qIn && !findBusy && findRes === null) qIn.focus();
+    }
+    const qX = document.getElementById("hocalQx");
+    if (qX) qX.addEventListener("click", () => runFind(""));
 
     /* 「🔒 늘 연결 켜기」 — 지금은 이어져 있지만 서버에 갱신 열쇠가 아직 없을 때.
        한 번 누르면 그 뒤로는 창 없이 이어집니다 (폰·PC 어디서나). */

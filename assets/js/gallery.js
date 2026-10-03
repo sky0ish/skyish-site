@@ -4,6 +4,7 @@
 //   album.html    사진첩 하나 열기 (사진 격자 · 크게 보기 · 올리기)
 // 자료는 Supabase 의 gallery_albums · gallery_photos 표에 쌓입니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
+import { drawArchitects, drawBuildings } from "./archnotes.js?v=202610040900";
 
 export const CATS = [
   ["urban",      "Urban"],
@@ -329,6 +330,7 @@ export async function initGallery(mountId = "galapp") {
       <button type="button" class="gsearch__clr" id="gqClr">✕ 검색 해제</button>
     </div>
     <nav class="gtabs" id="gtabs" aria-label="사진첩 갈래"></nav>
+    <div id="gnotes"></div>
     <div class="gbar">
       <p class="gcount" id="gcount"></p>
       <button type="button" class="gnew" id="gNew">＋ 사진첩 만들기</button>
@@ -441,8 +443,21 @@ export async function initGallery(mountId = "galapp") {
     }));
   }
 
+  /* Architects · Architecture 갈래에는 사진첩 위에 「노트」를 함께 — 갈래나 찾는 말이 바뀔 때만 다시 그립니다 */
+  const notesEl = document.getElementById("gnotes");
+  let notesKey = "", notesT = 0;
+  function drawNotes() {
+    const k = cur + "|" + q.value.trim();
+    if (k === notesKey) return;
+    notesKey = k;
+    clearTimeout(notesT);
+    if (cur !== "architects" && cur !== "arch") { notesEl.innerHTML = ""; return; }
+    notesT = setTimeout(() => (cur === "architects" ? drawArchitects : drawBuildings)(notesEl, q.value), notesEl.innerHTML ? 250 : 0);
+  }
+
   function draw() {
     drawTabs();
+    drawNotes();
     const list = albums.filter((a) => (cur === "all" || a.category === cur) && match(a));
     const shots = list.reduce((n, a) => n + a.photos.length, 0);
     countEl.textContent =

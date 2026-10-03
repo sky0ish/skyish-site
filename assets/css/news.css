@@ -263,3 +263,20 @@
 .col__shops td.shops { line-height: 1.9; }
 .col__shops td.shops span { display: inline-block; margin: 0 4px 3px 0; padding: 1px 8px; border-radius: 999px; background: #f4f1ec; font-size: .74rem; color: #4a4542; }
 .col__shops td.shops em { font-style: normal; color: #a0958f; font-size: .68rem; }
+
+/* 「전체」 게시판의 갈래 표시 · 「⟳ 모든 갈래 최신으로」 */
+.nws__sp { flex: 1 1 auto; }
+.nws__go { border: 1px solid #4f9d92 !important; color: #2f6a62 !important; background: #fff !important; font-size: .9rem !important; }
+.nws__go:hover { background: #eef7f5 !important; }
+.nws__go:disabled { opacity: .55; cursor: progress; }
+.nws__run { margin: 6px 0 10px; font-size: .9rem; color: #2f6a62; background: #eef7f5; border-radius: 8px; padding: 8px 12px; }
+.nws__run small { color: #6b625d; margin-left: 4px; }
+.nws__run a { color: #2d5d9f; }
+.nws__run.ok { background: #e8f5ec; color: #1f7a43; }
+.nws__run.bad { background: #fdeeee; color: #a33a3a; }
+.nws__cat { display: inline-block; font-size: .72rem; border-radius: 5px; padding: 0 6px; margin-left: 6px; vertical-align: 1px;
+  border: 1px solid #d9d2cc; color: #5f5652; background: #fff; }
+.nws__cat--ai { border-color: #9cc3a9; color: #1f7a43; }
+.nws__cat--arch { border-color: #b4bcd8; color: #223a7a; }
+.nws__cat--city { border-color: #e2bf9a; color: #b35a12; }
+.nws__cat--estate { border-color: #9ccfb0; color: #03833d; }

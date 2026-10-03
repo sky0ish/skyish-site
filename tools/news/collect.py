@@ -6,7 +6,7 @@
     ai      GeekNews(news.hada.io) 가운데 AI 관련 글 · 테크월드뉴스(epnc.co.kr) AI 갈래 — 최근 2년
     arch    대한건축사협회 건축뉴스(kira.or.kr) · ArchDaily — 최근 1년
     city    한국도시정비신문(citynews.co.kr) · 국토연구원 세계도시사례 ·
-            대한국토·도시계획학회 국토·도시계획 10대 뉴스
+            대한국토·도시계획학회 국토·도시계획 10대 뉴스 · Planetizen(미국 도시계획 뉴스, RSS)
     estate  네이버 뉴스 검색 API 「부동산」 — 최근 1년
             (fin.land.naver.com 은 프로그램 접근을 막아, 네이버 공식 API 로 받습니다.
              키가 있어야 합니다: 환경변수 NAVER_CLIENT_ID · NAVER_CLIENT_SECRET)
@@ -316,6 +316,26 @@ def kpa():
     return [g for g in got if g]
 
 
+def planetizen():
+    """Planetizen(미국 도시계획 뉴스) — 뉴스 목록 화면은 봇 차단(Cloudflare)이라, 열어 둔 RSS 로 받습니다.
+       RSS 에는 최근 글 몇 건만 실리므로 매일 받아 쌓아 갑니다. /news/ 글만 (옛 칼럼은 뺍니다)"""
+    got = []
+    x = get("https://www.planetizen.com/frontpage/feed")
+    for it in re.findall(r"<item>(.*?)</item>", x, re.S):
+        t = re.search(r"<title>(.*?)</title>", it, re.S)
+        u = re.search(r"<link>(.*?)</link>", it, re.S)
+        d = re.search(r"<pubDate>(.*?)</pubDate>", it)
+        if not (t and u and d) or "/news/" not in u.group(1):
+            continue
+        body = clean(html.unescape(re.search(r"<description>(.*?)</description>", it, re.S).group(1)
+                                   if "<description>" in it else ""))
+        if "Primary Image Caption" in body:           # 제목·글쓴이·사진 설명을 걷어 내고 본문 앞부분만
+            body = body.split("Primary Image Caption", 1)[1]
+            body = body.split(". ", 1)[1] if ". " in body else body
+        got.append(item(t.group(1), u.group(1).strip(), day(d.group(1)), "Planetizen", body))
+    return [g for g in got if g]
+
+
 # ── 부동산 — 네이버 뉴스 검색 API ───────────────────────────
 def naver_estate():
     cid, sec = os.environ.get("NAVER_CLIENT_ID"), os.environ.get("NAVER_CLIENT_SECRET")
@@ -341,7 +361,8 @@ SOURCES = {
                ("ArchDaily", "https://www.archdaily.com/", archdaily)],      # ArchDaily 는 KEEP_ONLY 로 이름난 이들만
     "city":   [("한국도시정비신문", "https://citynews.co.kr/", citynews),
                ("국토연구원 세계도시사례", "https://www.krihs.re.kr/ubinBoardList.es?mid=a60101000000&ub_id=U01", krihs),
-               ("도시계획학회 10대 뉴스", "https://kpa1959.or.kr/?menuno=33", kpa)],
+               ("도시계획학회 10대 뉴스", "https://kpa1959.or.kr/?menuno=33", kpa),
+               ("Planetizen", "https://www.planetizen.com/news", planetizen)],
     "estate": [("네이버 부동산 뉴스", "https://fin.land.naver.com/news", naver_estate)],
 }
 

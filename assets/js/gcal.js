@@ -532,6 +532,36 @@ function spread(e, lo, hi) {
  * @param lo "2026-08-30"  @param hi "2026-10-10" (둘 다 그날 포함)
  * @returns [{date, title, place, time, cal, color, gid, calId, allDay, span, nth}]
  */
+/**
+ * 낱말로 구글 일정 찾기 — 볼 수 있는 캘린더를 모두, lo ~ hi 사이에서 (구글의 q= 찾기)
+ * @returns [{date, title, place, time, cal, color, gid, calId}]  (캘린더마다 많아야 50건)
+ */
+export async function search(q, lo, hi) {
+  const t = await useToken();
+  const cals = await calendars(t);
+  const from = new Date(lo + "T00:00:00"), to = new Date(hi + "T23:59:59");
+  const out = [];
+  for (let i = 0; i < cals.length; i += LANES) {
+    const lists = await Promise.all(cals.slice(i, i + LANES).map(async (c) => {
+      const u = "https://www.googleapis.com/calendar/v3/calendars/" + encodeURIComponent(c.id) + "/events" +
+        "?singleEvents=true&orderBy=startTime&maxResults=50&q=" + encodeURIComponent(q) +
+        "&timeMin=" + encodeURIComponent(from.toISOString()) + "&timeMax=" + encodeURIComponent(to.toISOString());
+      try {
+        const j = await ask(u, t, 1);
+        return (j.items || []).filter((e) => e.status !== "cancelled").map((e) => {
+          const s = e.start || {};
+          return { date: s.date || (s.dateTime || "").slice(0, 10), title: e.summary || "(제목 없음)",
+                   place: e.location || "", time: s.dateTime ? s.dateTime.slice(11, 16) : "",
+                   gid: e.id || "", uid: e.iCalUID || e.id || "", calId: c.id, cal: c.name, color: c.color };
+        });
+      } catch (err) { if (err && err.auth) throw err; return []; }
+    }));
+    lists.forEach((l) => out.push.apply(out, l));
+  }
+  const seen = new Set();
+  return out.filter((e) => { const k = e.date + "|" + e.uid; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
 export async function range(lo, hi) {
   const t = await useToken();
   const cals = await calendars(t);
