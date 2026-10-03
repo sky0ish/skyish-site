@@ -93,6 +93,19 @@ def enrich(x, firm_hint="", archdaily=True):
 
 def renovations():
     R = load_parts("reno[0-9]*.py", "R")
+    skip = [t for t in os.environ.get("RENO_SKIP", "").split(",") if t]      # 아직 조사 중인 묶음
+    for mp in sorted(glob.glob(os.path.join(HERE, "reno_more*.py"))):    # 더 자세한 본문으로 덮어쓰기
+        if any(os.path.basename(mp) == "reno_more_%s.py" % t for t in skip):
+            print("   (건너뜀:", os.path.basename(mp), ")")
+            continue
+        ns = {}
+        exec(compile(io.open(mp, encoding="utf-8").read(), mp, "exec"), ns)
+        for x in R:
+            more = ns["D"].get(x["id"])
+            if more:
+                refs = x.get("refs", []) + more.get("refs", [])
+                x.update(more)
+                x["refs"] = refs
     print("■ 리노베이션", len(R))
     out = []
     for x in R:

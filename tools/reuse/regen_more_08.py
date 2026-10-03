@@ -93,7 +93,21 @@ D = {
   "가스공장 터처럼 오염이 있는 땅에 식품 시장 같은 민감 용도를 넣을 때는, 정보 공개와 이해관계자 합의가 늦어지면 사업이 수년 지연되고 비용이 커진다는 교훈을 줍니다.",
   "조선 도크를 상업시설의 상징 공간으로 남긴 것은 산단의 정체성을 살리는 저비용 방법입니다.",
  ],
+ "funding": [
+  ["총사업비 (도쿄도 토지구획정리)", "도요스지구 토지구획정리사업 약 566억 엔 (1997~2026 사업기간) — 감보율 26.64% 중 보류지감보 8.26% 로 사업비 일부 충당", "https://www.toshiseibi.metro.tokyo.lg.jp/daiichiseibi/chiku/tochikukaku/toyosu"],
+  ["총사업비 (도요스 시장, 당초 계획)", "도요스 신시장 정비 총사업비 3,926억 엔 — 건설비 990억 · 토양오염대책비 586억 · 기반정비비 370억 · 용지비 1,980억 엔 (개장을 2014년도로 잡았던 시점의 도쿄도 계획)", "https://www.shijou.metro.tokyo.lg.jp/documents/d/shijou/project_kentou31pdf"],
+  ["공공 재원 · 선행 투자", "UR 이 2002.1 약 6.4ha 용지를 선행 취득, 3초메 간선도로를 관련공공시설 제도로 직접 시공", "https://www.ur-net.go.jp/produce/case/case016.html"],
+  ["보조금 · 지원금", "UR 사업에 주택시가지종합정비사업 (住宅市街地総合整備事業) 적용 (보조 금액은 미확인)", "https://www.ur-net.go.jp/produce/case/case016.html"],
+  ["민간 투자", "라라포트 도요스 (연면적 16만 5,037㎡) 등은 미쓰이 부동산 · IHI 등 민간 투자 (금액 미확인)"],
+ ],
+ "famous": [
+  "옛 IHI 조선소 도크를 감싸도록 배치한 「어반독 라라포트 도요스」 가 \"조선소의 기억을 남기며 새 수변 도시를 만든\" 점으로 2007년 굿디자인상을 받았습니다.",
+  "쓰키지 시장의 이전지로, 2018년 개장한 도요스 시장은 수산물 취급 능력이 일본 국내 최대입니다.",
+  "가스공장 터 토양 오염 (벤젠 최대 환경기준 4만 3,000배) 과 2016년 「성토 미시행」 발각으로 개장이 연기된 일은 일본 사회의 큰 논쟁이 되었습니다.",
+  "149년 역사의 IHI 조선소가 2002년 문을 닫은 자리에 고층 주거 · 기업 본사가 들어선, 도쿄만 공업 매립지 전환의 대표 사례입니다.",
+ ],
  "missing": [
+  "국비 · 도비 보조금 액수와 최종 확정된 도요스 시장 총사업비는 확인된 자료를 찾지 못했습니다.",
   "재개발등촉진구 지구계획의 구체적 용적률 (완화 전 · 후 수치) 은 확인된 자료를 찾지 못했습니다.",
   "공업지역에서 어떤 용도지역으로 바뀌었는지 (용도지역 명칭) 는 확인된 자료를 찾지 못했습니다.",
   "도쿄도가 도쿄가스로부터 시장 용지를 취득한 가격과 토양오염 대책 공사비 총액은 확인된 자료를 찾지 못했습니다.",
@@ -112,6 +126,7 @@ D = {
   {"t": "豊洲2・3丁目地区まちづくり協議会 — 開発計画と開発手法", "u": "https://www.toyosu.org/deve/plan"},
   {"t": "三井住友トラスト不動産 — 豊洲の歴史 (東京湾岸)", "u": "https://smtrc.jp/town-archives/city/tokyo-bay/p06.html"},
   {"t": "日本海事プレス — 石川島播磨重工・東京第1工場、149年の造船史に幕 (2002)", "u": "https://www.kaijipress.com/news/old/2002/03/17762/"},
+  {"t": "東京都中央卸売市場 — 豊洲新市場整備 (土壌汚染対策 · 総事業費)", "u": "https://www.shijou.metro.tokyo.lg.jp/documents/d/shijou/project_kentou31pdf"},
  ],
 },
 
@@ -203,7 +218,20 @@ D = {
   "유산 지역권 협약처럼 보존 의무를 토지 등기에 붙이면 소유자가 바뀌어도 보존이 이어집니다.",
   "민간 운영사가 업종 (체인점 배제) 을 관리해 지구의 정체성을 지킨 점도 참고할 만합니다.",
  ],
+ "funding": [
+  ["민간 투자", "2001년 시티스케이프 홀딩스가 단지를 매입해 민간 자본으로 개발 · 운영 (매입가 미확인)", "https://en.wikipedia.org/wiki/Distillery_District"],
+  ["민간 투자 (지분)", "2005년 던디 리얼티가 지분 50% 파트너로 참여"],
+  ["공공 기여 (섹션 37)", "1995년 섹션 37 협약 — 개발 허용과 유산 보존 조건 교환 (금액 미확인)", "https://www.toronto.ca/legdocs/mmis/2008/pb/bgrd/backgroundfile-14571.pdf"],
+  ["보존 공사 담보", "건축허가 전 보존 공사비를 신용장 (Letter of Credit) 으로 담보", "https://www.toronto.ca/legdocs/mmis/2008/pb/bgrd/backgroundfile-14571.pdf"],
+ ],
+ "famous": [
+  "북미 최대의 빅토리아 시대 산업 건축 군으로 알려져 있으며, 1988년 캐나다 국가사적으로 지정되었습니다.",
+  "한때 세계 최대의 증류소였습니다 (토론토 시 보고서).",
+  "내셔널 지오그래픽이 캐나다 여행의 \"톱 픽\" 으로 꼽았습니다.",
+  "1990년 이후 800편 이상의 영화 · TV 촬영지로 쓰였고, 해마다 토론토 크리스마스 마켓이 열립니다.",
+ ],
  "missing": [
+  "재원 · 보조금 (공공 보조금 · 세제 혜택 · 총투자액) 은 확인된 자료를 찾지 못했습니다.",
   "2001년 시티스케이프의 매입 가격과 매도인은 확인된 자료를 찾지 못했습니다.",
   "1995년 섹션 37 협약의 구체적 공공 기여 금액은 확인된 자료를 찾지 못했습니다.",
   "지구 전체의 허용 용적률 (FSI) 수치는 확인된 자료를 찾지 못했습니다.",
@@ -307,7 +335,18 @@ D = {
   "업종 정의 (인터넷 · 컴퓨터 기술 기업) 를 조닝에 넣어 새 산업을 공업 용지에 허용한 점도 참고할 만합니다.",
   "고밀 주거가 먼저 들어오면 교통 · 커뮤니티 시설이 뒤따라가지 못한다는 점 — 기반시설 선계획이 필요합니다.",
  ],
+ "funding": [
+  ["민간 투자 · 기반시설 부담", "옛 잉글리스 부지의 하수 · 상수 · 도로 · 공원 등 기반시설을 모두 개발자가 제공 · 시공 (2000 시의회 결정)", "https://www.toronto.ca/legdocs/2000/agendas/council/cc/cc000801/to13rpt/cl007.pdf"],
+  ["공공 기여 (섹션 37)", "블록별 주택 30% 저가 시장 주택 · 유산 예배당 복원 후 시 기부 (신용장으로 담보) · 공공미술", "https://www.toronto.ca/legdocs/2000/agendas/council/cc/cc000801/to13rpt/cl007.pdf"],
+  ["공공 재원 (교통)", "온타리오 라인 엑시비션역 (2031 목표) — 주 정부 기관 메트롤링크스 사업 (금액 미확인)", "https://www.metrolinx.com/en/projects-and-programs/ontario-line/make-a-stop-along-the-future-ontario-line"],
+ ],
+ "famous": [
+  "옛 공장 지대가 \"기술 · 창조 산업의 중심지 (tech and creative industry hub)\" 로 바뀐 토론토의 대표 사례로 소개됩니다 (메트롤링크스).",
+  "2011~2016년 사이 인구 밀도가 3배로 늘어, 1만 3,192명/㎢ 의 초고밀 콘도 지구가 되었습니다.",
+  "출소자가 처음 걷던 길 「리버티 스트리트」 에서 이름이 온 지명으로 알려져 있습니다.",
+ ],
  "missing": [
+  "재원 · 보조금 (공공 보조금 · 세제 혜택 · 총사업비) 은 확인된 자료를 찾지 못했습니다.",
   "매시-해리스 공장 · 토론토 카펫 공장 건물의 개별 유산 지정 여부와 연도는 확인된 자료를 찾지 못했습니다.",
   "2000년 잉글리스 부지 신청인 (개발사) 이름은 확인된 자료를 찾지 못했습니다.",
   "가리슨 커먼 북부 2차계획의 채택 연도는 공식 문서에서 직접 확인하지 못했습니다.",
@@ -318,6 +357,7 @@ D = {
   {"t": "Wikipedia — Liberty Village", "u": "https://en.wikipedia.org/wiki/Liberty_Village"},
   {"t": "City of Toronto Council (2000) — Official Plan Amendment and Rezoning and Draft Plan of Subdivision, 14 and 20 Strachan Ave 등 (Inglis Lands)", "u": "https://www.toronto.ca/legdocs/2000/agendas/council/cc/cc000801/to13rpt/cl007.pdf"},
   {"t": "City of Toronto (2026) — Liberty For All Regeneration Area Study, Final Report", "u": "https://www.toronto.ca/legdocs/mmis/2026/te/bgrd/backgroundfile-286861.pdf"},
+  {"t": "Metrolinx — Make a stop along the future Ontario Line", "u": "https://www.metrolinx.com/en/projects-and-programs/ontario-line/make-a-stop-along-the-future-ontario-line"},
  ],
 },
 
@@ -404,7 +444,22 @@ D = {
   "상위 계획 (ODP) 으로 총량을 정하고 하위 구역마다 조닝을 다시 협상하는 2단계 구조는 장기 개발에 유연합니다.",
   "공공 토지를 일괄 매각할 때 대금 조건을 개발 완료와 묶으면, 오히려 일부 부지가 수십 년 방치될 수 있다는 점을 경계해야 합니다.",
  ],
+ "funding": [
+  ["토지 매입 (주 정부)", "1980년 주 정부가 CPR 계열 마라톤 리얼티로부터 175에이커를 6,000만 달러에 매입", "https://www.placesthatmatter.ca/place-that-matters/bc-place-stadium/"],
+  ["공공 재원 (엑스포)", "엑스포 86 수입 4억 9,100만 달러 · 지출 8억 200만 달러 — 적자 3억 1,100만 달러 (경제 기여 추정 37억 달러)", "https://en.wikipedia.org/wiki/Expo_86"],
+  ["토지 매각 수익", "1988년 콩코드 퍼시픽에 약 82ha 를 3억 2,000만 달러에 매각 — 계약금 5,000만 달러, 1995~2002 9회 분납, 실현 밀도에 따른 참여 저당"],
+  ["공공 기여", "학교 부지 무상 제공 · 도서관 공사비 절반 · 커뮤니티센터 · 보육시설 8곳 등을 시 · 교육청에 무상 제공, 근린공원 17.05ha", "https://web.archive.org/web/2023/https://bylaws.vancouver.ca/odp/odp-false-creek-north.pdf"],
+  ["민간 투자", "콩코드 퍼시픽 (리카싱 등 홍콩 자본) 이 약 1만 1,000세대를 개발 (총투자액 미확인)"],
+ ],
+ "famous": [
+  "기단 위 가는 타워 · 보행 가로 · 수변 공원을 결합한 \"밴쿠버리즘 (Vancouverism)\" 의 대표 사례로, 트레버 보디가 이 이름으로 이론화했습니다.",
+  "2008년 런던 건축 페스티벌에서 캐나다 정부가 밴쿠버리즘을 캐나다의 대표 도시 설계 모범으로 내세웠습니다.",
+  "샌프란시스코와 두바이 마리나 등 다른 도시 개발에 영향을 주었다고 평가됩니다.",
+  "밴쿠버 도심 인구가 1970~80년대 약 6,000명에서 2006년 4만 3,000명 이상으로 늘어난, 도심 주거 회복의 상징입니다.",
+  "엑스포 86 (관람객 2,210만 명) 박람회장을 도시로 바꾼 박람회 후적지 재생 사례입니다.",
+ ],
  "missing": [
+  "콩코드 퍼시픽의 총투자액과 공공 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
   "1990 ODP 원안의 정확한 연면적 · 용적률 (FSR) 수치는 확인된 자료를 찾지 못했습니다 (현행 통합본 수치만 확인).",
   "토양 오염 정화 책임 (주 정부 · 개발자 분담) 은 확인된 자료를 찾지 못했습니다.",
   "ODP 수립에 참여한 구체적 시민단체 · 전문가 위원회 이름은 확인된 자료를 찾지 못했습니다.",
@@ -420,6 +475,7 @@ D = {
   {"t": "Roundhouse Community Arts & Recreation Centre", "u": "https://www.roundhouse.ca/"},
   {"t": "The Globe and Mail — Urban planner Stanley Kwok combined high density and livability in Expo 86 redevelopment", "u": "https://www.theglobeandmail.com/canada/article-urban-planner-stanley-kwok-high-density-livability-expo-86/"},
   {"t": "Spacing Vancouver — Stanley Kwok and the Two False Creeks (2012)", "u": "https://spacing.ca/vancouver/2012/05/09/stanley-kwok-and-the-two-false-creeks/"},
+  {"t": "Métropolitiques — Vancouverism: hybridisation and spread of an urban model", "u": "https://metropolitiques.eu/vancouverism-hybridisation-and.html"},
  ],
 },
 
@@ -514,7 +570,20 @@ D = {
   "지권자 자율 협정을 지구계획으로 법정화한 방식은 한국 산단 재생에서 입주 기업 협의체와 지구단위계획을 연결하는 데 참고가 됩니다.",
   "조선 독 같은 산업유산을 문화재로 지정해 새 지구의 상징으로 삼았습니다.",
  ],
+ "funding": [
+  ["공공 재원 (기반 사업)", "매립 (요코하마시 항만국) · 토지구획정리 (주택 · 도시정비공단 → UR) · 항만정비 (요코하마시 · 국가) 를 각 사업 주체가 시행 (사업비 미확인)", "https://www.ymm21.jp/common/pdf/info_v069.pdf"],
+  ["민간 투자", "랜드마크 타워 총공사비 약 2,700억 엔 (미쓰비시 지쇼, 1990~1993) · 미쓰비시 지쇼는 1983년 조선소 터 20ha 매입", "https://yokohama-landmark.jp/about/"],
+  ["경제 효과 (시 추계)", "건설투자 파급효과 누계 약 1조 9,700억 엔 · 사업활동 효과 연 약 8,600억 엔 (2000년도) · 시세 수입 약 110억 엔 (2001년도)", "https://www.ymm21.jp/common/pdf/info_v069.pdf"],
+  ["규제완화형 지원", "52가구 도시재생특별지구 (2023) 용적률 800% → 880% · 2022년 국토교통성 민간도시재생사업계획 인정"],
+ ],
+ "famous": [
+  "랜드마크 타워 (296m) 는 1993년부터 2012년까지 일본에서 가장 높은 빌딩이었습니다.",
+  "랜드마크 타워 엘리베이터는 분속 750m 로 2004년 타이베이 101 에 추월당할 때까지 세계 최고 속도 기네스 기록을 가졌습니다.",
+  "옛 요코하마 선거 2호 독 (도크야드 가든) 이 1997년 국가 중요문화재로 지정되어, 조선소 유산을 새 도심의 상징으로 삼았습니다.",
+  "취업 14만 명 이상 · 연간 방문객 8,000만 명 이상 (2024) 의 일본 대표 워터프런트 재개발입니다.",
+ ],
  "missing": [
+  "매립 · 토지구획정리 · 항만정비의 사업비와 국비 보조 액수는 확인된 자료를 찾지 못했습니다.",
   "재개발 전 원래 용도지역 (공업지역 · 준공업지역 등) 명칭과 현재 용도지역 지정 내용은 공식 자료로 확인하지 못했습니다.",
   "사업 전체 총사업비 (공공 · 민간 합계) 는 확인된 자료를 찾지 못했습니다.",
   "시민단체 (보존운동 · 주민협의회) 의 참여는 확인된 자료를 찾지 못했습니다.",
@@ -528,6 +597,7 @@ D = {
   {"t": "横浜みなとみらい21公式 — 40周年特設サイト (歴史)", "u": "https://minatomirai21.com/sp/mm40th-history"},
   {"t": "横浜ランドマークタワー公式 — 横浜ランドマークタワーについて", "u": "https://yokohama-landmark.jp/about/"},
   {"t": "위키백과(일) — みなとみらい21中央地区52街区", "u": "https://ja.wikipedia.org/wiki/%E3%81%BF%E3%81%AA%E3%81%A8%E3%81%BF%E3%82%89%E3%81%8421%E4%B8%AD%E5%A4%AE%E5%9C%B0%E5%8C%BA52%E8%A1%97%E5%8C%BA"},
+  {"t": "위키백과(일) — 横浜ランドマークタワー", "u": "https://ja.wikipedia.org/wiki/%E6%A8%AA%E6%B5%9C%E3%83%A9%E3%83%B3%E3%83%89%E3%83%9E%E3%83%BC%E3%82%AF%E3%82%BF%E3%83%AF%E3%83%BC"},
  ],
 },
 }

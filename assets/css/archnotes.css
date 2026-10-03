@@ -191,3 +191,23 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
 #rgList details.an > summary { flex-wrap: nowrap; }
 #rgList details.an > summary > .an__t { flex: 1 1 auto; min-width: 0; }
 .rg__law { color: #2b5d9b; text-decoration: underline; text-underline-offset: 2px; }
+/* 사례 새 창 (note.html) */
+.an--page { max-width: 1100px; margin: 0 auto; }
+.an__crumb { margin: 0 0 10px; font-size: .92rem; }
+.an__crumb a { color: #4f9d92; }
+.an__ptitle { font-size: 1.3rem; line-height: 1.7; font-weight: 500; margin: 0 0 18px; color: #2c2725; }
+.an__ptitle .rg__type { font-size: .8rem; vertical-align: middle; }
+#rnList details.an > summary::before, #rgList details.an > summary::before { content: "↗"; }
+/* 제목의 「(원래 용도)에서 (변경 용도)로」 — 원래는 갈색, 변경은 청록, 조사 · 괄호는 회색 */
+.an__flow { font-weight: 700; }
+.an__flow i { font-style: normal; font-weight: 400; color: #9a918b; }
+.an__flow .fl__from { color: #8a4b12; }
+.an__flow .fl__to { color: #1f7a6c; }
+#rnList details.an > summary { flex-wrap: nowrap; }
+#rnList details.an > summary > .an__t { flex: 1 1 auto; min-width: 0; }
+.fl__k--tech { color: #7a4a24; }
+.fl__k--home { color: #b5860b; }
+.fl__k--biz  { color: #2f7a3f; }
+.fl__k--shop { color: #8b1e2d; }
+.fl__k--cult { color: #2b5d9b; }
+.fl__k--etc  { color: #5f5652; }
