@@ -9,7 +9,7 @@ import { decorate } from "./noteimg.js?v=202610051200";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610051800";
+const V = "202610051900";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -479,6 +479,14 @@ const kvTable = (rows) => (rows || []).length
         ? `<tr><th class="rg__k">${k}</th><td><b>${esc(r[1])}</b><br><span class="rg__role">${esc(r[2])}</span></td></tr>`
         : `<tr><th>${k}</th><td>${esc(r[1])}</td></tr>`;
     }).join("")}</tbody></table>` : "";
+/* 제목 줄의 「(원래 용도)에서 (변경 용도)로」 — 끝 글자 받침에 따라 로 / 으로 */
+const ro = (w) => {
+  const h = [...String(w || "")].reverse().find((c) => c >= "가" && c <= "힣");
+  if (!h) return "로";
+  const j = (h.charCodeAt(0) - 0xac00) % 28;
+  return j === 0 || j === 8 ? "로" : "으로";
+};
+const flow = (a, b) => `<span class="an__tag an__tag--r">(${esc(a)})에서 (${esc(b)})${ro(b)}</span>`;
 const bullets = (v) => (v || []).length ? `<ul class="rg__ul">${v.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
 let RNV = null, RGN = null;
 const loadJ = (f) => fetch("assets/data/" + f + "?v=" + V).then((r) => (r.ok ? r.json() : { items: [] })).catch(() => ({ items: [] }));
@@ -528,7 +536,7 @@ export async function drawRenovations(el, qv) {
       (!q || fold([x.t, x.ko, x.at, x.archName, x.from, x.to].join(" ")).includes(q)));
     el.querySelector("#rnList").innerHTML = items.length ? `<ol class="an__list">${items.map((x) => `
       <li><details class="an" id="rn-${esc(x.id)}" data-id="${esc(x.id)}">
-        <summary><span class="an__t"><span class="an__tag an__tag--r">&lt;${esc(x.from)} → ${esc(x.to)}&gt;</span>
+        <summary><span class="an__t">${flow(x.from, x.to)}
           <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
           <span class="an__life">(개조 ${esc(x.y)} · ${esc(x.archName || "")})</span></span></summary>
       </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
@@ -604,7 +612,7 @@ export async function drawRegenerations(el, qv) {
       <li><details class="an" id="rg-${esc(x.id)}" data-id="${esc(x.id)}">
         <summary><span class="an__t">${[...(x.types || [])].sort((a, b) => TYPES.indexOf(a) - TYPES.indexOf(b)).map((t) => `<span class="rg__type${tcls(t)}">${esc(t)}</span>`).join("")}
           <span class="an__nat">[${esc(x.nat || "")}]</span> <b>${esc(x.ko)}</b>_${esc(x.t)}
-          <span class="an__life">(${esc(x.from)} → ${esc(x.to)} · ${esc(x.period || "")})</span></span></summary>
+          ${flow(x.from, x.to)} <span class="an__life">(${esc(x.period || "")})</span></span></summary>
       </details></li>`).join("")}</ol>` : '<p class="an__wait">찾는 사례가 없습니다.</p>';
     el.querySelectorAll(".an__chips button").forEach((bt) => bt.classList.toggle("on", bt.dataset.g === g));
     const map = Object.fromEntries((r.items || []).map((x) => [x.id, x]));
