@@ -18,7 +18,8 @@
     /* ?p=addr 처럼 갈래가 적혀 오면 To Me 칸을 그리기 전에 감춥니다 — 중간 화면이 안 보이게 */
     (function(){ var m = /[?&]p=([a-z]+)/.exec(location.search); if (m) document.documentElement.dataset.cp = m[1]; })();
   </script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202609230900">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610031000">
+  <link rel="stylesheet" href="assets/css/news.css?v=202610031200">
 </head>
 <body>
   <div id="site-header"></div>
@@ -32,6 +33,7 @@
              격자 밖에 두어야 갈래를 옮겨도 단추가 남습니다. -->
         <nav class="ctabs" id="cTabs" aria-label="Contact 갈래">
           <button type="button" data-p="orgs">활동기관</button>
+          <button type="button" data-p="news">최신뉴스</button>
           <button type="button" data-p="addr" hidden>주소록</button>
           <button type="button" data-p="sites" hidden>Sites</button>
           <button type="button" data-p="todo" hidden>What to do</button>
@@ -105,6 +107,18 @@
       </div>
     </section>
 
+    <!-- 최신뉴스 — 누구나 봅니다. AI · 건축 · 도시 · 부동산.
+         목록은 tools/news/collect.py 가 날마다 모아 assets/data/news/ 에 담아 둡니다. -->
+    <section class="section cpane" id="newssec" style="padding-top:0;margin-top:-1rem" hidden>
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">News</span>
+          <h2 class="section-title">최신뉴스</h2>
+        </div>
+        <div id="newsapp"></div>
+      </div>
+    </section>
+
     <!-- 주소록 — 관리자에게만.
          내 컴퓨터의 엑셀을 브라우저가 직접 읽습니다. 서버로는 아무것도 안 갑니다. -->
     <section class="section cpane" id="addrsec" style="padding-top:0;margin-top:-1rem" hidden>
@@ -149,7 +163,7 @@
   <div id="site-footer"></div>
   <script src="assets/js/main.js?v=202609180900" defer></script>
   <script type="module">
-    import { initContactTabs } from "./assets/js/contact-tabs.js?v=202609170900";
+    import { initContactTabs } from "./assets/js/contact-tabs.js?v=202610031200";
     import { initContactForm, initInbox } from "./assets/js/contact-form.js?v=202609111300";
     initContactForm();
     initContactTabs();

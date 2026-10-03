@@ -1,0 +1,41 @@
+# 최신뉴스 — 날마다 아침(한국 시각 06:20)에 새 글을 모아 assets/data/news/*.json 을 갱신합니다.
+# Contact 「최신뉴스」 갈래가 이 파일들을 읽습니다.  손으로 돌리려면 Actions → news → Run workflow.
+name: news
+
+on:
+  schedule:
+    - cron: "20 21 * * *"        # UTC 21:20 = 한국 06:20
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 모으기
+        env:
+          TZ: Asia/Seoul
+          # 부동산(네이버 뉴스 검색 API) — 저장소 Settings → Secrets 에 넣으면 채워집니다
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+        run: python tools/news/collect.py
+      - name: 바뀐 것이 있으면 올리기
+        run: |
+          git config user.name  "news-bot"
+          git config user.email "news-bot@users.noreply.github.com"
+          git add assets/data/news
+          if git diff --cached --quiet; then echo "새 글 없음"; exit 0; fi
+          git commit -m "chore(news): 최신뉴스 갱신 $(TZ=Asia/Seoul date +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push origin main

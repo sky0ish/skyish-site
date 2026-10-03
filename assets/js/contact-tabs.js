@@ -2,6 +2,7 @@
 //
 //   To Me    문의 보내기 — 누구나
 //   활동기관  몸담고 있는 곳 — 누구나
+//   최신뉴스  AI · 건축 · 도시 · 부동산 — 누구나
 //   주소록    내 컴퓨터의 명함첩·동문 명부 — 관리자만
 //   Sites    자주 드나드는 곳 — 관리자만
 //   해야할일  오늘의 체크리스트 — 관리자만
@@ -11,6 +12,7 @@ import { initAddr } from "./addressbook.js?v=202609170900";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
 import { initTodo } from "./todo.js?v=202609111800";
+import { initNews } from "./news.js?v=202610031200";
 
 export async function initContactTabs() {
   const tabs = document.getElementById("cTabs");
@@ -19,6 +21,7 @@ export async function initContactTabs() {
   const panes = {
     tome:  document.querySelector(".contact-grid"),
     orgs:  document.getElementById("orgsec"),
+    news:  document.getElementById("newssec"),
     addr:  document.getElementById("addrsec"),
     sites: document.getElementById("sitesec"),
     todo:  document.getElementById("todosec"),
@@ -56,6 +59,8 @@ export async function initContactTabs() {
 
   /* 활동기관은 누구나 봅니다 — 바깥을 부르지 않으므로 곧바로 그립니다 */
   const okOrgs = initOrgs();
+  /* 최신뉴스도 누구나 — 모아 둔 파일을 읽어 그리기만 합니다 */
+  if (!initNews()) { const b = tabs.querySelector('button[data-p="news"]'); if (b) b.remove(); }
 
   /* 주소록·Sites 는 관리자에게만 열립니다.
      각 모듈이 스스로 판단해 아니면 자기 자리를 지웁니다. */
