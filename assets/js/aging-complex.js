@@ -25,7 +25,7 @@
   ];
   var UNMATCHED = "#8f9a9e";
   var ZONE = { color: "#634b4f", fillColor: "#821e32", fillOpacity: 0.55, weight: 1 };
-  var GRADE_COLOR = { A: "#821e32", B: "#c88278", C: "#ebbd79", D: "#a1a1a1" };   // 「색깔파레트31」 안에서 — 자료(grade_area.json)의 색보다 앞섬
+  var GRADE_COLOR = { A: "#821e32", B: "#c88278", C: "#ebbd79", D: "#707070" };   // 「색깔파레트31」 안에서 — 자료(grade_area.json)의 색보다 앞섬
   var PICK = "#00a4ce";                                                              // 고른 산단·역 반경
   var GRADE_TXT = { A: "전환 우선", B: "복합화", C: "고도화 유지", D: "보호·게이트" };
   var SIDE_HINT = "<h4>역세권 · 거리</h4><p class=\"ag-hint\">역을 누르면 반경 안 산단이 여기에 나옵니다. 산단을 누르면 노후년도·가장 가까운 역·등급, 행정동을 누르면 쇠퇴 유형, 빈 곳을 누르면 그 자리의 인구밀도가 나옵니다.</p>";
@@ -99,7 +99,7 @@
 
   /* ---------- ⑤ 자료 손잡이 — RK 는 unit_id 로 찾는 표 (산단은 "D_" + complexes.id) ---------- */
   var RK = {};
-  var gradeChip = function (g) { return g ? '<span class="ag-grade' + (g === "C" || g === "D" ? " ag-grade--" + g : "") + '" style="background:' + (GRADE_COLOR[g] || "#999") + '">' + esc(g) + "</span>" : "—"; };
+  var gradeChip = function (g) { return g ? '<span class="ag-grade' + (g === "C" ? " ag-grade--C" : "") + '" style="background:' + (GRADE_COLOR[g] || "#999") + '">' + esc(g) + "</span>" : "—"; };
   /* 0단계 전제(산업체 감소) — 미충족은 회색 「산업 유지」, 게이트는 옅은 글자, 충족은 초록 */
   var reasonChip = function (r) {
     var s = (r && r["판정사유"]) || ""; if (!s) return "—";
@@ -174,7 +174,7 @@
   function init() {
     side = $("ag-side");
     side.innerHTML = SIDE_HINT;
-    map = L.map("ag-map0", { preferCanvas: true, scrollWheelZoom: true, doubleClickZoom: false }).setView(GG_CENTER, GG_ZOOM);
+    map = L.map("ag-map0", { preferCanvas: true, scrollWheelZoom: true, doubleClickZoom: false, zoomSnap: 0.25 }).setView(GG_CENTER, GG_ZOOM);
     L.control.scale({ imperial: false }).addTo(map);
     window.__agMap = map;                                // 시험·디버그용 손잡이
     [["popPane", 250], ["decPane", 260], ["indPane", 270], ["bufPane", 280], ["emdPane", 300], ["sigPane", 310],
@@ -196,6 +196,7 @@
       opt(getJSON(D + "analysis/residential_shift.json")),
     ]).then(function (r) {
       drawBoundaries(r[0], r[1], r[2]);
+      fitGG(map, layers.sido.getBounds(), true);
       drawPop(r[5]);
       drawDecline(r[7]);
       drawIndustrial(r[8]);
@@ -224,6 +225,18 @@
     var b = $("ag-busy0"); if (!b) return;
     if (msg == null) { b.hidden = true; return; }
     b.hidden = false; b.textContent = msg;
+  }
+
+  /* 경기도가 판에 꽉 차게 — 판 크기가 바뀌면(범례 접기·창 크기) 다시 맞춤.
+     단, 맞춘 뒤 사용자가(또는 역·산단 누르기로) 화면을 옮겼으면 크기만 다시 셈 */
+  function fitGG(m, bounds, watch) {
+    var fitting = false, moved = false;
+    m.on("movestart zoomstart", function () { if (!fitting) moved = true; });   // 손으로든 역·산단 누르기로든 옮기면
+    var fit = function () { fitting = true; m.fitBounds(bounds, { padding: [12, 12], animate: false }); fitting = false; moved = false; };
+    fit();
+    if (watch && "ResizeObserver" in window) {
+      var t; new ResizeObserver(function () { clearTimeout(t); t = setTimeout(function () { m.invalidateSize(); if (!moved) fit(); }, 120); }).observe(m.getContainer());
+    }
   }
 
   /* 행정경계 + 시군 이름 */
@@ -679,11 +692,12 @@
     document.querySelectorAll("[data-mini]").forEach(miniShell);
     function build(key, spec) {
       var mapEl = $("ag-map-" + key); if (!mapEl) return;
-      var mm = L.map(mapEl, { preferCanvas: true, scrollWheelZoom: true }).setView(GG_CENTER, GG_ZOOM);
+      var mm = L.map(mapEl, { preferCanvas: true, scrollWheelZoom: true, zoomSnap: 0.25 }).setView(GG_CENTER, GG_ZOOM);
       L.control.scale({ imperial: false }).addTo(mm);
       [["pBase", 300], ["pSig", 350], ["pCx", 400], ["pTop", 420], ["pSt", 430], ["pLbl", 600]].forEach(function (p) { mm.createPane(p[0]); mm.getPane(p[0]).style.zIndex = p[1]; });
       L.geoJSON(d.sig, { pane: "pSig", style: { color: "#232323", weight: 0.8, fill: false }, interactive: false }).addTo(mm);
       sigLabels(d.sig, "pLbl", mm);
+      fitGG(mm, L.geoJSON(d.sig).getBounds(), false);
       var sync = function () { mapEl.classList.toggle("z-lo", mm.getZoom() < DAN_ZOOM); };
       mm.on("zoomend", sync); sync();
       /* 산단 경계 — 붉은 테두리 + 반투명 붉은 채움, 「노후년도 색 채움」 을 켜면 그 색표로 */

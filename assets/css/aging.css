@@ -8,11 +8,12 @@
   --ag-faint: #8b8280;
   --ag-text2: #4a4442;
   /* 차트 색 — 모두 「색깔파레트31」(0.R통계/0.R_BASIC/20180408색깔파레트31.R) 안에서 고름
-     네 축·세 용도·네 등급 묶음마다 인접 쌍 색각이상(CVD)·정상시 구별을 검사기로 확인 */
-  --ag-s1: #143c5a;   /* ① 노후도 */
-  --ag-s2: #58929a;   /* ② 역세권 */
-  --ag-s3: #ebbd79;   /* ③ 도시쇠퇴 */
-  --ag-s4: #6f4e61;   /* ④ 토지특성 */
+     네 축·세 용도·네 등급 묶음마다 모든 쌍의 색각이상(CVD)·정상시 구별을 검사기로 확인.
+     네 축은 용도색(빨강·노랑·남색)·등급색과 겹치지 않는 색 갈래(남보라·청회·연보라·초록)에서 */
+  --ag-s1: #4b3b98;   /* ① 노후도 */
+  --ag-s2: #64858a;   /* ② 역세권 */
+  --ag-s3: #b9adbf;   /* ③ 도시쇠퇴 */
+  --ag-s4: #006633;   /* ④ 토지특성 */
   --ag-com: #a35650;  /* 상업 */
   --ag-res: #ebbd79;  /* 주거 */
   --ag-off: #143c5a;  /* 업무 */
@@ -60,7 +61,7 @@
 /* 작은 색 견본 · 배지 */
 .ag-sw { display: inline-block; width: 11px; height: 11px; border: 1px solid rgba(0,0,0,.3); border-radius: 2px; vertical-align: -1px; margin-right: .3rem; flex: none; }
 .ag-grade { display: inline-block; min-width: 1.5em; text-align: center; padding: .05rem .4rem; border-radius: 4px; color: #fff; font-weight: 700; font-size: .78rem; }
-.ag-grade--C, .ag-grade--D { color: #2b2422; }
+.ag-grade--C { color: #2b2422; }
 .ag-use { display: inline-block; padding: .05rem .45rem; border-radius: 999px; font-size: .74rem; background: #9eb3c7; color: #143c5a; white-space: nowrap; }
 .ag-use--keep { background: #c6c6c6; color: #566067; }
 .ag-keep, .ag-gate, .ag-ok { display: inline-block; padding: .05rem .45rem; border-radius: 999px; font-size: .74rem; white-space: nowrap; }
@@ -89,6 +90,7 @@
 /* ---------- 표 ---------- */
 .ag .fb-scroll { max-height: 440px; }
 .ag .fb-scroll thead th { position: sticky; top: 0; background: var(--white); z-index: 1; }
+.ag .fb-table th { white-space: nowrap; }   /* 좁은 화면에서 머리글이 한 글자씩 꺾이지 않게 — 표는 옆으로 밀림 */
 .ag .fb-table td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ag .fb-table td.s { font-size: .78rem; color: var(--ag-muted); max-width: 24ch; text-align: left; }
 .ag .fb-table td:not(.n):not(:first-child) { text-align: left; }
@@ -99,9 +101,11 @@
 .ag .fb-table small { color: var(--ag-faint); }
 
 /* ---------- ② 큰 지도 ---------- */
-.ag-map .fb-map { background: #fff; }
-.ag-grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 2.2fr) minmax(300px, 1fr); align-items: start; }
-@media (max-width: 900px) { .ag-grid { grid-template-columns: minmax(0, 1fr); } }
+/* 지도 판은 오른쪽 칸(옆칸+범례)과 바닥을 맞춤 — 칸 높이만큼 늘어남 */
+.ag-grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 2.2fr) minmax(300px, 1fr); align-items: stretch; }
+.ag-map { display: flex; flex-direction: column; }
+.ag-map .fb-map { background: #fff; flex: 1 1 auto; height: auto; min-height: 560px; }
+@media (max-width: 900px) { .ag-grid { grid-template-columns: minmax(0, 1fr); } .ag-map .fb-map { min-height: 68vh; } }
 .ag-right { display: grid; gap: 1rem; align-content: start; }
 .ag-side { max-height: 380px; overflow: auto; font-size: .9rem; }
 .ag-side h4 { margin: 0 0 .3rem; font-size: 1rem; display: flex; align-items: center; gap: .35rem; }

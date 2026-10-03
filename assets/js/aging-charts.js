@@ -6,7 +6,7 @@
    ⑤ stack   : 종합 상위 20 — 로직별 점수 구성 (top20_danji · g13_cluster 대신)
      use     : 용도별 상위 10 막대 (top10_by_use 대신) — ⑤ 용도 탭과 같이 움직임
      weights : 용도별 가중치 프로파일 (g5_useweights 대신)
-   ⑦ scatter : 30년↑ 산단 유형 — 역 거리 × 사업체 감소 (g3_typology 대신)
+   ⑦ scatter : 30년↑ 산단 유형 — 역 거리(로그) × 쇠퇴 가중치+사업체 감소 (g3_typology 대신)
      mix     : 종합 상위 15 내부/주변 300m 건축물 용도 (g9_usemix 대신)
      heat    : A·B 쇠퇴유형 × 추천 용도 (g10_heat 대신)
      recov   : A·B 회수 가능 물량 × 종상향 방식 (g12_recov 대신)
@@ -132,7 +132,7 @@
     return '<svg viewBox="0 0 ' + W + " " + h + '" role="img" aria-label="' + esc(o.aria || "") + '">' + axis + body + ttl + "</svg>";
   }
   function keys(list) { return '<div class="ag-keys">' + list.map(function (k) { return "<span><i" + (k.c ? ' class="c"' : "") + ' style="background:' + k.color + '"></i>' + esc(k.label) + "</span>"; }).join("") + "</div>"; }
-  var gradePill = function (g) { return g ? { text: g, color: AG.GRADE_COLOR[g] || "#999", fg: g === "C" || g === "D" ? "#2b2422" : "#fff" } : null; };
+  var gradePill = function (g) { return g ? { text: g, color: AG.GRADE_COLOR[g] || "#999", fg: g === "C" ? "#2b2422" : "#fff" } : null; };
 
   /* ---------- 자료 ---------- */
   Promise.all([
@@ -307,44 +307,63 @@
     document.addEventListener("ag:use", function (e) { st.v = e.detail; m.render(); });
   }
 
-  /* ⑦ 30년↑ 산단 유형 — 역 거리(제곱근 눈금) × 사업체 감소율 */
+  /* ⑦ 30년↑ 산단 유형 — 논문 g3_typology 와 같은 축:
+       x = 최근접 철도역 거리(m, 로그), y = 도시쇠퇴 활용도 가중치 + 사업체 감소율
+       기준선 역세권 1.5km · 산업계 쇠퇴 0.6 → 네 칸이 ⑦ 유형화 표의 Ⅰ~Ⅳ */
   function chartScatter(items, short, go) {
     var card = cardOf("scatter"); if (!card) return;
-    var core = items.filter(function (x) { return x.unit_type === "산업단지" && x["핵심필터_30년노후"]; });
-    var pts = core.filter(function (x) { return x.dist_station_m != null; });
-    var noBusi = pts.filter(function (x) { return x.busi_decline == null; }).length;
+    var GX = 1500, GY = 0.6, X0 = 10;
+    var pts = items.filter(function (x) { return x.unit_type === "산업단지" && x["핵심필터_30년노후"] && x.dist_station_m != null; });
+    var yv = function (u) { return (u.decl_w || 0) + (u.busi_decline || 0); };
     var grades = ["A", "B", "C", "D"];
     card.querySelector(".ag-plot").insertAdjacentHTML("afterend", keys(grades.map(function (g) { return { color: AG.GRADE_COLOR[g], label: g + " " + AG.GRADE_TXT[g], c: true }; })) +
-      '<p class="ag-note">x 는 제곱근 눈금(가까운 거리를 넓게). 사업체 자료가 없는 ' + noBusi + "곳은 0 에 두고 속을 비웠습니다.</p>");
+      '<p class="ag-note">x 는 로그 눈금(역에 붙은 곳은 10 m 에 둠). 활용 잠재력 = 도시쇠퇴 8유형의 활용도 가중치(산업쇠퇴 1.0 · 산업건물·인구산업 0.8 · 절대쇠퇴 0.6 · 인구건물 0.35 · 건물·인구 0.3 · 성장 0) + 행정동 사업체 감소율(최대치 대비). 0.6 선 위가 산업계 쇠퇴(산업쇠퇴·산업건물·인구산업·절대쇠퇴) 행정동이고, 같은 유형 안에서는 사업체가 많이 줄수록 위로 갑니다. 점선은 역세권 1.5 km.</p>');
     mount(card, {}, function (W) {
-      var H = Math.max(300, Math.min(420, W * 0.5)), pl = 46, pr = 14, pt = 14, pb = 40;
-      var dmax = Math.max.apply(null, pts.map(function (x) { return x.dist_station_m / 1000; }));
-      var xmax = niceMax(dmax, 4), ymax = Math.max(0.1, niceMax(Math.max.apply(null, pts.map(function (x) { return x.busi_decline || 0; })), 4));
-      var X = function (km) { return pl + Math.sqrt(km / xmax) * (W - pl - pr); };
-      var Y = function (v) { return pt + (1 - v / ymax) * (H - pt - pb); };
+      var H = Math.max(340, Math.min(480, W * 0.52)), pl = 64, pr = 16, pt = 16, pb = 40;
+      var lx = function (m) { return Math.log10(Math.max(X0, m)); };
+      var xmax = Math.pow(10, Math.ceil(lx(Math.max.apply(null, pts.map(function (u) { return u.dist_station_m; }))) * 2) / 2);
+      var ys = pts.map(yv), ymin = Math.floor((Math.min.apply(null, ys) - 0.05) * 10) / 10, ymax = Math.ceil((Math.max.apply(null, ys) + 0.08) * 10) / 10;
+      var X = function (m) { return pl + (lx(m) - lx(X0)) / (lx(xmax) - lx(X0)) * (W - pl - pr); };
+      var Y = function (v) { return pt + (1 - (v - ymin) / (ymax - ymin)) * (H - pt - pb); };
       var amax = Math.max.apply(null, pts.map(function (x) { return x.area_ha || 0; }));
-      var R = function (a) { return 4 + Math.sqrt((a || 0) / amax) * 16; };
+      var R = function (a) { return 4 + Math.sqrt((a || 0) / amax) * 18; };
+      var fmtD = function (m) { return m >= 1000 ? (m / 1000) + "km" : m + "m"; };
       var ax = '<g class="ax">';
-      [0, 0.5, 1, 2, 5, 10, 20, 30, 50].filter(function (t) { return t <= xmax; }).forEach(function (t) {
-        ax += '<line x1="' + X(t).toFixed(1) + '" x2="' + X(t).toFixed(1) + '" y1="' + pt + '" y2="' + (H - pb) + '"/><text x="' + X(t).toFixed(1) + '" y="' + (H - pb + 15) + '" text-anchor="middle">' + t + "</text>";
+      [10, 30, 100, 300, 1000, 3000, 10000, 30000].filter(function (t) { return t <= xmax; }).forEach(function (t) {
+        var major = String(t)[0] === "1";
+        ax += '<line x1="' + X(t).toFixed(1) + '" x2="' + X(t).toFixed(1) + '" y1="' + pt + '" y2="' + (H - pb) + '"' + (major ? "" : ' style="stroke-dasharray:2 3"') + '/>' +
+          (major || W > 560 ? '<text x="' + X(t).toFixed(1) + '" y="' + (H - pb + 15) + '" text-anchor="middle">' + fmtD(t) + "</text>" : "");
       });
-      var ys = niceStep(ymax, 4);
-      for (var t = 0; t <= ymax + 1e-9; t += ys) ax += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(t).toFixed(1) + '" y2="' + Y(t).toFixed(1) + '"/><text x="' + (pl - 6) + '" y="' + (Y(t) + 4).toFixed(1) + '" text-anchor="end">' + Math.round(t * 100) + "%</text>";
-      ax += '<line class="base" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(0) + '" y2="' + Y(0) + '"/>' +
-        '<text class="ttl" x="' + (W - pr) + '" y="' + (H - 6) + '" text-anchor="end">가장 가까운 역까지 (km) →</text>' +
-        '<text class="ttl" x="' + (pl + 4) + '" y="' + (pt + 10) + '">↑ 사업체 감소율 (최대치 대비)</text></g>';
-      /* 기준선 — 역세권 1km · 0단계 전제 5% */
-      var gx = X(1), gy = Y(0.05);
+      for (var t = Math.ceil(ymin * 5) / 5; t <= ymax + 1e-9; t += 0.2) ax += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(t).toFixed(1) + '" y2="' + Y(t).toFixed(1) + '"/><text x="' + (pl - 6) + '" y="' + (Y(t) + 4).toFixed(1) + '" text-anchor="end">' + t.toFixed(1) + "</text>";
+      ax += '<text class="ttl" x="' + (W - pr) + '" y="' + (H - 6) + '" text-anchor="end">최근접 철도역 거리 (로그) →</text>' +
+        /* y 축 이름 — 세로로 (논문 그림처럼) */
+        '<text class="ttl" transform="translate(14,' + ((pt + H - pb) / 2).toFixed(1) + ') rotate(-90)" text-anchor="middle" style="font-size:12px;fill:var(--ag-text2)">' +
+          '<tspan style="font-weight:700">활용 잠재력</tspan>' + (H > 380 ? '<tspan> (도시쇠퇴 활용도 가중치 + 사업체 감소율)</tspan>' : "") + "</text></g>";
+      /* 기준선 · 네 칸 이름 (⑦ 유형화 표와 같은 번호) */
+      var gx = X(GX), gy = Y(GY), q = function (x, y, anc, t) { return '<text class="quad" x="' + x + '" y="' + y + '" text-anchor="' + anc + '">' + t + "</text>"; };
       var guides = '<line class="guide" x1="' + gx + '" x2="' + gx + '" y1="' + pt + '" y2="' + (H - pb) + '"/><line class="guide" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + gy + '" y2="' + gy + '"/>' +
-        '<text class="quad" x="' + (gx - 6) + '" y="' + (pt + 26) + '" text-anchor="end">역세권</text><text class="quad" x="' + (gx + 6) + '" y="' + (pt + 26) + '">비역세권</text>' +
-        '<text class="quad" x="' + (W - pr - 4) + '" y="' + (gy - 6) + '" text-anchor="end">↑ 산업쇠퇴 (전제 충족)</text><text class="quad" x="' + (W - pr - 4) + '" y="' + (gy + 15) + '" text-anchor="end">↓ 산업 유지</text>';
+        q(pl + 6, pt + 12, "start", "Ⅰ 역세권·산업쇠퇴") + q(W - pr - 4, pt + 12, "end", "Ⅲ 비역세권·산업쇠퇴") +
+        q(pl + 6, H - pb - 22, "start", "Ⅱ 역세권·비쇠퇴") + q(W - pr - 4, H - pb - 22, "end", "Ⅳ 비역세권·비쇠퇴") +
+        q(gx + 4, H - pb - 6, "start", "역세권 1.5km") + q(W - pr - 4, gy - 5, "end", "산업계 쇠퇴 기준 0.6");
+      /* 큰 점을 먼저 — 작은 점이 위에 */
       var order = pts.map(function (_, i) { return i; }).sort(function (a, b) { return (pts[b].area_ha || 0) - (pts[a].area_ha || 0); });
-      var dots = "", labels = "";
+      var dots = "";
       order.forEach(function (i) {
-        var u = pts[i], cxp = X(u.dist_station_m / 1000), cyp = Y(u.busi_decline || 0), col = AG.GRADE_COLOR[u["등급"]] || "#999";
-        var hollow = u.busi_decline == null;
-        dots += '<circle class="dot mk" data-i="' + i + '" cx="' + cxp.toFixed(1) + '" cy="' + cyp.toFixed(1) + '" r="' + R(u.area_ha).toFixed(1) + '" fill="' + (hollow ? "#fff" : col) + '" fill-opacity="' + (hollow ? 1 : 0.85) + '"' + (hollow ? ' style="stroke:' + col + ';stroke-width:2"' : "") + "/>";
-        if (u["등급"] === "A") labels += '<text class="val" x="' + (cxp + R(u.area_ha) + 3).toFixed(1) + '" y="' + (cyp + 4).toFixed(1) + '" style="font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:3px">' + esc(clip(short(u), 90, 11)) + "</text>";
+        var u = pts[i];
+        dots += '<circle class="dot mk" data-i="' + i + '" cx="' + X(u.dist_station_m).toFixed(1) + '" cy="' + Y(yv(u)).toFixed(1) + '" r="' + R(u.area_ha).toFixed(1) + '" fill="' + (AG.GRADE_COLOR[u["등급"]] || "#999") + '" fill-opacity=".85"/>';
+      });
+      /* 이름표 — A·B 와 넓은 산단 몇, 겹치면 건너뜀 */
+      var boxes = [], labels = "";
+      var want = pts.map(function (u, i) { return i; }).filter(function (i) { var g = pts[i]["등급"]; return g === "A" || g === "B"; })
+        .concat(order.slice(0, 5)).filter(function (i, k, a) { return a.indexOf(i) === k; });
+      want.forEach(function (i) {
+        var u = pts[i], r = R(u.area_ha), nm = clip(short(u), 110, 11), w = textW(nm, 11);
+        var x = X(u.dist_station_m) + r + 3, y = Y(yv(u)) - r * 0.4;
+        if (x + w > W - pr) x = X(u.dist_station_m) - r - 3 - w;
+        var bx = [x - 1, y - 11, x + w + 1, y + 3];
+        if (boxes.some(function (b) { return !(bx[2] < b[0] || bx[0] > b[2] || bx[3] < b[1] || bx[1] > b[3]); })) return;
+        boxes.push(bx);
+        labels += '<text class="val" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" style="font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:3px;pointer-events:none">' + esc(nm) + "</text>";
       });
       return {
         svg: '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="30년 이상 산단 유형 산점도">' + ax + guides + dots + labels + "</svg>",
@@ -352,8 +371,9 @@
           var u = pts[i];
           return "<b>" + esc(short(u)) + "</b> " + (u["시군"] ? '<span class="ag-mute">' + esc(u["시군"]) + "</span>" : "") +
             row(null, "최근접역", esc(u.nearest_station || "") + " " + num(Math.round(u.dist_station_m)) + " m") +
+            row(null, "쇠퇴 가중치", (u.decl_w != null ? u.decl_w : "—") + " · " + esc((u.decl_class || "—").replace("지역", ""))) +
             row(null, "사업체 감소", u.busi_decline == null ? "자료 없음" : "↓" + Math.round(u.busi_decline * 100) + "%") +
-            row(null, "쇠퇴유형", esc((u.decl_class || "—").replace("지역", ""))) +
+            row(null, "활용 잠재력", "<b>" + yv(u).toFixed(2) + "</b>") +
             row(null, "면적", num(Math.round(u.area_ha || 0)) + " ha") +
             row(AG.GRADE_COLOR[u["등급"]], "등급 · 점수", (u["등급"] || "—") + " · " + u["종합점수"]) +
             '<div class="m">' + esc(u["추천용도"] || "") + " · 누르면 지도에서</div>";
