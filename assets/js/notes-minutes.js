@@ -80,6 +80,9 @@ export function pickFiles(names, folder) {
     /* 「회의록_HP.md」(또는 .txt) — 홈페이지에 올릴 **최종본 글**. 있으면 이것이 본문이 됩니다.
        없으면 가장 새 판(_v3 …)의 회의록내용 json 이, 그것도 없으면 받아쓴 txt 의 정리가 본문입니다. */
     hp: pick(/회의록_HP(_v\d+)?\.(md|txt)$/i),
+    /* 개최개요 — 글에는 「회의록 PDF 하나 · 개최개요 하나」 만 붙입니다.
+       동의서·개인정보 서류는 뺍니다. PDF 를 그림보다 먼저. */
+    brief: pickBrief(L),
     slide: pickSlide(L),
   };
 }
@@ -120,6 +123,15 @@ export function dropOldBlocks(body, pdfName) {
     if (!skipping) out.push(ln);
   }
   return out.join(NL).replace(/\s+$/, "");
+}
+
+/** 개최개요로 볼 파일 하나 — 「개최개요·개최건의·개최계획·회의개최·행사안내」, 동의서 따위는 뺍니다 */
+const BRIEF_RE = /(개최\s*개요|개최\s*건의|개최\s*계획|회의개최|세미나\s*안내|행사\s*안내)/;
+const NOT_BRIEF_RE = /(동의서|개인정보|이용내역|신청서|정산|영수)/;
+export function pickBrief(names) {
+  return (Array.isArray(names) ? names : []).filter(Boolean)
+    .filter((n) => /\.(pdf|jpe?g|png|webp)$/i.test(n) && BRIEF_RE.test(n) && !NOT_BRIEF_RE.test(n))
+    .sort((a, b) => (/\.pdf$/i.test(b) ? 1 : 0) - (/\.pdf$/i.test(a) ? 1 : 0))[0] || "";
 }
 
 /** 「…_v3.pdf」 의 3. 판 표시가 없으면 1 (처음 것) 로 봅니다. */

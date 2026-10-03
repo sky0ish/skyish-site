@@ -7,7 +7,7 @@
 // 관리자만 보고 쓸 수 있습니다 (자료 쪽 규칙 notes_setup.sql 이 실제로 막습니다).
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
 import * as NF from "./notes-files.js?v=202609051200";
-import * as GC from "./gcal.js?v=202609171300";
+import * as GC from "./gcal.js?v=202610031000";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
 import * as UT from "./utokyo.js?v=202609010300";
 import { readBrief } from "./notes-brief.js?v=202609010300";
@@ -3003,9 +3003,16 @@ export async function initNotes(mountId = "notesapp") {
           /* ① 회의록 — hwpx 는 안을 열어 글과 사진을 꺼냅니다 */
           let text = "", paras = [];
           const inside = [];
+          /* 「이상한 다른 파일들은 올리지 말고, 회의록 pdf 하나만 올려줘. 개최개요랑 두개.」
+             → 글에 붙이는 것은 회의록 PDF 하나 · 개최개요 하나 · (사진 폴더의 단체사진) 뿐입니다.
+             녹취·회의록 글(md)·한글 원본·발표자료는 붙이지 않고 내 컴퓨터에 둡니다.
+             회의록 hwpx 는 글과 사진을 꺼내는 데에만 씁니다. */
+          const onlyPdf = job.minutes.filter((x) => /\.pdf$/i.test(x));
+          const minutesUp = onlyPdf.length ? [onlyPdf[0]] : [];
           for (const p of job.minutes) {
             const f = await fileAt(p);
             if (!f) continue;
+            const 붙임 = minutesUp.indexOf(p) >= 0;
             /* 가장 새 판(첫 번째) 하나에서만 글과 사진을 꺼냅니다 —
                v1 과 원본에 같은 사진이 들어 있어, 둘 다 열면 사진이 두 번 붙습니다. */
             if (/\.hwpx$/i.test(f.name) && !text && !inside.length) {
@@ -3013,22 +3020,23 @@ export async function initNotes(mountId = "notesapp") {
                 const r = await HX.readHwpx(f);
                 if (r.text) { text = r.text; paras = r.paras || []; }
                 r.images.forEach((im) => inside.push(im));
-              } catch (e) { notes.push(f.name + " — 안을 읽지 못해 파일만 붙입니다"); }
+              } catch (e) { notes.push(f.name + " — 안을 읽지 못했습니다"); }
             }
-            await put(f);
+            if (붙임) await put(f);          // 붙이는 것은 가장 새 PDF 하나뿐
           }
           /* 회의록 글(txt·md) — 「회의록_HP」(홈페이지용 최종본)가 있으면 그 글이 hwpx 보다 앞섭니다 */
           let hpText = "";
           for (const p of job.text) {
             const f = await fileAt(p);
             if (!f) continue;
+            /* 글만 읽어 본문에 담고, 파일은 붙이지 않습니다 */
             if (WS.isHP(p) && !hpText) { try { hpText = (await f.text()).replace(/\r/g, "").trim(); } catch (e) {} }
             else if (!text) { try { text = await f.text(); } catch (e) {} }
-            await put(f);
           }
           if (hpText) text = hpText;
           /* ② 행사 정보 · 발표자료 · 그 밖의 자료 */
-          for (const p of [].concat(job.info, job.slides, job.docs)) await put(await fileAt(p));
+          /* 개최개요(행사 정보) 하나만 — 발표자료·그 밖의 자료는 붙이지 않습니다 */
+          if (job.info.length) await put(await fileAt(job.info[0]));
 
           /* ③ 사진 — 회의록 안의 것 먼저 (BMP 는 JPEG 로 줄여서), 그다음 폴더의 것.
              게시판은 그림을 본문 아래에 펼쳐 보이므로 회의록 아래에 쭉 이어집니다. */
@@ -3323,15 +3331,14 @@ export async function initNotes(mountId = "notesapp") {
       return;
     }
     const nPic = jobs.filter((j) => (j.pics || []).length).length;
-    const nSlide = jobs.reduce((n, j) => n + (j.slides || []).length, 0);
-    const nPres = jobs.filter((j) => j.presFolder).length;
+    const nBrief = jobs.filter((j) => j.brief).length;
     if (!confirm("회의록 " + jobs.length + "건을 그날 Schedule 글에 붙입니다." +
       String.fromCharCode(10) + "그날 글이 없으면 새로 만듭니다." +
-      (nSlide ? String.fromCharCode(10) + "발표자료 " + nSlide + "개도 함께 올립니다" +
-        (nPres ? " (presentation 폴더가 있는 " + nPres + "건 포함)" : "") + "." : "") +
+      (nBrief ? String.fromCharCode(10) + "개최개요 " + nBrief + "건도 함께 올립니다." : "") +
       (nPic ? String.fromCharCode(10) +
         "사진 폴더가 있는 " + nPic + "건은 얼굴이 가장 많은 단체사진 한 장도 함께 올립니다." : "") +
-      String.fromCharCode(10) + "녹음과 한글 원본은 올리지 않습니다. 계속할까요?")) return;
+      String.fromCharCode(10) +
+      "녹음·한글 원본·발표자료는 올리지 않습니다 — 회의록 PDF 와 개최개요만 갑니다. 계속할까요?")) return;
 
     const recBtn = document.getElementById("nRec");
     recBusy = true; recBtn.disabled = true;
@@ -3425,14 +3432,14 @@ export async function initNotes(mountId = "notesapp") {
           /* 발표자료 — presentation 폴더가 있으면 그 안의 **PDF 를 모두** 올립니다.
              폴더가 없으면 회의 폴더에 흩어져 있는 발표자료 하나를 올립니다.
              회의록·개최건의는 빼고 봅니다 (그것들은 따로 다룹니다). */
-          const slideBag = job.presFolder ? (presHandles.get(job.raw) || {}) : hs;
-          for (const nm of (job.slides || [])) {
-            const slideH = slideBag[nm];
-            if (!slideH) { failed.push(nm + " — 발표자료를 열지 못했습니다"); continue; }
-            if (row && MN.alreadyHas(row.files, nm)) continue;   // 이미 붙어 있습니다
-            if (ups.some((u) => u.name === nm)) continue;
-            try { ups.push(await NF.upload(await slideH.getFile())); }
-            catch (e) { failed.push(nm + " — 발표자료를 올리지 못했습니다"); }
+          /* 「회의록 pdf 하나만 올려줘. 개최개요랑 두개.」
+             개최개요(개최건의·개최계획·행사안내) 하나만 함께 올립니다.
+             발표자료는 글에 붙이지 않습니다 — 내 컴퓨터에 둡니다. */
+          const briefName = job.brief;
+          if (briefName && hs[briefName] && !(row && MN.alreadyHas(row.files, briefName)) &&
+              !ups.some((u) => u.name === briefName)) {
+            try { ups.push(await NF.upload(await hs[briefName].getFile())); }
+            catch (e) { failed.push(briefName + " — 개최개요를 올리지 못했습니다"); }
           }
 
           /* 그날 사진 폴더(pictures·사진)에서 **단체사진을 모두** 함께 올립니다 —

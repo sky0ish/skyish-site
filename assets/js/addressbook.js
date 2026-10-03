@@ -1707,7 +1707,7 @@ const gMonth = new Map();                // 「2026-09」 → 그달 구글 일�
  *  구글에는 날짜 범위만 묻습니다 — 명함 자료는 한 글자도 나가지 않습니다. */
 async function dayGoogle(ymd) {
   try {
-    const GC = await import("./gcal.js?v=202609081200");
+    const GC = await import("./gcal.js?v=202610031000");
     if (!GC.ready() || !GC.connected()) return [];
     const key = ymd.slice(0, 7);
     if (!gMonth.has(key)) {

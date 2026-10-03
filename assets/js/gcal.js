@@ -27,7 +27,13 @@ import { GCAL_CLIENT_ID } from "../../auth/config.js";
 /* calendar.events — 일정을 읽고 「쓸 수도」 있는 권한입니다.
    전에는 readonly 였는데, 게시판에서 쓴 일정을 구글로도 넣으려면 이게 필요합니다.
    권한을 넓혔으니 이미 이어 두셨던 분은 한 번 다시 이어 주셔야 합니다. */
-const SCOPE = "https://www.googleapis.com/auth/calendar.events";
+/* 일정 쓰기(calendar.events) + **캘린더 목록 읽기**(calendar.readonly).
+   calendar.events 만으로는 users/me/calendarList 를 읽을 수 없습니다 —
+   구글이 403(insufficientPermissions)을 돌려주고, 그것을 「권한이 풀렸다」 로
+   보아 열쇠를 버리는 바람에 ① 구글 일정이 통째로 안 보이고 ② 연결이 자꾸
+   풀리는 것처럼 보였습니다. 범위가 늘었으니 처음 한 번만 다시 허락을 받습니다. */
+const SCOPE = "https://www.googleapis.com/auth/calendar.events " +
+              "https://www.googleapis.com/auth/calendar.readonly";
 const KEY = "skyish-gcal-token";
 const OKKEY = KEY + "-ok";
 /* 만료 다섯 분 전부터는 미리 새로 받아 둡니다 */
@@ -290,78 +296,224 @@ async function authFail(r) {
   return true;
 }
 
-/** 내가 쓰는 캘린더 목록 (숨긴 것은 뺍니다) */
+/* ── 마지막 쪽까지 이어 받기 ────────────────────────────
+   구글은 목록을 잘라서 줍니다 (nextPageToken). 전에는 첫 쪽만 받고 끝내,
+   일정이 많은 달이나 캘린더가 여럿인 계정에서 뒷부분이 통째로 빠졌습니다. */
+
+/* 한꺼번에 몇 개 캘린더까지 물을지.
+   전에는 Promise.all 로 모두 한 번에 쏟았습니다. 캘린더가 여남은 개면
+   구글이 429·403(rateLimitExceeded)으로 막고, 막힌 캘린더는 아래에서
+   조용히 [] 이 되어 「그 캘린더 일정이 통째로 안 보이는」 증상이 됐습니다. */
+const LANES = 4;
+const nap = (ms) => new Promise((ok) => setTimeout(ok, ms));
+
+/* 마지막으로 받아 온 결과를 적어 둡니다 — 화면에서 「무엇이 빠졌는지」
+   물어볼 수 있게. 조용히 삼키지 않는 것이 여기의 요점입니다. */
+let report = { when: 0, cals: [], failed: [], off: 0, events: 0 };
+/** 마지막 불러오기 보고서 { when, cals:[{name,count}], failed:[{name,why}], off, events } */
+export const lastReport = () => report;
+
+/** 한 번 물어봅니다 — 잠깐 막힌 것(429·5xx·바쁜 403)은 쉬었다 다시 */
+async function ask(url, t, tries) {
+  const n = tries == null ? 3 : tries;
+  let last = "";
+  for (let i = 0; i <= n; i++) {
+    let r;
+    try {
+      r = await fetch(url, { headers: { Authorization: "Bearer " + t } });
+    } catch (e) {
+      last = "연결이 끊겼습니다";
+      await nap(400 * Math.pow(2, i));
+      continue;
+    }
+    if (r.ok) return r.json();
+    if (r.status === 401 || (r.status === 403 && await authFail(r))) {
+      const e = new Error("권한이 풀렸습니다. 다시 연결해 주세요.");
+      e.auth = true;
+      e.status = r.status;
+      throw e;
+    }
+    if (r.status === 429 || r.status === 403 || r.status >= 500) {
+      last = "구글이 잠시 바쁩니다 (HTTP " + r.status + ")";
+      await nap(400 * Math.pow(2, i));   // 0.4초 → 0.8 → 1.6 …
+      continue;
+    }
+    throw new Error("HTTP " + r.status);
+  }
+  throw new Error(last || "여러 번 물어도 답이 없습니다");
+}
+
+/** 마지막 쪽까지 이어 받습니다 */
+async function askAll(base, t) {
+  const out = [];
+  let page = "";
+  for (let i = 0; i < 25; i++) {           // 안전 고리 — 끝없이 돌지 않게
+    const j = await ask(base + (page ? "&pageToken=" + encodeURIComponent(page) : ""), t);
+    if (j && j.items) out.push.apply(out, j.items);
+    page = (j && j.nextPageToken) || "";
+    if (!page) break;
+  }
+  return out;
+}
+
+/** 내가 볼 수 있는 캘린더를 모두 (지운 것만 뺍니다)
+ *
+ *  전에는 selected !== false 로 걸렀습니다. 구글은 이 칸을 「캘린더 화면에
+ *  체크돼 있나」 로 쓰는데, 폰 앱에서만 켜 두었거나 구독만 해 둔 캘린더는
+ *  이 칸이 false 로 와서 통째로 빠졌습니다 (공휴일·동호회 같은 것).
+ *  달력에 「전부」 보이는 편이 맞으므로 이제 거르지 않고, 대신 꺼 둔 것이
+ *  몇 개였는지만 보고서에 적어 둡니다. */
 export async function calendars(tok) {
   const t = tok || await useToken();
-  const r = await fetch(
-    "https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader",
-    { headers: { Authorization: "Bearer " + t } });
-  if (r.status === 401 || r.status === 403) {
-    if (await authFail(r)) {
-      disconnect();
-      throw new Error("권한이 풀렸습니다. 다시 연결해 주세요.");
+  let items;
+  try {
+    items = await askAll(
+      "https://www.googleapis.com/calendar/v3/users/me/calendarList" +
+      "?minAccessRole=reader&showHidden=true&maxResults=250", t);
+  } catch (e) {
+    /* 목록을 못 읽어도 「내 캘린더(primary)」 일정은 읽을 수 있습니다 —
+       열쇠를 버리지 않고 그것만이라도 보여 줍니다 (목록 권한만 없는 옛 열쇠). */
+    if (e && e.auth && e.status === 401) { disconnect(); throw e; }   // 열쇠가 정말 죽음
+    if (e && e.auth) {                                                 // 목록 권한만 없음
+      report.off = 0;
+      return [{ id: "primary", name: "내 캘린더", color: "#4285f4", off: false, only: true }];
     }
-    throw new Error("구글이 잠시 바쁩니다 — 조금 뒤에 다시 해 주세요.");
+    throw new Error("캘린더 목록을 받지 못했습니다 — " + ((e && e.message) || ""));
   }
-  if (!r.ok) throw new Error("캘린더 목록을 받지 못했습니다 (HTTP " + r.status + ")");
-  const j = await r.json();
-  return (j.items || [])
-    .filter((c) => c.selected !== false && !c.deleted)
-    .map((c) => ({
-      id: c.id,
-      name: c.summaryOverride || c.summary || c.id,
-      color: c.backgroundColor || "#4285f4",
-    }));
+  const live = items.filter((c) => !c.deleted);
+  report.off = live.filter((c) => c.selected === false).length;
+  return live.map((c) => ({
+    id: c.id,
+    name: c.summaryOverride || c.summary || c.id,
+    color: c.backgroundColor || "#4285f4",
+    off: c.selected === false,       // 구글 화면에서는 꺼 두신 캘린더
+  }));
+}
+
+/* ── 여러 날에 걸친 일정 ────────────────────────────────
+   구글은 시작과 끝만 줍니다. 전에는 시작날 한 칸에만 찍어서,
+   「추석 연휴(24~26)」 나 「Stay at 선셋 호텔(9~11)」 이 첫날에만 뜨고
+   나머지 날은 빈 칸이었습니다. 걸친 날짜를 모두 펼칩니다.
+   종일 일정의 end.date 는 구글에서 「다음 날」 이므로 하루 뺍니다. */
+const shift = (isoDay, n) => {
+  const d = new Date(isoDay + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+         "-" + String(d.getDate()).padStart(2, "0");
+};
+
+function spread(e, lo, hi) {
+  const s = e.start || {}, en = e.end || {};
+  const from = s.date || (s.dateTime || "").slice(0, 10);
+  if (!from) return [];
+  let to = en.date ? shift(en.date, -1) : ((en.dateTime || "").slice(0, 10) || from);
+  if (to < from) to = from;
+  const days = [];
+  for (let d = from; d <= to && days.length < 400; d = shift(d, 1)) {
+    if (d >= lo && d <= hi) days.push(d);
+  }
+  return days.map((d, i) => ({ day: d, first: d === from, nth: i, span: days.length }));
 }
 
 /**
- * 한 달치 일정을 받아 옵니다 — 쓰고 계신 캘린더를 모두 훑습니다.
- * @returns [{date:"2026-08-14", title, place, time, cal, color}]
+ * 어느 날부터 어느 날까지의 일정을 받아 옵니다 — 볼 수 있는 캘린더를 모두 훑습니다.
+ * @param lo "2026-08-30"  @param hi "2026-10-10" (둘 다 그날 포함)
+ * @returns [{date, title, place, time, cal, color, gid, calId, allDay, span, nth}]
  */
-export async function month(year, mon0) {
+export async function range(lo, hi) {
   const t = await useToken();
-  const from = new Date(year, mon0, 1);
-  const to = new Date(year, mon0 + 1, 1);
   const cals = await calendars(t);
+  const from = new Date(lo + "T00:00:00");
+  const to = new Date(shift(hi, 1) + "T00:00:00");
+
+  const okCals = [], bad = [];
 
   const one = async (c) => {
-    const u = "https://www.googleapis.com/calendar/v3/calendars/"
+    const base = "https://www.googleapis.com/calendar/v3/calendars/"
       + encodeURIComponent(c.id) + "/events"
-      + "?singleEvents=true&orderBy=startTime&maxResults=250"
+      + "?singleEvents=true&orderBy=startTime&maxResults=2500"
       + "&timeMin=" + encodeURIComponent(from.toISOString())
       + "&timeMax=" + encodeURIComponent(to.toISOString());
+    let items;
     try {
-      const r = await fetch(u, { headers: { Authorization: "Bearer " + t } });
-      if (!r.ok) return [];
-      const j = await r.json();
-      return (j.items || []).map((e) => {
-        const s = e.start || {};
-        const day = s.date || (s.dateTime || "").slice(0, 10);
-        return {
-          date: day,
+      items = await askAll(base, t);
+    } catch (err) {
+      /* 권한이 풀린 것은 그 캘린더만의 일이 아닙니다 — 끊고 위로 올립니다 */
+      if (err && err.auth) { disconnect(); throw err; }
+      /* 전에는 여기서 조용히 [] 를 돌려주었습니다 — 그래서 캘린더 하나가
+         통째로 빠져도 화면에는 아무 말이 없었습니다. 이제 적어 둡니다. */
+      bad.push({ name: c.name, why: (err && err.message) || "알 수 없는 까닭" });
+      return [];
+    }
+    const out = [];
+    items.forEach((e) => {
+      if (e.status === "cancelled") return;
+      const s = e.start || {};
+      spread(e, lo, hi).forEach((p) => {
+        out.push({
+          date: p.day,
           // 구글이 매긴 번호 — 내 글과 짝지어 겹침을 걷을 때 씁니다
           gid: e.id || "",
+          uid: e.iCalUID || e.id || "",
           title: e.summary || "(제목 없음)",
           place: e.location || "",
           allDay: !!s.date,
-          time: s.dateTime ? s.dateTime.slice(11, 16) : "",
+          // 걸친 날의 둘째 날부터는 시각을 비웁니다 (첫날에만 몇 시인지 보입니다)
+          time: (p.first && s.dateTime) ? s.dateTime.slice(11, 16) : "",
+          span: p.span,          // 며칠짜리인가
+          nth: p.nth,            // 그 가운데 몇째 날인가 (0부터)
           cal: c.name,
           calId: c.id,          // 지울 때 씁니다 (이름이 아니라 번호로 부릅니다)
           color: c.color,
-        };
-      }).filter((x) => x.date);
-    } catch (err) { return []; }
+        });
+      });
+    });
+    okCals.push({ name: c.name, count: out.length });
+    return out;
   };
 
-  const lists = await Promise.all(cals.map(one));
-  const all = [].concat.apply([], lists);
-  // 같은 일정이 여러 캘린더에 겹쳐 있으면 한 번만
+  /* 몇 개씩 나눠 묻습니다 — 한꺼번에 쏟으면 구글이 막습니다 */
+  const all = [];
+  for (let i = 0; i < cals.length; i += LANES) {
+    const lists = await Promise.all(cals.slice(i, i + LANES).map(one));
+    lists.forEach((l) => all.push.apply(all, l));
+  }
+
+  /* 같은 일정이 여러 캘린더에 겹쳐 있으면 한 번만.
+     전에는 「날짜+제목+시각」 으로 묶었는데, 그러면 같은 날 같은 이름의
+     **다른** 일정(종일 「학원」 두 건 같은)이 한 건으로 합쳐져 사라졌습니다.
+     구글이 붙인 같은 번호(iCalUID)일 때만 같은 일정으로 봅니다. */
   const seen = new Set();
-  return all.filter((e) => {
-    const k = e.date + "|" + e.title + "|" + e.time;
+  const uniq = all.filter((e) => {
+    const k = e.date + "|" + (e.uid || (e.calId + "|" + e.gid));
     if (seen.has(k)) return false;
     seen.add(k); return true;
-  }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  });
+
+  report = {
+    when: Date.now(),
+    cals: okCals.sort((a, b) => b.count - a.count),
+    failed: bad,
+    off: report.off,
+    events: uniq.length,
+  };
+
+  return uniq.sort((a, b) =>
+    (a.date + (a.time || "00:00")).localeCompare(b.date + (b.time || "00:00")));
+}
+
+/**
+ * 한 달치 — 달력에 그리는 6주 판(앞뒤 딸림 날짜까지) 만큼 받아 옵니다.
+ * 전에는 그 달 1일~말일만 받아, 판의 앞뒤 회색 칸은 늘 비어 있었습니다.
+ * @returns [{date:"2026-08-14", title, place, time, cal, color}]
+ */
+export async function month(year, mon0) {
+  const first = new Date(year, mon0, 1);
+  const lo = new Date(first); lo.setDate(1 - first.getDay());       // 판의 첫 칸
+  const hi = new Date(lo); hi.setDate(lo.getDate() + 41);           // 판의 마지막 칸
+  const d2s = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") +
+                     "-" + String(d.getDate()).padStart(2, "0");
+  return range(d2s(lo), d2s(hi));
 }
 
 

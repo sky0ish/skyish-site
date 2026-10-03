@@ -9,9 +9,9 @@
 //      아직 이어지지 않았으면 부르지 않습니다. 사람이 누르지 않은 자리에서
 //      구글 창을 띄우면 브라우저가 막고 「Failed to open popup window」 가 뜹니다.
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as GC from "./gcal.js?v=202609080900";
+import * as GC from "./gcal.js?v=202610031000";
 import { dropMirrors } from "./cal-merge.js?v=202609010300";
-import * as CO from "./cal-open.js?v=202609080900";
+import * as CO from "./cal-open.js?v=202609301200";
 
 const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
@@ -46,6 +46,23 @@ function storedMail() {
 }
 
 const CACHE = "skyish-homecal";
+/* 지난번 그림을 되살릴 때 쓰는 열쇠 — 달마다 따로 둡니다.
+   전에는 열쇠가 하나라, 8월을 보다 새로고침하면 9월 판에 8월 구글 일정이
+   잠깐 얹혔습니다. */
+const cacheKey = (y, m) => CACHE + ":" + y + "-" + pad(m + 1);
+
+/* 한 칸에 몇 건까지 이름을 보여 줄지.
+   전에는 2건이었습니다 — 그래서 구글 일정이 잘 들어와 있어도 화면에서는
+   사라진 것처럼 보였습니다. 「전부 보이게」 가 기본이고, 아주 많은 날만
+   접습니다. 「간단히」 로 바꾸면 예전처럼 2건만 보여 줍니다. */
+const SHOWALL = "skyish-homecal-all";
+const MANY = 12;              // 이보다 많은 날만 「+n」 으로 접습니다
+const showAll = () => {
+  try { return localStorage.getItem(SHOWALL) !== "0"; } catch (e) { return true; }
+};
+const setShowAll = (v) => {
+  try { localStorage.setItem(SHOWALL, v ? "1" : "0"); } catch (e) {}
+};
 
 export async function initHomeCal(id = "hocal") {
   const box = document.getElementById(id);
@@ -75,7 +92,7 @@ export async function initHomeCal(id = "hocal") {
      자료가 새로 오면 조용히 갈아 끼웁니다. */
   let painted = false;
   try {
-    const c = JSON.parse(sessionStorage.getItem(CACHE) || "null");
+    const c = JSON.parse(sessionStorage.getItem(cacheKey(at.getFullYear(), at.getMonth())) || "null");
     if (c && Array.isArray(c.notes)) {
       notes = c.notes;
       gEvents = Array.isArray(c.g) ? c.g : [];
@@ -108,19 +125,33 @@ export async function initHomeCal(id = "hocal") {
     } catch (e) { /* 못 받아도 달력은 그립니다 */ }
   }
 
+  let gErr = "";                 // 구글에서 통째로 못 받아 왔을 때의 까닭
   async function pullG() {
     if (!GC.ready()) return;
     /* 열쇠가 만료됐어도 전에 이어 두었다면 창 없이 조용히 다시 받아 옵니다 */
     if (!GC.connected() && GC.silent) { try { await GC.silent(); } catch (e) {} }
-    if (!GC.connected()) return;
-    try { gEvents = await GC.month(at.getFullYear(), at.getMonth()) || []; }
-    catch (e) { gEvents = []; }
+    /* 아직 안 이어졌으면 아래 「구글 달력 잇기」 단추가 말해 줍니다 — 겹쳐 말하지 않습니다 */
+    if (!GC.connected()) { gErr = ""; return; }
+    try {
+      gEvents = await GC.month(at.getFullYear(), at.getMonth()) || [];
+      gErr = "";
+    } catch (e) {
+      /* 전에는 말없이 비웠습니다 — 그래서 「일정이 빠졌다」 로만 보였습니다 */
+      gEvents = [];
+      gErr = (e && e.message) || "구글에서 받아 오지 못했습니다";
+    }
+  }
+
+  /** 지금 판을 지난번 그림으로 적어 둡니다 (달마다 따로) */
+  function keep() {
+    try {
+      sessionStorage.setItem(cacheKey(at.getFullYear(), at.getMonth()),
+                             JSON.stringify({ notes, g: gEvents }));
+    } catch (e) { /* 저장소가 꽉 차도 그냥 갑니다 */ }
   }
 
   await Promise.all([loadNotes(), pullG()]);
-  try {
-    sessionStorage.setItem(CACHE, JSON.stringify({ notes, g: gEvents }));
-  } catch (e) { /* 저장소가 꽉 차도 그냥 갑니다 */ }
+  keep();
 
   /** 그날 어느 게시판에 쓸지 고르는 작은 창 */
   function pick(cell, day) {
@@ -152,6 +183,7 @@ export async function initHomeCal(id = "hocal") {
     const first = new Date(y, m, 1);
     const start = new Date(first); start.setDate(1 - first.getDay());
     const today = iso(new Date());
+    const all = showAll();
 
     // 날짜별로 모읍니다
     const byDay = {};
@@ -167,8 +199,13 @@ export async function initHomeCal(id = "hocal") {
     dropMirrors(notes, gEvents).forEach((e) => {
       (byDay[e.date] ||= []).push({ t: e.title, c: e.color || "#4285f4", g: 1,
                                     time: e.time, place: e.place,
+                                    // 며칠에 걸친 일정의 둘째 날부터인가 · 어느 캘린더인가
+                                    nth: e.nth || 0, span: e.span || 1, cal: e.cal,
                                     gid: e.gid, calId: e.calId });
     });
+    // 시각이 있는 것을 앞으로, 그 다음 종일 — 칸 안이 뒤섞이지 않게
+    Object.keys(byDay).forEach((k) => byDay[k].sort((a, b) =>
+      (a.time || "99:99").localeCompare(b.time || "99:99")));
 
     let cells = "";
     for (let i = 0; i < 42; i++) {
@@ -176,13 +213,18 @@ export async function initHomeCal(id = "hocal") {
       const k = iso(d);
       const out = d.getMonth() !== m;
       const list = byDay[k] || [];
-      // 두 건까지는 이름을 보여 주고, 더 있으면 「+n」 으로 줄입니다
-      const items = list.slice(0, 2).map((x) =>
-        `<a class="hev" href="${esc(linkTo(x, k))}" title="${esc(x.t)}">` +
+      /* 그날 일정을 「전부」 보여 줍니다.
+         전에는 두 건에서 잘랐습니다 — 구글에서 잘 받아 온 일정도 세 번째부터는
+         화면에서 사라져, 「홈페이지에 일정이 빠졌다」 로 보였습니다.
+         아주 많은 날(12건 초과)만 접고, 「간단히」 를 고르면 예전처럼 2건만. */
+      const cap = all ? MANY : 2;
+      const items = list.slice(0, cap).map((x) =>
+        `<a class="hev${x.nth ? " cont" : ""}" href="${esc(linkTo(x, k))}" ` +
+        `title="${esc(x.t)}${x.time ? " · " + esc(x.time) : ""}${x.cal ? " · " + esc(x.cal) : ""}">` +
         `<i style="background:${esc(x.c)}"></i>` +
         `<span>${esc(x.t)}</span></a>`).join("") +
-        (list.length > 2
-          ? `<em class="more" data-more="${k}" title="이날 일정 모두 보기">+${list.length - 2}</em>`
+        (list.length > cap
+          ? `<em class="more" data-more="${k}" title="이날 일정 모두 보기">+${list.length - cap}</em>`
           : "");
       cells += `<span class="hoc${out ? " out" : ""}${k === today ? " now" : ""}` +
         `${list.length ? " has" : ""}" data-d="${k}"` +
@@ -196,10 +238,32 @@ export async function initHomeCal(id = "hocal") {
       .flatMap((k) => byDay[k].map((x) => ({ ...x, k })))
       .slice(0, 4);
 
+    /* 구글에서 무엇을 받아 왔는지 — 빠진 캘린더가 있으면 말해 줍니다.
+       전에는 캘린더 하나가 통째로 막혀도 화면에는 아무 말이 없어서,
+       「왜 빠졌는지」 를 알 길이 없었습니다. */
+    const rep = (GC.lastReport ? GC.lastReport() : null) || { cals: [], failed: [] };
+    const note =
+      (gErr
+        ? '<p class="hocal__warn">⚠ 구글 일정을 못 받았습니다 — ' + esc(gErr) + '</p>'
+        : "") +
+      (rep.failed && rep.failed.length
+        ? '<p class="hocal__warn" title="' +
+            esc(rep.failed.map((f) => f.name + " — " + f.why).join(" / ")) +
+          '">⚠ 구글 캘린더 ' + rep.failed.length + '개를 못 읽었습니다 — 눌러서 다시 받기</p>'
+        : "") +
+      (GC.connected && GC.connected() && rep.when
+        ? '<p class="hocal__stat" id="hocalStat" title="' +
+            esc(rep.cals.map((c) => c.name + " " + c.count + "건").join(" / ")) +
+          '">구글 캘린더 ' + rep.cals.length + '개 · 이 판 ' + (rep.events || 0) + '건</p>'
+        : "");
+
     box.innerHTML =
       '<div class="hocal__head">' +
         '<button type="button" class="hocal__nav" data-go="-1" aria-label="지난달">‹</button>' +
         `<b>${y}. ${pad(m + 1)}</b>` +
+        '<button type="button" class="hocal__nav hocal__all" id="hocalAll" ' +
+          `title="${all ? "한 칸에 두 건만 보이게" : "그날 일정을 모두 보이게"}">` +
+          (all ? "간단히" : "모두") + "</button>" +
         '<button type="button" class="hocal__nav" data-go="1" aria-label="다음달">›</button>' +
       "</div>" +
       '<div class="hocal__wd">' + WEEK.map((w, i) =>
@@ -222,7 +286,21 @@ export async function initHomeCal(id = "hocal") {
               : "🔗 구글 달력 잇기 — 구글 일정도 함께 보입니다")
           + "</button>"
         : "") +
+      note +
       '<a class="hocal__more" href="blog.html?cat=schedule">일정 전체 보기 →</a>';
+
+    /* 「모두 / 간단히」 — 고른 것은 이 브라우저에 남습니다 */
+    const allBtn = document.getElementById("hocalAll");
+    if (allBtn) allBtn.addEventListener("click", () => { setShowAll(!all); draw(); });
+
+    /* 못 읽은 캘린더가 있으면 눌러서 다시 — 구글이 잠깐 막았을 때가 많습니다 */
+    const warn = box.querySelector(".hocal__warn");
+    if (warn) warn.addEventListener("click", async () => {
+      warn.textContent = "다시 받는 중…";
+      await pullG();
+      keep();
+      draw();
+    });
 
     const gcBtn = document.getElementById("hocalGc");
     if (gcBtn && GC.warm) GC.warm();        // 누르기 전에 미리 데워 둡니다
@@ -232,7 +310,7 @@ export async function initHomeCal(id = "hocal") {
       try {
         await GC.connect();               // 여기서 구글 창이 뜹니다
         await pullG();
-        try { sessionStorage.setItem(CACHE, JSON.stringify({ notes, g: gEvents })); } catch (e) {}
+        keep();
         draw();
       } catch (e) {
         gcBtn.disabled = false;
@@ -329,7 +407,13 @@ export async function initHomeCal(id = "hocal") {
     box.querySelectorAll("[data-go]").forEach((b) =>
       b.addEventListener("click", async () => {
         at.setMonth(at.getMonth() + Number(b.dataset.go));
+        /* 넘어간 달에 지난번 그림이 있으면 먼저 그려 둡니다 — 기다림이 안 보이게 */
+        try {
+          const c = JSON.parse(sessionStorage.getItem(cacheKey(at.getFullYear(), at.getMonth())) || "null");
+          if (c && Array.isArray(c.g)) { gEvents = c.g; draw(); }
+        } catch (e) {}
         await pullG();
+        keep();
         draw();
       }));
   }

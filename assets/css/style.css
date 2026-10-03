@@ -3347,3 +3347,29 @@ th[aria-sort] .fb-sort__a { color: var(--teal); }
        border:1px solid var(--line); border-radius:999px; background:#fff; font-size:.78rem; color:var(--teal-text); }
 .npl:hover { border-color:var(--teal); background:#f4faf8; }
 .npl small { font-size:.68rem; color:#8b8280; }
+
+
+/* ── 첫 화면 달력: 「그날 일정 전부 보이기」 ────────────────────────
+   전에는 칸이 overflow:hidden 이라, 한 칸에 일정이 셋 이상이면 세 번째부터
+   잘려 보이지 않았습니다 (구글에서는 잘 받아 왔는데도).
+   이제 칸이 세로로 늘어나 그날 일정을 다 보여 줍니다. */
+.hocal__grid .hoc { overflow: visible; }
+/* 한 주(칸 일곱)의 높이는 그 주에서 가장 바쁜 날에 맞춰 늘어납니다 */
+.hocal__grid { grid-auto-rows: minmax(52px, auto); }
+
+/* 며칠에 걸친 일정의 둘째 날부터 — 이어진 것임이 눈에 보이게 */
+.hoc .hev.cont { opacity: .78; }
+.hoc .hev.cont span::before { content: "↳ "; opacity: .7; }
+
+/* 머리의 「모두 / 간단히」 */
+.hocal__nav.hocal__all { width: auto; padding: 0 8px; font-size: .62rem;
+  letter-spacing: .02em; }
+
+/* 무엇을 받아 왔는지 · 무엇이 빠졌는지 */
+.hocal__stat { margin: 8px 0 0; font-size: .62rem; opacity: .55; text-align: right;
+  cursor: help; }
+.hocal__warn { margin: 8px 0 0; font-size: .66rem; text-align: center; cursor: pointer;
+  padding: 6px 8px; border-radius: 8px;
+  background: rgba(255, 176, 96, .18); border: 1px solid rgba(255, 176, 96, .42);
+  color: #ffd9b0; }
+.hocal__warn:hover { background: rgba(255, 176, 96, .3); }

@@ -682,7 +682,7 @@ await check("사진 폴더에 그림이 아닌 것이 섞여도 안 올린다", 
     throw new Error("그림이 아닌 것이 고르기까지 왔습니다 — " + cand);
 });
 
-await check("발표자료(final)도 함께 올린다", async () => {
+await check("★ 회의록 PDF 와 개최개요만 올린다 (발표자료는 안 올림)", async () => {
   globalThis.__dirs = { "20260902_발표_서민호": [
     "20260902_발표_서민호_회의록.pdf",
     "자문회의 개최건의(9월2일).pdf",
@@ -696,15 +696,16 @@ await check("발표자료(final)도 함께 올린다", async () => {
   const names = (v.files || []).map((f) => f.name);
   if (!names.some((n) => /_회의록\.pdf$/.test(n)))
     throw new Error("회의록이 없습니다 — " + names);
-  if (!names.includes("환승역세권과 주거공급_260902_final.pdf"))
-    throw new Error("발표자료가 없습니다 — " + names);
-  if (names.some((n) => /개최건의/.test(n)))
-    throw new Error("개최건의까지 올라갔습니다 — " + names);
+  if (!names.includes("자문회의 개최건의(9월2일).pdf"))
+    throw new Error("개최개요가 없습니다 — " + names);
+  if (names.some((n) => /final\.pdf$/.test(n)))
+    throw new Error("발표자료까지 올라갔습니다 — " + names);
+  if (names.length !== 2) throw new Error("붙임은 둘이어야 합니다 — " + names);
 });
 
 /* 「회의록 폴더에서 presentation 폴더가 있을 경우에 …
     회의록 파일을 만들어주면서 동시에 presentation파일도 upload로 올려줘」 */
-await check("presentation 폴더의 발표자료도 함께 올린다", async () => {
+await check("★ presentation 폴더의 발표자료는 글에 안 붙인다", async () => {
   globalThis.__dirs = { "20260908_김병규": ["20260908_김병규_회의록.pdf"] };
   globalThis.__pics = {};
   globalThis.__pres = { "20260908_김병규": [
@@ -716,15 +717,15 @@ await check("presentation 폴더의 발표자료도 함께 올린다", async () 
   await new Promise((r) => setTimeout(r, 60));
   const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name);
-  if (names.length !== 2)
-    throw new Error("붙임이 " + names.length + "개입니다 (회의록 + 발표자료) — " + names);
-  if (!names.includes("(김병규)(260908)국방_피지컬AI_세미나.pdf"))
-    throw new Error("PDF 가 아닙니다 — " + names);
+  if (names.length !== 1)
+    throw new Error("붙임이 " + names.length + "개입니다 (회의록 하나여야 합니다) — " + names);
+  if (names.some((n) => /세미나\.pdf$/.test(n)))
+    throw new Error("발표자료까지 올라갔습니다 — " + names);
   if (names.some((n) => /\.pptx$/i.test(n)))
     throw new Error("pptx 까지 올라갔습니다 — " + names);
 });
 
-await check("발표자료·사진·회의록이 다 있으면 셋 다", async () => {
+await check("★ 발표자료는 빼고 회의록 + 단체사진만", async () => {
   globalThis.__dirs = { "20260909_김병규": ["20260909_김병규_회의록.pdf"] };
   globalThis.__pics = { "20260909_김병규": ["단체.jpg", "혼자.jpg"] };
   globalThis.__faces = { "단체.jpg": 6, "혼자.jpg": 1 };
@@ -734,16 +735,18 @@ await check("발표자료·사진·회의록이 다 있으면 셋 다", async ()
   await new Promise((r) => setTimeout(r, 60));
   const v = lastInsert("schedule");
   const names = (v.files || []).map((f) => f.name).sort();
-  if (names.length !== 3)
-    throw new Error("붙임이 " + names.length + "개입니다 (셋이어야 합니다) — " + names);
-  for (const want of ["20260909_김병규_회의록.pdf", "단체.jpg", "발표_final.pdf"])
+  if (names.length !== 2)
+    throw new Error("붙임이 " + names.length + "개입니다 (회의록 + 사진 둘) — " + names);
+  for (const want of ["20260909_김병규_회의록.pdf", "단체.jpg"])
     if (!names.includes(want)) throw new Error(want + " 가 없습니다 — " + names);
+  if (names.some((n) => /final\.pdf$/.test(n)))
+    throw new Error("발표자료까지 올라갔습니다 — " + names);
 });
 
 /* 「워크샵 등의 경우 여기처럼 사진, 회의록이 있는 경우 전부 Schedule 게시판에
     정보가 올라가게 해줘. 폴더명으로 게시판글 이름으로 해주면되.
     회의록 아래에 사진이 쭉 붙게 해주면되.」 */
-await check("워크샵 폴더는 폴더 이름을 제목 삼아 회의록·자료·사진을 다 붙인다", async () => {
+await check("★ 워크샵 폴더 — 폴더 이름이 제목, 붙임은 개최개요 + 사진 (회의록 글은 본문으로)", async () => {
   const F = "20260910_[참석] WSCE_World Smart City Expo 2026";
   globalThis.__dirs = { [F]: ["회의록.txt", "사진2.jpg", "사진1.jpg", "안내.pdf", "녹음.m4a"] };
   globalThis.__pics = {}; globalThis.__pres = {};
@@ -758,8 +761,8 @@ await check("워크샵 폴더는 폴더 이름을 제목 삼아 회의록·자�
   if (v.tag !== "세미나참석") throw new Error("말머리가 " + v.tag);
   if (!/1\.부산 센텀/.test(v.body || "")) throw new Error("회의록 글이 본문에 없습니다 — " + v.body);
   const names = (v.files || []).map((f) => f.name);
-  if (JSON.stringify(names) !== JSON.stringify(["회의록.txt", "안내.pdf", "사진1.jpg", "사진2.jpg"]))
-    throw new Error("붙임 차례가 다릅니다 (회의록 → 자료 → 사진 이름순) — " + names);
+  if (JSON.stringify(names) !== JSON.stringify(["안내.pdf", "사진1.jpg", "사진2.jpg"]))
+    throw new Error("붙임 차례가 다릅니다 (개최개요 → 사진 이름순) — " + names);
 });
 
 await check("같은 제목의 글이 있으면 거기에 이어 붙인다", async () => {

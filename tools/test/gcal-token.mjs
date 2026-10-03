@@ -212,10 +212,18 @@ await GC.calendars().catch((e) => { busyErr = e; });
 eq("잠시 바쁘다고 알려 준다", !!(busyErr && /바쁩/.test(busyErr.message)), true);
 eq("열쇠를 버리지 않는다", GC.connected(), true);
 
+/* 캘린더 「목록」 권한만 없는 옛 열쇠 — 내 캘린더(primary)만이라도 읽고, 열쇠는 그대로 */
 reply = { status: 403, body: { error: { errors: [{ reason: "insufficientPermissions" }] } } };
-let permErr = null;
+let permErr = null, only = null;
+only = await GC.calendars().catch((e) => { permErr = e; return null; });
+eq("목록 권한만 없으면 내 캘린더로 갈음한다", !permErr && only && only.length === 1 && only[0].id, "primary");
+eq("그때는 열쇠를 버리지 않는다", GC.connected(), true);
+
+/* 열쇠가 정말 죽었으면(401) 다시 이으라고 하고 버립니다 */
+reply = { status: 401, body: { error: { code: 401 } } };
+permErr = null;
 await GC.calendars().catch((e) => { permErr = e; });
-eq("권한 문제면 다시 이으라고 한다", !!(permErr && /권한이 풀렸/.test(permErr.message)), true);
+eq("열쇠가 죽었으면 다시 이으라고 한다", !!(permErr && /권한이 풀렸/.test(permErr.message)), true);
 eq("그때는 열쇠를 버린다", GC.connected(), false);
 reply = null;
 
