@@ -26,6 +26,12 @@ D = {
   ["공사비", "약 1억 9,400만 유로 (연방건설청 BBR 「Gesamtkosten rund 194 Millionen Euro」) — 독일어 위키백과 등은 약 2억 9,500만 유로로 적음"],
   ["수상", "2010 RIBA 유럽상 · 2010 유로파 노스트라 상 · 2010 대(大) 니케상 · 2011 EU 현대건축상 (미스 반 데어 로에상) · 2011 독일 건축상 · 2014 역사적 공학 기념물 지정"]
  ],
+ "tenants": [
+  ["문화 · 박물관", "이집트 박물관과 파피루스 컬렉션 (Ägyptisches Museum und Papyrussammlung)", "2009년 재개관과 함께 입주", "https://de.wikipedia.org/wiki/Neues_Museum_(Berlin)"],
+  ["문화 · 박물관", "선사 고대사 박물관 (Museum für Vor- und Frühgeschichte)", "2009년 재개관과 함께 입주", "https://de.wikipedia.org/wiki/Neues_Museum_(Berlin)"],
+  ["문화 · 박물관", "고대 유물 컬렉션 (Antikensammlung) 일부", "컬렉션 일부를 전시", "https://de.wikipedia.org/wiki/Neues_Museum_(Berlin)"],
+  ["문화 · 운영 기관", "베를린 국립박물관 (Staatliche Museen zu Berlin)", "프로이센 문화유산재단 소속 — 건물과 세 컬렉션의 운영 주체"]
+ ],
  "timeline": [
   ["1841", "3월 8일 왕의 내각령으로 계획 승인, 6월 19일 공사 시작"],
   ["1843", "4월 6일 정초 — 나무 말뚝 2,344개(길이 6.9~18.2m)로 무른 지반을 다짐"],
@@ -139,6 +145,9 @@ D = {
   ["공사비", "개조 2,720만 유로 (세전) + 신축 8세대 120만 유로 (세전) — 세대당 약 5만 유로 (세전)"],
   ["수상", "2019 EU 현대건축상 (미스 반 데어 로에상)"]
  ],
+ "tenants": [
+  ["주거 · 공공임대 운영", "아키타니스 (Aquitanis)", "보르도 메트로폴의 공공 주택청 — G · H · I 동 530세대 (개조)와 신축 8세대를 소유 · 임대, 기존 세입자 그대로 거주", "https://www.lacatonvassal.com/index.php?idp=80"]
+ ],
  "timeline": [
   ["1959", "보르도 북쪽 습지에 장 루아예 계획의 그랑 파르크 단지 착공"],
   ["1960년대 초", "G · H · I 동 (530세대) 준공"],
@@ -208,7 +217,8 @@ D = {
   "수익사업 · 운영 재원(임대료 수준 · 아키타니스 몫의 상환 방식 · 관리비)은 확인된 자료를 찾지 못했습니다.",
   "국가 도시재생청 (ANRU) 지원 여부는 확인된 자료를 찾지 못했습니다.",
   "에너지 절감 수치는 확인된 자료를 찾지 못했습니다 (세대당 추가 면적은 유럽연합 집행위원회 자료가 약 30㎡로 적음).",
-  "동별 층수(G · H · I 각각)와 공사 착공 · 준공의 정확한 날짜는 확인된 자료를 찾지 못했습니다."
+  "동별 층수(G · H · I 각각)와 공사 착공 · 준공의 정확한 날짜는 확인된 자료를 찾지 못했습니다.",
+  "주요 입주 시설은 공공임대 주택 외에 확인된 자료를 찾지 못했습니다 (단지 상가 · 공공시설의 G · H · I 동 입주 여부 미확인)."
  ],
  "refs": [
   {"t": "Transformation de 530 logements, Grand Parc — Lacaton & Vassal", "u": "https://www.lacatonvassal.com/index.php?idp=80"},
@@ -244,6 +254,19 @@ D = {
   ["규모", "옛 홀 약 22,000㎡ (트리오도스 은행) · 사용 면적 15,504㎡ (재생 지식은행), 그중 동네 기능 6,000㎡"],
   ["사업비", "총 3,750만 유로"],
   ["수상", "피터르 판 볼런호번상 (Pieter van Vollenhovenprijs) · 2014 IJ상 (판 스티흐트)"]
+ ],
+ "tenants": [
+  ["문화 · 영화관", "필름할런 (Filmhallen)", "2014년 9월 개관 — 상영관 7개 (ONH 기준), 옛 시네마 파리지앵 (Cinema Parisien)의 실내를 옮겨 온 상영관 포함. 방문객이 예상치(연 20만 명)의 두 배", "https://nl.wikipedia.org/wiki/De_Hallen_(Amsterdam)"],
+  ["상업 · 식음 (푸드홀)", "푸드할런 (Foodhallen)", "차고 홀 하나를 쓴 실내 길거리 음식 시장 — 여러 식음 점포가 모인 푸드홀", "https://www.dehallen-amsterdam.nl/over-de-hallen"],
+  ["문화 · 도서관", "암스테르담 공공도서관 (OBA) 분관 · 카페 벨캄포 (Belcampo)", "2014년 4월 5일 1단계 개장 때 한니 당크바르 통로와 함께 개관 — 강연 · 열람 공간", "https://nl.wikipedia.org/wiki/De_Hallen_(Amsterdam)"],
+  ["상업 · 호텔", "호텔 더 할런 (Hotel De Hallen) — 폰덜 호텔스 (Vondel Hotels)", "2014년 여름 개장, 벨라미 광장 (Bellamyplein) 쪽 옛 사무동 — 레스토랑 · 런치 운영", "https://www.herbestemming.nl/projecten/tramremise-de-hallen-amsterdam"],
+  ["문화 · 방송 스튜디오", "더 할런 스튜디오 (De Hallen Studio's)", "TV 방송 · 행사 제작 공간 — 2024년 9월 2일부터 AVROTROS 「Eva」 매일 방송, 「Wie is de Mol?」 결승 · 「Moltalk」 방송", "https://nl.wikipedia.org/wiki/De_Hallen_(Amsterdam)"],
+  ["문화 · 공연장", "할 베스트 (Hal West)", "스포큰 워드 · 라이브 음악 공연 무대", "https://www.dehallen-amsterdam.nl/over-de-hallen"],
+  ["문화 · 갤러리", "베일던트 헤스프로컨 (Beeldend Gesproken)", "현대미술 갤러리 · 미술품 대여 — 2014년 4월 1단계 개장 때 입주", "https://nl.wikipedia.org/wiki/De_Hallen_(Amsterdam)"],
+  ["업무 · 공방 · 직업교육", "데님 시티 (Denim City) · 진 스쿨 (Jean School) · 하우스 오브 데님 (House of Denim)", "지속가능한 데님 공방 · 생산과 데님 교육", "https://www.dehallen-amsterdam.nl/over-de-hallen"],
+  ["업무 · 직업교육", "킨키 카퍼스 아카데미 (Kinki Kappers Academy) · 리사이클 (Recycle)", "미용 교육 · 자전거 수리 견습 과정 — 사회적 기업에 낮은 임대료", "https://www.dehallen-amsterdam.nl/over-de-hallen"],
+  ["상업 · 바", "카나리 클럽 (Kanarie Club)", "칵테일 바 · 식음", "https://www.dehallen-amsterdam.nl/over-de-hallen"],
+  ["상업 · 보육", "어린이집 (바스커르 Basker / 옛 월드키즈 Wereldkids)", "통로에 면한 어린이집 — 재생 지식은행 자료는 월드키즈 (Kindercentrum Wereldkids), 현재 공식 사이트는 바스커르 (Basker)로 표기", "https://www.dehallen-amsterdam.nl/over-de-hallen"]
  ],
  "timeline": [
   ["1902", "서부 트램 차고 개통 (1902~1905년 건설) — 옛 연못 크바커르스풀 (Kwakerspoel) 자리"],
@@ -321,7 +344,8 @@ D = {
  "missing": [
   "연간 임대 수입 총액과 자체 수입 비율은 확인된 자료를 찾지 못했습니다.",
   "연간 전체 방문객 수는 출처가 확인된 자료를 찾지 못했습니다 (위키백과의 200만~300만 명은 출처 표시가 없음).",
-  "구조 보강 방법의 상세는 확인된 자료를 찾지 못했습니다."
+  "구조 보강 방법의 상세는 확인된 자료를 찾지 못했습니다.",
+  "푸드할런 점포 수와 호텔 객실 수는 확인된 자료를 찾지 못했습니다."
  ],
  "refs": [
   {"t": "De Hallen (Amsterdam) — 네덜란드어 위키백과", "u": "https://nl.wikipedia.org/wiki/De_Hallen_(Amsterdam)"},
@@ -332,7 +356,8 @@ D = {
   {"t": "Hoe De Hallen weer het hart van Amsterdam-West werden — ONH", "u": "https://onh.nl/verhaal/hoe-de-hallen-weer-het-hart-van-amsterdam-west-werden"},
   {"t": "Showcase De Hallen — Triodos", "u": "https://www.triodos.nl/showcase-de-hallen"},
   {"t": "De herontwikkeling van een rijksmonument — Stadsherstel", "u": "https://stadsherstel.nl/nieuws/de-herontwikkeling-van-een-rijksmonument/"},
-  {"t": "Bouwheer voor de goede zaak: interview André van Stigt — Werkplaats Erfgoed", "u": "https://werkplaatserfgoed.nl/bouwheer-voor-de-goede-zaak-interview-andre-van-stigt/"}
+  {"t": "Bouwheer voor de goede zaak: interview André van Stigt — Werkplaats Erfgoed", "u": "https://werkplaatserfgoed.nl/bouwheer-voor-de-goede-zaak-interview-andre-van-stigt/"},
+  {"t": "Over De Hallen — De Hallen Amsterdam", "u": "https://www.dehallen-amsterdam.nl/over-de-hallen"}
  ],
 },
 "ndsm": {
@@ -355,6 +380,17 @@ D = {
   ["공사 기간", "쿤스트스타트 2004~2007년 (2007년 골조 인도), 홀 보수 2014~2017년 봄"],
   ["규모", "쿤스트스타트 약 7,000㎡ — 작업실 약 85개 · 사용자 약 250명 (자가 시공 작업실 80개 · 대형 극장 작업장 12개 · 실내 스케이트장 1개)"],
   ["위치", "네덜란드 암스테르담 노르트 구 — 중앙역에서 NDSM 페리 (F4)"]
+ ],
+ "tenants": [
+  ["문화 · 예술가 작업실", "쿤스트스타트 (Kunststad) — 키네티스 노르트 재단 (SKN)", "2007년 선박 건조 홀 안 — 작업실 약 85개 · 사용자 약 250명, 극장 작업장 · 실내 스케이트장", "https://www.ndsmloods.nl/broedplaats/"],
+  ["업무 · 미디어 본사", "파라마운트 베네룩스 (Paramount Benelux, 옛 MTV 네트웍스 베네룩스)", "2007년 2월 옛 목공장 (Timmerwerkplaats, 국가 기념물)에 본사 이전 — 막스 판 아르스호트가 실내에 새 공간을 지음", "https://nl.wikipedia.org/wiki/NDSM-terrein"],
+  ["업무 · 앵커 기업 (본사)", "헤마 (HEMA) · VNU 미디어 (VNU Media)", "2010년 9월 개관한 신축 「넘버 원 (Number One)」(약 40,000㎡, 브론스포르트 블라크 설계) 본사 · 1층 상점 — 현재 입주 여부는 확인하지 못함", "https://architectenweb.nl/nieuws/artikel.aspx?id=24130"],
+  ["상업 · 호텔", "크레인 호텔 파랄다 (Crane Hotel Faralda)", "2013년 10월 22일 개장 — 옛 크레인 13호를 개조한 스위트 3실과 TV 스튜디오", "https://nl.wikipedia.org/wiki/NDSM-terrein"],
+  ["문화 · 미술관", "STRAAT 박물관 (STRAAT Museum)", "2021년 개관 — 거리예술 작품을 전시하는 박물관", "https://nl.wikipedia.org/wiki/NDSM-terrein"],
+  ["상업 · 식음", "바안데레이 (Baanderij) 브라세리", "옛 작업 준비 사무소 · 조립 홀 · 구내식당 건물 1층 — 물가 테라스, 위층은 사무실", "https://nl.wikipedia.org/wiki/NDSM-terrein"],
+  ["상업 · 식음", "IJver", "2018년 8월 10일 선박 건조 홀 안 식음 시설 임대 계약 — 2019년 여름 건물 인도 예정", "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"],
+  ["문화 · 행사 · 축제", "DGTL 페스티벌 · 오버 헷 에이 (Over het IJ) 페스티벌 · 인투 더 우즈 (Into the Woods)", "DGTL (2013~), 오버 헷 에이 (2017~), 인투 더 우즈 (2017~, 암스테르담 댄스 이벤트 기간) 등 대형 축제 · 공연장", "https://nl.wikipedia.org/wiki/NDSM-terrein"],
+  ["업무 · 조선 수리", "다먼 십리페어 암스테르담 (Damen Shiprepair Amsterdam)", "부지 북서쪽의 옛 독 4곳 — 1987년부터 선박 수리 (2015년 1월부터 현재 이름)", "https://nl.wikipedia.org/wiki/Nederlandsche_Dok_en_Scheepsbouw_Maatschappij"]
  ],
  "timeline": [
   ["1919", "1894년 창립한 NSM이 IJ 강 북안으로 이전, 선박 건조 홀 건설 (1919~1920) — 랑하우트가 1928년까지 단지 조성"],
@@ -437,7 +473,8 @@ D = {
   "재단의 연간 수입 구성(임대 · 대관 비율)과 임대료 수준은 확인된 자료를 찾지 못했습니다.",
   "구청 · 시 보조금의 정확한 금액은 확인된 자료를 찾지 못했습니다.",
   "쿤스트스타트 공사비 총액은 확인된 자료를 찾지 못했습니다.",
-  "기존에 적혀 있던 그린피스 입주와 「유럽 최대 벼룩시장 (IJ 할렌)」은 확인된 자료를 찾지 못했습니다."
+  "기존에 적혀 있던 그린피스 입주와 「유럽 최대 벼룩시장 (IJ 할렌)」은 확인된 자료를 찾지 못했습니다.",
+  "레드불 (Red Bull) · 디스커버리 (Discovery) 등 다른 입주 기업의 현재 입주 여부와 위치는 확인된 자료를 찾지 못했습니다."
  ],
  "refs": [
   {"t": "NDSM-terrein — 네덜란드어 위키백과", "u": "https://nl.wikipedia.org/wiki/NDSM-terrein"},
@@ -450,7 +487,8 @@ D = {
   {"t": "NDSM-loods, de ultieme broedplaats — Zout Magazine", "u": "https://www.zoutmagazine.eu/ndsm-loods-de-ultieme-broedplaats/"},
   {"t": "Werken aan de Self Made Future op de NDSM-werf — Gebiedsontwikkeling.nu", "u": "https://www.gebiedsontwikkeling.nu/artikelen/werken-aan-de-self-made-future-op-de-ndsm-werf/"},
   {"t": "NDSM Scheepsbouwloods — Strackee", "u": "https://strackee.nl/projecten-archief/ndsm-scheepsbouwloods"},
-  {"t": "Stichting Kinetisch Noord — Jaarverslag 2018", "u": "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"}
+  {"t": "Stichting Kinetisch Noord — Jaarverslag 2018", "u": "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"},
+  {"t": "Hoofdkantoor HEMA en VNU Media geopend — Architectenweb", "u": "https://architectenweb.nl/nieuws/artikel.aspx?id=24130"}
  ],
 },
 "chq-epic": {
@@ -474,6 +512,15 @@ D = {
   ["공사 · 개관", "2000년대 중반 상업시설 개조 (자료에 따라 2005년 · 2007년), 2016년 5월 EPIC 개관"],
   ["공사비", "1차 약 4,500만 유로 (DDDA, 2005년) / 2차 EPIC 약 1,500만 유로 (전액 민간)"],
   ["수상", "2008 RIAI 아일랜드 건축상 최우수 보존 · 수복 / EPIC — 2019 · 2020 · 2021 월드 트래블 어워즈 「유럽 최고의 관광 명소」"]
+ ],
+ "tenants": [
+  ["문화 · 박물관", "EPIC 아일랜드 이민 박물관 (EPIC The Irish Emigration Museum)", "2016년 5월 개관 — 지하 볼트, 20개 전시실, 행사 대관도 운영", "https://en.wikipedia.org/wiki/EPIC_The_Irish_Emigration_Museum"],
+  ["문화 · 족보 센터", "아일랜드 가족사 센터 (Irish Family History Centre)", "EPIC 안 (기념품점 위층) — 족보 상담 · 조사, 예약제", "https://www.irishfamilyhistorycentre.com/"],
+  ["첨단산업 · 스타트업 허브", "도그패치 랩스 (Dogpatch Labs)", "CHQ 건물에 자리한 테크 스타트업 공유오피스 · 창업 허브", "https://dogpatchlabs.com/"],
+  ["상업 · 식음", "스타벅스 (Starbucks) · 더 베이크하우스 (The Bakehouse) · 세븐 원더스 (Seven Wonders) · TOSS'D · 업슈츠 (Upshoots)", "1층 카페 · 식당 — 더 베이크하우스는 2015년 12월 건물 안 더 큰 자리로 이전", "https://chq.ie/"],
+  ["상업 · 양조 · 식음", "어반 브루잉 (Urban Brewing)", "건물 안 소형 양조장 · 바 (2017년 운영사 게시, 현재 영업 여부는 확인하지 못함)", "https://chq.ie/"],
+  ["상업 · 피트니스", "플라이핏 CHQ (FLYEfit CHQ)", "체육관 (2017년 운영사 게시)", "https://chq.ie/"],
+  ["문화 · 행사장", "CHQ 행사 공간", "50명 소규모 모임부터 800명 기업 행사까지 대관", "https://www.discoverireland.ie/dublin/chq-dublin"]
  ],
  "timeline": [
   ["1820", "존 레니 설계로 스택 A 준공 (1821년 사용) — 매립지 위 창고 11동 · 심수 도크 3곳의 세관 부두 단지"],
@@ -551,7 +598,8 @@ D = {
   "1차 개조의 정확한 착공 · 준공 날짜는 확인된 자료를 찾지 못했습니다 (자료에 따라 2005년 · 2007년).",
   "보호 건축물 목록 · NIAH의 원문 기록(번호 · 등재 연도)은 직접 열어 확인하지 못했습니다.",
   "EPIC 공사의 구조 · 설비 상세는 확인된 자료를 찾지 못했습니다.",
-  "EPIC의 2017년 이후 재무제표 · 최근 방문객 수와 CHQ의 현재 임대율은 확인된 자료를 찾지 못했습니다."
+  "EPIC의 2017년 이후 재무제표 · 최근 방문객 수와 CHQ의 현재 임대율은 확인된 자료를 찾지 못했습니다.",
+  "상층 사무 임차인 목록은 확인된 자료를 찾지 못했습니다."
  ],
  "refs": [
   {"t": "CHQ Building — Wikipedia", "u": "https://en.wikipedia.org/wiki/CHQ_Building"},
@@ -563,7 +611,11 @@ D = {
   {"t": "The CHQ Building / EPIC Ireland — Darmody Architecture", "u": "https://www.darmodyarchitecture.com/work/the-chq-building-epic-ireland/"},
   {"t": "The CHQ Tour — EPIC", "u": "https://epicchq.com/event/the-chq-tour-epic/"},
   {"t": "Epic museum eyes profitability as visitor numbers set to rise — The Irish Times", "u": "https://www.irishtimes.com/business/transport-and-tourism/epic-museum-eyes-profitablity-as-visitor-numbers-set-to-rise-1.3379635"},
-  {"t": "Dublin emigration museum on road to profit as royals call — The Irish Times", "u": "https://www.irishtimes.com/business/transport-and-tourism/dublin-emigration-museum-on-road-to-profit-as-royals-call-1.3556849"}
+  {"t": "Dublin emigration museum on road to profit as royals call — The Irish Times", "u": "https://www.irishtimes.com/business/transport-and-tourism/dublin-emigration-museum-on-road-to-profit-as-royals-call-1.3556849"},
+  {"t": "Irish Family History Centre", "u": "https://www.irishfamilyhistorycentre.com/"},
+  {"t": "Dogpatch Labs", "u": "https://dogpatchlabs.com/"},
+  {"t": "CHQ — The chq Building", "u": "https://chq.ie/"},
+  {"t": "CHQ Dublin — Discover Ireland", "u": "https://www.discoverireland.ie/dublin/chq-dublin"}
  ],
 },
 "viaduc-des-arts": {
@@ -587,6 +639,19 @@ D = {
   ["공사 기간", "1992년 공사 시작 → 1994년 10월 첫 아치 6곳 개장 → 1997년 마지막 아치 → 2000년 하반기 완성 (설계자 자료의 인도 연도 1996년)"],
   ["산책로 면적", "약 3.7ha (산책로 자체)"],
   ["주소", "프랑스 파리 12구 도메닐 거리 (Avenue Daumesnil) 1~129번지"]
+ ],
+ "tenants": [
+  ["상업 · 공예 공방", "필리프 페랑디스 (Philippe Ferrandis)", "1986년부터 활동한 장신구 공예가 — 고가교 아치의 공방에서 제작", "https://www.leviaducdesarts.com/ateliers"],
+  ["상업 · 공예 공방", "말리아 켄트 (Malhia Kent)", "오트 쿠튀르 · 고급 기성복 · 가구용 직물 제작", "https://www.leviaducdesarts.com/ateliers"],
+  ["상업 · 공예 공방", "하르포스페르 (Harposphère)", "하프 판매 · 수리 · 복원 공방 (옛 이름 Le Magasin de la Harpe)", "https://www.leviaducdesarts.com/ateliers"],
+  ["문화 · 문화재 보존", "아바카 (Abaca) · 아틀리에 카타네오 (Atelier Cattaneo)", "종이 · 직물 · 사진 작품 보존 · 복원 (아바카는 국립문화재학교 출신 보존가 6명)", "https://www.leviaducdesarts.com/ateliers"],
+  ["상업 · 공예 쇼룸", "레리 몽트리외 (Rairies Montrieux)", "루아르 지방의 전통 벽돌 · 테라코타 제조사 — 살아 있는 유산 기업 (EPV)", "https://www.leviaducdesarts.com/ateliers"],
+  ["상업 · 자전거", "비클룬 (Bicloune)", "1982년 창업 자전거 판매 · 복원점 — 2016년 고가교로 이전", "https://fr.wikipedia.org/wiki/Viaduc_des_Arts"],
+  ["상업 · 식품 공방", "콩피튀르 파리지엔 (Confiture Parisienne)", "잼 제조 · 판매 공방 (도메닐 거리 17번지)", "https://www.leviaducdesarts.com/ateliers"],
+  ["상업 · 식음", "비아뒤크 카페 (Viaduc Café)", "석재 아치 안의 바 · 레스토랑", "https://www.leviaducdesarts.com/ateliers"],
+  ["문화 · 교육", "파리 아틀리에 (Paris-Ateliers)", "파리시 보조를 받는 비영리 협회 — 공예 · 미술 분야 100개 이상 아마추어 강좌", "https://www.leviaducdesarts.com/ateliers"],
+  ["문화 · 사회연대 공예", "라 파브리크 노마드 (La Fabrique Nomade)", "1bis번지 아치 — 사회연대경제 보호 대상으로 언급 (2024 DAE 126)", "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"],
+  ["상업 · 공예 공방", "아틀리에 르 탈레크 (Atelier Le Tallec)", "손으로 그린 도자기 장식 (1994~2015, 철수)", "https://fr.wikipedia.org/wiki/Viaduc_des_Arts"]
  ],
  "timeline": [
   ["1859", "바스티유선 개통 — 고가교 완공 (1853년 「파리-스트라스부르」 철도회사에 노선 면허)"],
@@ -675,7 +740,8 @@ D = {
   {"t": "Coulée verte René-Dumont — 프랑스어 위키백과", "u": "https://fr.wikipedia.org/wiki/Coul%C3%A9e_verte_Ren%C3%A9-Dumont"},
   {"t": "Le Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/realisations/viaduc-des-arts-paris-12e"},
   {"t": "2024 DAE 126 Viaduc des Arts (12e) — Nouveau bail emphytéotique administratif avec la SEM Paris Commerces (Conseil de Paris)", "u": "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"},
-  {"t": "Appel à candidatures : location de 4 ateliers au Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/actualites/appel-a-candidatures-location-ateliers-d-artisans-paris-12e"}
+  {"t": "Appel à candidatures : location de 4 ateliers au Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/actualites/appel-a-candidatures-location-ateliers-d-artisans-paris-12e"},
+  {"t": "Ateliers — Le Viaduc des arts", "u": "https://www.leviaducdesarts.com/ateliers"}
  ],
 },
 }

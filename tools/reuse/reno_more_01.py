@@ -46,6 +46,16 @@ D = {
   ["등록 거부 (1987 · 1992)", "발전소를 보호 건축물 (listed building)로 등록하려는 신청이 두 차례 거부되었습니다. 정부가 부지를 팔려 했고, 등록되면 개발자의 개입이 제약된다는 이유였습니다."],
   ["등록 면제 증명서 (Certificate of Immunity from Listing, 1993)", "1993년 2월 3일 발급 — 일정 기간 등록 대상에서 제외한다는 증명으로, 테이트 모던은 법정 보호 건축물이 아닌 상태에서 개조되었습니다."],
  ],
+ "tenants": [
+  ["문화 · 기업 후원 커미션", "현대 커미션 (Hyundai Commission) — 현대자동차 (Hyundai Motor)", "2014년 시작 · 터빈 홀에서 해마다 열리는 대형 장소 특정 신작 · 테이트 역사상 기업 파트너의 최장 초기 약정, 2036년까지 10년 연장 · 2025~26년 마레트 안네 사라가 10번째 작가 · 누적 관람 1,800만 명 이상", "https://www.tate.org.uk/press/press-releases/hyundai-commission-maret-anne-sara"],
+  ["문화 · 연구센터", "현대 테이트 리서치 센터: 트랜스내셔널 (Hyundai Tate Research Centre: Transnational)", "2019년 설립 · 현대자동차 후원, 2036년까지 지원 연장", "https://www.tate.org.uk/press/press-releases/hyundai-commission-maret-anne-sara"],
+  ["문화 · 기업 후원 프로그램", "유니클로 테이트 레이츠 · 테이트 플레이 (UNIQLO Tate Lates · UNIQLO Tate Play)", "유니클로 (UNIQLO) — 2016~2020년 매달 마지막 금요일 무료 야간 행사 (55만 명 이상), 2021년부터 무료 참여 프로그램 「유니클로 테이트 플레이」로 전환, 2029년까지 연장", "https://www.tate.org.uk/about-us/corporate-support/partnership/uniqlo-tate-lates"],
+  ["문화 · 공연 · 영상 공간", "더 탱크스 (The Tanks)", "블라바트니크 빌딩 지하, 옛 기름 탱크 — 라이브 퍼포먼스 · 영상 전용 공간 (2012년 처음 공개)"],
+  ["상업 · 식음", "레스토랑 (Restaurant) · 에스프레소 바 (Espresso Bar)", "내털리 벨 빌딩 (Natalie Bell Building) 6층 — 템스강 전망 식당 / 3층 에스프레소 바", "https://www.tate.org.uk/visit/tate-modern"],
+  ["상업 · 식음", "테라스 카페 (Terrace Café) · 코너 (Corner)", "블라바트니크 빌딩 1층 카페 · 카페 겸 바 겸 행사 공간"],
+  ["상업 · 상점", "터빈 홀 숍 · 리버 숍 · 테라스 숍 (Turbine Hall Shop · River Shop · Terrace Shop)", "내털리 벨 빌딩 0층 · 1층, 블라바트니크 빌딩 1층 — 자회사 테이트 엔터프라이즈 운영"],
+  ["문화 · 회원 시설", "회원 바 (Members Bars)", "내털리 벨 빌딩 5층 · 블라바트니크 빌딩 1층 · 그랜빌-그로스먼 회원 바 (Granville-Grossman Members Bar)"],
+ ],
  "concept": [
   "건축가는 거대한 발전소를 닫힌 껍데기가 아니라 여러 높이의 \"지형\"으로 다루었습니다. 가운데 터빈 홀은 서쪽의 내리막 경사로로 들어서는 \"지붕 덮인 광장 · 갈레리아\"가 되었고, 북쪽 보일러 하우스에는 기존 벽 안쪽에 새 철골 틀을 세워 7개 층의 전시실을 넣었습니다.",
   "외관에서 가장 큰 새 요소는 벽돌 덩어리 위에 길게 얹은 2층 높이의 유리 띠 \"빛의 들보 (light beam)\"입니다. 위층 전시실에 낮 빛을 들이고, 밤에는 런던 곳곳에서 보이는 표지가 됩니다.",
@@ -114,6 +124,9 @@ D = {
   "수상 경력은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Tate — Hyundai Commission: Máret Ánne Sara, partnership extended to 2036", "u": "https://www.tate.org.uk/press/press-releases/hyundai-commission-maret-anne-sara"},
+  {"t": "Tate — UNIQLO Tate Lates partnership", "u": "https://www.tate.org.uk/about-us/corporate-support/partnership/uniqlo-tate-lates"},
+  {"t": "Tate — Visit Tate Modern", "u": "https://www.tate.org.uk/visit/tate-modern"},
   {"t": "Tate Annual Report 2024-25", "u": "https://www.tate.org.uk/documents/2210/Tate_Annual_Report_24_25.pdf"},
   {"t": "The Art Newspaper — Tate launches US-style endowment fund (2025)", "u": "https://www.theartnewspaper.com/2025/06/26/tate-launches-ambitious-endowment-fund-aim-raising-%C2%A3150m-2030"},
   {"t": "Tate — History of Tate Modern", "u": "https://www.tate.org.uk/about-us/history-tate/history-of-tate-modern"},
@@ -147,7 +160,7 @@ D = {
   ["협력 설계", "현지 건축가 판 데르 메르베 미셰프스키 건축 · 릭 브라운 어소시에이츠 · 제이컵스 파커 / 구조 애럽 (Arup) · 서덜랜드 (Sutherland) / 시공 WBHO"],
   ["건축주 · 운영", "V&A 워터프런트 (V&A Waterfront)와 요헨 자이츠 (Jochen Zeitz)의 협력 — 비영리 미술관"],
   ["공사 기간", "2014년 착공 ~ 2017년 9월 준공"],
-  ["개관", "2017년 9월 22일 (사일로 호텔은 2017년 3월)"],
+  ["개관", "2017년 9월 22일 (사일로 호텔은 2017년 먼저 개장)"],
   ["연면적", "9,500㎡ · 9개 층"],
   ["전시", "전시 면적 6,000㎡ · 갤러리 80개 · 갤러리 층은 5개 층"],
   ["아트리움", "곡물 한 알 모양을 키운 빈 공간 — 부피 4,600㎥, 27m 높이 구조체 전체를 관통"],
@@ -162,11 +175,18 @@ D = {
   ["2006", "라비 나이두의 소개로 헤더윅이 사일로를 처음 봄"],
   ["2011", "헤더윅 스튜디오 설계자로 임명"],
   ["2014", "착공"],
-  ["2017.03", "선별탑 위층에 사일로 호텔 개장"],
+  ["2017", "선별탑 위층에 사일로 호텔 개장 (객실 28개)"],
   ["2017.09.22", "자이츠 아프리카 현대미술관 개관"],
  ],
  "heritage": [
   ["문화유산 등록 건물 (heritage-listed)", "미술관 공식 발표에 사일로가 \"heritage-listed\" 건물이라고 적혀 있습니다. 근거 제도와 등급은 확인하지 못했습니다."],
+ ],
+ "tenants": [
+  ["상업 · 호텔", "사일로 호텔 (The Silo Hotel) — 로열 포트폴리오 (The Royal Portfolio)", "2017년 개장 · 옛 선별탑 부분, 미술관 위 6개 층 · 객실과 스위트 28개 · 6층 바 겸 카페, 옥상 바 · 부푼 유리창이 이 호텔 층에 끼워짐", "https://www.dezeen.com/2017/05/18/royal-portfolio-hotel-thomas-heatherwick-studio-conversion-grain-silo-architecture-hotels-cape-town-south-africa/"],
+  ["문화 · 기업 후원 공간", "BMW 아트리움 (BMW Atrium) · BMW 미술교육센터 (BMW Centre for Art Education)", "BMW 남아프리카 (BMW South Africa) 후원 — 0층 중앙 아트리움의 설치 작품 의뢰 · 전시, 교육 프로그램", "https://zeitzmocaa.museum/about/"],
+  ["상업 · 식음", "오큘러 (OCULAR)", "미술관 식당 — 낮 영업과 저녁 행사 (공식 사이트 안내)", "https://zeitzmocaa.museum/visit/"],
+  ["상업 · 상점", "뮤지엄 숍 (Museum Shop · ZM Shop)", "미술관 상점"],
+  ["문화 · 기업 후원", "주요 후원사 — BMW 남아프리카 · 아프리샘 (AfriSam) · 구찌 (Gucci) · 스탠더드 은행 (Standard Bank) · 셰린 컬렉션 (Sheryn Collection)", "개관 첫해 주요 파트너 (2017~18 연차보고서)", "https://zeitzmocaa.museum/wp-content/uploads/2019/07/23513_Zeitz_Annual-Report-v3.pdf"],
  ],
  "concept": [
   "사일로는 선별탑과 42개 원통이 촘촘히 붙은 덩어리 두 부분으로 되어 있습니다. 헤더윅은 원통 덩어리 가운데를 \"깎아 내어\" 큰 사회적 공간을 만들고, 원래 원통들이 서로 맞물린 기하를 드러냈습니다.",
@@ -228,9 +248,10 @@ D = {
  "missing": [
   "수입 가운데 입장료 · 회원 · 기부 각각의 금액과 비율, 공공 보조금 여부는 확인된 자료를 찾지 못했습니다.",
   "보호 지정의 근거 제도와 등급(예: 헤리티지 웨스턴케이프 등급)은 확인된 자료를 찾지 못했습니다.",
-  "사일로 호텔의 객실 수 · 층수는 확인된 자료를 찾지 못했습니다.",
+  "사일로 호텔 개장 월은 출처마다 3월 · 5월로 달라 연도만 적었습니다.",
  ],
  "refs": [
+  {"t": "Dezeen — Royal Portfolio hotel opens in Heatherwick's grain silo (2017)", "u": "https://www.dezeen.com/2017/05/18/royal-portfolio-hotel-thomas-heatherwick-studio-conversion-grain-silo-architecture-hotels-cape-town-south-africa/"},
   {"t": "Zeitz MOCAA — Annual Report 2017-2018 (first year)", "u": "https://zeitzmocaa.museum/wp-content/uploads/2019/07/23513_Zeitz_Annual-Report-v3.pdf"},
   {"t": "Zeitz MOCAA — Annual Report 2021-2023", "u": "https://zeitzmocaa.museum/wp-content/uploads/2025/02/Zeitz-MOCAA-Annual-Report-2021-2023_DPS.pdf"},
   {"t": "Zeitz MOCAA — Our Story", "u": "https://zeitzmocaa.museum/about/"},
@@ -283,6 +304,17 @@ D = {
   ["2014", "1월 유리 외장 완성 · 8월 지붕 방수"],
   ["2016", "10월 31일 준공 · 11월 5일 광장 공개"],
   ["2017", "1월 11~12일 개관 공연"],
+ ],
+ "tenants": [
+  ["상업 · 호텔", "웨스틴 함부르크 엘프필하모니 (The Westin Hamburg Elbphilharmonie)", "2016년 11월 개장 · 유리 건물 위쪽 (동쪽) · 객실과 스위트 244개 · 6층 스파 1,300㎡ · 회의실 11개 (630㎡)", "https://www.elbphilharmonie.de/en/hotel"],
+  ["상업 · 식음", "팡 & 펠트 (Fang & Feld) · 블리크 바 (BLICK Bar)", "호텔 식당 (북독일 요리) · 엘베강 전망 바"],
+  ["상업 · 식음", "덱 & 델리 (Deck & Deli)", "8층 광장 (37m)의 비스트로"],
+  ["상업 · 식음", "슈퇴르테베커 엘프필하모니 (Störtebeker Elbphilharmonie)", "슈퇴르테베커 양조장 (Störtebeker Braumanufaktur)과 함부르크 이스트 그룹 (east)의 합작 식당 — 코로나 휴업 뒤 2020년 8월 재개장 보도. 현재 운영 여부는 확인하지 못함", "https://www.tageskarte.io/gastronomie/detail/wiedereroeffnung-der-stoertebeker-gastronomie-in-der-elbphilharmonie.html"],
+  ["상업 · 상점", "엘프필하모니 숍 (Elbphilharmonie Shop)", "공식 기념품 상점", "https://www.elbphilharmonie.de/en/the-halls"],
+  ["문화 · 상주 악단", "NDR 엘프필하모니 오케스트라 (NDR Elbphilharmonie Orchester) · 앙상블 레조난츠 (Ensemble Resonanz) · 함부르크 심포니커 (Symphoniker Hamburg)", "엘프필하모니 · 라이스할레의 상주 악단"],
+  ["문화 · 공연 기획", "함부르크무지크 (HamburgMusik gGmbH)", "공익 공연 기획사 — 콘서트 · 음악 교육 기획, 시 지원 연 600만 유로 · 콘서트홀 부분 소유 후 운영사에 임대", "https://www.elbphilharmonie.de/en/company-structure"],
+  ["문화 · 시설 운영", "엘프필하모니 · 라이스할레 운영회사 (Elbphilharmonie und Laeiszhalle Betriebsgesellschaft mbH, ELBG)", "시 100% 소유 — 두 공연장 운영 · 유지, 매표 · 대관 · 기술 · 투어 담당"],
+  ["주거 · 분양 아파트", "고급 분양 아파트 45세대", "분양가 최고 1,000만 유로 (위키백과)"],
  ],
  "concept": [
   "1963년의 묵직한 벽돌 창고를 받침으로 삼고, 그 위에 반짝이는 유리 건물을 얹어 두 개의 대조적인 건축을 쌓았습니다. 유리 외관은 주변을 비추며 끊임없이 모습이 바뀌는 \"거대한 결정체\"를 의도했습니다.",
@@ -347,6 +379,7 @@ D = {
   "같은 건물 안에 호텔(웨스틴 244실) · 분양 아파트 45세대 · 식당 · 주차장이 공연장과 함께 들어 있어, 건물의 일부를 민간 수익 시설로 채우는 복합 구조입니다. 무료로 여는 광장은 누적 2,500만 명이 찾았습니다.",
  ],
  "missing": [
+  "슈퇴르테베커 식당의 현재 운영 여부는 확인된 자료를 찾지 못했습니다.",
   "SPIE 건물 관리 계약 · 호텔 · 분양 아파트 · 주차 · 광장 방문객 수치는 위키백과(독일어)로만 확인했고, 연차보고서 원문으로는 확인하지 못했습니다.",
   "주차 면수는 운영기관 자료(520면)와 위키백과(433면)가 다릅니다.",
   "카이슈파이허 A의 문화재(Denkmalschutz) 지정 여부는 확인된 자료를 찾지 못했습니다.",
@@ -354,6 +387,10 @@ D = {
   "수상 경력은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Elbphilharmonie — The Westin Hamburg", "u": "https://www.elbphilharmonie.de/en/hotel"},
+  {"t": "Elbphilharmonie — The Halls", "u": "https://www.elbphilharmonie.de/en/the-halls"},
+  {"t": "Elbphilharmonie — Company structure", "u": "https://www.elbphilharmonie.de/en/company-structure"},
+  {"t": "Tageskarte — Wiedereröffnung der Störtebeker Gastronomie in der Elbphilharmonie (2020)", "u": "https://www.tageskarte.io/gastronomie/detail/wiedereroeffnung-der-stoertebeker-gastronomie-in-der-elbphilharmonie.html"},
   {"t": "Hamburg Beteiligungsbericht 2024 — HamburgMusik gGmbH", "u": "https://www.hamburg.de/resource/blob/1109724/9d32643f5285168ddd24509cd257aaf1/hamburgmusik-kultur-und-kreativwirtschaft-2024-data.pdf"},
   {"t": "Elbphilharmonie — Key Figures (보도 자료 PDF)", "u": "https://cdn.archilovers.com/projects/78e9fc7e-72d6-4db6-b0d4-56e6609c33e1.pdf"},
   {"t": "Herzog & de Meuron — 230 Elbphilharmonie Hamburg", "u": "https://www.herzogdemeuron.com/projects/230-elbphilharmonie-hamburg/"},
@@ -408,6 +445,14 @@ D = {
   ["역사기념물 보충 목록 등재 (Inventaire supplémentaire des monuments historiques, 1973)", "1973년 역사기념물 보충 목록에 올랐습니다 (Google Arts & Culture 오르세 미술관 자료). 등재 범위(역 · 호텔의 어느 부분인지)는 확인하지 못했습니다."],
   ["역사기념물 지정 (Monument historique classé, 1978)", "옛 역 — 1978년 3월 15일 고시로 지정 (프랑스 문화부 메리메 PA00088689)", "https://www.pop.culture.gouv.fr/notice/merimee/PA00088689"],
  ],
+ "tenants": [
+  ["상업 · 식음", "카페 캄파나 (Le Café Campana) — 뒤카스 파리 (Ducasse Paris)", "인상파 전시실 끝, 큰 시계 옆 · 브라질 디자이너 캄파나 형제 (Campana) 디자인 (2011년 개편 때 「시계 카페」를 새로 꾸밈) · 파리 브라스리식 메뉴", "https://www.ducasse-paris.com/en/addresses/le-cafe-campana/"],
+  ["문화 · 공연장", "오디토리엄 (Auditorium)", "2024년 오디토리엄 · 중앙 홀 · 전시실에서 150여 개 행사 (콘서트 · 공연 · 강연)", "https://www.epmo-musees.fr/sites/default/files/2025-06/RAMO-2024_couverture%20et%20int%C3%A9rieur%20WEB_0.pdf"],
+  ["문화 · 기업 후원", "LVMH — 「그랑 메센 (Grand Mécène)」", "기관의 최고 후원사 · 2022년 카유보트 「배 타기」 구입 단독 후원 · 2024년 카유보트 전시 후원"],
+  ["문화 · 기업 후원", "루이비통 (Louis Vuitton)", "2024년 말 2,000만 유로 후원 발표 — 2026~2028년 안내 공간 리모델링 · 복원 단독 후원"],
+  ["문화 · 기업 협력 전시관", "오를리 공항 오르세 갤러리 — 파리 공항공사 (ADP)", "2024년 7월 개관 · 오를리 공항 안 소장품 소개 공간"],
+  ["문화 · 자매 미술관", "오랑주리 미술관 (Musée de l'Orangerie)", "2010년부터 같은 공공기관이 함께 운영 (튈르리 정원)"],
+ ],
  "concept": [
   "길이 138m · 높이 32m의 철골 · 유리 볼트 아래 옛 역의 중앙 홀을 그대로 미술관의 등뼈로 삼았습니다. 기차가 서던 바닥은 조각이 놓이는 중앙 통로가 되고, 양옆에 돌로 마감한 전시실 덩어리가 층층이 들어섰습니다.",
   "미술관의 시대 범위를 루브르(그 이전)와 퐁피두 센터(그 이후) 사이로 정해, 1900년에 지은 역 건물 자체가 그 시대의 증거가 되게 했습니다.",
@@ -460,6 +505,7 @@ D = {
   "오르세 미술관은 2004년부터 국가 공공기관으로 운영되며, 2010년 오랑주리 미술관과 한 기관이 되었습니다. 2024년 기관 수입 1억 710만 유로 가운데 국가 보조금은 약 3,700만 유로이고, 입장료 · 상업 · 후원 등 자체 수입이 64%를 차지합니다. 이사회가 예산과 요금을 정하고, 개관 뒤에도 전시실 개편(2011년 2,000만 유로)과 해외 후원을 받은 확장 사업처럼 시설에 다시 투자하며 해마다 약 380만 명을 맞고 있습니다.",
  ],
  "missing": [
+  "옛 오르세 호텔 식당을 쓰는 레스토랑의 현재 이름과 운영사, 서점 운영사는 확인된 자료를 찾지 못했습니다.",
   "오르세 미술관 한 곳만의 수입 · 보조금 내역(기관은 오랑주리와 합산 공개)과 입장료 · 대관 수입의 세부 금액은 확인된 자료를 찾지 못했습니다.",
   "1986년 개조 공사비는 확인된 자료를 찾지 못했습니다.",
   "1973년 보충 목록 등재의 정확한 날짜와 등재 범위는 확인된 자료를 찾지 못했습니다.",
@@ -506,6 +552,14 @@ D = {
   ["2001", "\"라 카이샤\"가 건물 매입 · 헤어초크 & 드 뫼롱 설계 시작"],
   ["2003", "시공 시작 — 화강암 기단 제거, 벽돌 외벽 복원"],
   ["2008", "2월 13일 카이샤포룸 마드리드 개관"],
+ ],
+ "tenants": [
+  ["문화 · 전시", "전시실 4개", "2 · 3층 두 개 층, 단순하고 유연한 전시 공간", "https://mediahub.fundacionlacaixa.org/en/research-health/health/health/2008-02-13/la-caixa-social-cultural-outreach-projects-inaugurates-caixaforum-madrid-new-concept-social-cultural-centres-4671.html"],
+  ["문화 · 공연장", "오디토리엄 (Auditorio)", "지하, 311석 · 두 개 층 포이어"],
+  ["문화 · 교육", "교육 서비스 · 다목적홀 2개 · 회의실 2개", "위층"],
+  ["상업 · 식음", "레스토랑", "꼭대기 층 (사무 공간과 함께)"],
+  ["상업 · 상점", "서점 (Librería)", "위층"],
+  ["문화 · 공공 공간", "수직 정원 (Jardín vertical) — 파트리크 블랑 (Patrick Blanc)", "이웃 건물 벽 460㎡ · 250종 15,000포기"],
  ],
  "concept": [
   "건축가는 발전소의 화강암 기단을 \"외과 수술처럼\" 떼어 내, 벽돌 덩어리가 땅에서 떠 있는 듯 보이게 했습니다. 그 아래 생긴 지붕 덮인 광장이 프라도 거리 (Paseo del Prado)에서 사람들을 끌어들이는 입구가 됩니다.",
@@ -556,6 +610,7 @@ D = {
   "카이샤포룸 마드리드는 정부 보조금이 아니라 은행 재단 \"라 카이샤\"의 사회사업으로 지어지고 운영됩니다. 재단은 카이샤뱅크의 최대 주주로서 연간 사회사업 예산을 짜며, 그 가운데 약 20%가 카이샤포룸 같은 문화 · 과학 보급에 쓰입니다.",
  ],
  "missing": [
+  "레스토랑 · 서점의 운영사 이름은 확인된 자료를 찾지 못했습니다.",
   "카이샤포룸 마드리드 한 곳의 운영비 · 입장료 수입은 확인된 자료를 찾지 못했습니다.",
   "발전소의 폐쇄 연도는 확인된 자료를 찾지 못했습니다.",
   "건물 자체의 보호 지정(문화재 등급 등)은 확인된 자료를 찾지 못했습니다.",
@@ -598,6 +653,14 @@ D = {
   ["2015", "5월 9일 밀라노 본부 개관 — 「유령의 집」 금박, 웨스 앤더슨의 바 루체 공개"],
   ["2016", "12월 갈레리아 비토리오 에마누엘레 2세에 사진 전시장 「오세르바토리오 (Osservatorio)」 개관"],
   ["2018", "4월 20일 밀라노 디자인 위크에 맞춰 토레 개관 — 단지 완성"],
+ ],
+ "tenants": [
+  ["상업 · 식음", "바 루체 (Bar Luce)", "2015년 개관 · 영화감독 웨스 앤더슨 (Wes Anderson)이 1950~60년대 밀라노 카페 분위기로 디자인", "https://www.dezeen.com/2015/05/03/oma-fondazione-prada-art-centre-gold-leaf-cladding-wes-anderson-cafe-milan/"],
+  ["상업 · 식음", "토레 레스토랑 (Torre restaurant)", "2018년 · 토레 6층 — 필립 존슨의 뉴욕 「포 시즌스 레스토랑」(1958) 원래 가구, 루초 폰타나 · 제프 쿤스 등의 작품, 카르스텐 횔러 「더블 클럽」 일부", "https://www.designboom.com/architecture/fondazione-prada-torre-opens-milan-oma-04-19-2018/"],
+  ["상업 · 식음", "옥상 바 (Torre rooftop bar)", "토레 옥상 테라스 (160㎡)"],
+  ["문화 · 영화관", "시네마 (Cinema)", "2015년 · 반쯤 땅에 묻힌 거울 스테인리스 외피의 독립 건물, 영화 상영 · 행사"],
+  ["문화 · 도서관", "바 겸 도서관 (Bar and Library)", "OMA 프로젝트 구성 요소 가운데 하나", "https://www.oma.com/projects/fondazione-prada"],
+  ["문화 · 상설 전시", "유령의 집 (Haunted House)", "금박 4층 건물 — 재단 소장품 상설 전시"],
  ],
  "concept": [
   "옛 증류소 건물 7동을 되살리면서 새 건물 3동 — 전시용 「포디움」, 「시네마」, 9층 「토레」 — 를 섞었습니다. 콜하스는 대비가 아니라 \"옛것과 새것이 아주 매끄럽게 함께 작동하는\" 상황을 만들려 했다고 말합니다.",
@@ -648,6 +711,7 @@ D = {
   "폰다치오네 프라다는 패션 기업 프라다를 이끄는 미우치아 프라다와 파트리치오 베르텔리의 민간 재단이 운영합니다. 재단 공시(Policy Plan)에 따르면 수입은 입장권 · 가이드 투어 · 도록 판매와 상당한 후원 계약으로 이루어지고, 2017~2020년에는 기부를 받지 않았습니다. 2019년 수입 약 2,523만 유로로 약 17만 유로의 흑자를 냈으나, 2020년에는 코로나로 수입이 41.79% 줄었습니다.",
  ],
  "missing": [
+  "서점 · 어린이 공간 등 그 밖의 입주 시설과 운영사는 확인된 자료를 찾지 못했습니다.",
   "수입 가운데 입장료와 후원(프라다 그룹 포함) 각각의 금액, 2021년 이후 결산, 방문객 수는 확인된 자료를 찾지 못했습니다.",
   "건립 사업비와 공공 보조금은 확인된 자료를 찾지 못했습니다.",
   "공사비는 확인된 자료를 찾지 못했습니다.",
@@ -655,6 +719,7 @@ D = {
   "보호 지정은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "designboom — Fondazione Prada opens Torre (2018)", "u": "https://www.designboom.com/architecture/fondazione-prada-torre-opens-milan-oma-04-19-2018/"},
   {"t": "Fondazione Prada — Policy Plan 2017-2020", "u": "https://www.fondazioneprada.org/wp-content/uploads/POLICY-PLAN-2017-2020.pdf"},
   {"t": "OMA — Fondazione Prada", "u": "https://www.oma.com/projects/fondazione-prada"},
   {"t": "Dezeen — OMA's Fondazione Prada art centre opens in Milan (2015)", "u": "https://www.dezeen.com/2015/05/03/oma-fondazione-prada-art-centre-gold-leaf-cladding-wes-anderson-cafe-milan/"},

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # 도시재생 노트 — 더 자세한 본문 (regen*.py 의 같은 id 를 덮어씀) — 배정 04
 #  zorrotzaurre, yangpu-riverside, west-bund, oct-loft, beijing-798
-#  laws · funding · operation 세 번째 원소 = 직접 열어 확인한 공식 원문 링크
+#  laws · funding · operation · tenants 의 마지막 원소 = 직접 열어 확인한 원문 링크
 D = {
 "zorrotzaurre": {
  "spec": [
@@ -49,6 +49,17 @@ D = {
   "자하 하디드의 마스터플랜 (2004, 2007 수정)은 섬 전체를 하나의 도시 조각으로 설계하고, 미완성이던 데우스토 운하를 끝까지 열어 반도를 섬으로 만드는 것을 핵심으로 했습니다. 운하 개통은 홍수 수위를 0.5~1m 낮추는 기후 적응 대책이기도 하며, 새 건물 바닥을 1.5m 높이고 홍수 방벽 · 우수 저류조 (4,820㎥)를 함께 설치합니다.",
   "공공 지원 주택 50% (공공임대 VPO 25% · 가격통제 주택 25%)를 의무로 하고, 지상 연면적의 25% 이상을 경제활동 (그 가운데 16%는 사무 등 비상업)에 배정해 주거 단지가 아닌 혼합 도시를 만들도록 했습니다.",
   "개발을 기다리는 동안 옛 공장들은 문화 공간으로 쓰였습니다. 옛 아르티아치 (Artiach) 비스킷 공장은 「에스파시오 오픈 (Espacio Open)」 창조 공간이 되었고, 2008년부터 예술 단체 「ZAWP (소로차우레 아트 워크 인 프로그레스)」가 옛 공장 건물들을 고쳐 \"과도기 (meanwhile)\" 문화 활동을 이어 왔습니다.",
+ ],
+ "tenants": [
+  ["첨단산업 · 연구소", "비콤테크 (Vicomtech)", "AI · 디지털 기술 연구센터 — 2024년 1월 소로차우레 본사 개관 (Zorrotzaurreko Erribera 2), 앞으로 기술단지의 란코르 (Lancor) 건물로 이전 예정", "https://www.vicomtech.org/en/news/detail/612_vicomtech-will-continue-to-drive-artificial-intelligence-talent-and-technology-transfer-from-its-new-headquarters-in-zorrotzaurre"],
+  ["첨단산업 · 기술단지", "바스크 기술단지 빌바오 캠퍼스 (Parque Tecnológico de Euskadi — Bilbao)", "섬 북쪽 끝 옛 공장 부지 — 2025년 7월 착공, 1단계 46,000㎡ (남쪽 끝 60,000㎡ 추가 계획)", "https://parke.eus/en/the-basque-country-technology-park-comes-to-bilbao/"],
+  ["첨단산업 · 연구소 · 대학", "몬드라곤 대학 (Mondragon Unibertsitatea) · 이케를란 (Ikerlan)", "기술단지의 콘소니 (Consonni) 건물 7,526㎡ 에 입주 예정", "https://parke.eus/en/the-basque-country-technology-park-comes-to-bilbao/"],
+  ["첨단산업 · 앵커 기업", "이돔 (IDOM) · 몬드라곤 그룹 (Mondragon)", "기술단지 첫 건물 「헬레나 마투테 (Helena Matute)」 4층 4,000㎡ 시행 · 첨단 기업 입주용", "https://parke.eus/en/the-basque-country-technology-park-comes-to-bilbao/"],
+  ["첨단산업 · 대학", "쿤스탈 (Kunsthal) · 몬드라곤 대학 · 디지펜 (DigiPen)", "섬에 이미 입주한 대학들 — 학생 3,000명 넘음 (2025)", "https://parke.eus/en/the-basque-country-technology-park-comes-to-bilbao/"],
+  ["문화 · 창조 공간", "에스파시오 오픈 (Espacio Open)", "옛 아르티아치 비스킷 공장 — 10개 단체 · 약 120명, 연 방문객 25만 명 넘음", "https://espacioopen.com/artiach-festibala/"],
+  ["문화 · 창조 공간", "ZAWP (하세리아 아르테악 hACERIA Arteak)", "2008년부터 리베라 데 데우스토의 옛 공장 10여 동에서 예술 · 창조 활동, 2019년 섬 안으로 이전", "https://www.zorrotzaurre.com/en/zawp-bilbao-a-creative-quarter/"],
+  ["주거 · 공공임대 운영", "비세사 (Visesa) · 알로카비데 (Alokabide) — 바스크 정부", "공공 임대주택 1,082호 계획, 첫 66호 2026년 3월 착공 (2028 하반기 입주)", "https://www.irekia.euskadi.eus/es/news/108722-arrancan-las-obras-construccion-las-082-viviendas-protegidas-alquiler-que-gobierno-vasco-tiene-programadas-zorrotzaurre"],
+  ["주거 · 민간 임대", "M&G 인베스트먼트 (M&G Investments)", "2023년 8월 임대주택 314호 인수"],
  ],
  "actors": [
   ["도시계획가 · 건축가", "자하 하디드 (Zaha Hadid) · 자하 하디드 아키텍츠 (Zaha Hadid Architects)", "소로차우레 마스터플랜 — 2003년 의뢰, 2004년 8월 제출, 2007년 수정 (2012년 특별계획의 바탕)"],
@@ -151,6 +162,7 @@ D = {
   "아르티아치 공장의 공식 보호 등급 (카탈로그 등급)은 확인된 자료를 찾지 못했습니다.",
   "완공 뒤 지구 관리 재원 (관리비 · 지구 부담금)과 문화 공간의 수입 구성 · 보조금 액수는 확인된 자료를 찾지 못했습니다.",
   "확정된 전체 사업비 (2007년 추정치 이후의 공식 집계)와 세제 혜택은 확인된 자료를 찾지 못했습니다.",
+  "주요 입주 시설 가운데 상업 · 식음 · 호텔 · 의료 구역의 입주자는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "위키백과(스) — Zorrozaurre", "u": "https://es.wikipedia.org/wiki/Zorrotzaurre"},
@@ -172,6 +184,8 @@ D = {
   {"t": "Deia — La urbanización que estrenará Zorrotzaurre costará 15 millones (2020.1.2)", "u": "https://www.deia.eus/bizkaia/2020/01/02/urbanizacion-estrenara-zorrotzaurre-costara-15-4733741.html"},
   {"t": "Irekia (Gobierno Vasco) — Arrancan las obras de 66 de las 1.082 viviendas protegidas en alquiler en Zorrotzaurre (2026.3.12)", "u": "https://www.irekia.euskadi.eus/es/news/108722-arrancan-las-obras-construccion-las-082-viviendas-protegidas-alquiler-que-gobierno-vasco-tiene-programadas-zorrotzaurre"},
   {"t": "BizkaiaGaur — El Ayuntamiento de Bilbao invertirá más de 4 millones en zonas verdes sobre los depósitos de Zorrotzaurre (2026.5.28)", "u": "https://www.bizkaiagaur.com/2026/05/28/el-ayuntamiento-de-bilbao-invertira-mas-de-4-millones-de-euros-para-crear-zonas-verdes-y-de-ocio-sobre-los-tanques-de-tormentas-de-zorrotzaurre"},
+  {"t": "Vicomtech — new headquarters in Zorrotzaurre / Bilbao campus (2025)", "u": "https://www.vicomtech.org/en/news/detail/612_vicomtech-will-continue-to-drive-artificial-intelligence-talent-and-technology-transfer-from-its-new-headquarters-in-zorrotzaurre"},
+  {"t": "Parque Tecnológico de Euskadi — The Basque Country Technology Park comes to Bilbao (2025)", "u": "https://parke.eus/en/the-basque-country-technology-park-comes-to-bilbao/"},
  ],
 },
 "yangpu-riverside": {
@@ -219,6 +233,16 @@ D = {
   "2019년 시진핑 주석의 방문과 「인민 도시」 이념 제기 뒤 양푸 강변은 그 상징 장소가 되었습니다. 이후 강변을 4구역 (온라인 신경제 본부 · 국제 혁신대 · 신경제 시범구 · 신흥 경제 집적구)으로 나누어 업무 기능을 채우고 있습니다.",
   "2020년에는 강변 일대 약 1,560ha 가 국가 문물 보호 · 이용 시범구로 선정되어 문화재 · 우수 역사건축을 묶어 보존 · 활용하는 체계가 마련되었습니다.",
  ],
+ "tenants": [
+  ["첨단산업 · 앵커 기업 (본사)", "메이퇀 (美团, Meituan)", "양푸 강변 사옥 건설 중 (2024년 지하 공사 단계)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
+  ["첨단산업 · 앵커 기업 (본사)", "빌리빌리 (哔哩哔哩, Bilibili)", "양푸 강변 사옥 건설 중 (2024년 지하 공사 단계)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
+  ["첨단산업 · 앵커 기업", "더우인 (抖音, Douyin)", "양푸 강변에 집적한 선도 기업 (2024 보도)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
+  ["업무 · 앵커 기업 (본사)", "중국교통건설 (中交, CCCC) · 중국절능환경보호 (中节能)", "중국교통건설 본사 골조 완공 · 중국절능 본체 공사 중 (2024)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
+  ["업무 · 패션 업무 · 상업", "상하이 국제패션센터 (上海国际时尚中心)", "옛 국면 17공장 (国棉十七厂) 개조", "https://www.shanghai.gov.cn/czxqj/20220624/181fb9423e0f41ec80cecab7bebbf660.html"],
+  ["문화 · 박물관", "세계기능박물관 (世界技能博物馆)", "2023년 11월 개관 — 백 년 된 영안 창고 (永安栈房)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
+  ["문화 · 전시관", "양푸 강변 인민도시 건설 계획 전시관 (杨浦滨江人民城市建设规划展示馆)", "2020년 11월 개관, 양푸대교 아래 옛 상타이 목재회사 (祥泰木行) 터 — 2024년 9월까지 관람객 83만 명 넘음", "http://www.why.com.cn/wx/article/2024/10/14/17288902471158429811.html"],
+  ["문화 · 과학관", "상하이 수도 과학관 (上海自来水科技馆)", "양수푸 수도공장 안 — 2023년 2월 개조를 위해 휴관 공고", "https://ghzyj.sh.gov.cn/yp/20241219/01c36f97c4304aa598966c69cec8680f.html"],
+ ],
  "actors": [
   ["도시계획가 · 건축가", "장밍 (章明) · 퉁지대학 건축 · 도시계획학원 / 퉁지설계그룹 원작설계 (原作设计工作室)", "양푸 강변 남쪽 5.5km 공공공간 총설계 (4년 넘게, 2016~2019 단계 개방) — 수도공장 잔교 · 조선소 궤도 · 크레인 보존 설계, 「녹색 언덕 (绿之丘)」 개조"],
   ["주관 기관", "상하이시 정부 · 상하이시 주택도시농촌건설관리위원회 (옛 황푸강 양안 개발 판공실 浦江办 — 2013년 이관)", "황푸강 양안 종합개발 · 45km 개방 정책 · 3년 행동계획"],
@@ -245,7 +269,7 @@ D = {
  ],
  "tools": [
   ["공공공간 선투자", "남쪽 5.5km 강변 산책로 · 자전거길 · 공원을 먼저 조성 (2016~2019)"],
-  ["산업유산 보존 · 재사용", "역사 건물 24곳 · 66동 (26.2만㎡) 보존 — 옛 목재회사 → 인민도시 계획 전시관, 옛 비누공장 → 카페, 옛 국면 17공장 → 상하이 국제패션센터"],
+  ["산업유산 보존 · 재사용", "역사 건물 24곳 · 66동 (26.2만㎡) 보존 — 옛 목재회사 → 인민도시 계획 전시관, 옛 국면 17공장 → 상하이 국제패션센터"],
   ["문화재 · 시범구 지정", "수도공장 전국 중점 문물 (2013) · 국가 시범구 (2020)"],
   ["혁신 산업 유치", "대학 연계 「삼구 연동」 · 온라인 신경제 생태원 「창양수대」 (2021) — 2025년까지 선도 기업 30곳 · 혁신 기업 3,000곳 목표"],
   ["설계 품질", "대학 건축가 팀이 장기간 설계 · 국제 수상"],
@@ -263,7 +287,7 @@ D = {
   ["운영 주체", "상하이 양푸 강변 투자개발 유한공사 (上海杨浦滨江投资开发有限公司, 구 국유기업) — 강변 개발의 \"투자 · 융자 플랫폼\"이자 \"종합 운영사\"로 개발 · 관리를 맡음", "https://www.shyp.gov.cn/zhengwu/gzw-qgqyml/2025/219/3ebe844f3183ca5f0682aca294467abc.html"],
   ["관리 체계", "「강변 종합개발 관리 지휘부 · 구 강변 판공실 · 강변 그룹」 삼위일체 체계 (2024 보도)"],
   ["산업유산 운영 — 수도공장", "양수푸 수도공장은 상하이 청터우 수도그룹이 지금도 가동 (하루 140만㎥, 5개 구 300만 명 넘게 급수) — 과학관은 2023년 개조를 위해 휴관"],
-  ["산업유산 활용 시설", "옛 목재회사 → 인민도시 계획 전시관 · 옛 비누공장 → 카페 · 옛 국면 17공장 → 상하이 국제패션센터 · 백 년 된 영안 창고 → 세계기능박물관 (2023.11 개관)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
+  ["산업유산 활용 시설", "옛 목재회사 → 인민도시 계획 전시관 · 옛 국면 17공장 → 상하이 국제패션센터 · 백 년 된 영안 창고 → 세계기능박물관 (2023.11 개관)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
   ["업무 임대 · 입주", "메이퇀 · 빌리빌리 · 더우인 · 중국절능 등 대기업 본사 · 사옥 입주 (건설 중 포함)", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
   ["공공 운영", "어린이 친화 공공공간 5.5km · 서비스 지점 34곳", "https://www.shyp.gov.cn/shypq/shxd-zdjj/20240510/454594.html"],
   ["운영 성과 — 전시관", "2020년 11월 문을 연 양푸 강변 인민도시 건설 계획 전시관 — 2024년 9월까지 누적 관람객 83만 명 넘음 (청년보 보도)"],
@@ -296,6 +320,7 @@ D = {
   "재원 · 보조금의 구체 금액 (총사업비 · 시 · 구 재정 · 보조금)은 확인된 자료를 찾지 못했습니다.",
   "양푸 강변 투자개발 유한공사의 설립 연도 · 자본금과 전체 사업비는 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 (공공공간 운영비 · 보조금 · 강변 그룹의 수입 구성)과 강변 전체 연간 방문객 수는 확인된 자료를 찾지 못했습니다.",
+  "주요 입주 시설 가운데 영화관 · 호텔 · 대학 시설과 각 기업의 정확한 입주 연도는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "위키백과(중) — 杨浦滨江", "u": "https://zh.wikipedia.org/wiki/杨浦滨江"},
@@ -355,6 +380,19 @@ D = {
   "개발 순서는 \"계획 선도 · 문화 선행 · 산업 주도\"였습니다. 먼저 옛 산업 구조물을 미술관으로 바꿨습니다 — 베이퍄오 석탄 부두의 석탄 하역 구조물을 품은 롱 미술관 (류이춘 · 아틀리에 데샤우스 大舍, 2014), 룽화 공항 격납고를 고친 위즈 미술관 (후지모토 소스케, 2014), 룽화 공항 항공유 탱크 5기를 고친 탱크 상하이 (OPEN 건축 리후 · 황원징, 2019), 데이비드 치퍼필드의 웨스트 번드 미술관 (퐁피두 센터 협력)이 대표적입니다.",
   "2018년부터는 세계인공지능대회를 해마다 열며 AI · 미디어 · 금융 업무 지구 (미디어항 · 스마트 밸리 · 금융성)로 넓히고 있습니다. 문화가 땅의 가치와 브랜드를 먼저 만들고, 그 뒤 업무 기능이 들어오는 순서입니다.",
   "다만 2012년부터 임시 건물에서 활동하던 갤러리 약 17곳은 2024년 철거로 떠났습니다. 중국 법상 임시 건물은 2년 (1회 연장)까지만 쓸 수 있고, 그 땅은 디지털 밸리의 업무 용지로 계획되어 있었기 때문입니다.",
+ ],
+ "tenants": [
+  ["첨단산업 · 창업 · 인큐베이터", "모속 공간 (模速空间) — 상하이 대형모델 혁신생태 커뮤니티", "2023년 9월 개관, 웨스트 번드 미디어항의 옛 CCTV 국제 미디어항 건물 — 1기 1만㎡ → 2025년 6만㎡ (계획 10만㎡), 대형모델 기업 300곳 넘게 입주 (2026)", "https://www.shanghai.gov.cn/nw4411/20260428/794c9a35e02542cea4a0b966ee6c00c5.html"],
+  ["첨단산업 · AI 기업", "미니맥스 (MiniMax) · 스텝펀 (阶跃星辰, StepFun) · 무문심궁 (无问芯穹)", "모속 공간 입주 대형모델 기업 — 미니맥스는 2026년 1월 홍콩 상장", "https://www.shanghai.gov.cn/nw4411/20260428/794c9a35e02542cea4a0b966ee6c00c5.html"],
+  ["첨단산업 · 글로벌 · 테크 기업", "마이크로소프트 아시아연구원 (Microsoft Research Asia) · 알리바바 · 화웨이 · 센스타임 (商汤)", "웨스트 번드 미디어항 · 디지털 밸리의 선도 입주 기업 (2024 시 주건위 발표)", "https://zjw.sh.gov.cn/gqdt/20240613/0b90ab809148424da816ee8d4ec6e5fd.html"],
+  ["첨단산업 · 테크 기업", "텐센트 · 넷이즈 · CCTV (중앙방송) · BMW · 폴스타 · 지커 (Zeekr)", "웨스트 번드 집적 기업으로 소개 (2025 웨스트 번드 발표)", "https://www.westbund.com/cn/index/NEWS-CENTER/2025-04-29.html"],
+  ["첨단산업 · AI 업무", "웨스트 번드 스마트 타워 (西岸智塔, AI Tower)", "2019년 첫 입주 — 상하이 인공지능 연구 거점", "https://www.thepaper.cn/newsDetail_forward_29401008"],
+  ["문화 · 미술관", "롱 미술관 웨스트 번드관 (龙美术馆西岸馆)", "2014년 3월 28일 개관 — 베이퍄오 석탄 부두 하역 구조물, 민간 미술관", "https://www.thepaper.cn/newsDetail_forward_2006189"],
+  ["문화 · 미술관", "위즈 미술관 (余德耀美术馆, Yuz Museum)", "2014년 개관 — 룽화 공항 격납고", "https://www.thepaper.cn/newsDetail_forward_2006189"],
+  ["문화 · 미술관", "탱크 상하이 (油罐艺术中心, TANK Shanghai)", "2019년 3월 23일 개관 — 항공유 탱크 5기, 연면적 10,845㎡", "https://www.archcollege.com/43889.html"],
+  ["문화 · 미술관", "웨스트 번드 미술관 (西岸美术馆) × 퐁피두 센터 (Centre Pompidou)", "2019년 개관 · 퐁피두 센터 5년 협력 (2024~2029 연장)", "https://www.thepaper.cn/newsDetail_forward_29401008"],
+  ["문화 · 갤러리", "샹아트 (ShanghART) 등 갤러리 약 17곳", "2012~2024년 웨스트 번드 임시 건물 18동 — 2024년 6월 철거로 철수", "https://www.thepaper.cn/newsDetail_forward_27718527"],
+  ["상업 · 복합", "웨스트 번드 드림센터 (西岸梦中心, Gate M)", "2024년 개관 — 건물 16.2만㎡, 하루 약 3만 명 (주말 5만 명 넘음)", "https://www.thepaper.cn/newsDetail_forward_29401008"],
  ],
  "actors": [
   ["도시계획가 · 건축가", "류이춘 (柳亦春) · 아틀리에 데샤우스 (大舍建筑设计事务所)", "롱 미술관 웨스트 번드관 (2014) — 베이퍄오 석탄 부두 하역 구조물 보존 · \"우산 아치\" 구조"],
@@ -438,6 +476,7 @@ D = {
   "쉬후이 강변 상세계획 (控规)의 정식 이름 · 승인 연도와 원문은 확인된 자료를 찾지 못했습니다.",
   "총사업비와 시 · 구 재정 투입액, 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 (개발그룹의 수입 구성 · 재무제표 · 운영 보조금 · 미술관 운영 지원)은 확인된 자료를 찾지 못했습니다.",
+  "주요 입주 시설 가운데 영화관 · 호텔의 입주 여부는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "위키백과(중) — 徐汇滨江", "u": "https://zh.wikipedia.org/wiki/徐汇滨江"},
@@ -454,6 +493,8 @@ D = {
   {"t": "上海市规划和自然资源局 · 徐汇区人民政府 — 上海市徐汇区单元规划 (2022.1)", "u": "https://ghzyj.sh.gov.cn/cmsres/fb/fb14092a6b7e45d5bec7209d52d44733/1fd6c9115e5b4b8f320bf49dd0e133d3.pdf"},
   {"t": "上海市国资委 — 激发新消费时代活力，徐汇滨江引领文商旅体展融合新典范 (2024.11.20)", "u": "https://www.gzw.sh.gov.cn/shgzw_zxzx_qxgz/20241120/131d4c2629dd4f75bb5457faa69827e8.html"},
   {"t": "新华网 — 漫步徐汇滨江，解开上海\"一江一河\"顶流密码 (2025.1.17)", "u": "http://www.news.cn/20250117/6c2c947295764cea9ba67a019d1e094b/c.html"},
+  {"t": "西岸 (West Bund 공식) — 总书记考察的上海\"模速空间\"，是一个怎样的空间？ (2025.4.29)", "u": "https://www.westbund.com/cn/index/NEWS-CENTER/2025-04-29.html"},
+  {"t": "上海市人民政府 — \"模速空间\"已吸纳超过300家大模型企业 (2026.4.28)", "u": "https://www.shanghai.gov.cn/nw4411/20260428/794c9a35e02542cea4a0b966ee6c00c5.html"},
  ],
 },
 "oct-loft": {
@@ -494,6 +535,13 @@ D = {
   "국유기업 화교성 그룹이 자기 소유 공업구를 철거하지 않고 창조문화 단지로 바꾼 \"기업 주도형\" 재생입니다. 출발점은 2003년 그룹 소속 허샹닝 미술관이 세운 현대미술센터 OCAT 로, 옛 가구 공장을 철망으로 감싸 \"예술 창고\"로 고쳤습니다. 이것이 단지 전체의 깃발 역할을 했습니다.",
   "건축 사무소 어바너스 (URBANUS 都市实践, 멍옌 · 류샤오두)가 2003년부터 약 20년 동안 단지 계획과 개조를 맡았습니다. 남구 가운데의 큰 공장을 뚫어 남북을 잇는 중심 보행로를 만든 것이 핵심 결정으로 꼽힙니다. 북구 계획에서는 창조 산업 60% · 창조 교육 18% 같은 업종 배분을 연구했습니다.",
   "2005년 · 2007년 도시 · 건축 비엔날레가 단지에서 열리며 국제적으로 알려졌고, 지금은 디자인 · 현대미술 · 전위 음악을 세 축으로 약 300곳이 입주해 있습니다. 운영은 그룹 산하 「선전 화교성 창조원 문화발전 유한공사」가 맡습니다.",
+ ],
+ "tenants": [
+  ["문화 · 미술관", "OCT 현대미술센터 (OCAT 深圳馆)", "2005년 1월 개관 (옛 가구 공장) — 2022년 북구 B10 건물 (1990년대 초 2층 공장)을 주 전시관으로 개조", "http://www.urbanus.com.cn/writings/oct-loft/"],
+  ["문화 · 공연장", "B10 현장 (B10现场, B10 Live)", "2012년 11월 24일 개관 — 옛 천당 (旧天堂) 문화전파가 운영, 연 약 150회 공연 · OCT-LOFT 재즈 페스티벌 · 「내일 음악제」 주관", "https://b10live.cn/about"],
+  ["상업 · 서점", "옛 천당 서점 (旧天堂书店)", "단지 안 독립 서점 · 음악 공간 운영사 (B10 현장 운영)", "https://b10live.cn/about"],
+  ["업무 · 디자인 · 건축 사무소", "디자인 · 창조 기업 약 300곳", "단지 입주 기관 수 (2022 보도) — 입주사가 공장 내부를 스스로 꾸밀 수 있음"],
+  ["업무 · 운영사", "선전 화교성 창조원 문화발전 유한공사", "단지 운영 · 축제 기획 (창의절 · 창조 시장 · 어린이 예술제)", "https://m.mp.oeeee.com/a/BAAFRD000020220710701736.html"],
  ],
  "actors": [
   ["도시계획가 · 건축가", "멍옌 (孟岩) · 류샤오두 (刘晓都) · 어바너스 (URBANUS 都市实践)", "창조문화원 남구 (2004~2006) · 북구 (2011) 계획 · 개조 설계, OCAT 선전관 개조 (2003~2005) — 약 20년 협업 (2003~2022)"],
@@ -556,12 +604,14 @@ D = {
   "창조문화원의 마스터플랜 · 계획 문서와 선전시 「문화입시」 전략의 공식 원문은 확인된 자료를 찾지 못했습니다.",
   "재원 · 보조금은 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 (임대료 수준 · 매출 · 보조금 · 입주율)은 신뢰할 만한 원문을 찾지 못했습니다 (부동산 중개 사이트의 임대료 정보만 있어 넣지 않음).",
+  "주요 입주 시설 가운데 대표 디자인 · 건축 사무소의 이름과 입주 연도는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "위키백과(중) — 华侨城创意园", "u": "https://zh.wikipedia.org/zh-hans/%E8%8F%AF%E5%83%91%E5%9F%8E%E5%89%B5%E6%84%8F%E5%9C%92"},
   {"t": "URBANUS 都市实践 — 【@LOFT | 园区录】另类空间的价值——孟岩、刘晓都谈OCAT及OCT-LOFT的改造", "u": "http://www.urbanus.com.cn/writings/oct-loft/"},
   {"t": "南方都市报 — 从旧工业区到文化高地，创意园崛起背后 (2021)", "u": "https://ipaper.oeeee.com/ipaper/H/html/2021-05/31/content_10384.htm"},
   {"t": "南都 — 深圳文化口碑榜深调研｜华侨城创意文化园16年来的变与不变 (2022)", "u": "https://m.mp.oeeee.com/a/BAAFRD000020220710701736.html"},
+  {"t": "B10现场 · B10 Live — 关于 About", "u": "https://b10live.cn/about"},
  ],
 },
 "beijing-798": {
@@ -603,6 +653,15 @@ D = {
   "북쪽으로 난 톱날 지붕 창으로 고른 빛이 드는 공장이 작업실로 좋고 임대료가 싸서, 2002년 무렵부터 예술가 · 화랑이 자생적으로 모여든 지구입니다.",
   "2004년 전시 · 예술제와 국제 언론 보도, 인민대표의 보존 건의가 이어지자, 2006년 차오양구와 베이징시가 「제1차 문화창의산업 집적구」로 지정하고 차오양구 정부와 칠성그룹이 함께 「798 예술구 건설관리판공실」을 만들어 \"조정 · 서비스 · 유도 · 관리\"를 맡겼습니다. 2007년 말에는 특별 예술구로 보존이 결정되었습니다.",
   "2018년 718 연합공장은 동독 설계의 바우하우스 양식 공장으로 「중국 공업유산 보호명록」에 올랐습니다.",
+ ],
+ "tenants": [
+  ["문화 · 미술관", "UCCA 현대미술센터 (UCCA Center for Contemporary Art)", "2007년 울렌스 부부가 설립 — 1950년대 공장 건물 1만㎡ 넘음 (빌모트 · 마칭윈 2007, OMA 2019 개조), 개관 이래 누적 관람객 1,000만 명 넘음 · 2017년 중국 · 국제 후원자에게 이전 (비영리 등록)", "https://ucca.org.cn/en/about/"],
+  ["문화 · 갤러리", "페이스 베이징 (Pace Beijing)", "(2008~2019, 철수) — 미국 현대미술 갤러리의 첫 중국 본토 진출, 미중 무역 갈등 등으로 폐관", "https://artreview.com/news-9-july-2019-pace-closes-beijing-gallery/"],
+  ["문화 · 갤러리", "베이징 도쿄 아트 프로젝트 (Beijing Tokyo Art Projects)", "2002년 개관 — 개관전 「Beijing Afloat」에 1,000명 넘게 방문", "https://en.wikipedia.org/wiki/798_Art_Zone"],
+  ["문화 · 갤러리", "798 스페이스 (798 Space)", "2002년 개관 — 1,200㎡ 공장 공간", "https://en.wikipedia.org/wiki/798_Art_Zone"],
+  ["문화 · 대학", "중앙미술학원 (中央美术学院)", "1995년 706 공장을 작업장으로 사용 — 예술구 형성의 시작", "https://en.wikipedia.org/wiki/798_Art_Zone"],
+  ["업무 · 운영사", "798 문창 (798文创) — 칠성그룹 자회사", "단지 임대 · 전시 운영 (직원 39명)", "https://m-news.artron.net/news/20241121/n1073592.html"],
+  ["업무 · 창의 기업 · 상업", "문화 · 예술 기관 약 250곳 · 창의 기업 약 230곳 · 서비스업 약 80곳", "입주 구성 (보도)", "https://m-news.artron.net/news/20241121/n1073592.html"],
  ],
  "actors": [
   ["도시계획가 · 건축가", "사사키 (Sasaki Associates)", "2006년 798 예술구 비전 계획"],
@@ -675,6 +734,7 @@ D = {
   "예술가 보존운동 단체의 이름 등 조직된 시민단체는 확인된 자료를 찾지 못했습니다.",
   "2006년 집적구 지정 문서와 사사키 비전 계획의 공식 원문은 확인된 자료를 찾지 못했습니다.",
   "재생 사업의 총사업비 (시설 개조 투자 총액)와 연간 방문객 수는 확인된 자료를 찾지 못했습니다.",
+  "주요 입주 시설 가운데 현재 영업 중인 대형 갤러리 · 식음 · 호텔의 이름과 연도는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "위키백과(중) — 798艺术区", "u": "https://zh.wikipedia.org/wiki/798艺术区"},
@@ -685,6 +745,8 @@ D = {
   {"t": "雅昌艺术网 — 798文创出让股权现\"乌龙\"，赚钱全靠政府补贴", "u": "https://m-news.artron.net/news/20241121/n1073592.html"},
   {"t": "北京市朝阳区人民政府 — 北京798艺术区管理委员会2022年度部门决算 (2023.9.13)", "u": "http://www.bjchy.gov.cn/ztzl/2022jsgk/qujijg/4028805a8a64745f018a740e73b80b6f.html"},
   {"t": "北京市朝阳区人民政府 — 北京798艺术区管理委员会2017年预算情况说明 (2017.1.25)", "u": "http://www.bjchy.gov.cn/dynamic/newspe/ysgkzl/qjjg/8a24fe835972ef810159d3aab1061064.html"},
+  {"t": "UCCA — About", "u": "https://ucca.org.cn/en/about/"},
+  {"t": "ArtReview — Pace closes Beijing gallery (2019.7.9)", "u": "https://artreview.com/news-9-july-2019-pace-closes-beijing-gallery/"},
  ],
 },
 }

@@ -95,11 +95,18 @@ D = {
  "operationNote": [
   "크란스포르는 공공 보조금으로 운영되는 시설이 아니라, 민간 개발사 (ING 부동산 개발)가 짓고 사무실을 임대해 수입을 얻는 상업 건물입니다. 2007년 MTV · IDTV 가 첫 임차인으로 들어왔습니다. 공공은 돈 대신 철거 허가를 거두고 새 용도계획을 세우는 방식으로 사업을 가능하게 했습니다. 현재 소유자 · 임대료 · 입주율은 확인하지 못했습니다.",
  ],
+ "tenants": [
+  ["업무 · 방송 · 미디어", "MTV (MTV Networks)", "2007년 8월 입주 — 건물의 첫 임차인 (현재 입주 여부는 확인하지 못함)", "https://architectenweb.nl/nieuws/artikel.aspx?id=10115"],
+  ["업무 · 방송 · 미디어", "IDTV (방송 제작사)", "2007년 8월 26일 입주 (현재 입주 여부는 확인하지 못함)", "https://architectenweb.nl/nieuws/artikel.aspx?id=10115"],
+  ["업무 · 사무실", "콘클루전 (Conclusion) / Qi ideas · 바스켓 빌더스 (Basket Builders)", "2007~2008년 약 1,300㎡ 사무실 실내 공사 (Workshop of Wonders 설계) — 현재 여부 미확인", "https://cargocollective.com/workshopofwonders/Offices-Kraanspoor-Amsterdam"],
+  ["업무 · 엔지니어링 자문", "피 리프트 컨설턴츠 (Pi liftconsultants)", "2021년 2월 1일부터 암스테르담 사무소 — Kraanspoor 50", "https://www.piliftconsultants.com/ons-kantoor/?lang=en"],
+ ],
  "missing": [
   "궤도 자체의 지자체 기념물 (gemeentelijk monument) 지정 여부는 확인된 자료를 찾지 못했습니다.",
   "연면적은 12,500㎡ (ArchDaily 등)와 약 10,000㎡ (네덜란드어 위키백과)로 자료마다 다르고, 건물 폭도 13.8m · 12.6m 로 차이가 있습니다.",
   "공공 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 가운데 완공 뒤 건물 소유자 변동 · 임대료 · 입주율은 확인된 자료를 찾지 못했습니다.",
+  "주요 입주 시설 가운데 현재 입주사 목록 (MTV · IDTV 의 현재 여부 등)은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "Kraanspoor — 네덜란드어 위키백과", "u": "https://nl.wikipedia.org/wiki/Kraanspoor"},
@@ -115,6 +122,8 @@ D = {
   {"t": "N.D.S.M.-werf (complex 528250) — Rijksmonumentenregister", "u": "https://monumentenregister.cultureelerfgoed.nl/complexen/528250"},
   {"t": "NDSM-terrein, Amsterdam — herbestemming.nl", "u": "https://www.herbestemming.nl/projecten/ndsm-terrein-amsterdam"},
   {"t": "BREEAM-NL project: Kraanspoor", "u": "https://www.breeam.nl/projecten/kraanspoor-15004"},
+  {"t": "Offices Kraanspoor — Workshop of Wonders", "u": "https://cargocollective.com/workshopofwonders/Offices-Kraanspoor-Amsterdam"},
+  {"t": "Ons kantoor — Pi liftconsultants", "u": "https://www.piliftconsultants.com/ons-kantoor/?lang=en"},
  ],
 },
 "gemini-residence": {
@@ -196,11 +205,15 @@ D = {
   ["총사업비", "2억 4,500만 덴마크 크로네 (약 3만 크로네/㎡) — 건축주 NCC PD A/S · Gemini Residence A/S, 공사 2003~2005년, 면적 10,584㎡ + 지하 2,500㎡ (NCC 공식 프로젝트 페이지)", "https://www.ncc.dk/projekter/gemini-residence-kobenhavn/"],
   ["민간 투자", "NCC 는 이 사업을 「민간 주택 건설 (privat boligbyggeri)」로 분류합니다 (NCC)"],
  ],
+ "tenants": [
+  ["주거 · 민간 분양 아파트", "제미니 레지던스 아파트 84세대 (NCC 개발)", "2005년 입주 — 8개 층, 2 · 3 · 4실형 테라스 세대 (NCC 「민간 주택 건설」)", "https://www.ncc.dk/projekter/gemini-residence-kobenhavn/"],
+ ],
  "missing": [
   "사일로 · 공장 건물의 법정 보호 지정 (fredning)은 확인된 자료를 찾지 못했습니다.",
   "공공 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
   "영어 위키백과의 연면적 39,000㎡ 는 MVRDV 공식 수치 (10,700㎡)와 달라 쓰지 않았습니다.",
   "수익사업 · 운영 재원 — 세대의 분양 · 임대 형태와 관리 주체 · 관리비는 확인된 자료를 찾지 못했습니다.",
+  "주거 외 입주 시설 (지상층 상점 등)은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "Frøsilo — MVRDV 공식 프로젝트 페이지", "u": "https://www.mvrdv.com/projects/143/fr%C3%B8silo"},
@@ -316,6 +329,15 @@ D = {
   "하이라인은 뉴욕시가 소유하지만, 운영 · 관리 · 프로그램은 비영리 단체 하이라인 친구들이 뉴욕시 공원국과의 허가 협약에 따라 맡습니다. 단체는 연간 예산의 거의 100%를 민간 기부로 마련한다고 밝힙니다. 공사비는 시 · 연방 · 주 재원이 주로 댔지만, 운영은 사실상 민간 모금으로 지속되는 구조입니다.",
   "2025년 감사 재무제표를 보면 총수입 2,932만 달러는 기부 867만 · 특별 행사 429만 · 대관 133만 · 계약 및 기타 330만 · 투자 수익 1,212만 달러 등으로 이루어집니다. 식당 · 매점 재허가와 상품 판매도 수입원입니다. 8,300만 달러 규모의 기부 기금을 두고 매년 시장가치의 약 4%를 운영에 쓰는 것이 장기 운영의 버팀목입니다.",
  ],
+ "tenants": [
+  ["상업 · 호텔", "더 스탠더드 하이라인 (The Standard, High Line)", "2009년 — 웨스트 13번가에서 하이라인을 \"올라타듯\" 기둥 위에 세운 18층 호텔, 객실 약 340실 (설계 엔니드 · 옛 폴섹 파트너십, 개발 앙드레 발라즈)", "https://en.wikipedia.org/wiki/The_Standard,_High_Line"],
+  ["상업 · 식음 (푸드홀)", "첼시 마켓 (Chelsea Market)", "하이라인이 15번가에서 이 푸드홀 건물의 서쪽 끝을 관통해 지나감"],
+  ["상업 · 식음", "하이라인 위 식음 매점 (재허가 운영)", "하이라인 친구들이 식당 · 매점을 재허가 (sublicensing)로 운영 — 2024 회계연도 매점 재허가 수입 93만 3,311달러 (Form 990)", "https://fhl-website.s3.amazonaws.com/content/uploads/2025/11/04175131/FHL-2024-Form-990.pdf"],
+  ["문화 · 미술관", "휘트니 미술관 (Whitney Museum of American Art)", "2015년 5월 1일 개관 — 하이라인 남쪽 끝 갠스부트 거리 입구 옆, 렌초 피아노 설계"],
+  ["문화 · 공공미술", "하이라인 아트 (High Line Art)", "하이라인 친구들의 공공미술 조직 — 2011년부터 세실리아 알레마니 (Cecilia Alemani) 큐레이터, 스퍼의 「플린스」 광장에서 대형 작품 교체 전시"],
+  ["업무 · 운영 본부", "딜러-폰 퍼스텐버그 빌딩 (The Diller – von Furstenberg Building)", "하이라인 친구들 본부 — 820 Washington Street (갠스부트 쪽)", "https://www.thehighline.org/about/"],
+  ["업무 · 복합 개발 연결", "맨해튼 웨스트 (Manhattan West)", "2023년 6월 모이니핸 연결로가 스퍼에서 맨해튼 웨스트 공공 공간까지 이어짐 (모이니핸 기차역 맞은편)"],
+ ],
  "missing": [
   "고가 구조물 자체의 국가 사적 등록 (NRHP) · 뉴욕시 랜드마크 지정 여부는 확인된 자료를 찾지 못했습니다.",
   "3구간의 최종 정산 공사비와 스퍼의 사업비는 확인된 자료를 찾지 못했습니다 (2012년 추정치만 확인).",
@@ -333,6 +355,7 @@ D = {
   {"t": "Friends of the High Line 2025 Audited Financial Statements", "u": "https://fhl-website.s3.amazonaws.com/content/uploads/2026/05/13135124/2025-FHL-Audited-Financial-Statements.pdf"},
   {"t": "High Line at the Rail Yards groundbreaking (2012.09.20) — NYC Department of City Planning", "u": "https://www.nyc.gov/assets/planning/download/pdf/about/press-releases/pr092012.pdf"},
   {"t": "Friends of the High Line IRS Form 990 (2024)", "u": "https://fhl-website.s3.amazonaws.com/content/uploads/2025/11/04175131/FHL-2024-Form-990.pdf"},
+  {"t": "The Standard, High Line — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/The_Standard,_High_Line"},
  ],
 },
 "gasholders-kings-cross": {
@@ -431,11 +454,18 @@ D = {
  "operationNote": [
   "가스홀더 아파트와 공원은 공공 보조금이 아니라 킹스크로스 재개발의 민간 사업 구조로 유지됩니다. 단지 전체를 소유한 킹스크로스 센트럴 유한 파트너십이 개발 · 관리하고, 아파트는 분양 수입으로, 가스홀더 파크는 단지의 공공 공간으로 운영됩니다. 2016년 정부는 이 개발의 공공 지분을 오스트레일리안슈퍼에 3억 7,100만 파운드에 팔았습니다. 공원 관리비 · 관리 조합 구조는 확인하지 못했습니다.",
  ],
+ "tenants": [
+  ["주거 · 민간 분양 아파트", "가스홀더스 런던 아파트 145세대", "2018년 — 트리플렛 틀 안 8 · 9 · 12층 원통 3동, 스튜디오 ~ 3침실 · 복층 · 펜트하우스 9세대 (개발 KCCLP)", "https://wilkinsoneyre.com/projects/gasholders-london"],
+  ["주거 · 주민 시설", "주민 전용 스파 · 체육관 · 업무 라운지 · 상영실 · 개인 식당", "아파트 동 안 — 주민 전용"],
+  ["상업 · 지상층 상점", "지상층 소매 공간 (업체명 미확인)", "주민이 아닌 사람도 드나들 수 있는 지상층 상점 (Wallpaper*)", "https://www.wallpaper.com/architecture/gasholders-wilkinson-eyre-london"],
+  ["문화 · 공원", "가스홀더 파크 (Gasholder Park)", "2015년 — 가스홀더 8 틀 안의 무료 공원, 옆 플림솔 빌딩 학교 아이들의 놀이 공간으로도 쓰임", "https://www.kingscross.co.uk/gasholder-park"],
+ ],
  "missing": [
   "가스홀더 해체 · 복원 · 재설치 비용, 아파트 사업비, 공공 재원 · 보조금은 확인된 자료를 찾지 못했습니다 (공원 예산 240만 파운드만 확인).",
   "아파트 연면적은 확인된 자료를 찾지 못했습니다.",
   "가스홀더 8 의 해체 시기는 Historic England 가 \"2001년 무렵\", 킹스크로스 보도자료가 \"2011년 요크셔로 운송\"으로 서로 달리 적습니다.",
   "가스홀더 파크와 아파트 공용부의 관리비 (서비스 차지) · 관리 주체의 구체적 구조는 확인된 자료를 찾지 못했습니다.",
+  "아파트 지상층 상점의 업체명은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "The Triplet (Gasholder Nos 10, 11 and 12) — Historic England 등록 1464325", "u": "https://historicengland.org.uk/listing/the-list/list-entry/1464325"},
@@ -544,11 +574,20 @@ D = {
  "operationNote": [
   "그래너리 빌딩은 런던 예술대학이 캠퍼스로 직접 쓰는 건물이므로, 운영비는 별도 수익사업보다 대학 전체 예산에서 나옵니다. 2024/25년 대학 총수입 4억 9,486만 파운드의 약 83%가 등록금 · 교육 계약이고, 정부 교육 보조금은 1,928만 파운드입니다. 킹스크로스 부지는 밀뱅크 부지와 함께 은행 담보로 잡혀 있습니다. 건물 소유 형태 (자유보유 · 장기 임차)는 재무제표에서 따로 밝히지 않아 확인하지 못했습니다.",
  ],
+ "tenants": [
+  ["문화 · 대학", "센트럴 세인트 마틴스 (Central Saint Martins, 런던 예술대학)", "2011년 10월 입주 — 그래너리 (도서관 · 정면) + 화물 창고 · 새 작업실동, 학생 · 교직원 약 5,000명", "https://www.kingscross.co.uk/central-saint-martins"],
+  ["문화 · 갤러리", "레서비 갤러리 (Lethaby Gallery)", "대학의 일반 공개 전시 공간 — 학생 작업 전시", "https://www.kingscross.co.uk/granary"],
+  ["문화 · 공연장", "공연예술 센터 (350석 극장)", "실내 거리 북쪽 끝 — 대학 공연 · 행사", "https://www.dezeen.com/2011/10/18/campus-for-central-saint-martins-by-stanton-williams/"],
+  ["상업 · 식음", "캐러밴 킹스크로스 (Caravan King's Cross)", "2012년 — 재개발 킹스크로스에서 처음 문을 연 식당 가운데 하나, 1 Granary Square (그래너리 빌딩)", "https://www.kingscross.co.uk/caravan"],
+  ["업무 · 상업", "웨스턴 트랜싯 셰드 (Western Transit Shed) 사무실 · 상점", "서쪽 화물 창고를 사무 공간으로 바꾸고 스테이블 스트리트를 따라 상점 · 식당 배치 (입주사명은 미확인)", "https://www.kingscross.co.uk/granary"],
+  ["주거 · 생활 편의", "옛 마구간의 자전거 보관소", "275대 보관", "https://www.kingscross.co.uk/central-saint-martins"],
+ ],
  "missing": [
   "사업비의 재원 구성 (대학 · 공공 재원 · 보조금)은 확인된 자료를 찾지 못했습니다.",
   "동 · 서 화물 창고의 개별 등록 여부는 확인된 자료를 찾지 못했습니다.",
   "기존 내용의 \"2012 런던 계획상\"은 「런던 시장 도시계획 우수상 (Mayor's Award for Planning Excellence) 2012」로 고쳤습니다.",
   "그래너리 빌딩의 소유 형태 (자유보유 · 장기 임차)와 건물별 운영비는 확인된 자료를 찾지 못했습니다.",
+  "웨스턴 트랜싯 셰드의 사무 · 상점 입주사 이름은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "The Granary — Historic England 등록 1379215", "u": "https://historicengland.org.uk/listing/the-list/list-entry/1379215"},
@@ -561,6 +600,7 @@ D = {
   {"t": "Stanton Williams — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/Stanton_Williams"},
   {"t": "Granary Square — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/Granary_Square"},
   {"t": "UAL Report and Financial Statements 31 July 2025", "u": "https://www.arts.ac.uk/__data/assets/pdf_file/0027/513765/UAL-Report-and-Financial-Statements-31-July-2025.pdf"},
+  {"t": "Caravan King's Cross — King's Cross", "u": "https://www.kingscross.co.uk/caravan"},
  ],
 },
 "la-fabrica-bofill": {
@@ -645,6 +685,13 @@ D = {
  ],
  "operationNote": [
   "라 파브리카는 보조금이나 입장료로 운영되는 공공 시설이 아니라, 건축가 개인이 사들여 자신의 사무소와 집으로 쓰는 민간 건물입니다. 설계 사무소 업무가 곧 운영 기반이고, 대성당 홀은 사무소와 관련된 전시 · 음악회 등에 쓰입니다. 평소 일반 공개는 하지 않습니다. 반면 옆의 굴뚝 구역은 바르셀로나 광역공사가 공공 사업으로 고쳐 식당 · 음악 클럽으로 운영합니다.",
+ ],
+ "tenants": [
+  ["업무 · 설계 사무소 본사", "리카르도 보필 타예르 데 아르키텍투라 (Ricardo Bofill Taller de Arquitectura)", "1975년 무렵부터 — 사일로 속 사무실 · 모형 실험실 · 문서고 · 도서관 · 영사실", "https://spanish-architects.com/en/projects/view/ricardo-bofill-taller-de-arquitectura"],
+  ["주거 · 건축가 주택", "보필 가족의 집", "녹화 지붕 · 테라스가 있는 별도 구역", "https://en.wikipedia.org/wiki/La_F%C3%A1brica_(Sant_Just_Desvern)"],
+  ["문화 · 행사장", "「대성당 (La Catedral)」 홀", "전시 · 음악회 등 사무소 활동과 이어진 문화 행사 — 2022년 1월 보필 추모 공개 (이틀간 수천 명)"],
+  ["상업 · 식음", "엘 미라도르 데 산트 주스트 (El Mirador de Sant Just)", "옛 공장 굴뚝 구역 (보필 단지 밖) — 식당 · 전망대, 바르셀로나 광역공사 개발로 1996년 개장"],
+  ["문화 · 공연장", "뮤직 클럽 발덴 (Music Club Walden)", "굴뚝 구역의 개조한 사일로 속 음악 클럽 (보필 단지 밖, 1996년 개장한 재개발의 일부)"],
  ],
  "missing": [
   "재원 · 보조금은 확인된 자료를 찾지 못했습니다 (보필 개인 매입 · 개조로만 알려져 있습니다).",

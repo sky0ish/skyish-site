@@ -15,6 +15,16 @@ D = {
  ],
  "from": "항만 하역 부두 · 창고 · 해수욕장", "to": "수변 상업 · 레저 · 문화 · 마리나",
  "zoneFrom": "항만 서비스 구역 (zona de servicio del puerto)", "zoneTo": "포르트 벨 특별계획 구역 (Pla Especial del Port Vell)",
+ "tenants": [
+  ["상업 · 대형 쇼핑 · 식음", "마레마그눔 (Maremàgnum) — 클레피에르 (Klépierre)", "1995년 개장 · 에스파냐 부두 (Moll d'Espanya), 개장 때 상업면적 약 2만 2천㎡ · 현재 브랜드 35곳 · 식당 16곳 · 주차 826면, 연중 365일 영업 (2015년부터 클레피에르 소유)", "https://maremagnum.klepierre.es/historia"],
+  ["상업 · 식음 (푸드홀)", "타임아웃 마켓 바르셀로나 (Time Out Market Barcelona)", "2024.7.5 개장 · 마레마그눔 2층 · 5,250㎡ · 셰프 · 레스토랑 14곳 · 바 4곳 · 행사 공간 — 스페인 첫 타임아웃 마켓", "https://www.timeout.com/about/latest-news/time-out-market-is-officially-open-from-5-july-2024-bringing-the-best-of-the-city-together-under-one-roof-070424"],
+  ["문화 · 아쿠아리움", "바르셀로나 아쿠아리움 (Aquàrium de Barcelona) — 아스프로 파크스 (Aspro Parks)", "1995.9.8 개장 · 에스파냐 부두 · 수조 80개 · 약 600종 1만 1천 마리 · 지름 36m 해양 수조 (2015년 방문 154만 9,480명)", "https://ca.wikipedia.org/wiki/Aquàrium_de_Barcelona"],
+  ["문화 · 박물관", "카탈루냐 역사박물관 (Museu d'Història de Catalunya)", "1993년 이후 팔라우 데 마르 (옛 일반 보관창고) — 상설 전시 · 도서관 · 항구 전망 식당", "https://ca.wikipedia.org/wiki/Palau_de_Mar"],
+  ["첨단산업 · 창업 · 테크 허브", "테크 바르셀로나 피어 원 (Tech Barcelona Pier01)", "팔라우 데 마르 건물 안 스타트업 · 테크 허브 (입주 연도는 미확인)", "https://ca.wikipedia.org/wiki/Palau_de_Mar"],
+  ["업무 · 오피스 · 컨벤션", "월드트레이드센터 바르셀로나 (World Trade Center Barcelona)", "1999.7.22 개장 · 바르셀로나 부두 (Moll de Barcelona) · 원형 타워 4동 — 임대 사무실 40~3,000㎡ · 8~1,500명 컨벤션센터 (설계 헨리 N. 콥)", "https://ca.wikipedia.org/wiki/World_Trade_Center_Barcelona"],
+  ["상업 · 호텔", "그랜드 마리나 호텔 (Grand Marina, 5성)", "월드트레이드센터 바르셀로나 안 · 291실", "https://ca.wikipedia.org/wiki/World_Trade_Center_Barcelona"],
+  ["문화 · 영화관", "마레마그눔 옛 멀티플렉스 영화관 (cinema multisala)", "1995년 개장 때 영화관 · 식당 · 바 · 디스코텍 중심 → 영화관 건물은 이후 철거, 그 자리를 항만청 · 시와 협의해 아메리카스컵 (2024) 시설로 사용 (철수)", "https://www.ejeprime.com/comercial/klepierre-invertira-15-millones-de-euros-en-el-reposicionamiento-de-maremagnum"],
+ ],
  "timeline": [
   ["1869", "바르셀로나 항만공사위원회 (Junta de Obras del Port de Barcelona) 설립"],
   ["1978", "바르셀로나 자치항 (Port Autònom de Barcelona) 정관 승인"],
@@ -110,6 +120,7 @@ D = {
   "공공 운영 보조금의 존재나 금액, 항만청이 받는 양허 사용료 규모는 확인하지 못했습니다.",
  ],
  "missing": [
+  "주요 입주 시설 일부 (IMAX 영화관의 현재 여부 · 폐관 연도, 마리나 운영사)는 확인된 자료를 찾지 못했습니다.",
   "양허 사용료 · 항만청의 포르트 벨 관련 수입 규모와 공공 운영 보조금은 확인된 자료를 찾지 못했습니다.",
   "포르트 벨 특별계획 (1989)을 작성한 도시계획가 · 건축가는 확인된 자료를 찾지 못했습니다.",
   "재원 · 보조금 가운데 1980~90년대 총사업비 · 공공 투자액 · 양허 사용료 금액은 확인된 자료를 찾지 못했습니다.",
@@ -119,6 +130,8 @@ D = {
   "사업에 참여한 시민단체 · 주민협의회는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Time Out Market Barcelona officially open from 5 July 2024 — Time Out", "u": "https://www.timeout.com/about/latest-news/time-out-market-is-officially-open-from-5-july-2024-bringing-the-best-of-the-city-together-under-one-roof-070424"},
+  {"t": "World Trade Center Barcelona — Viquipèdia", "u": "https://ca.wikipedia.org/wiki/World_Trade_Center_Barcelona"},
   {"t": "Klépierre invertirá 15 millones de euros en el reposicionamiento de Maremagnum — EjePrime (2023.2)", "u": "https://www.ejeprime.com/comercial/klepierre-invertira-15-millones-de-euros-en-el-reposicionamiento-de-maremagnum"},
   {"t": "Centro comercial Maremagnum — historia (Klépierre)", "u": "https://maremagnum.klepierre.es/historia"},
   {"t": "Transformació Port Vell — Port Vell Barcelona (카탈루냐어)", "u": "https://portvellbcn.cat/ca/transformacio-portvell/"},
@@ -149,6 +162,16 @@ D = {
  ],
  "from": "철도 조차장 · 창고 · 경공업", "to": "고밀 주거 · 갤러리 · 상업 · 공원 (노면전차 연결)",
  "zoneFrom": "일반 · 중공업 (IG1 · IH)", "zoneTo": "중심 고용 · 중심 주거 (EX · RX, 디자인 오버레이 d) + 리버 디스트릭트 도시재생 구역 (URA)",
+ "tenants": [
+  ["상업 · 대형 서점", "파월스 북스 시티 오브 북스 (Powell's City of Books)", "1980년 이전 · W 번사이드 ~ NW 커치, NW 10~11번가 한 블록 전체 · 6,300㎡ (6만 8천 ft²) · 1999년 확장 — \"세계 최대의 독립 신 · 중고 서점\"을 표방", "https://en.wikipedia.org/wiki/Powell%27s_Books"],
+  ["상업 · 대형 식료품", "홀푸드 마켓 (Whole Foods Market) — 브루어리 블록스 1블록", "4층 15만 8천 ft² 건물 · 1층 상업 5만 395ft² (현재 영업 여부 미확인)", "https://energyinnovation.org/wp-content/uploads/Pearl-District-Case-Study.pdf"],
+  ["문화 · 공연장", "게르딩 극장 앳 디 아머리 (Gerding Theater at the Armory) — 포틀랜드 센터 스테이지 (Portland Center Stage)", "1891년 무기고를 공연예술센터로 개조 · 5만 6천 ft² · 2006년 완공 · LEED 플래티넘 (브루어리 블록스 3블록)", "https://energyinnovation.org/wp-content/uploads/Pearl-District-Case-Study.pdf"],
+  ["업무 · 오피스", "브루하우스 · 셀러 빌딩 (브루어리 블록스 2블록)", "옛 맥주 공장 건물 + 10층 신축 사무동 · 24만 8천 ft² · A급 사무실 · 1층 상업 · LEED 골드", "https://energyinnovation.org/wp-content/uploads/Pearl-District-Case-Study.pdf"],
+  ["업무 · 금융 사무", "M 파이낸셜 (M Financial) — 브루어리 블록스 4블록", "사무 건물 · LEED 골드 · 외벽 태양광", "https://energyinnovation.org/wp-content/uploads/Pearl-District-Case-Study.pdf"],
+  ["주거 · 콘도", "더 헨리 (The Henry) — 브루어리 블록스 3블록", "15층 · 콘도 123호 · 1층 상업 · LEED 골드", "https://energyinnovation.org/wp-content/uploads/Pearl-District-Case-Study.pdf"],
+  ["주거 · 임대", "더 루이자 (The Louisa) — 브루어리 블록스 5블록", "주거 건물 · LEED 골드 · 10년 재산세 감면 (수익률 10% 상한 조건)", "https://energyinnovation.org/wp-content/uploads/Pearl-District-Case-Study.pdf"],
+  ["상업 · 식음", "헨리스 12번가 태번 (Henry's 12th Street Tavern)", "2004년 브루하우스 건물에 개업 → 2019년 폐업 (2004~2019, 철수)", "https://en.wikipedia.org/wiki/Brewery_Blocks"],
+ ],
  "timeline": [
   ["1972", "포틀랜드 도심 계획 (Downtown Plan)"],
   ["1980년대 중반", "공업에서 혼합 용도로 재분류 — 창고를 로프트 · 갤러리로 바꾸기 시작"],
@@ -255,6 +278,7 @@ D = {
   "펄 디스트릭트는 하나의 운영 조직이 수익사업을 하는 곳이 아니라, 도시재생 구역의 조세증가분 (늘어난 재산세)으로 공공 투자를 회수하는 구조입니다. 노면전차는 시 교통국이 소유하고 지역개선지구 부담금을 건설 재원으로 썼으며, 주민협의회가 디자인 심의와 도시재생 감시에 참여합니다.",
  ],
  "missing": [
+  "주요 입주 시설 일부 (홀푸드 등 브루어리 블록스 현 임차인의 현재 영업 여부, 대형 테크 · 업무 입주 기업)는 확인된 자료를 찾지 못했습니다.",
   "펄 디스트릭트 자체의 지역 관리 재원 (BID · 관리비)과 노면전차의 요금 수입 비율 (farebox recovery)은 확인된 자료를 찾지 못했습니다.",
   "리버 디스트릭트 개발계획 · 펄 디스트릭트 개발계획의 마스터플랜을 맡은 도시계획가 · 건축가와 브루어리 블록스 설계자는 확인된 자료를 찾지 못했습니다.",
   "1980년대 중반 혼합 용도 재분류의 정확한 연도 · 조례 번호는 확인된 자료를 찾지 못했습니다.",
@@ -263,6 +287,8 @@ D = {
   "리버 디스트릭트 도시재생 구역의 최초 면적 (에이커)은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Powell's Books — Wikipedia", "u": "https://en.wikipedia.org/wiki/Powell%27s_Books"},
+  {"t": "Brewery Blocks — Wikipedia", "u": "https://en.wikipedia.org/wiki/Brewery_Blocks"},
   {"t": "Portland Streetcar: City transit targets unmet, better performance management needed — Portland City Auditor (2014.12)", "u": "https://portland.gov/sites/default/files/2021/451b-streetcar-published.pdf"},
   {"t": "TriMet Annual Comprehensive Financial Report FY2025", "u": "https://trimet.org/about/pdf/finance/fy25-trimet-financials.pdf"},
   {"t": "River District Urban Renewal Plan, September 25, 1998 — Portland Development Commission (PDF)", "u": "https://prosperportland.us/wp-content/uploads/2016/07/River-District-Original-URA-Plan.pdf"},
@@ -288,6 +314,18 @@ D = {
  ],
  "from": "방직 공장 · 운하 · 노동자 기숙사", "to": "국립역사공원 · 공장 개조 주거 · 사무 · 대학",
  "zoneFrom": "공업 (방직)", "zoneTo": "국립역사공원 · 로웰 역사보존지구 (연방법, 1978)",
+ "tenants": [
+  ["문화 · 박물관", "부트 면방직 박물관 (Boott Cotton Mills Museum) — 국립공원청", "부트 공장 6호동 · 1920년대식 직조실 재현 · 유료 (성인 6달러)", "https://www.nps.gov/lowe/planyourvisit/fees.htm"],
+  ["문화 · 교육", "송거스 산업사 센터 (Tsongas Industrial History Center)", "부트 공장 6호동 · 학생 교육 프로그램 (국립공원청 · UMass Lowell 협력)", "https://en.wikipedia.org/wiki/Boott_Cotton_Mills"],
+  ["문화 · 공공시설", "로웰 국립역사공원 방문자센터", "마켓 밀스 (1982년 개조) — 저소득 아파트 230호와 한 단지", "https://www.nps.gov/lowe/learn/historyculture/upload/LHPC-FindingAid-2012-UPDATED.pdf"],
+  ["문화 · 대학 연구 · 전시", "모건 문화센터 (Mogan Cultural Center) — UMass Lowell 특별 소장 자료관 · 뉴잉글랜드 민속생활센터", "옛 부트 공장 기숙사 — 여공 · 이민 · 노동사 전시", "https://www.nps.gov/lowe/learn/historyculture/upload/LHPC-FindingAid-2012-UPDATED.pdf"],
+  ["첨단산업 · 앵커 기업", "왕 연구소 (Wang Laboratories)", "1970년대 로웰 본사 — 부트 공장 6호동을 보존위원회 지원으로 개조해 사용, 뒤에 위원회에 매각 → 공원에 기부 · 1992년 파산 (철수)", "https://www.nps.gov/lowe/learn/historyculture/upload/LHPC-FindingAid-2012-UPDATED.pdf"],
+  ["문화 · 갤러리 · 미디어", "어 브러시 위드 히스토리 (A Brush with History) 갤러리 · 로웰 텔레커뮤니케이션 코퍼레이션 (Lowell Telecommunications Corporation)", "마켓 밀스 1층 — 미술 갤러리 · 작업실, 지역 방송 · 미디어 센터, 푸드코트", "https://www.nps.gov/lowe/learn/historyculture/upload/LHPC-FindingAid-2012-UPDATED.pdf"],
+  ["문화 · 예술가 작업실", "웨스턴 애비뉴 스튜디오 (Western Avenue Studios)", "옛 매사추세츠 모헤어 공장 (1906) — 작업실 143개 · 저렴 작업 · 주거 겸용 50호", "https://www.nps.gov/lowe/planyourvisit/redevelopment-rove.htm"],
+  ["주거 · 예술가 저렴주택", "애플턴 밀스 (Appleton Mills) — 트리니티 파이낸셜 (Trinity Financial)", "2011년 · 130호 로프트 · 1층 갤러리 — 해밀턴 운하 지구 1단계", "https://www.taxcreditadvisor.com/articles/leveraging-on-history-former-textile-mill-in-lowell-being-rehabilitated-into-artist-housing/"],
+  ["주거 · 아파트", "더튼 얀 빌딩 (Dutton Yarn Building) 아파트", "2003~2004년 135호 (역사보존 세액공제 1,100만 달러)", "https://www.nps.gov/lowe/planyourvisit/redevelopment-rove.htm"],
+  ["문화 · 교통", "국립 노면전차 박물관 (National Streetcar Museum) 정류장 · 로웰 헤리티지 트롤리", "부트 공장 단지 — 관광 전차 (1984년 운행 시작)", "https://en.wikipedia.org/wiki/Boott_Cotton_Mills"],
+ ],
  "timeline": [
   ["1823 · 1826", "메리맥 제조회사 설립 · 로웰 타운 설립 (1836년 시 승격)"],
   ["1835", "부트 면방직 공장 (Boott Cotton Mills) 건립"],
@@ -392,6 +430,7 @@ D = {
   "연방 예산만으로는 역사 건물 유지가 버거워 2015 회계연도 기준 1,210만 달러의 유지보수 적체가 쌓였고, 퓨 재단은 민관 협력 · 기부 확대를 제안했습니다.",
  ],
  "missing": [
+  "주요 입주 시설 일부 (현재 공장 건물에 입주한 기술 기업 · 대학 시설 목록)는 확인된 자료를 찾지 못했습니다.",
   "로웰 국립역사공원의 자체 수입 (박물관 · 투어 요금) 금액과 운영비 중 비율은 확인된 자료를 찾지 못했습니다.",
   "마스터플랜 · 설계를 맡은 도시계획가 · 건축가는 확인된 자료를 찾지 못했습니다.",
   "로웰 시 조닝 상의 원래 용도지구 · 변경 용도지구 이름과 용적률 수치는 확인된 자료를 찾지 못했습니다.",
@@ -428,6 +467,15 @@ D = {
  ],
  "from": "하역 항구 · 창고 (고다운) · 숍하우스", "to": "식당 · 바 · 상업 · 호텔 · 강변 산책로",
  "zoneFrom": "항만 · 창고 · 상업", "zoneTo": "보존지구 (Conservation Area, URA 1989) · 싱가포르강 계획구역",
+ "tenants": [
+  ["업무 · 금융 본사", "UOB 플라자 1 · 2 (UOB Plaza) — 대화은행 (United Overseas Bank)", "보트 키 맞은편 래플스 플레이스 · 플라자 1 (1995, 280m) · 플라자 2 (1973 · 1995 개조, 162m) — UOB 본사", "https://en.wikipedia.org/wiki/UOB_Plaza"],
+  ["상업 · 식음 · 유흥", "CQ @ 클라크 키 (CQ @ Clarke Quay) — 캐피털랜드 통합상업신탁 (CICT)", "1993년 클라크 키 페스티벌 빌리지로 개장 · 보존 창고 블록 — 강변 식당 · 바 · 클럽, 2022~2023 재단장 (순임대면적 70% 이상 사전 계약)", "https://www.capitaland.com/en/about-capitaland/newsroom/news-releases/international/2022/jul/cq---clarke-quay-to-be-transformed-into-a-day-and-night-destinat.html"],
+  ["상업 · 쇼핑 · 업무", "클라크 키 센트럴 · 리버사이드 포인트 (Clarke Quay Central · Riverside Point) — 파 이스트 오거니제이션 (Far East Organization)", "클라크 키 구역 상업 · 업무 시설 — 싱가포르강 원 회원", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
+  ["상업 · 식음", "보트 키 숍하우스 식당 · 바 (홍롱 홀딩스 · 8M 리얼 에스테이트 등 소유)", "1989~1993 복원 뒤 강변 식당 · 바 거리 — 옥외 식음 구역 (Outdoor Refreshment Areas)은 싱가포르강 원이 관리", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
+  ["상업 · 쇼핑 · 식음", "로버트슨 워크 (Robertson Walk) — 프레이저스 프로퍼티 (Frasers Property)", "로버트슨 키 강변 상업 시설", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
+  ["상업 · 호텔", "M 소셜 싱가포르 · 스튜디오 M 호텔 (M Social Singapore · Studio M Hotel) — 시티 디벨롭먼트 · 홍롱 홀딩스", "로버트슨 키", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
+  ["상업 · 호텔", "그랜드 코프손 워터프런트 호텔 (Grand Copthorne Waterfront Hotel) — 밀레니엄 앤 코프손", "로버트슨 키 상류", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
+ ],
  "timeline": [
   ["1819 · 1822", "근대 싱가포르 건설 · 래플스 도시계획으로 보트 키 매립"],
   ["1969", "리콴유 총리, 공공사업국 · 공익사업청에 수로 정화 계획 지시"],
@@ -522,6 +570,7 @@ D = {
   "보존 · 정화는 정부가 했지만 운영은 민간에 넘어가 있습니다. 숍하우스 · 창고는 민간 소유자 · 리츠 (CICT)가 임대 수입으로 운영하고, 강 전체는 토지 소유자 · 사업자 42곳이 모인 싱가포르강 원 (SRO)이 지역 관리자로 축제 · 옥외 식음 구역 · 공공 설치물을 맡습니다. SRO 는 2017년 URA 시범 업무개선지구 (BID)의 첫 사례입니다.",
  ],
  "missing": [
+  "주요 입주 시설 일부 (클라크 키 개별 식음 · 클럽 브랜드, 로버트슨 키의 예술 시설)는 확인된 자료를 찾지 못했습니다.",
   "SRO 의 실제 연간 예산 · 회원 분담금 총액 · 실제 받은 매칭 지원금은 확인된 자료를 찾지 못했습니다.",
   "1993년 클라크 키 첫 개조와 보트 키 복원을 설계한 건축가, 싱가포르강 계획구역 계획의 도시계획가는 확인된 자료를 찾지 못했습니다.",
   "보존지구 고시 이전 마스터플랜 상의 정확한 원래 용도지구 이름은 확인된 자료를 찾지 못했습니다.",
@@ -530,6 +579,7 @@ D = {
   "용적률 수치는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "UOB Plaza — Wikipedia", "u": "https://en.wikipedia.org/wiki/UOB_Plaza"},
   {"t": "Pilot Business Improvement District Programme — URA", "u": "https://www.ura.gov.sg/place-management/business-improvement-district-bid/"},
   {"t": "Singapore River One — URA Pilot BID Programme", "u": "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"},
   {"t": "About Place Management — URA", "u": "https://www.ura.gov.sg/place-management/about-place-management/"},
@@ -562,6 +612,16 @@ D = {
  ],
  "from": "공업 지대 (제재 · 철공 · 로프 · 시멘트 공장)", "to": "공공 시장 · 공방 · 극장 · 예술 · 일부 공장 유지",
  "zoneFrom": "연방 항만 공업 용지", "zoneTo": "연방 소유 · CMHC 직접 관리 혼합 용도 지구 (시 조닝 적용 제외)",
+ "tenants": [
+  ["상업 · 시장", "그랜빌 아일랜드 퍼블릭 마켓 (Granville Island Public Market)", "1979.7 개장 · 옛 공장 4동 (5만 ft²) · 독립 식품 판매자 50곳 이상 · 섬 운영 예산의 가장 큰 임대 수입원", "https://admin.granvilleisland.com/about-granville-island/mission-vision/"],
+  ["문화 · 공연장", "아츠 클럽 시어터 컴퍼니 (Arts Club Theatre Company) — 그랜빌 아일랜드 스테이지", "1979년 개관 · 440석 (같은 회사 레뷰 스테이지 1983~2015, 193석 — 철수)", "https://en.wikipedia.org/wiki/Arts_Club_Theatre_Company"],
+  ["문화 · 공연장", "캐러셀 어린이 · 청소년 극장 (Carousel Theatre for Young People) 등 실내 극장 7곳", "섬 안 공연장 7곳 (즉흥극 · 실험극 포함)", "https://en.wikipedia.org/wiki/Granville_Island_Public_Market"],
+  ["문화 · 대학", "에밀리 카 예술디자인대학 (Emily Carr University of Art + Design)", "1980~2017 섬 안 캠퍼스 → 2017년 그레이트 노던 웨이로 이전 (철수)", "https://en.wikipedia.org/wiki/Emily_Carr_University_of_Art_and_Design"],
+  ["업무 · 가동 공장", "오션 콘크리트 (Ocean Concrete)", "1917년부터 — 섬에서 가장 오래된 임차인, 지금도 가동 중인 시멘트 공장", "https://en.wikipedia.org/wiki/Granville_Island"],
+  ["상업 · 양조 · 식음", "그랜빌 아일랜드 브루잉 (Granville Island Brewing)", "1984년 설립 · 2009년 몰슨 (Molson) 인수", "https://en.wikipedia.org/wiki/Granville_Island"],
+  ["상업 · 호텔", "그랜빌 아일랜드 호텔 (Granville Island Hotel)", "60실 부티크 호텔", "https://granvilleisland.com/about-us"],
+  ["상업 · 어린이 상가", "키즈 마켓 (Kids Market)", "어린이 전용 상점 · 놀이 시설", "https://en.wikipedia.org/wiki/Granville_Island_Public_Market"],
+ ],
  "timeline": [
   ["1915~1916", "밴쿠버 항만위원회가 폴스 크리크 모래톱 둘레에 방벽을 쌓고 약 76만㎥ 를 준설 · 매립해 공업 용지 조성 (매립비 34만 2,000달러)"],
   ["1917", "오션 콘크리트 (Ocean Concrete) 입주 — 지금까지 가장 오래된 임차인"],
@@ -656,6 +716,7 @@ D = {
   "팬데믹으로 방문객이 줄자 연방 긴급 지원 (최대 2,170만 캐나다달러)을 받았고, 차입을 할 수 없는 구조 때문에 큰 시설 투자 재원이 과제로 남아 있습니다.",
  ],
  "missing": [
+  "주요 입주 시설 일부 (극장 7곳 전체 이름, 공방 · 갤러리 대표 입주자)는 확인된 자료를 찾지 못했습니다.",
   "그랜빌 아일랜드의 연간 임대 · 주차 수입과 운영비 금액은 확인된 자료를 찾지 못했습니다.",
   "그랜빌 아일랜드 신탁의 정확한 설립 연도 (1973년설 · 1976년설)와 근거 문서는 확인된 자료를 찾지 못했습니다.",
   "CMHC 와 밴쿠버 시가 함께 만든 「그랜빌 아일랜드 참조 문서 (Reference Document)」(1978년으로 알려짐)의 원문 · 허용 용도 · 면적 기준은 확인된 자료를 찾지 못했습니다 (시의회 페이지 접근 불가).",
@@ -664,6 +725,9 @@ D = {
   "연방 정부의 1973년 토지 인수 가격은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Arts Club Theatre Company — Wikipedia", "u": "https://en.wikipedia.org/wiki/Arts_Club_Theatre_Company"},
+  {"t": "Granville Island Public Market — Wikipedia", "u": "https://en.wikipedia.org/wiki/Granville_Island_Public_Market"},
+  {"t": "Overview (Mission · Vision) — Granville Island Administration", "u": "https://admin.granvilleisland.com/about-granville-island/mission-vision/"},
   {"t": "CMHC Granville Island Rent Relief Program FAQs — Granville Island Administration", "u": "https://admin.granvilleisland.com/faqs/"},
   {"t": "About Granville Island — granvilleisland.com (CMHC 운영 공식 사이트)", "u": "https://granvilleisland.com/about-us"},
   {"t": "How Granville Island Came to Be — Project for Public Spaces", "u": "https://www.pps.org/article/how-granville-island-came-to-be"},

@@ -80,6 +80,15 @@ D = {
   "공장 한 채가 아니라 정원 · 연못 · 궤도까지 묶어 지정하면, 산업 단지의 공간 질서 자체를 남길 수 있습니다.",
   "고적 복원은 공공이, 새 수익 시설은 BOT 신축이 맡도록 구역을 나누면 고적을 상업 개발 압력에서 떼어 놓을 수 있습니다.",
  ],
+ "tenants": [
+  ["문화 · 디자인 전시관", "대만 디자인관 (台灣設計館, Taiwan Design Museum)", "고적 구역 「문화창의 상업 공간」 첫 번째 입주 단위 (2024년 기금회 입주 목록) — 대만 디자인 상설 · 기획 전시", "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83_113%E5%B9%B4%E6%B1%BA%E7%AE%97%E7%B8%BD%E8%AA%AA%E6%98%8E%E5%8F%8A%E5%A0%B1%E8%A1%A8_1140722_%E5%B8%82%E6%94%BF%E6%9C%83%E8%AD%B0%E7%89%88.pdf"],
+  ["업무 · 공공 디자인 진흥기관", "대만 디자인연구원 (台灣設計研究院, TDRI)", "2024년 「산업 연계 공간」 입주 — 국가 디자인 진흥 기관", "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83_113%E5%B9%B4%E6%B1%BA%E7%AE%97%E7%B8%BD%E8%AA%AA%E6%98%8E%E5%8F%8A%E5%A0%B1%E8%A1%A8_1140722_%E5%B8%82%E6%94%BF%E6%9C%83%E8%AD%B0%E7%89%88.pdf"],
+  ["업무 · 창업 인큐베이터", "송연 창작자 공장 (松菸創作者工廠)", "기금회가 운영하는 문화창의 브랜드 육성 센터 — 2024년 19개 단위 입주, 국내외 교류 행사 84회. 입주 예: 테드엑스 타이베이 (TEDxTaipei) · 대만 탄소거래 (台灣碳交易) · 5%Design Action · 62icon", "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83_113%E5%B9%B4%E6%B1%BA%E7%AE%97%E7%B8%BD%E8%AA%AA%E6%98%8E%E5%8F%8A%E5%A0%B1%E8%A1%A8_1140722_%E5%B8%82%E6%94%BF%E6%9C%83%E8%AD%B0%E7%89%88.pdf"],
+  ["상업 · 브랜드 상점", "송연 풍격 상점 (松菸風格店家) 외", "2024년 16개 브랜드가 공모로 입주한 전시 · 판매 플랫폼, 「서향 제연공장 B구역」 5개 · 「검사실」 2개 단위의 상업 실험 공간. 원주민 선품점 (臺北市原住民族事務委員會) · 써니힐스 (微熱山丘, 寶田股份有限公司) 등도 입주", "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83_113%E5%B9%B4%E6%B1%BA%E7%AE%97%E7%B8%BD%E8%AA%AA%E6%98%8E%E5%8F%8A%E5%A0%B1%E8%A1%A8_1140722_%E5%B8%82%E6%94%BF%E6%9C%83%E8%AD%B0%E7%89%88.pdf"],
+  ["상업 · 서점 · 복합 상업", "청핀 생활 송연점 (誠品生活松菸店, Eslite Spectrum Songyan)", "옆 신축 타이베이 문화창의 빌딩 (2013년 준공)에 입주 — 서점 · 문화창의 상점가 · 공방. 2024년 1월 20일부터 청핀 체인의 24시간 서점", "https://en.wikipedia.org/wiki/Eslite_Bookstore"],
+  ["문화 · 영화관 · 공연장", "청핀 영화관 (誠品電影院) · 청핀 공연장 (誠品表演廳)", "청핀 생활 송연점 안 — 예술 영화관과 음악 공연장. 공연장은 이토 도요 팀이 나가타 음향 (永田音響) · 사사키 무쓰로 구조계획 (佐佐木睦朗構造計画)과 함께 설계", "https://www.eslitehotel.com/"],
+  ["상업 · 호텔", "청핀 행려 (誠品行旅, eslite hotel)", "2015년 송산 문화창의원구 안 (타이베이 문화창의 빌딩)에서 개업한 청핀 그룹의 호텔 — 로비 서가 · 대만 작가 작품 전시", "https://www.eslitehotel.com/"],
+ ],
  "operation": [
   ["운영 예산 (2025, 원구 단위)", "타이베이시 문화기금회 2025년 (민국 114년) 예산 중 「송산 문화창의원구 경영관리 · 홍보」 — 수입 2억 1,184만 대만달러 전액 기금회 자체 조달 (시 보조 0). 수입 내역: 장소 임대료 1억 7,000만 (약 80%) · 상품 판매 4,000만 · 광고 등 기타 116만 · 운영 58만 · 이자 10만", "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83114%E5%B9%B4%E9%A0%90%E7%AE%97_%E8%AD%B0%E6%9C%83%E5%AF%A9%E5%AE%9A.pdf"],
   ["운영 지출 (2025 예산)", "지출 2억 597만 1천 대만달러 — 관리비 1억 84만 (수선비 1,927만 · 수도 · 전기 1,983만 · 청소 1,211만 등) · 인건비 2,934만 (정규직 37명) · 판매 원가 3,897만. 예상 잉여 586만 9천 대만달러", "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83114%E5%B9%B4%E9%A0%90%E7%AE%97_%E8%AD%B0%E6%9C%83%E5%AF%A9%E5%AE%9A.pdf"],
@@ -92,6 +101,7 @@ D = {
  ],
  "operationNote": ["시가 소유한 고적 구역은 공공 예산으로 복원한 뒤 시 문화기금회가 위탁 운영하고, 신축 상업 · 사무 공간은 BOT 민간 사업자에게 맡겨 분리했습니다.", "기금회 예산서에 따르면 송산 원구 운영 예산 (2025년 2억 1,184만 대만달러)은 시 보조 없이 전액 자체 수입으로 충당하며, 그 약 80%가 전시 · 행사 장소 임대료이고 나머지는 상품 판매 등입니다. 2024년 방문객은 약 981만 명, 공간 사용률은 90%였습니다. 다만 기금회 전체로는 문화국의 기본 운영 보조를 받고 있어, 송산 몫의 간접비 배분은 확인하지 못했습니다."],
  "missing": [
+  "주요 입주 시설 일부 (청핀 영화관의 층 · 좌석 수, 청핀 생활 송연점 면적)는 원문으로 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 — 송산 원구 단위의 실제 결산액 (예산만 확인), BOT 사업자가 시에 내는 권리금 · 임대료는 확인된 자료를 찾지 못했습니다.",
   "원 공장 설계자 (전매국 기사) 개인 이름은 확인된 자료를 찾지 못했습니다.",
   "고적 각 동의 복원 설계 사무소 · 공사 기간 · 실제 집행 공사비는 확인된 자료를 찾지 못했습니다.",
@@ -99,6 +109,8 @@ D = {
   "수상 내역은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "eslite hotel 誠品行旅 (공식)", "u": "https://www.eslitehotel.com/"},
+  {"t": "Wikipedia — Eslite Bookstore", "u": "https://en.wikipedia.org/wiki/Eslite_Bookstore"},
   {"t": "財團法人台北市文化基金會 — 114年度預算書 (議會審定)", "u": "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83114%E5%B9%B4%E9%A0%90%E7%AE%97_%E8%AD%B0%E6%9C%83%E5%AF%A9%E5%AE%9A.pdf"},
   {"t": "財團法人台北市文化基金會 — 113年度決算總說明及報表", "u": "https://www.tcf.taipei/taipeicultureSysUpDoc/financial/%E6%96%87%E5%9F%BA%E6%9C%83_113%E5%B9%B4%E6%B1%BA%E7%AE%97%E7%B8%BD%E8%AA%AA%E6%98%8E%E5%8F%8A%E5%A0%B1%E8%A1%A8_1140722_%E5%B8%82%E6%94%BF%E6%9C%83%E8%AD%B0%E7%89%88.pdf"},
   {"t": "維基百科 — 松山文創園區", "u": "https://zh.wikipedia.org/wiki/松山文化創意園區"},
@@ -196,6 +208,13 @@ D = {
   "문물 건물의 개조는 착공 전에 전문가 논증회로 \"활용형 보호\" 범위를 먼저 합의하면 소방 · 인허가의 벽을 넘기 쉽습니다.",
   "주변 가로 정비 (구의 공공 투자)를 함께 해야 단지가 도시 속 목적지가 됩니다.",
  ],
+ "tenants": [
+  ["업무 · 운영사", "상하이 라오창팡 창의산업 관리유한공사 (上海老场坊创意产业管理有限公司)", "단지 운영 · 임대 · 행사 공동 주최", "https://www.sh.chinanews.com.cn/wenhua/2024-08-15/127403.shtml"],
+  ["문화 · 행사장", "공중 무대 (空中舞台)", "중심동 4층, 1,500㎡ 이상 · 층고 8m · 중앙 600㎡ 강화유리 바닥 — 패션쇼 · 브랜드 발표 · 행사", "https://www.163.com/dy/article/FE7N5LGV0534I0NW.html"],
+  ["문화 · 행사 · 전시장", "바실리카 홀 (巴西利卡厅) · 컨벤션 센터 (会展中心)", "현재 단지의 대관형 행사 · 전시 공간 — 영화 · 드라마 촬영, 브랜드 발표, 패션쇼, 포럼 등에 사용", "https://www.gzw.sh.gov.cn/shgzw_zxzx_gqdt/20240411/046fc42953634b52b84dcac9ef09c986.html"],
+  ["업무 · 창의 오피스", "창의 오피스 (创意办公)", "\"음악 + 과학기술 (音乐+科创)\" 집적지를 목표로 한 사무 공간 — 개별 입주 기업명은 미확인", "https://www.gzw.sh.gov.cn/shgzw_zxzx_gqdt/20240411/046fc42953634b52b84dcac9ef09c986.html"],
+  ["문화 · 몰입형 전시 (임시)", "케이스 랩 메타월드 — 셜록 홈스 몰입 체험 공간 (Case Lab元世界——福尔摩斯大型沉浸式体验空间)", "2024년 7월 27일 ~ 2025년 2월 16일 — 베이징 중촹 국제전람 (北京众创国际展览)과 운영사 공동 주최, 영국 코넌 도일 재산관리측 허가 (2025, 종료)", "https://www.sh.chinanews.com.cn/wenhua/2024-08-15/127403.shtml"],
+ ],
  "operation": [
   ["운영 주체", "상하이 라오창팡 창의산업 관리유한공사 — 2006년 진장 계열 회사와 상하이 창의산업 투자유한공사가 공동 투자해 설립, 현재 진장국제그룹 (锦江国际集团) 소속 (국유기업)", "https://www.gzw.sh.gov.cn/shgzw_zxzx_gqdt/20240411/046fc42953634b52b84dcac9ef09c986.html"],
   ["수입 구성", "행사장 대관이 핵심 — 4층 공중 무대에서 매달 3~5일 행사, 운영 책임자는 \"효익이 매우 좋다\"고 함. 그 밖에 상점 · 식당 · 사무 임대", "https://www.163.com/dy/article/FE7N5LGV0534I0NW.html"],
@@ -205,6 +224,7 @@ D = {
  ],
  "operationNote": ["정부 보조금이 아니라 국유기업 (진장 계열)과 시 창의산업 투자회사의 투자로 개조했고, 낮은 전용률을 보완하려고 사무 임대보다 브랜드 행사 · 촬영 대관을 주 수입원으로 삼았습니다. 구 정부는 주변 도로 · 외관 정비 (4,000만 위안)로 지원했습니다. 연간 매출 · 임대율은 확인하지 못했습니다."],
  "missing": [
+  "주요 입주 시설 — 현재 상시 입주 기업 · 상점 · 식당 이름은 공식 원문으로 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 — 연간 매출 · 임대율 · 임대료 수준은 확인된 자료를 찾지 못했습니다.",
   "개조 설계의 책임 건축가 개인 이름은 확인된 자료를 찾지 못했습니다.",
   "원 건축물의 정확한 높이와 공중 다리 개수는 확인된 자료를 찾지 못했습니다.",
@@ -212,6 +232,7 @@ D = {
   "전국 중점 문물보호단위 공고 원문 페이지는 열람하지 못했습니다.",
  ],
  "refs": [
+  {"t": "中新网上海 — 来上海1933老场坊 与大侦探“福尔摩斯”一起进入“互动探案2.0时代” (2024)", "u": "https://www.sh.chinanews.com.cn/wenhua/2024-08-15/127403.shtml"},
   {"t": "维基百科 — 上海公共租界工部局宰牲场 (1933老场坊)", "u": "https://zh.wikipedia.org/wiki/1933老场坊"},
   {"t": "上海市国资委 — 老建筑绽放新风貌，锦江国际集团旗下“1933老场坊” (2024)", "u": "https://www.gzw.sh.gov.cn/shgzw_zxzx_gqdt/20240411/046fc42953634b52b84dcac9ef09c986.html"},
   {"t": "澎湃新闻 — 1933老场坊：从远东第一“杀牛公司”到时尚创意新地标", "u": "https://www.thepaper.cn/newsDetail_forward_11430259"},
@@ -305,6 +326,15 @@ D = {
   "작은 주거 세대는 그대로 두고 공용 공간 (QUBE · 캐노피 · 옥상 정원)을 새로 더하면 저층 · 소형 공간의 한계를 보완할 수 있습니다.",
   "지하 유적을 공사 중 발굴 · 공개하는 해설 공간으로 바꾸면 부지의 앞선 역사층까지 보여 줄 수 있습니다.",
  ],
+ "tenants": [
+  ["업무 · 디자이너 스튜디오", "디자인 스튜디오 · 상점 약 100곳", "스탠턴 · 할리우드 두 동 각 층 — 패션 · 주얼리 · 생활용품 · 예술 · 디자인 서비스. 디자이너 레지던스 (Designers-in-Residence)로 해외 디자이너 체류", "https://www.pmq.org.hk/the-site/feature-facilities/?lang=en"],
+  ["상업 · 식음 (프렌치)", "루이즈 (LOUISE)", "옛 소년경찰 클럽하우스 (JPC) 건물 — 옌 웡 (Yenn Wong) · 셰프 쥘리앵 루아예 (Julien Royer)의 프랑스 레스토랑, 테라스 「La Terrace by Louise」", "https://www.pmq.org.hk/shop/louise/?lang=en"],
+  ["상업 · 식음", "BKK 타이 스트리트 푸드 (BKK Thai Street Food)", "스탠턴 동 지상층 SG09~SG14 — 태국 길거리 음식 식당", "https://www.pmq.org.hk/shop/bkk/?lang=en"],
+  ["상업 · 체험 매장", "타미야 플라모델 팩토리 (Tamiya Plamodel Factory)", "할리우드 동 1층 H110~112 · H119~120 — 일본 모형 회사 타미야의 매장, 미니 4WD STEM 워크숍", "https://www.pmq.org.hk/shop/tamiya-plamodel-factory/?lang=en"],
+  ["문화 · 도서관", "테이스트 라이브러리 (Taste Library) · 그림책 도서관 (Picture Book Library)", "할리우드 동 H502~H505 — 세계 음식 문화 장서 4,000권 이상의 자료실, 약 200㎡ · 주방 포함", "https://www.pmq.org.hk/the-site/event-venue-rental/?lang=en"],
+  ["문화 · 행사장", "큐브 (QUBE) · 중정과 마켓플레이스 (Courtyard & Marketplace)", "QUBE 다목적홀 약 500㎡ · 층고 5m · 450명, 중정 약 1,000㎡ (사용 600㎡) · 450명 — 전시 · 회의 · 패션쇼 · 마켓. 과거 「KAWS: ALONG THE WAY」 · 「Draw HK」 등 개최", "https://www.pmq.org.hk/the-site/event-venue-rental/?lang=en"],
+  ["문화 · 유산 해설", "글림프스 PMQ (Glimpse PMQ)", "지하 해설 구역 — 중앙서원 기초석 유구 관람", "https://www.pmq.org.hk/the-site/feature-facilities/?lang=en"],
+ ],
  "operation": [
   ["운영 주체", "머스킷티어스 재단이 세운 비영리 사회적 기업 PMQ 관리유한공사 (특수목적회사)", "https://www.pmq.org.hk/about/about-pmq/?lang=en"],
   ["토지 · 건물 임대 구조", "정부가 땅 · 건물 소유 유지, 유산사무처 (Commissioner for Heritage's Office)와 임대 계약 — 10년 고정 + 5년 연장, 임대료 연 1 홍콩달러", "https://www.heritage.gov.hk/en/publications-press-releases-gallery-and-links/press-releases/index_id_475.html"],
@@ -321,12 +351,18 @@ D = {
  ],
  "operationNote": ["정부가 개조 공사비 (5억 6,010만 홍콩달러)를 대고 땅 · 건물을 연 1달러에 빌려 주는 대신, 운영은 재단의 기부금 (운영 자금 5,050만 포함)과 스튜디오 · 식당 임대 수입으로 자립하도록 설계했습니다. 신진 디자이너에게 20~50% 할인 임대를 주는 사회적 기업이며, 흑자가 나면 5년마다 정부와 반씩 나눕니다. 개장 첫해에는 임대 수입 (122만 홍콩달러)이 지출 (1,760만)에 크게 못 미쳐 약 1,600만 홍콩달러 적자를 냈고, 이를 재단 종잣돈으로 메웠다고 보도됐습니다 (2015). 같은 해 입주율은 92%, 개장 뒤 1년 7개월 동안 방문객은 500만 명을 넘었습니다. 2016년 이후의 손익과 임대 갱신 결과는 확인하지 못했습니다."],
  "missing": [
+  "주요 입주 시설 — 2014년 개장 당시 대표 입주자와 이후 철수한 식당 · 매장의 기간은 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 — 2016년 이후 연도별 손익 · 재단 종잣돈 잔액 · 2024년 무렵 임대 갱신 결과는 확인된 자료를 찾지 못했습니다.",
   "건축서 내부 담당 건축가 개인 이름과 공사 착공 · 준공 일자는 확인된 자료를 찾지 못했습니다.",
   "1951년 숙소의 원 설계자는 확인된 자료를 찾지 못했습니다.",
   "3급 역사 건축 평가의 고물고적판사처 원문 기록과 수상 연도는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "PMQ — Feature & Facilities (공식)", "u": "https://www.pmq.org.hk/the-site/feature-facilities/?lang=en"},
+  {"t": "PMQ — Event Venue Rental (공식)", "u": "https://www.pmq.org.hk/the-site/event-venue-rental/?lang=en"},
+  {"t": "PMQ — LOUISE", "u": "https://www.pmq.org.hk/shop/louise/?lang=en"},
+  {"t": "PMQ — BKK Thai Street Food", "u": "https://www.pmq.org.hk/shop/bkk/?lang=en"},
+  {"t": "PMQ — Tamiya Plamodel Factory", "u": "https://www.pmq.org.hk/shop/tamiya-plamodel-factory/?lang=en"},
   {"t": "HKSAR Government — LCQ12: Management and operation of PMQ (2016-01-06)", "u": "https://www.info.gov.hk/gia/general/201601/06/P201601060600.htm"},
   {"t": "Hong Kong Free Press — PMQ design hub records loss of HK$16m in first year (2015)", "u": "https://hongkongfp.com/2015/07/28/pmq-design-hub-records-loss-of-hk16m-in-first-year-legislator-not-surprised/"},
   {"t": "LegCo PWSC — 400IO Transformation of the former Police Married Quarters on Hollywood Road (2011)", "u": "https://www.legco.gov.hk/yr10-11/english/fc/pwsc/papers/pwsc0615pwsc-80-e.pdf"},
@@ -407,6 +443,11 @@ D = {
   "산업 유산을 모두 남길 수 없을 때, 하나를 골라 공공 예술로 바꾸면 대규모 재개발지에 기억과 정체성을 남길 수 있습니다.",
   "구멍 · 거울 · LED처럼 원 외피를 거의 그대로 둔 가벼운 개입만으로도 강한 장소성을 만들 수 있습니다.",
  ],
+ "tenants": [
+  ["문화 · 공공 예술 · 행사장", "사일로 468 (Öljysäiliö 468) — 헬싱키 시 대관", "탱크 내부 약 1,000㎡를 지붕 덮인 야외 행사장으로 헬싱키 시가 대관", "https://www.hel.fi/fi/uutiset/valoa-pimeaan-tutustu-kruunuvuorenrannan-oljysailio-468-teokseen"],
+  ["상업 · 팝업 식당", "라빈톨라 사일리외 468 (Ravintola Säiliö 468)", "탱크를 빌려 여는 여름 그릴 파티형 팝업 레스토랑 — 2016년이 세 번째 개최 (기간 한정)", "https://www.tiketti.fi/ravintola-sailio-468-grillijuhlat-vanhassa-oljysailiossa-uutiset/10317"],
+  ["문화 · 소리 · 빛 공연", "실로 소이 (Siilo soi) 3부작", "코로나19 시기부터 2022년 10월까지 탱크 안에서 열린 소리 · 빛 작품 (종료)", "https://www.sttinfo.fi/tiedote/69952242/siilo-soi-viela-kerran-kruunuvuorenrannassa-upea-paatosteos-koettavissa-kolmen-paivan-ajan-7910?publisherId=60590288"],
+ ],
  "operation": [
   ["운영 주체", "헬싱키 시 건설국 (Helsingin Rakennusvirasto)이 관리 (핀란드어 위키백과)"],
   ["수입 구성 (확인된 범위)", "탱크 내부를 행사 · 연회 공간으로 대관 — 헬싱키 시가 임대 (금액 미확인)", "https://www.hel.fi/fi/uutiset/valoa-pimeaan-tutustu-kruunuvuorenrannan-oljysailio-468-teokseen"],
@@ -415,6 +456,7 @@ D = {
  ],
  "operationNote": ["사일로 468은 수익 시설이 아니라 시가 소유 · 관리하는 공공 예술 작품이자 공공 공간이며, 확인된 수입원은 행사 공간 대관뿐입니다. 저전력 LED (약 2kW)로 운영비를 낮췄습니다. 연간 운영비 · 대관 수입은 확인하지 못했습니다."],
  "missing": [
+  "주요 입주 시설 — 상설 입주 시설은 없으며, 팝업 식당의 첫 개최 연도 · 이후 지속 여부는 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 — 연간 운영비 · 대관료 · 대관 수입은 확인된 자료를 찾지 못했습니다.",
   "탱크 468의 원 준공 연도 · 소유 석유회사 · 저장 용량은 확인된 자료를 찾지 못했습니다.",
   "작품 비용 190만 유로의 재원별 분담액은 확인된 자료를 찾지 못했습니다.",
@@ -423,6 +465,7 @@ D = {
   "개별 수상 이름 · 연도는 원문을 열람하지 못해 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Tiketti — Ravintola Säiliö 468 – grillijuhlat vanhassa öljysäiliössä (2016)", "u": "https://www.tiketti.fi/ravintola-sailio-468-grillijuhlat-vanhassa-oljysailiossa-uutiset/10317"},
   {"t": "Kirkko ja kaupunki — Säiliö 468 syttyy (2012)", "u": "https://www.kirkkojakaupunki.fi/-/sailio-468-syttyy"},
   {"t": "Wikipedia (fi) — Öljysäiliö 468", "u": "https://fi.wikipedia.org/wiki/Öljysäiliö_468"},
   {"t": "Wikipedia (fi) — Laajasalon öljysatama", "u": "https://fi.wikipedia.org/wiki/Laajasalon_öljysatama"},

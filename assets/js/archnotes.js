@@ -9,7 +9,7 @@ import { decorate } from "./noteimg.js?v=202610051200";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610060100";
+const V = "202610060300";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -518,6 +518,11 @@ const KINDS = [["tech", "첨단산업"], ["home", "주거"], ["biz", "업무"], 
 const TYPE_KIND = { "첨단산업형": ["tech"], "주거형": ["home"], "문화 · 복합형": ["cult"] };
 const kindsOf = (x) => {
   const k = new Set(useParts(x.to).map((w) => useKind(w)).filter((c) => c !== "etc" && c !== "ind"));
+  (x.tenants || []).forEach((r) => {                      // 입주 시설 구분 칸의 맨 앞 용도 (첨단산업 · 업무 · 상업 · 주거 · 문화)
+    const head = String((r && r[0]) || "").split("·")[0].trim();
+    const c = { "첨단산업": "tech", "업무": "biz", "상업": "shop", "주거": "home", "문화": "cult" }[head];
+    if (c) k.add(c);
+  });
   (x.types || []).forEach((t) => {
     if (t === "업무 · 상업형") { if (!k.has("biz") && !k.has("shop")) k.add("biz"); }
     else (TYPE_KIND[t] || []).forEach((c) => k.add(c));
@@ -526,6 +531,15 @@ const kindsOf = (x) => {
 };
 const kindChips = (x) => `<span class="fl__chips">${kindsOf(x).map((c) => `<span class="rg__type rg__type--k-${c}">${KINDS.find(([k]) => k === c)[1]}</span>`).join("")}</span>`;
 const flow = (a, b) => `<span class="an__tag an__flow"><i>(</i>${useHtml(a, true)}<i>)에서 (</i>${useHtml(b)}<i>)${ro(b)}</i></span>`;
+/* 주요 입주 기업 · 시설 (앵커) — 첨단산업 줄을 맨 위, 그다음 앵커, 나머지 순 */
+const tenantRank = (r) => {
+  const k = String((r && r[0]) || "");
+  if (/^\s*첨단산업/.test(k)) return 0;
+  if (/앵커/.test(k)) return 1;
+  return 2;
+};
+const tenantsHtml = (t) => (t || []).length
+  ? `<div class="rg__anchor"><b>주요 입주 기업 · 시설 (앵커)</b>${kvTable([...t].map((r, i) => [r, i]).sort((a, b) => tenantRank(a[0]) - tenantRank(b[0]) || a[1] - b[1]).map(([r]) => r))}</div>` : "";
 const bullets = (v) => (v || []).length ? `<ul class="rg__ul">${v.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
 let RNV = null, RGN = null;
 const loadJ = (f) => fetch("assets/data/" + f + "?v=" + V).then((r) => (r.ok ? r.json() : { items: [] })).catch(() => ({ items: [] }));
@@ -539,6 +553,7 @@ function rnvBody(b, arch) {
   return `<div class="an__body">
     <div class="rn__flip"><div><small>원래 용도</small><b>${esc(b.from)}</b><span>${esc(b.y0 || "")}</span></div>
       <i>→</i><div><small>변경 용도</small><b>${esc(b.to)}</b><span>${esc(b.y || "")}</span></div></div>
+    ${tenantsHtml(b.tenants)}
     <h4>1) 건축가 개요</h4>
     ${A}${paras(b.archAbout)}
     <h4>2) 건축개요 — 원 건축물과 리노베이션</h4>
@@ -619,6 +634,7 @@ function rgnBody(x) {
       <i>→</i><div><small>변경 용도 · 용도지구</small><b>${esc(x.to)}</b><span>${esc(x.zoneTo || "")}</span></div></div>
     ${row(ae.concat(ph.slice(0, 1)).slice(0, 3))}
     ${(x.keep || []).length ? `<div class="rg__keep"><b>보존 · 활용한 옛 건물</b>${bullets(x.keep)}</div>` : ""}
+    ${tenantsHtml(x.tenants)}
     <h4>1) 개발개요 — 원래 용도 · 변경 용도 · 문제점과 개발 이유</h4>
     ${kvTable(x.spec)}
     ${(x.timeline || []).length ? `<p class="rg__lab">연혁</p><table class="ab__spec rg__tl"><tbody>${x.timeline.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table>` : ""}

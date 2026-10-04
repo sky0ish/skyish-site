@@ -220,3 +220,15 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
 .fl__chips { white-space: nowrap; margin-right: 2px; }
 .fl__chips .rg__type { margin: 0 3px 0 0; }
 .fl__k--ind { color: #9a6a3c; }   /* 옛 산업 용도 — 첨단산업(#7a4a24)보다 밝은 갈색 */
+/* 앵커 시설 상자 — 상세 맨 위 */
+.rg__anchor { border: 2px solid #7a4a24; background: #fbf6f0; border-radius: 10px; padding: 12px 14px; margin: 14px 0 18px; }
+.rg__anchor > b { display: block; color: #7a4a24; margin-bottom: 6px; font-size: 1rem; }
+.rg__anchor .ab__spec { width: 100%; table-layout: fixed; }
+.rg__anchor .ab__spec th { width: 32%; word-break: keep-all; }
+.rg__anchor .ab__spec td { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .rg__anchor .ab__spec, .rg__anchor .ab__spec tbody, .rg__anchor .ab__spec tr,
+  .rg__anchor .ab__spec th, .rg__anchor .ab__spec td { display: block; width: auto; }
+  .rg__anchor .ab__spec tr { padding: 8px 0; border-bottom: 1px solid #eadfd3; }
+  .rg__anchor .ab__spec th { padding: 0 0 2px; }
+}

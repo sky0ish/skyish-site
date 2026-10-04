@@ -23,6 +23,15 @@ D = {
   ["새 탑", "콘크리트 스포츠 탑 2동 + 높이 70m 원통형 물탱크 탑 · 두 탑 사이 프리스트레스트 콘크리트 공중 다리 8개 (최대 경간 25m)"],
   ["위치", "브라질 상파울루 폼페이아 — 클렐리아 거리 (Rua Clélia) 93"],
  ],
+ "tenants": [
+  ["문화 · 공연장", "극장 (Teatro)", "옛 공장에서 가장 높은 창고 · 774석, 양쪽에서 무대를 보는 객석 · 1982년 1단계 개관 때부터", "https://pt.wikipedia.org/wiki/Sesc_Pompeia"],
+  ["문화 · 도서관", "도서실 · 독서 공간 (Biblioteca / Espaço de Leitura)", "옛 공장 창고 안 · 6세 이하 어린이 놀이 공간 (Espaço de Brincar)과 함께", "https://portal.sescsp.org.br/online/artigo/compartilhar/9780_OCUPE+O+SESC+POMPEIA"],
+  ["문화 · 전시장", "전시 공간 (Área de Exposições)", "옛 공장 창고 · 기획 전시", "https://portal.sescsp.org.br/online/artigo/compartilhar/9780_OCUPE+O+SESC+POMPEIA"],
+  ["문화 · 휴게 공간", "함께 지내는 곳 (Área de Convivência)", "옛 공장 창고 · 실내 물길과 벽난로", "https://portal.sescsp.org.br/online/artigo/compartilhar/9780_OCUPE+O+SESC+POMPEIA"],
+  ["문화 · 작업실", "작업실 (Oficinas)", "콘크리트 블록으로 새로 지은 작업실 — 공예 · 미술 강좌", "https://portal.sescsp.org.br/online/artigo/compartilhar/9780_OCUPE+O+SESC+POMPEIA"],
+  ["상업 · 식음", "코메도리아 (Comedoria) · 쇼페리아 (Choperia, 맥주홀)", "옛 공장 창고 · 유럽 선술집에서 따온 긴 공동 식탁", "https://agenciabrasil.ebc.com.br/cultura/noticia/2015-03/iphan-tomba-complexo-cultural-projetado-por-lina-bo-bardi-na-capital"],
+  ["문화 · 스포츠", "스포츠 블록 (Bloco Esportivo) · 수영장 · 일광욕 데크 (Solarium)", "1986년 · 콘크리트 탑 2동에 체육관 · 탈의실을 층층이, 데크가 옛 공장과 연결", "https://arquitecturaviva.com/works/sesc-fabrica-pompeia-9"],
+ ],
  "timeline": [
   ["1938", "독일계 마우제르 (Mauser & Cia Ltda.)의 폼페이아 공장 개업 (영문 위키백과 기준)"],
   ["1945", "공장이 브라질 회사에 넘어감 — 이후 이베자-젤로마치크 냉장고 공장"],
@@ -91,6 +100,7 @@ D = {
  ],
  "operationNote": ["세스크 폼페이아는 정부 보조금이나 임대 수익이 아니라, 기업들이 급여의 1.5% 를 내는 의무 분담금으로 주로 운영되는 SESC 상파울루의 47개 시설 가운데 하나입니다. 2024년 SESC 상파울루 전체 수입 약 37억 8천만 헤알 가운데 약 79% 가 의무 분담금이고, 이용료 등 서비스 수입은 약 6% 입니다. 법령에 따라 순 분담금의 1/6 을 무상 제공에 써야 하므로 이용자 부담이 낮게 유지됩니다. 폼페이아 한 곳의 수입 · 지출은 공개 보고서에서 따로 확인하지 못했습니다."],
  "missing": [
+  "주요 입주 시설 — SESC 가 직접 운영하는 시설로 외부 입주 기업은 없으며, 식당 등의 현재 운영 방식은 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 — 세스크 폼페이아 한 곳의 연간 예산 · 수입 구성과 최근 이용자 수는 확인된 자료를 찾지 못했습니다 (SESC 상파울루 전체 수치만 확인).",
   "SESC 가 공장 터를 사들인 정확한 연도와 금액은 확인된 자료를 찾지 못했습니다.",
   "공장 설립 연도는 자료마다 다릅니다(영문 위키백과 1938년, 마르셀루 페하스의 글 1920년대).",
@@ -128,6 +138,16 @@ D = {
   ["소유 변경", "2017년 프랑스 키스 (Keys Asset Management) 매입 → 2022년 그루포 아리에 (Grupo Arié) · 유로피 (Europi Property Group) · 베드록 캐피털 (Bedrock Capital) 합작사 매입"],
   ["대표 내부 개조", "서점 레르 데바가르 — 오로라 아르키텍투스, 2009년, 약 1,000㎡, 2009년 4월 23일 (세계 책의 날) 개점"],
   ["위치", "포르투갈 리스본 알칸타라 — 4월 25일 다리 아래"],
+ ],
+ "tenants": [
+  ["문화 · 서점", "레르 데바가르 (Ler Devagar)", "2009년 4월 23일 입주 · 옛 그라피카 미란델라 인쇄소 약 1,000㎡ · 3층 높이 윤전기를 남긴 서점 겸 카페", "https://aurora.com.pt/en/project/livraria-ler-devagar/"],
+  ["상업 · 식음", "칸치나 (Cantina)", "옛 미란델라 공장 시설 · 가구 · 설비를 고쳐 쓴 식당 — 1846년부터 노동자들을 먹인 옛 구내식당의 기억을 잇는다고 소개", "http://web.archive.org/web/2025/https://lxfactory.com/category/restaurantes-pt/page/2/"],
+  ["상업 · 식음", "란도 쇼콜라트 (Landeau Chocolate) · 타베르나 1300 (Taberna 1300) · 말라카 투 (Malaca Too) 등", "단지 안 식당 · 카페 (공식 사이트 식당 목록, 2025년 보관본)", "http://web.archive.org/web/2025/https://lxfactory.com/category/restaurantes-pt/page/2/"],
+  ["상업 · 소매", "디자인 · 공예 상점 — LBP 콘셉트 스토어 (LBP Concept Store) · 오리가미 팩토리 (Origami Factory) · QIM 등", "공식 사이트 상점 목록 (2025년 보관본)", "http://web.archive.org/web/2025/https://lxfactory.com/category/lojas-pt/"],
+  ["첨단산업 · 테크 기업 사무실", "리차지닷컴 (Recharge.com) · 굿해비츠 포르투갈 (GoodHabitz Portugal) · 베스포크 디지털 (Bespoke Digital)", "디지털 결제 · 온라인 교육 · 디지털 서비스 기업 사무실 (공식 사이트 사무실 목록, 2025년 보관본)", "http://web.archive.org/web/2025/https://lxfactory.com/category/escritorios-pt/"],
+  ["업무 · 사무실", "건축 · 디자인 · 컨설팅 사무소 — 에스페호/단타스 (Espejo/Dantas) · 스튜디오 JV · 캡베스트 (Capvest) 등", "사무실 약 200개 업체 가운데 일부 (공식 사이트 사무실 목록)", "http://web.archive.org/web/2025/https://lxfactory.com/category/escritorios-pt/"],
+  ["상업 · 숙박", "LX 호스텔 (LX Hostel)", "단지 안 호스텔 (공식 사이트 기타 목록)", "http://web.archive.org/web/2025/https://lxfactory.com/category/outros-pt/"],
+  ["문화 · 행사장", "아이리스 이벤트 룸 (IRIS Event Room) 등 행사 공간 · 리스본 커피 페스트 (Lisbon Coffee Fest)", "대관 · 축제 — 2017년 키스는 행사 부문 강화를 밝힘", "http://web.archive.org/web/2025/https://lxfactory.com/category/outros-pt/"],
  ],
  "timeline": [
   ["1838", "리스본 상인들이 리스본 방적 · 방직 회사 설립 — 처음엔 시내 여러 곳에 흩어져 작업"],
@@ -191,6 +211,7 @@ D = {
  ],
  "operationNote": ["LX 팩토리는 공공 보조금 없이 민간 소유주가 옛 공장 공간을 사무실 · 상점 · 식당에 빌려주는 임대 수익으로 운영됩니다. 소유주가 두 번 바뀌었지만 모두 산업적 정체성과 임대 용도를 유지하겠다고 밝혔습니다."],
  "missing": [
+  "주요 입주 시설 — 공식 사이트가 2026년 현재 열리지 않아 2025년 웹 보관본 목록으로 확인했습니다. 현재 입주 여부는 확인하지 못했습니다.",
   "수익사업 · 운영 재원 — 임대료 수준, 연간 임대 수입, 최근 입주율, 방문객 수는 확인된 자료를 찾지 못했습니다.",
   "LX 팩토리 건물의 국가 · 시 보호 지정 여부는 확인된 자료를 찾지 못했습니다 (포르투갈 국가유산 목록 SIPA 에 「Edifício da Companhia de Fiação e Tecidos Lisbonense」 항목이 있으나 접속이 막혀 내용을 확인하지 못했습니다).",
   "재원 · 보조금(공공 지원)은 확인된 자료를 찾지 못했습니다. 매입 금액도 모두 공개되지 않았습니다.",
@@ -205,6 +226,7 @@ D = {
   {"t": "Jornal de Negócios — Novo donos destacam forte potencial de desenvolvimento da LX Factory (2017)", "u": "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/novo-donos-destacam-forte-potencial-de-desenvolvimento-da-lx-factory"},
   {"t": "Jornal de Negócios — LX Factory, uma década a fundir o clássico com o cosmopolita", "u": "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/lx-factory-uma-decada-a-fundir-o-classico-com-o-cosmopolita"},
   {"t": "Time Out Lisboa — A Ler Devagar é um dos cafés-livraria mais bonitos do mundo", "u": "https://www.timeout.pt/lisboa/pt/noticias/a-ler-devagar-e-um-dos-cafes-livraria-mais-bonitos-do-mundo-092425"},
+  {"t": "LX Factory 공식 사이트 — 식당 · 상점 · 사무실 · 기타 목록 (웹 보관본, 2025)", "u": "http://web.archive.org/web/2025/https://lxfactory.com/category/escritorios-pt/"},
  ],
 },
 
@@ -226,6 +248,15 @@ D = {
   ["이후 개조", "1965 벤저민 톰프슨 앤 어소시에이츠 (Benjamin Thompson and Associates) 시계탑 1층 개조 · 1968 루스 아사와 (Ruth Asawa) 인어 분수 · 1982 새 포장 · 계단"],
   ["규모", "한 블록 — 노스 포인트 · 라킨 · 비치 · 폴크 거리로 둘러싸임"],
   ["위치", "미국 샌프란시스코 피셔맨스 워프 서쪽"],
+ ],
+ "tenants": [
+  ["상업 · 식음 (앵커)", "기라델리 초콜릿 (Ghirardelli Chocolate)", "시계탑 건물 아래층의 기라델리 스퀘어 대표 초콜릿 가게 — 옛 공장 주인의 브랜드가 매장으로 남아 앵커 역할 (영문 위키백과 · 공식 사이트 목록)", "https://en.wikipedia.org/wiki/Ghirardelli_Square"],
+  ["상업 · 숙박", "페어몬트 헤리티지 플레이스 (Fairmont Heritage Place, Ghirardelli Square)", "2008년 · 옛 시계탑 건물 일부 · 4개 층 53실, 객실 지분 분할 소유", "https://www.historichotels.org/us/hotels-resorts/fairmont-heritage-place-ghirardelli-square/history.php"],
+  ["상업 · 식음", "매코믹 앤 쿨레토스 시푸드 앤 스테이크 (McCormick & Kuleto's) · 샌프란시스코 브루 컴퍼니 (San Francisco Brew Co.) · 스퀘어 파이 가이스 (Square Pie Guys) · 바리오 (Barrio) 등", "공식 사이트 식음 목록 (2026년 확인)", "https://www.ghirardellisq.com/explore"],
+  ["상업 · 식음", "브로드 스트리트 오이스터 (Broad Street Oyster Co.)", "공식 사이트에 \"곧 개점 (Coming Soon)\"으로 표시", "https://www.ghirardellisq.com/explore"],
+  ["상업 · 소매", "보M 파스 (vom Fass) · 로라 샌프란시스코 (LOLA San Francisco) · 포토마티카 (Photomatica) · COL 갤러리 등", "공식 사이트 상점 목록", "https://www.ghirardellisq.com/explore"],
+  ["문화 · 놀이", "서브파 미니어처 골프 (Subpar Miniature Golf)", "실내 미니 골프장 (공식 사이트 목록)", "https://www.ghirardellisq.com/explore"],
+  ["상업 · 소매 (과거)", "디자인 리서치 (Design Research)", "1965년 · 벤저민 톰프슨이 시계탑 1층을 고쳐 연 디자인 상점 — 지금은 그 자리에 기라델리 초콜릿 가게", "https://en.wikipedia.org/wiki/Ghirardelli_Square"],
  ],
  "timeline": [
   ["1858", "파이어니어 모직 공장 (Pioneer Woolen Mills) 가동"],
@@ -300,6 +331,7 @@ D = {
   {"t": "List of San Francisco Designated Landmarks — 영문 위키백과", "u": "https://en.wikipedia.org/wiki/List_of_San_Francisco_Designated_Landmarks"},
   {"t": "u-s-history.com — Ghirardelli Square", "u": "https://www.u-s-history.com/pages/h2852.html"},
   {"t": "The Registry — Jamestown Properties Buys Ghirardelli Square in San Francisco (2013)", "u": "https://news.theregistrysf.com/jamestown-properties-buys-ghirardelli-square-in-san-francisco/"},
+  {"t": "Ghirardelli Square 공식 사이트 — Explore (입주 업체)", "u": "https://www.ghirardellisq.com/explore"},
  ],
 },
 
@@ -323,6 +355,16 @@ D = {
   ["연결", "주변을 잇는 보행로 17개 (승강기 · 에스컬레이터 · 보행 다리 · 횡단보도)"],
   ["안전", "내진 1등급 (규모 6.3~6.5 견딤) · 5만 명 하중 설계 · 난간 높이 1.4m"],
   ["총사업비", "597억 원 (그중 40% 이상 안전 보강)"],
+ ],
+ "tenants": [
+  ["문화 · 공연장", "담쟁이극장", "만리동광장 근처 인형극장 — 자원봉사 인형극단 정례 공연 · 구연동화 (2017 개장 당시)", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
+  ["문화 · 전시장", "서울로전시관", "서울역 철로 위 약 16㎡ 소규모 전시관 — 네이버문화재단 주도로 분기별 전시 (2017 개장 당시)", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
+  ["문화 · 교육", "정원교실", "작은 도서관처럼 꾸민 공간 · 가족 정원 만들기 프로그램", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
+  ["문화 · 공연장", "장미무대 · 목련무대", "거리 무대 — 목련무대는 퇴계로 쪽, 대우재단빌딩 · 호텔 마누 연결 통로 옆", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
+  ["문화 · 놀이", "방방놀이터 · 공중자연쉼터", "트램펄린 2대의 어린이 놀이터 · 계절별 족욕탕 · 낙엽 밟기 등", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
+  ["상업 · 관광 편의", "서울로여행자카페 · 서울로가게", "퇴계로 교통섬의 종합 관광 안내소 · 공식 기념품 20여 종 판매점 (퇴계로 초입)", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
+  ["상업 · 식음", "식당 · 카페", "고가 위와 만리동 쪽 — 비빔밥 · 꼬마김밥 · 토스트 · 디저트 (2017 개장 당시)", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
+  ["문화 · 공공미술", "윤슬 (만리동광장)", "노천극장 형태의 공공미술 작품 — 댄스 공연 · 미디어 아트", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
  ],
  "timeline": [
   ["1970.8.15", "서울역 고가도로 개통 (서울시 \"숫자로 보는 서울로7017\")"],
@@ -383,6 +425,7 @@ D = {
  ],
  "operationNote": ["서울로 7017은 입장료 · 임대 수익이 없는 무료 공공 시설로, 서울시 예산만으로 운영됩니다. 초기에는 민간위탁으로 행사 · 콘텐츠를 운영했으나, 이후 유지관리 중심으로 바꾸며 연간 집행 예산을 약 37억 원에서 15억 원 수준으로 줄였습니다 (2019년 47억 7천만 원 → 최근 약 16억 원). 방문객이 해마다 줄면서 비용 대비 효과가 논란이 되고 있습니다."],
  "missing": [
+  "주요 입주 시설 — 2017년 개장 당시 서울시 발표 기준이며, 2022년 직영 전환 뒤 현재 운영 여부는 확인된 자료를 찾지 못했습니다.",
   "한국일보 칼럼(2025)의 \"연간 유지비 45억 원\"은 2018~2019년 예산(43억~48억 원) 수준이며 최근 연도(약 16억 원)와 다릅니다. 서울시 예산서 원문은 직접 열어 확인하지 못했습니다.",
   "D등급 판정 연도는 자료마다(2000년 · 2006년) 다릅니다.",
   "총길이는 서울시 1,024m, MVRDV 983m 로, 높이는 서울시 17m, MVRDV 16m 로 표기가 다릅니다 (기존의 \"높이 17m · 약 1km\"는 이를 함께 적었습니다).",
@@ -424,6 +467,15 @@ D = {
   ["지정 면적", "2,964㎡ (사적)"],
   ["보호", "사적 「구 서울역사」 (1981년 9월 25일 지정, 옛 사적 제284호)"],
   ["위치", "서울특별시 중구 통일로 1 (봉래동2가)"],
+ ],
+ "tenants": [
+  ["문화 · 전시장", "중앙홀", "1층 · 524㎡ · 화강암 기둥 12개와 돔, 스테인드글라스 — 전시 · 공연 · 카페 다목적", "http://www.seoul284.org/space/menu/256"],
+  ["문화 · 전시장", "1 · 2등 대합실 · 부인대합실 · 3등 대합실", "1층 · 각 172㎡ · 63㎡ · 366㎡ — 전시실로 사용", "http://www.seoul284.org/space/menu/256"],
+  ["문화 · 전시장", "귀빈실 · 귀빈예비실 · 역장실", "1층 · 93㎡ · 62㎡ · 45㎡ — 조선총독 · 역대 대통령 대기실이던 방을 전시에 사용", "http://www.seoul284.org/space/menu/256"],
+  ["문화 · 공연장", "RTO 공연장", "건물 오른편 · 323㎡ · 옛 미군 수송사무소 (Railroad Transportation Office) — 음악 · 공연 · 강연", "http://www.seoul284.org/space/menu/256"],
+  ["문화 · 공연장", "그릴", "2층 · 254㎡ · 1925년 문을 연 한국 첫 양식당 자리 — 공연 · 전시 · 세미나", "http://www.seoul284.org/space/menu/256"],
+  ["문화 · 전시장", "복원전시실", "옛 이발소 · 화장실 자리 · 2011년 복원 과정과 도면 · 자재 상설 전시", "http://www.seoul284.org/space/menu/256"],
+  ["업무 · 운영 기관", "한국공예디자인문화진흥원 (KCDF)", "2011년부터 문화역서울 284 운영 — 전시 · 공연 기획, 대관 · 협력전시 공모", "http://www.seoul284.org/cms/content/view/287"],
  ],
  "timeline": [
   ["1900.7", "남대문정거장 영업 개시"],
@@ -498,6 +550,7 @@ D = {
   {"t": "천지일보 — 1925년 서울역 모습은… 경성역 준공도면 공개 (2016)", "u": "https://www.newscj.com/news/articleView.html?idxno=360826"},
   {"t": "문화역서울284 — 방문안내", "u": "http://www.seoul284.org/cms/content/view/250"},
   {"t": "문화역서울284 — 이용약관 (공연예매 · 대관신청)", "u": "http://www.seoul284.org/cms/content/view/287"},
+  {"t": "문화역서울284 — 공간안내", "u": "http://www.seoul284.org/space/menu/256"},
  ],
 },
 
@@ -523,11 +576,22 @@ D = {
   ["시공 · 건설관리", "지에스건설 컨소시엄 (GS건설 · 계룡건설 · 태영건설) · 건설사업관리 한미글로벌 외 2개사"],
   ["수상", "2014 한국건축가협회상 · 2014 한국건축문화대상 (준공건축물 공공 부문 대상)"],
  ],
+ "tenants": [
+  ["문화 · 기업 후원 전시", "현대자동차 — MMCA 현대차 시리즈 (MMCA Hyundai Motor Series)", "2014년부터 10년간 해마다 한국 중진 작가 1명의 대규모 신작 개인전을 서울관에서 후원 (2014 이불 ~ 2023 정연두)", "https://www.hyundaimotorgroup.com/ko/news/CONT0000000000109233"],
+  ["문화 · 영화관", "MMCA 영화관", "지하 · 122석 · 예술 · 실험 영화 상영과 국제영화제", "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"],
+  ["문화 · 공연장", "멀티프로젝트홀", "지하 · 253석 · 가변 객석 — 다원예술 · 퍼포먼스", "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"],
+  ["문화 · 도서관", "디지털정보실 — 디지털 도서관 (2층) · 디지털 아카이브 (3층)", "한국 근현대 미술 도서 · 도록 · 작가 자료 열람", "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"],
+  ["상업 · 소매", "MMCA 아트존 (뮤지엄숍)", "사무동 1층 · 438㎡ · 국립현대미술관진흥재단 직접 운영 (개관 당시)", "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"],
+  ["상업 · 식음", "레스토랑 · 카페테리아 · 푸드코트 · 디지털 북카페 4곳", "레스토랑 사무동 2층 514㎡ (경복궁 조망) · 카페테리아 1층 267㎡ — 위탁 운영 (개관 당시 계획)", "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"],
+  ["문화 · 전시장", "서울박스 · 미디어랩", "서울박스는 8개 전시실 동선의 중심 공간, 미디어랩은 신매체 융복합 전시 공간", "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"],
+ ],
  "timeline": [
   ["1866", "흥선대원군 집권기 종친부 중건 (경근당 · 옥첩당)"],
   ["1928", "경성의학전문학교 부속의원 개원"],
   ["1932~1933", "외래진찰소 건물 일부 준공 후 증축 완성 — 지금의 옛 기무사 본관"],
-  ["1971", "육군 특수부대에서 비롯된 보안사가 소격동 터 사용 시작 (이후 기무사)"],
+  ["1946", "서울대학교 의과대학 제2부속병원으로 사용 (미술관 개관 자료)"],
+  ["1971", "육군 특수부대에서 비롯된 보안사가 소격동 터 사용 시작"],
+  ["1978 · 1991", "일부가 국군서울지구병원으로 개편 · 1991년 국군기무사령부로 개칭 (미술관 개관 자료)"],
   ["1981", "종친부 경근당 · 옥첩당을 다른 곳으로 옮김"],
   ["2008.7.3", "옛 기무사 본관, 등록문화재 제375호 지정"],
   ["2008.11.18", "국군기무사령부, 37년 만에 과천으로 이전"],
@@ -593,9 +657,9 @@ D = {
  ],
  "operationNote": ["국립현대미술관 서울관은 국비로 지은 국립 시설로, 문화체육관광부 소속 책임운영기관이 운영합니다. 관람료는 일반 전시 2,000원으로 낮게 두고 대형 국제전에만 5,000~8,000원을 받는데, 2025년 론 뮤익전도 예산 30억 원에 관람료 수입 약 25억 원으로 비용을 다 채우지 못했습니다. 2025년 서울관 방문객은 206만 명으로 개관 이래 최다였습니다. 기관 전체 예산과 자체 수입 비율은 확인하지 못했습니다."],
  "missing": [
+  "주요 입주 시설 — 레스토랑 · 카페 등 위탁 식음 시설의 현재 업체명과 현대차 시리즈의 2024년 이후 연장 여부는 확인된 자료를 찾지 못했습니다.",
   "수익사업 · 운영 재원 — 국립현대미술관(책임운영기관)의 연간 예산 · 세입 구성과 서울관 몫, 자체 수입 비율은 확인된 자료를 찾지 못했습니다.",
   "구조 · 조경 협력사는 확인된 자료를 찾지 못했습니다.",
-  "1971년 이전 이 건물의 쓰임(국군수도통합병원 등)은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "국가유산포털 — 서울 구 국군기무사령부 본관 (국가등록문화유산)", "u": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?ccbaCpno=4411103750000"},
@@ -613,6 +677,8 @@ D = {
   {"t": "국립현대미술관 서울관 — 한국어 위키백과", "u": "https://ko.wikipedia.org/wiki/%EA%B5%AD%EB%A6%BD%ED%98%84%EB%8C%80%EB%AF%B8%EC%88%A0%EA%B4%80_%EC%84%9C%EC%9A%B8%EA%B4%80"},
   {"t": "국립현대미술관 — 서울관 관람 안내", "u": "https://www.mmca.go.kr/visitingInfo/seoulInfo.do"},
   {"t": "국립현대미술관 — 한국어 위키백과", "u": "https://ko.wikipedia.org/wiki/%EA%B5%AD%EB%A6%BD%ED%98%84%EB%8C%80%EB%AF%B8%EC%88%A0%EA%B4%80"},
+  {"t": "현대자동차그룹 — 《MMCA 현대차 시리즈 2023: 정연두》展 개막", "u": "https://www.hyundaimotorgroup.com/ko/news/CONT0000000000109233"},
+  {"t": "디지털타임스 — MMCA 현대차 시리즈 10년", "u": "https://www.dt.co.kr/article/11491843"},
  ],
 },
 }
