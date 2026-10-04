@@ -85,10 +85,21 @@ D = {
   "법정 문화재가 아닌 산업 구조물도 새 쓰임과 경제성을 보여 주면 남길 수 있습니다.",
   "옛 구조물은 손대지 않고 새 건물을 가볍게 얹으면, 옛것과 새것의 대비가 그대로 건물의 정체성이 됩니다.",
  ],
+ "operation": [
+  ["운영 주체", "민간 임대 사무 건물 — 개발 · 건축주는 ING 부동산 개발 (ING Real Estate Development)"],
+  ["수입 구성", "사무실 임대료 — 2007년 8월 MTV 와 제작사 IDTV 가 첫 임차인으로 입주 (architectenweb)", "https://architectenweb.nl/nieuws/artikel.aspx?id=10115"],
+  ["공공의 역할", "암스테르담시는 이미 철거 허가를 내 주었으나, 이를 거두고 새 도시계획 · 용도계획을 세워 개발이 가능해졌습니다 (네덜란드어 위키백과)"],
+  ["설비", "IJ 강물 히트펌프와 이중 기후 외피로 냉난방 — 설비 개요 (에너지 비용 수치는 확인 못 함)"],
+  ["운영 성과 (인증)", "BREEAM-NL 운영 (In-Use) 자산 인증 「Pass」 35.84% — 2024년 9월 13일. 인증 기준 연면적 12,531㎡ (사무 11,281㎡ · 집회 1,250㎡)", "https://www.breeam.nl/projecten/kraanspoor-15004"],
+ ],
+ "operationNote": [
+  "크란스포르는 공공 보조금으로 운영되는 시설이 아니라, 민간 개발사 (ING 부동산 개발)가 짓고 사무실을 임대해 수입을 얻는 상업 건물입니다. 2007년 MTV · IDTV 가 첫 임차인으로 들어왔습니다. 공공은 돈 대신 철거 허가를 거두고 새 용도계획을 세우는 방식으로 사업을 가능하게 했습니다. 현재 소유자 · 임대료 · 입주율은 확인하지 못했습니다.",
+ ],
  "missing": [
   "궤도 자체의 지자체 기념물 (gemeentelijk monument) 지정 여부는 확인된 자료를 찾지 못했습니다.",
   "연면적은 12,500㎡ (ArchDaily 등)와 약 10,000㎡ (네덜란드어 위키백과)로 자료마다 다르고, 건물 폭도 13.8m · 12.6m 로 차이가 있습니다.",
   "공공 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
+  "수익사업 · 운영 재원 가운데 완공 뒤 건물 소유자 변동 · 임대료 · 입주율은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "Kraanspoor — 네덜란드어 위키백과", "u": "https://nl.wikipedia.org/wiki/Kraanspoor"},
@@ -103,6 +114,7 @@ D = {
   {"t": "Trude Hooykaas ontvangt erespeld Amsterdam-Noord — architectuur.org", "u": "https://www.architectuur.org/nieuwsitem/3482/Trude_Hooykaas_ontvangt_erespeld_Amsterdam_Noord.html"},
   {"t": "N.D.S.M.-werf (complex 528250) — Rijksmonumentenregister", "u": "https://monumentenregister.cultureelerfgoed.nl/complexen/528250"},
   {"t": "NDSM-terrein, Amsterdam — herbestemming.nl", "u": "https://www.herbestemming.nl/projecten/ndsm-terrein-amsterdam"},
+  {"t": "BREEAM-NL project: Kraanspoor", "u": "https://www.breeam.nl/projecten/kraanspoor-15004"},
  ],
 },
 "gemini-residence": {
@@ -172,11 +184,23 @@ D = {
   "구조체에 구멍을 내기 어려우면 새 공간을 바깥에 덧붙이고, 원래 내부는 공용 동선으로 쓰는 방법이 있습니다.",
   "사일로처럼 쓸모가 한정된 구조물도 거친 원형을 드러낸 공용 공간으로 바꾸면 주거의 특별한 정체성이 됩니다.",
  ],
+ "operation": [
+  ["개발 · 공급 주체", "NCC (NCC Property Development / NCC Construction Danmark) — 민간 주택 개발 (DAC · MVRDV)"],
+  ["지역 개발 구조", "1991년 문을 닫은 콩 가공 공장 터를 1999년부터 건축 부지로 나눠 「하운스타 (Havnestad)」로 개발 (덴마크어 위키백과)"],
+  ["시장 가격 (예)", "2018년 4월 220㎡ 세대 매물 호가 2,200만 덴마크 크로네 (거주 의무 없는 세대, Byens Ejendom 보도)"],
+ ],
+ "operationNote": [
+  "제미니 레지던스는 공공 운영 시설이 아니라 민간 개발사 NCC 가 사일로를 아파트 84세대로 바꾼 주택 사업입니다. 세대가 분양 (소유)인지 임대인지, 공용부 관리 방식, 관리비는 확인하지 못했습니다.",
+ ],
+ "funding": [
+  ["총사업비", "2억 4,500만 덴마크 크로네 (약 3만 크로네/㎡) — 건축주 NCC PD A/S · Gemini Residence A/S, 공사 2003~2005년, 면적 10,584㎡ + 지하 2,500㎡ (NCC 공식 프로젝트 페이지)", "https://www.ncc.dk/projekter/gemini-residence-kobenhavn/"],
+  ["민간 투자", "NCC 는 이 사업을 「민간 주택 건설 (privat boligbyggeri)」로 분류합니다 (NCC)"],
+ ],
  "missing": [
   "사일로 · 공장 건물의 법정 보호 지정 (fredning)은 확인된 자료를 찾지 못했습니다.",
-  "재원 · 보조금은 확인된 자료를 찾지 못했습니다 (건축주 NCC 의 민간 분양 사업으로만 확인됩니다).",
-  "공사비는 확인된 자료를 찾지 못했습니다.",
+  "공공 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
   "영어 위키백과의 연면적 39,000㎡ 는 MVRDV 공식 수치 (10,700㎡)와 달라 쓰지 않았습니다.",
+  "수익사업 · 운영 재원 — 세대의 분양 · 임대 형태와 관리 주체 · 관리비는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "Frøsilo — MVRDV 공식 프로젝트 페이지", "u": "https://www.mvrdv.com/projects/143/fr%C3%B8silo"},
@@ -185,6 +209,8 @@ D = {
   {"t": "Gemini Residence — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/Gemini_Residence"},
   {"t": "Gemini Residence — Danish Architecture Center (DAC)", "u": "https://dac.dk/en/magazine/places/gemini-residence-241"},
   {"t": "Gemini Residence by MVRDV and JJW — Copenhagen Architecture", "u": "https://copenhagenarchitecture.dk/gemini-residence-by-mvrdv/"},
+  {"t": "Gemini Residence, København — NCC", "u": "https://www.ncc.dk/projekter/gemini-residence-kobenhavn/"},
+  {"t": "Lejlighed uden bopælspligt på Islands Brygge til salg for 22 millioner — Byens Ejendom (2018)", "u": "https://byensejendom.dk/article/lejlighed-uden-bopaelspligt-paa-islands-brygge-til-salg-for-22-millioner-24297"},
  ],
 },
 "high-line": {
@@ -260,6 +286,8 @@ D = {
   ["후원 · 기부", "나머지는 하이라인 친구들이 모금 — 2011년까지 「하이라인 캠페인」으로 5,000만 달러 넘게 모음. 2011년 티파니 재단 500만 달러 + 도널드 펠스 · 웬디 키스 500만 달러로 「레일 야드 챌린지」 시작"],
   ["개발자 부담", "웨스트 첼시 특별 지구 규정에 따라 부동산 개발자가 일부 부담"],
   ["운영비", "하이라인 친구들이 연간 운영 예산의 90% 넘게를 민간 모금으로 충당"],
+  ["3구간 (레일 야드) 사업비", "공사비 추정 9,000만 달러, 그 가운데 1 · 2단계 6,000만 달러 (2012년 9월 20일 뉴욕시 발표)", "https://www.nyc.gov/assets/planning/download/pdf/about/press-releases/pr092012.pdf"],
+  ["3구간 재원", "블룸버그 시정부 · 시의회 자본 예산 1,000만 달러 · 하이라인 친구들 민간 모금 약정 2,000만 달러 · 허드슨 야드 개발사 릴레이티드 (Related) · 옥스퍼드 프로퍼티스 2,780만 달러 (공사비와 별도로 유지관리비도 부담) — 같은 발표"],
  ],
  "famous": [
   "철거 직전의 고가 철도를 시민 운동으로 지켜 공원으로 바꾼 상징적 사례입니다.",
@@ -272,9 +300,26 @@ D = {
   "폐허에 저절로 생긴 풍경을 지우지 않고 설계의 출발점으로 삼으면 장소의 기억이 살아납니다.",
   "공원 운영을 비영리 단체가 맡아 민간 모금으로 유지하는 구조가 장기 운영의 열쇠가 될 수 있습니다.",
  ],
+ "operation": [
+  ["운영 주체", "비영리 보존 단체 「하이라인 친구들 (Friends of the High Line)」 — 뉴욕시 공원국과 맺은 허가 협약 (license agreement)으로 공원을 운영 · 관리 · 기획. 소유는 뉴욕시", "https://www.thehighline.org/about/"],
+  ["자립도", "하이라인 친구들은 공원 연간 예산의 \"거의 100%\"를 기부로 마련한다고 밝힙니다 (2011년 뉴욕시 발표 당시에는 \"90% 넘게\")", "https://www.thehighline.org/about/"],
+  ["수입 구성 (2025 감사 재무제표)", "기부 867만 달러 · 특별 행사 429만 달러 (행사 비용 121만 달러 별도) · 대관 수입 133만 달러 · 계약 및 기타 수입 330만 달러 · 투자 수익 1,212만 달러 · 현물 기부 96만 달러 — 총수입 2,932만 달러", "https://fhl-website.s3.amazonaws.com/content/uploads/2026/05/13135124/2025-FHL-Audited-Financial-Statements.pdf"],
+  ["상업 수입", "식당 · 매점 재허가 (sublicensing) 수입, 상품 판매, 대관 수입을 따로 인식 (재무제표 주석). 2025년 소매 부문은 16만 2,000달러 순손실"],
+  ["지출 (2025)", "총비용 2,335만 달러 — 하이라인 운영 817만 · 프로그램 · 교육 406만 · 계획 · 공사 306만 · 관리 403만 · 모금 403만 달러"],
+  ["기금 운용", "2025년 말 기부 기금 (endowment) 투자 8,307만 달러 · 순자산 1억 2,580만 달러. 기금 인출 목표는 시장가치의 4% (감사 · 재무위원회가 매년 결정)"],
+  ["회원제", "회원 가입 · 기부로 공원을 지원 (공식 사이트)"],
+  ["입장료", "없음 — 뉴욕시 소유 공공 공원"],
+  ["운영 성과", "연간 방문객 2014년 약 500만 명 · 2019년 약 800만 명 (영어 위키백과)"],
+  ["정부 보조금 비중 (IRS Form 990, 2024 회계연도)", "총수입 1,842만 5,398달러 가운데 정부 보조금 30만 9,866달러 (약 1.7%) · 회원 회비 12만 3,036달러 · 모금 행사 239만 3,012달러 · 기타 기부 836만 872달러 · 사업 수입 224만 3,046달러 (매점 재허가 93만 3,311달러 포함) · 투자 수익 203만 6,470달러. 총비용 2,270만 5,723달러", "https://fhl-website.s3.amazonaws.com/content/uploads/2025/11/04175131/FHL-2024-Form-990.pdf"],
+ ],
+ "operationNote": [
+  "하이라인은 뉴욕시가 소유하지만, 운영 · 관리 · 프로그램은 비영리 단체 하이라인 친구들이 뉴욕시 공원국과의 허가 협약에 따라 맡습니다. 단체는 연간 예산의 거의 100%를 민간 기부로 마련한다고 밝힙니다. 공사비는 시 · 연방 · 주 재원이 주로 댔지만, 운영은 사실상 민간 모금으로 지속되는 구조입니다.",
+  "2025년 감사 재무제표를 보면 총수입 2,932만 달러는 기부 867만 · 특별 행사 429만 · 대관 133만 · 계약 및 기타 330만 · 투자 수익 1,212만 달러 등으로 이루어집니다. 식당 · 매점 재허가와 상품 판매도 수입원입니다. 8,300만 달러 규모의 기부 기금을 두고 매년 시장가치의 약 4%를 운영에 쓰는 것이 장기 운영의 버팀목입니다.",
+ ],
  "missing": [
   "고가 구조물 자체의 국가 사적 등록 (NRHP) · 뉴욕시 랜드마크 지정 여부는 확인된 자료를 찾지 못했습니다.",
-  "3구간 · 스퍼의 사업비는 확인된 자료를 찾지 못했습니다.",
+  "3구간의 최종 정산 공사비와 스퍼의 사업비는 확인된 자료를 찾지 못했습니다 (2012년 추정치만 확인).",
+  "뉴욕시 공원국이 인력 · 현물로 지원하는 운영 규모는 확인된 자료를 찾지 못했습니다 (현금 정부 보조금은 Form 990 에서 확인).",
  ],
  "refs": [
   {"t": "History — Friends of the High Line", "u": "https://www.thehighline.org/history/"},
@@ -284,6 +329,10 @@ D = {
   {"t": "Diller Scofidio + Renfro — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/Diller_Scofidio_%2B_Renfro"},
   {"t": "James Corner — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/James_Corner"},
   {"t": "Piet Oudolf — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/Piet_Oudolf"},
+  {"t": "Overview — Friends of the High Line", "u": "https://www.thehighline.org/about/"},
+  {"t": "Friends of the High Line 2025 Audited Financial Statements", "u": "https://fhl-website.s3.amazonaws.com/content/uploads/2026/05/13135124/2025-FHL-Audited-Financial-Statements.pdf"},
+  {"t": "High Line at the Rail Yards groundbreaking (2012.09.20) — NYC Department of City Planning", "u": "https://www.nyc.gov/assets/planning/download/pdf/about/press-releases/pr092012.pdf"},
+  {"t": "Friends of the High Line IRS Form 990 (2024)", "u": "https://fhl-website.s3.amazonaws.com/content/uploads/2025/11/04175131/FHL-2024-Form-990.pdf"},
  ],
 },
 "gasholders-kings-cross": {
@@ -360,6 +409,7 @@ D = {
  ],
  "funding": [
   ["민간 투자", "킹스크로스 센트럴 유한 파트너십 (개발사 아전트)의 민간 개발 — 아파트는 분양 (2018년 보도 기준 스튜디오 81만 파운드 ~ 3침실 200만 파운드)"],
+  ["공원 사업비", "가스홀더 파크 (가스홀더 8) 공원 조성 예산 240만 파운드 — 설계 공모 당시 보도 (Architects' Journal), 시설 하나 기준"],
  ],
  "famous": [
   "Historic England 가 영국에서 유일한 것으로 여기는 세쌍둥이 가스홀더 틀 안에 아파트를 넣은 사례입니다.",
@@ -372,10 +422,20 @@ D = {
   "등록 문화재의 \"틀\"과 새 건물을 법적으로 분리하면 (새 건물은 등록 제외) 보존과 현대적 주거가 공존할 수 있습니다.",
   "같은 유산을 주거와 공원처럼 서로 다른 쓰임으로 나누어 쓰면 사적 공간과 공공 공간이 함께 산업 유산을 누리게 됩니다.",
  ],
+ "operation": [
+  ["토지 · 단지 소유", "킹스크로스 센트럴 유한 파트너십 (KCCLP)이 단지 전체의 단일 토지 소유자 — 2008년 아전트 · 런던 앤 콘티넨털 철도 · DHL 이 구성 (킹스크로스 공식)", "https://www.kingscross.co.uk/about-us"],
+  ["공공 지분 매각", "2016년 1월 22일 영국 정부가 킹스크로스 개발 지분을 호주 연기금 오스트레일리안슈퍼 (AustralianSuper)에 3억 7,100만 파운드에 매각 — 수익은 모두 재무부로", "https://www.gov.uk/government/news/government-sells-kings-cross-development-stake-to-reduce-the-deficit"],
+  ["수입 구성 (아파트)", "아파트 145세대 민간 분양 — 2018년 보도 기준 스튜디오 81만 파운드 ~ 3침실 200만 파운드 (Dezeen). 주민 전용 스파 · 체육관 · 라운지 · 상영실 운영"],
+  ["공원 운영", "가스홀더 파크는 무료로 열린 공원으로, 킹스크로스 단지의 일부 (KCCLP 소유 \"사유 공공 공간\")로 관리됩니다. 옆 학교의 놀이 공간으로도 쓰임"],
+ ],
+ "operationNote": [
+  "가스홀더 아파트와 공원은 공공 보조금이 아니라 킹스크로스 재개발의 민간 사업 구조로 유지됩니다. 단지 전체를 소유한 킹스크로스 센트럴 유한 파트너십이 개발 · 관리하고, 아파트는 분양 수입으로, 가스홀더 파크는 단지의 공공 공간으로 운영됩니다. 2016년 정부는 이 개발의 공공 지분을 오스트레일리안슈퍼에 3억 7,100만 파운드에 팔았습니다. 공원 관리비 · 관리 조합 구조는 확인하지 못했습니다.",
+ ],
  "missing": [
-  "총사업비 · 공공 재원 · 보조금은 확인된 자료를 찾지 못했습니다.",
+  "가스홀더 해체 · 복원 · 재설치 비용, 아파트 사업비, 공공 재원 · 보조금은 확인된 자료를 찾지 못했습니다 (공원 예산 240만 파운드만 확인).",
   "아파트 연면적은 확인된 자료를 찾지 못했습니다.",
   "가스홀더 8 의 해체 시기는 Historic England 가 \"2001년 무렵\", 킹스크로스 보도자료가 \"2011년 요크셔로 운송\"으로 서로 달리 적습니다.",
+  "가스홀더 파크와 아파트 공용부의 관리비 (서비스 차지) · 관리 주체의 구체적 구조는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "The Triplet (Gasholder Nos 10, 11 and 12) — Historic England 등록 1464325", "u": "https://historicengland.org.uk/listing/the-list/list-entry/1464325"},
@@ -388,6 +448,11 @@ D = {
   {"t": "Gasholder Park — Bell Phillips Architects", "u": "https://www.bellphillips.com/projects/gasholder-park"},
   {"t": "Iconic Gasholder ... London's most unusual public park — King's Cross 보도자료 (2014)", "u": "https://www.kingscross.co.uk/press/2014/08/21/press-release-2014-08-22a"},
   {"t": "WilkinsonEyre — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/WilkinsonEyre"},
+  {"t": "Government sells King's Cross development stake to reduce the deficit — GOV.UK (2016)", "u": "https://www.gov.uk/government/news/government-sells-kings-cross-development-stake-to-reduce-the-deficit"},
+  {"t": "About the Development — King's Cross", "u": "https://www.kingscross.co.uk/about-us"},
+  {"t": "Gasholder Park — King's Cross", "u": "https://www.kingscross.co.uk/gasholder-park"},
+  {"t": "King's Cross Central — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/King%27s_Cross_Central"},
+  {"t": "Bell Phillips wins planning for King's Cross gasholder transformation — Architects' Journal", "u": "https://www.architectsjournal.co.uk/news/bell-phillips-wins-planning-for-kings-cross-gasholder-transformation"},
  ],
 },
 "granary-building": {
@@ -469,10 +534,21 @@ D = {
   "보존 건물은 \"얼굴\"로, 새 건물은 뒤편 · 사이로 넣으면 큰 신축 볼륨도 역사 경관을 해치지 않습니다.",
   "긴 창고 사이를 지붕으로 덮어 실내 거리를 만들면, 흩어진 옛 건물을 하나의 공동체 공간으로 묶을 수 있습니다.",
  ],
+ "operation": [
+  ["운영 주체", "런던 예술대학 (University of the Arts London, UAL) — 센트럴 세인트 마틴스 캠퍼스로 직접 사용"],
+  ["건물 담보", "UAL 2024/25 재무제표: 로이즈 은행이 밀뱅크 · 킹스크로스 부지에 1억 6,320만 파운드의 1순위 담보권을 가짐", "https://www.arts.ac.uk/__data/assets/pdf_file/0027/513765/UAL-Report-and-Financial-Statements-31-July-2025.pdf"],
+  ["대학 수입 구성 (2024/25, 대학 전체)", "총수입 4억 9,486만 파운드 가운데 등록금 · 교육 계약 4억 1,029만 파운드 (고등교육 해외 학생 2억 7,346만) · 정부 교육 보조금 (funding body grants) 1,928만 · 연구 310만 · 기타 4,946만 · 투자 수익 1,110만 · 기부 164만 파운드"],
+  ["문화재 관리", "UAL 은 등록 건축물을 보존 대상으로 보고 감가상각하지 않으며, 유지관리 계획을 둔다고 회계 정책에 밝힙니다"],
+  ["공공 공간 · 지역 협력", "앞의 그래너리 광장은 킹스크로스 단지의 사유 공공 공간. 2024년 캠던 학교 미술 비엔날레를 센트럴 세인트 마틴스 · 캠던구 · 캠던 러닝이 킹스크로스 센트럴 파트너십 등의 지원으로 열어 그래너리 광장에서 전시"],
+ ],
+ "operationNote": [
+  "그래너리 빌딩은 런던 예술대학이 캠퍼스로 직접 쓰는 건물이므로, 운영비는 별도 수익사업보다 대학 전체 예산에서 나옵니다. 2024/25년 대학 총수입 4억 9,486만 파운드의 약 83%가 등록금 · 교육 계약이고, 정부 교육 보조금은 1,928만 파운드입니다. 킹스크로스 부지는 밀뱅크 부지와 함께 은행 담보로 잡혀 있습니다. 건물 소유 형태 (자유보유 · 장기 임차)는 재무제표에서 따로 밝히지 않아 확인하지 못했습니다.",
+ ],
  "missing": [
   "사업비의 재원 구성 (대학 · 공공 재원 · 보조금)은 확인된 자료를 찾지 못했습니다.",
   "동 · 서 화물 창고의 개별 등록 여부는 확인된 자료를 찾지 못했습니다.",
   "기존 내용의 \"2012 런던 계획상\"은 「런던 시장 도시계획 우수상 (Mayor's Award for Planning Excellence) 2012」로 고쳤습니다.",
+  "그래너리 빌딩의 소유 형태 (자유보유 · 장기 임차)와 건물별 운영비는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "The Granary — Historic England 등록 1379215", "u": "https://historicengland.org.uk/listing/the-list/list-entry/1379215"},
@@ -484,6 +560,7 @@ D = {
   {"t": "World Architecture Festival 2012 day two winners — Dezeen", "u": "https://www.dezeen.com/2012/10/04/world-architecture-festival-2012-day-two-winners-announced/"},
   {"t": "Stanton Williams — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/Stanton_Williams"},
   {"t": "Granary Square — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/Granary_Square"},
+  {"t": "UAL Report and Financial Statements 31 July 2025", "u": "https://www.arts.ac.uk/__data/assets/pdf_file/0027/513765/UAL-Report-and-Financial-Statements-31-July-2025.pdf"},
  ],
 },
 "la-fabrica-bofill": {
@@ -560,6 +637,15 @@ D = {
   "식물과 정원은 거친 산업 구조물을 사람이 머무는 장소로 바꾸는 가장 강력한 \"재료\"입니다.",
   "한 번에 완성하지 않고 쓰면서 계속 고쳐 가는 점진적 리노베이션도 가능합니다.",
  ],
+ "operation": [
+  ["운영 주체", "리카르도 보필 타예르 데 아르키텍투라 (RBTA) — 설계 사무소 본사이자 보필 가족의 집으로 사용"],
+  ["수입 구성", "별도 수익사업 없이 건축 사무소의 설계 업무가 운영 기반 (사무실 · 모형 실험실 · 문서고 · 도서관 · 영사실)"],
+  ["공개 · 행사", "평소에는 일반에 공개하지 않음. 2022년 1월 26~27일 보필 추모 공개에 수천 명 방문 (영어 위키백과). 대성당 홀은 전시 · 음악회 등 사무소 활동과 이어진 문화 행사에 쓰임 (사무소 설명)"],
+  ["옆 굴뚝 구역", "보필 단지에 속하지 않는 굴뚝 부분은 바르셀로나 광역공사 (Corporació Metropolitana de Barcelona)가 1984년부터 다시 개발해 1996년 개장 — 식당 · 전망대 「엘 미라도르 데 산트 주스트」와 사일로 속 「뮤직 클럽 발덴」이 들어섬 (영어 위키백과)"],
+ ],
+ "operationNote": [
+  "라 파브리카는 보조금이나 입장료로 운영되는 공공 시설이 아니라, 건축가 개인이 사들여 자신의 사무소와 집으로 쓰는 민간 건물입니다. 설계 사무소 업무가 곧 운영 기반이고, 대성당 홀은 사무소와 관련된 전시 · 음악회 등에 쓰입니다. 평소 일반 공개는 하지 않습니다. 반면 옆의 굴뚝 구역은 바르셀로나 광역공사가 공공 사업으로 고쳐 식당 · 음악 클럽으로 운영합니다.",
+ ],
  "missing": [
   "재원 · 보조금은 확인된 자료를 찾지 못했습니다 (보필 개인 매입 · 개조로만 알려져 있습니다).",
   "매입가 · 공사비는 확인된 자료를 찾지 못했습니다.",
@@ -567,6 +653,7 @@ D = {
   "철거한 사일로 수 (22개)와 다이너마이트 · 착암기 사용은 개인 글에서만 확인되어 본문에서 뺐습니다. 남은 사일로 8개는 보필 사무소 설명으로 확인했습니다.",
   "지역 문화재 지정일은 1987년 5월 7일 · 6월 29일로 자료가 엇갈려 확인하지 못했습니다.",
   "굴뚝 높이는 105m · 92m 로 자료가 엇갈려 확인된 자료를 찾지 못했습니다. 공장 가동 연도도 1920 · 1921년으로 다릅니다.",
+  "라 파브리카의 대관 · 견학 프로그램 · 운영비 규모는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "La Fábrica (Sant Just Desvern) — 영어 위키백과", "u": "https://en.wikipedia.org/wiki/La_F%C3%A1brica_(Sant_Just_Desvern)"},

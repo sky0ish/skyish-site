@@ -67,6 +67,8 @@ D = {
  ],
  "funding": [
   ["운영 재원 (공공 성격 의무 분담금)", "SESC 는 1946년 법령 9.853호로 세워졌고, 상업 · 서비스 · 관광 기업이 급여 총액의 1.5% 를 의무 분담금으로 내어 운영됩니다.", "https://transparencia-dn.sesc.com.br/transparencia/pagina/ler/7"],
+  ["의무 분담금 규모 (SESC 상파울루 전체, 2024)", "분담금 (Contribuições) 수납액 약 29억 9,593만 헤알 (R$ 2.995.934.016,53) — 상파울루 지부 47개 시설 전체 기준이며, 폼페이아 한 곳의 몫은 공개되지 않음", "https://transparencia-sp.sesc.com.br/uploads/documento/avaliacao_arquivos/27/relatorio-de-gestao/relatorio-de-gestao-pdf-2024.pdf"],
+  ["무상 제공 의무 (PCG)", "법령 6.632/2008 에 따라 순 의무 분담금의 1/3 (33.33%) 을 교육 등에 쓰고 그 절반 (16.67%) 을 무상 제공 — 2024년 상파울루 지부 실적: 배정 9억 4,839만 헤알, 그중 무상 4억 7,434만 헤알", "https://transparencia-sp.sesc.com.br/uploads/documento/avaliacao_arquivos/27/relatorio-de-gestao/relatorio-de-gestao-pdf-2024.pdf"],
  ],
  "famous": [
   "뉴욕 타임스 (The New York Times)가 제2차 세계대전 뒤 지어진 가장 중요한 건축 25선의 하나로 꼽았습니다 (포르투갈어 위키백과).",
@@ -79,7 +81,17 @@ D = {
   "옛 건물을 지키느라 생긴 땅의 제약은 수직 증축과 다리 같은 과감한 신축으로 풀 수 있습니다.",
   "새 구조물을 옛 것과 분명히 다른 재료(노출 콘크리트)로 지으면, 둘 다 읽히는 단지가 됩니다.",
  ],
+ "operation": [
+  ["운영 주체", "상업사회서비스 (SESC) 상파울루 지부 — 1946년 법령 9.853호로 세운 민간 비영리 기관 (\"S 시스템\")"],
+  ["수입 구성", "상업 · 서비스 · 관광 기업이 급여 총액의 1.5% 를 의무 분담금으로 내며, SESC 는 이 분담금으로 \"상당 부분\" 유지됩니다", "https://transparencia-dn.sesc.com.br/transparencia/pagina/ler/7"],
+  ["수입 구성 (SESC 상파울루 전체, 2024 결산)", "총수입 약 37억 8,422만 헤알 — 의무 분담금 29억 9,593만 (약 79%) · 재산 수입 (receita patrimonial) 5억 1,194만 (약 14%) · 서비스 수입 (receita de serviços) 2억 4,030만 (약 6%) · 기타 약 3,600만. 총지출 약 37억 헤알", "https://transparencia-sp.sesc.com.br/uploads/documento/avaliacao_arquivos/27/relatorio-de-gestao/relatorio-de-gestao-pdf-2024.pdf"],
+  ["시설 자산 (폼페이아)", "SESC 상파울루 부동산 목록의 폼페이아 가액 약 3억 3,539만 헤알 (2024, 장부 기준)", "https://transparencia-sp.sesc.com.br/uploads/documento/avaliacao_arquivos/27/relatorio-de-gestao/relatorio-de-gestao-pdf-2024.pdf"],
+  ["이용 체계", "상업 노동자용 회원증 (Credencial Plena) 제도가 있음 — 요금 체계 · 비율은 확인 못 함"],
+  ["운영 성과", "하루 약 5,000명 이용 (영문 위키백과)"],
+ ],
+ "operationNote": ["세스크 폼페이아는 정부 보조금이나 임대 수익이 아니라, 기업들이 급여의 1.5% 를 내는 의무 분담금으로 주로 운영되는 SESC 상파울루의 47개 시설 가운데 하나입니다. 2024년 SESC 상파울루 전체 수입 약 37억 8천만 헤알 가운데 약 79% 가 의무 분담금이고, 이용료 등 서비스 수입은 약 6% 입니다. 법령에 따라 순 분담금의 1/6 을 무상 제공에 써야 하므로 이용자 부담이 낮게 유지됩니다. 폼페이아 한 곳의 수입 · 지출은 공개 보고서에서 따로 확인하지 못했습니다."],
  "missing": [
+  "수익사업 · 운영 재원 — 세스크 폼페이아 한 곳의 연간 예산 · 수입 구성과 최근 이용자 수는 확인된 자료를 찾지 못했습니다 (SESC 상파울루 전체 수치만 확인).",
   "SESC 가 공장 터를 사들인 정확한 연도와 금액은 확인된 자료를 찾지 못했습니다.",
   "공장 설립 연도는 자료마다 다릅니다(영문 위키백과 1938년, 마르셀루 페하스의 글 1920년대).",
   "1단계 개관 날짜는 영문 위키백과의 1982년 1월 22일과 SESC 글의 1982년 5월이 엇갈립니다.",
@@ -96,6 +108,7 @@ D = {
   {"t": "Marcelo Ferraz — The Making of SESC Pompéia (Lina Bo Bardi Together)", "u": "https://linaboba.dns-systems.net/2012/08/03/the-making-of-sesc-pompeia-by-marcelo-ferraz/"},
   {"t": "Arquitectura Viva — SESC Pompéia Factory", "u": "https://arquitecturaviva.com/works/sesc-fabrica-pompeia-9"},
   {"t": "Sesc SP — Ocupe o Sesc Pompeia", "u": "https://portal.sescsp.org.br/online/artigo/compartilhar/9780_OCUPE+O+SESC+POMPEIA"},
+  {"t": "Sesc São Paulo — Relatório Anual de Gestão 2024 (PDF)", "u": "https://transparencia-sp.sesc.com.br/uploads/documento/avaliacao_arquivos/27/relatorio-de-gestao/relatorio-de-gestao-pdf-2024.pdf"},
   {"t": "Sesc 국가본부 투명성 포털 — 재원", "u": "https://transparencia-dn.sesc.com.br/transparencia/pagina/ler/7"},
  ],
 },
@@ -153,7 +166,8 @@ D = {
  ],
  "funding": [
   ["민간 투자 (매입)", "메인사이드 (Mainside)가 2005년 약 23,000㎡ 부지를 매입 (금액 미공개)"],
-  ["민간 투자 (재매입)", "2017년 프랑스 키스 (Keys Asset Management)가 메인사이드로부터 매입 — 금액 미공개", "https://eco.sapo.pt/2017/09/13/franceses-do-grupo-keys-compram-lx-factory/"],
+  ["민간 투자 (재매입)", "2017년 프랑스 키스 (Keys Asset Management)가 메인사이드로부터 매입 (2017년 6월 30일 종결) — 금액 미공개", "https://eco.sapo.pt/2017/09/13/franceses-do-grupo-keys-compram-lx-factory/"],
+  ["채권 발행", "2017년 6월 30일 소유 법인 카툼벨이 1,200만 유로 사모 채권 발행", "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/novo-donos-destacam-forte-potencial-de-desenvolvimento-da-lx-factory"],
   ["민간 투자 (재매입)", "2022년 그루포 아리에 · 유로피 · 베드록 캐피털 합작사가 매입 — 금액 미공개", "https://eco.sapo.pt/2022/08/09/francesa-keys-vende-lx-factory-a-joint-venture-do-grupo-arie/"],
  ],
  "famous": [
@@ -166,7 +180,18 @@ D = {
   "남겨 둔 기계 · 표면이 새 입주자의 개성이 되므로, 무엇을 \"치우지 않을지\"가 설계만큼 중요합니다.",
   "소유주가 바뀌어도 이어질 수 있도록 장소의 정체성을 분명히 해 두는 것이 중요합니다.",
  ],
+ "operation": [
+  ["운영 주체", "민간 소유 · 운영 — 메인사이드 (2008~2017) → 키스 (Keys Asset Management, 2017~2022) → 그루포 아리에 · 유로피 · 베드록 캐피털 합작사 (2022~)"],
+  ["수입 구성", "사무실 · 소매 · 식당 공간의 임대 — 2022년 새 소유주는 \"사무실 · 소매 · 식당 용도를 유지\"하겠다고 밝힘", "https://eco.sapo.pt/2022/08/09/francesa-keys-vende-lx-factory-a-joint-venture-do-grupo-arie/"],
+  ["운영 성과 (입주)", "2017년 약 200개 업체 입주 — 키스는 건물을 고쳐 더 많은 업체를 받겠다고 밝힘", "https://eco.sapo.pt/2017/09/13/franceses-do-grupo-keys-compram-lx-factory/"],
+  ["입주율", "2017년 매각 당시 임대 가능한 공간이 모두 임대된 상태 (totalmente arrendados) — 쓰임은 사무실 · 상점 · 작업실 · 행사 (키스는 행사 부문 강화 계획)", "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/novo-donos-destacam-forte-potencial-de-desenvolvimento-da-lx-factory"],
+  ["고용", "약 200개 업체 · 1,000명 이상 근무 (조르나우 지 네고시우스, 개장 약 10년 기사)", "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/lx-factory-uma-decada-a-fundir-o-classico-com-o-cosmopolita"],
+  ["자금 조달", "2017년 6월 30일 소유 법인 카툼벨 (Catumbel)이 1,200만 유로 사모 채권 발행 — 같은 날 키스로 매각 종결", "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/novo-donos-destacam-forte-potencial-de-desenvolvimento-da-lx-factory"],
+  ["재투자 계획", "2022년 새 소유주: 공간의 단계적 개보수, 외부 공간 · 차량 동선 개선, \"산업적 분위기 (look & feel) 유지\""],
+ ],
+ "operationNote": ["LX 팩토리는 공공 보조금 없이 민간 소유주가 옛 공장 공간을 사무실 · 상점 · 식당에 빌려주는 임대 수익으로 운영됩니다. 소유주가 두 번 바뀌었지만 모두 산업적 정체성과 임대 용도를 유지하겠다고 밝혔습니다."],
  "missing": [
+  "수익사업 · 운영 재원 — 임대료 수준, 연간 임대 수입, 최근 입주율, 방문객 수는 확인된 자료를 찾지 못했습니다.",
   "LX 팩토리 건물의 국가 · 시 보호 지정 여부는 확인된 자료를 찾지 못했습니다 (포르투갈 국가유산 목록 SIPA 에 「Edifício da Companhia de Fiação e Tecidos Lisbonense」 항목이 있으나 접속이 막혀 내용을 확인하지 못했습니다).",
   "재원 · 보조금(공공 지원)은 확인된 자료를 찾지 못했습니다. 매입 금액도 모두 공개되지 않았습니다.",
   "단지 전체의 개조 설계자 · 공사비 · 연면적은 확인된 자료를 찾지 못했습니다.",
@@ -177,6 +202,8 @@ D = {
   {"t": "ECO — Franceses do Grupo Keys compram Lx Factory (2017)", "u": "https://eco.sapo.pt/2017/09/13/franceses-do-grupo-keys-compram-lx-factory/"},
   {"t": "ECO — Francesa Keys vende Lx Factory a joint-venture do Grupo Arié (2022)", "u": "https://eco.sapo.pt/2022/08/09/francesa-keys-vende-lx-factory-a-joint-venture-do-grupo-arie/"},
   {"t": "Aurora Arquitectos — Ler Devagar Bookshop at LX Factory", "u": "https://aurora.com.pt/en/project/livraria-ler-devagar/"},
+  {"t": "Jornal de Negócios — Novo donos destacam forte potencial de desenvolvimento da LX Factory (2017)", "u": "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/novo-donos-destacam-forte-potencial-de-desenvolvimento-da-lx-factory"},
+  {"t": "Jornal de Negócios — LX Factory, uma década a fundir o clássico com o cosmopolita", "u": "https://www.jornaldenegocios.pt/empresas/imobiliario/detalhe/lx-factory-uma-decada-a-fundir-o-classico-com-o-cosmopolita"},
   {"t": "Time Out Lisboa — A Ler Devagar é um dos cafés-livraria mais bonitos do mundo", "u": "https://www.timeout.pt/lisboa/pt/noticias/a-ler-devagar-e-um-dos-cafes-livraria-mais-bonitos-do-mundo-092425"},
  ],
 },
@@ -254,7 +281,14 @@ D = {
   "공장 건물을 바꾸는 것만큼, 건물 사이의 외부 공간(광장 · 계단)을 설계하는 일이 장소의 성패를 좌우합니다.",
   "보존 제도가 갖춰지기 전에도 민간의 결단으로 보존형 개발이 가능하며, 그 성공이 이후 제도 지정(1970 · 1982)으로 이어졌습니다.",
  ],
+ "operation": [
+  ["운영 주체", "민간 소유 — 로스 가문 (1962~) → 캐피털 앤 카운티스 USA · 노스웨스턴 뮤추얼 생명 (1981~) → 제임스타운 (Jamestown L.P., 2013~)"],
+  ["매각 · 규모", "2013년 제임스타운이 약 100,394제곱피트 규모의 소매 · 오락 단지를 약 5,400만 달러에 매입 (거래 관계자 전언)", "https://news.theregistrysf.com/jamestown-properties-buys-ghirardelli-square-in-san-francisco/"],
+  ["수입 구성", "상점 · 식당 임대 + 2008년 옛 시계탑 건물 일부의 호텔 페어몬트 헤리티지 플레이스 (53실, 객실 지분 분할 소유 판매)"],
+ ],
+ "operationNote": ["기라델리 스퀘어는 처음부터 공공 보조금 없이 민간이 사들여 상점 · 식당 임대로 운영한 사업이며, 여러 차례 매각되었습니다. 2008년에는 건물 일부를 객실 지분을 나눠 파는 호텔로 바꿔 수입원을 넓혔습니다."],
  "missing": [
+  "수익사업 · 운영 재원 — 임대 수입 · 입주율 · 방문객 수는 확인된 자료를 찾지 못했습니다.",
   "로스 가문의 매입가와 개조 공사비, 공공 재원 · 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
   "상점 수 · 연면적은 확인된 자료를 찾지 못했습니다 (기존의 \"40여 개 상점\"은 출처를 찾지 못해 뺐습니다).",
   "시계탑 건립 연도는 자료마다 1915년 · 1916년으로 다릅니다.",
@@ -265,6 +299,7 @@ D = {
   {"t": "Historic Hotels of America — Fairmont Heritage Place, Ghirardelli Square: History", "u": "https://www.historichotels.org/us/hotels-resorts/fairmont-heritage-place-ghirardelli-square/history.php"},
   {"t": "List of San Francisco Designated Landmarks — 영문 위키백과", "u": "https://en.wikipedia.org/wiki/List_of_San_Francisco_Designated_Landmarks"},
   {"t": "u-s-history.com — Ghirardelli Square", "u": "https://www.u-s-history.com/pages/h2852.html"},
+  {"t": "The Registry — Jamestown Properties Buys Ghirardelli Square in San Francisco (2013)", "u": "https://news.theregistrysf.com/jamestown-properties-buys-ghirardelli-square-in-san-francisco/"},
  ],
 },
 
@@ -324,12 +359,12 @@ D = {
  ],
  "funding": [
   ["총사업비 (공공 재원)", "597억 원 — 서울특별시, 그중 40% 이상을 안전 보강에 투입", "https://seoulsolution.kr/ko/content/%EA%B5%AD%EB%82%B4-%EC%B2%AB-%EA%B3%A0%EA%B0%80%EB%B3%B4%ED%96%89%EA%B8%B8-%E2%80%98%EC%84%9C%EC%9A%B8%EB%A1%9C7017%E2%80%99-5%EC%9B%9420%EC%9D%BC-%EA%B0%9C%EC%9E%A5"],
-  ["운영비", "연간 유지비 약 45억 원 (2025년 한국일보 칼럼)"],
+  ["운영비 (서울시 예산)", "유지 · 운영 예산 2017년 14억 3천만 원 → 2018년 43억 3천만 원 → 2019년 47억 7천만 원 → 2020 · 2021년 각 약 37억 원 → 2022년 직영 전환 뒤 20억 원대 초반 → 최근 연 16억 원 안팎. 2017~2025년 누적 250억 원 이상 (조선비즈 2026)", "https://news.nate.com/view/20260619n15045"],
  ],
  "famous": [
   "국내 첫 고가 보행길로, 철거 대신 재활용을 택한 서울의 대표적 기반시설 재생 사례입니다.",
   "네덜란드 MVRDV 의 국제 공모 당선작으로, 한국 식물 228종 · 24,085주를 가나다순으로 배열한 \"식물 사전\" 개념이 널리 소개되었습니다.",
-  "개장 이후 누적 방문객 약 870만 명 (한국어 위키백과)으로 집계되었습니다.",
+  "개장 뒤에도 해마다 600만~750만 명이 찾는 보행로입니다 (2022년 754만 명, 2025년 603만 명 — 네이트 뉴스 2026).",
   "뉴욕 하이라인 (High Line)을 본뜬 사업으로 알려졌지만, 그늘 · 유지비 · 존폐 문제로 꾸준한 논쟁의 대상이기도 합니다.",
  ],
  "lesson": [
@@ -337,7 +372,18 @@ D = {
   "고가 하나보다 주변을 잇는 연결로 · 주변 재생이 함께 가야 이용이 지속됩니다.",
   "개장 뒤 유지비와 이용 변화까지 계획에 넣어야 \"철거 논쟁\"을 피할 수 있습니다.",
  ],
+ "operation": [
+  ["운영 주체", "서울특별시 — 박원순 시장 때는 민간위탁으로 프로그램 · 운영관리, 이후 유지관리 중심으로 전환"],
+  ["입장료", "무료 공공 보행로"],
+  ["운영 예산", "2017년 14억 3천만 원 → 2019년 47억 7천만 원 (최고) → 2020 · 2021년 약 37억 원 → 2022년 직영 전환 뒤 20억 원대 초반 → 최근 연 약 16억 원 (조선비즈 2026 · 문화일보 2025)", "https://news.nate.com/view/20260619n15045"],
+  ["운영 방식 변화", "2017년 개장 때 서울시가 직접 관리 → 2019년 하반기 민간위탁 → 2022년 시 직영 전환"],
+  ["누적 비용", "개장 뒤 누적 유지 · 운영비 250억 원 이상, 최초 사업비를 더하면 약 850억 원"],
+  ["방문객", "2022년 754만 명 → 2023년 651만 명 → 2024년 641만 명 → 2025년 603만 명 (2025년 6월 말까지 317만 명 — 문화일보)"],
+  ["운영상 문제", "방문객 감소 · 유지비 부담 · 치안 문제로 서울역 일대 계획에서 철거안이 검토되었다는 보도 (한국일보 2025)"],
+ ],
+ "operationNote": ["서울로 7017은 입장료 · 임대 수익이 없는 무료 공공 시설로, 서울시 예산만으로 운영됩니다. 초기에는 민간위탁으로 행사 · 콘텐츠를 운영했으나, 이후 유지관리 중심으로 바꾸며 연간 집행 예산을 약 37억 원에서 15억 원 수준으로 줄였습니다 (2019년 47억 7천만 원 → 최근 약 16억 원). 방문객이 해마다 줄면서 비용 대비 효과가 논란이 되고 있습니다."],
  "missing": [
+  "한국일보 칼럼(2025)의 \"연간 유지비 45억 원\"은 2018~2019년 예산(43억~48억 원) 수준이며 최근 연도(약 16억 원)와 다릅니다. 서울시 예산서 원문은 직접 열어 확인하지 못했습니다.",
   "D등급 판정 연도는 자료마다(2000년 · 2006년) 다릅니다.",
   "총길이는 서울시 1,024m, MVRDV 983m 로, 높이는 서울시 17m, MVRDV 16m 로 표기가 다릅니다 (기존의 \"높이 17m · 약 1km\"는 이를 함께 적었습니다).",
   "수상 경력은 확인된 자료를 찾지 못했습니다.",
@@ -349,7 +395,11 @@ D = {
   {"t": "서울시 정보소통광장 — 서울로 7017 미리보기", "u": "https://opengov.seoul.go.kr/seoullove/11932536"},
   {"t": "서울로 7017 — 한국어 위키백과", "u": "https://ko.wikipedia.org/wiki/%EC%84%9C%EC%9A%B8%EB%A1%9C_7017"},
   {"t": "Landezine International Landscape Award — Seoullo 7017 Skygarden (MVRDV)", "u": "https://landezine-award.com/seoullo-7017-skygarden/"},
+  {"t": "조선비즈 (네이트) — 바퀴벌레 논란 서울로7017, 유지·운영비만 250억 넘었다 (2026)", "u": "https://news.nate.com/view/20260619n15045"},
+  {"t": "문화일보 — 年16억 쏟는데 발길 뜸해… 서울로7017 존폐기로 (2025)", "u": "https://www.munhwa.com/article/11524088"},
+  {"t": "한국일보 — 서울로 7017 하반기부터 민간이 운영한다 (2019)", "u": "https://www.hankookilbo.com/news/article/201903101540362537"},
   {"t": "한국일보 — 존폐 기로 '서울로 7017' (2025)", "u": "https://www.hankookilbo.com/news/article/A2025080711080005689"},
+  {"t": "네이트 뉴스 — 박원순 때 600억 들인 서울로7017…15억 유지비 돈값할까? (2026)", "u": "https://news.nate.com/view/20260625n03699"},
  ],
 },
 
@@ -427,7 +477,14 @@ D = {
   "공간마다 보존 등급을 정하면, 원형 복원과 새 쓰임을 한 건물 안에서 조율할 수 있습니다.",
   "기능을 잃은 교통 유산도 원래 공간(홀 · 대합실 · 식당)의 성격을 살린 프로그램으로 다시 쓰일 수 있습니다.",
  ],
+ "operation": [
+  ["운영 주체", "문화체육관광부 (소유 · 국가유산청 관리 사적) · 한국공예디자인문화진흥원 (운영)"],
+  ["입장료", "관람료 무료 (공식 사이트 방문안내)", "http://www.seoul284.org/cms/content/view/250"],
+  ["수입 구성", "공연 예매 · 대관 신청 서비스를 운영 (공식 사이트 이용약관) — 대관료 금액은 확인 못 함", "http://www.seoul284.org/cms/content/view/287"],
+ ],
+ "operationNote": ["문화역서울 284는 국비로 복원한 뒤 문화체육관광부 산하 한국공예디자인문화진흥원이 맡아 무료 전시 · 공연을 여는 공공 운영 방식입니다. 대관 · 공연 예매 제도가 있으나, 연간 운영 예산과 자체 수입 비율은 확인하지 못했습니다."],
  "missing": [
+  "수익사업 · 운영 재원 — 연간 운영 예산, 대관료 수입 · 비율, 방문객 수는 확인된 자료를 찾지 못했습니다.",
   "복원 설계 · 시공 회사와 연면적은 확인된 자료를 찾지 못했습니다.",
   "원 설계자는 쓰카모토 야스시의 참여만 확인되며, 전체 설계 책임자는 분명하지 않다는 자료가 있습니다.",
   "역무 이전 연도는 국가유산청 2003년, 운영 기관 연혁 2004년(KTX 개통)으로 다릅니다.",
@@ -439,6 +496,8 @@ D = {
   {"t": "이데일리 — 사적 284호 옛 서울역사 복원완료", "u": "https://edaily.co.kr/News/Read?mediaCodeNo=257&newsId=01161126596315176"},
   {"t": "서울사랑 — 서울의 관문, 서울역의 117년을 돌아보다", "u": "https://love.seoul.go.kr/articles/4397"},
   {"t": "천지일보 — 1925년 서울역 모습은… 경성역 준공도면 공개 (2016)", "u": "https://www.newscj.com/news/articleView.html?idxno=360826"},
+  {"t": "문화역서울284 — 방문안내", "u": "http://www.seoul284.org/cms/content/view/250"},
+  {"t": "문화역서울284 — 이용약관 (공연예매 · 대관신청)", "u": "http://www.seoul284.org/cms/content/view/287"},
  ],
 },
 
@@ -461,6 +520,7 @@ D = {
   ["대지 · 연면적", "대지 27,264㎡ · 건축면적 11,196㎡ · 연면적 52,125㎡"],
   ["층수 · 높이", "지하 3층 · 지상 3층, 높이 12m · 전시실 천장 4~17m"],
   ["총사업비", "2,460억 원"],
+  ["시공 · 건설관리", "지에스건설 컨소시엄 (GS건설 · 계룡건설 · 태영건설) · 건설사업관리 한미글로벌 외 2개사"],
   ["수상", "2014 한국건축가협회상 · 2014 한국건축문화대상 (준공건축물 공공 부문 대상)"],
  ],
  "timeline": [
@@ -509,7 +569,8 @@ D = {
   "새 것: 따뜻한 색의 테라코타 타일이 새 전시동의 주 외장재로, 주변 경복궁 · 북촌 경관과 어울리도록 분절한 외관을 덮습니다.",
  ],
  "funding": [
-  ["총사업비 (국비)", "2,460억 원 — 문화체육관광부 · 국립현대미술관 (아시아경제 2013.10)", "https://www.asiae.co.kr/article/2013102213443155916"],
+  ["총사업비 (국비)", "2,460억 원 (서울관 건립 사업 전체) — 공사비 1,276억 · 부지매입비 1,038억 · 설계비 90억 · 감리비 53억 · 부대비 3억 원 (국립현대미술관 개관 D-20 기자간담회 자료, 2013.10.22)", "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"],
+  ["전시 사업비 · 관람료 수입", "2025년 「론 뮤익」전: 예산 30억 원, 관람객 약 53만 명, 관람료 수입 약 25억 원 — 손익분기 못 넘김 (아시아경제 2026.1)", "https://view.asiae.co.kr/article/2026010711201971024"],
  ],
  "famous": [
   "옛 국군기무사령부 터라는 장소의 역사 때문에, 권력 공간을 시민 문화공간으로 바꾼 상징적 사례로 알려져 있습니다.",
@@ -522,9 +583,18 @@ D = {
   "담장을 없애고 마당을 동네와 잇는 것만으로도, 닫힌 권력 공간을 열린 공공 공간으로 바꿀 수 있습니다.",
   "여러 시대의 건물을 각자의 자리에서 보존하면 대지 자체가 역사의 층을 보여 줍니다.",
  ],
+ "operation": [
+  ["운영 주체", "국립현대미술관 — 문화체육관광부 소속기관, 2006년 1월 1일 책임운영기관 지정 (한국어 위키백과)"],
+  ["입장료", "기획전 통합관람권 10,000원 (기획전 3개 이상일 때) · 수 · 토 야간 (18~21시) 무료 · 매월 마지막 수요일 무료", "https://www.mmca.go.kr/visitingInfo/seoulInfo.do"],
+  ["관람료 수준", "일반 전시 2,000원, 대형 기획전은 차등 — 2025년 론 뮤익전 5,000원, 2026년 데이미언 허스트전 8,000원 (작품 운송비가 전시 예산 30억 원의 약 70%) · 개관 특별전 통합권 7,000원 (2013)", "https://view.asiae.co.kr/article/2026010711201971024"],
+  ["방문객", "2025년 서울관 206만 명 — 개관 이래 최다 (미술관 4관 전체 337만 명, 12월 20일 기준) · 회원 약 40만 명", "https://www.mmca.go.kr/pr/pressDetail.do?bdCId=202512240010140"],
+  ["수지", "대형 국제전도 관람료로 비용을 다 채우지 못함 — 론 뮤익전 예산 30억 원 대비 관람료 수입 약 25억 원"],
+  ["기타 수입", "유료 회원제 · 후원사 (패트론 / 파트너) 제도 · 주차 요금 (최초 1시간 4,200원) · 아트숍 · 편의시설"],
+ ],
+ "operationNote": ["국립현대미술관 서울관은 국비로 지은 국립 시설로, 문화체육관광부 소속 책임운영기관이 운영합니다. 관람료는 일반 전시 2,000원으로 낮게 두고 대형 국제전에만 5,000~8,000원을 받는데, 2025년 론 뮤익전도 예산 30억 원에 관람료 수입 약 25억 원으로 비용을 다 채우지 못했습니다. 2025년 서울관 방문객은 206만 명으로 개관 이래 최다였습니다. 기관 전체 예산과 자체 수입 비율은 확인하지 못했습니다."],
  "missing": [
-  "총사업비 2,460억 원의 세부 내역(공사비 · 부지매입비 등)은 원문(미술관 기자간담회 자료)을 열지 못해 확인하지 못했습니다.",
-  "구조 · 조경 협력사와 시공사는 확인된 자료를 찾지 못했습니다.",
+  "수익사업 · 운영 재원 — 국립현대미술관(책임운영기관)의 연간 예산 · 세입 구성과 서울관 몫, 자체 수입 비율은 확인된 자료를 찾지 못했습니다.",
+  "구조 · 조경 협력사는 확인된 자료를 찾지 못했습니다.",
   "1971년 이전 이 건물의 쓰임(국군수도통합병원 등)은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
@@ -537,7 +607,12 @@ D = {
   {"t": "정책브리핑 — '도심 속 미술관' 생겼다…옛 기무사터에 국립현대미술관 개관", "u": "https://m.korea.kr/news/reporterView.do?newsId=148769812&pWise=sub&pWiseSub=J1"},
   {"t": "서울신문 — 공간과 공간 잇는 미술관 마당 [건축 오디세이] (2023)", "u": "https://www.seoul.co.kr/news/newsView.php?id=20230612021001"},
   {"t": "시선뉴스 — 국군기무사령부, 37년 만에 서울서 과천으로 이전", "u": "http://www.sisunnews.co.kr/news/articleView.html?idxno=93153"},
+  {"t": "국립현대미술관 — 서울관 개관 D-20 기자간담회 자료 (2013.10.22, PDF)", "u": "https://www.mmca.go.kr/upload/m/data/board/2013/10/23/20131023141426.pdf"},
+  {"t": "국립현대미술관 보도자료 — 2025 방문객 337만 명 돌파", "u": "https://www.mmca.go.kr/pr/pressDetail.do?bdCId=202512240010140"},
+  {"t": "아시아경제 — 국립현대미술관, 국제 거장전 관람료 8000원으로 인상 (2026.1)", "u": "https://view.asiae.co.kr/article/2026010711201971024"},
   {"t": "국립현대미술관 서울관 — 한국어 위키백과", "u": "https://ko.wikipedia.org/wiki/%EA%B5%AD%EB%A6%BD%ED%98%84%EB%8C%80%EB%AF%B8%EC%88%A0%EA%B4%80_%EC%84%9C%EC%9A%B8%EA%B4%80"},
+  {"t": "국립현대미술관 — 서울관 관람 안내", "u": "https://www.mmca.go.kr/visitingInfo/seoulInfo.do"},
+  {"t": "국립현대미술관 — 한국어 위키백과", "u": "https://ko.wikipedia.org/wiki/%EA%B5%AD%EB%A6%BD%ED%98%84%EB%8C%80%EB%AF%B8%EC%88%A0%EA%B4%80"},
  ],
 },
 }

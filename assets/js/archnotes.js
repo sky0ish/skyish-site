@@ -9,7 +9,7 @@ import { decorate } from "./noteimg.js?v=202610051200";
 
 const esc = (s) => String(s == null ? "" : s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const V = "202610052330";
+const V = "202610060100";
 let DATA = null, BLD = null;
 
 async function load() {
@@ -560,8 +560,10 @@ function rnvBody(b, arch) {
     <h4>5) 건축물 재료 및 구조</h4>
     ${show("build")}
     ${paras(b.material)}
-    <h4>6) 재원 및 보조금 — 사업비 · 공공 재원 · 보조금 · 후원</h4>
+    <h4>6) 재원 및 보조금 — 사업비 · 공공 재원 · 보조금 · 후원 · 수익사업과 운영</h4>
     ${(b.funding || []).length || (b.fundingNote || []).length ? kvTable(b.funding) + paras(b.fundingNote) : RNONE("재원 · 보조금")}
+    <p class="rg__lab">수익사업 · 운영 지속 방식</p>
+    ${(b.operation || []).length ? kvTable(b.operation) + paras(b.operationNote) : RNONE("수익사업 · 운영 방식")}
     <h4>7) 시사점 — 이 사례가 유명한 이유</h4>
     ${(b.famous || []).length ? `<div class="ab__why"><b>이 사례가 유명한 이유</b>${bullets(b.famous)}</div>` : RNONE("유명한 이유")}
     ${(b.lesson || []).length ? `<p class="rg__lab">리노베이션에 주는 교훈</p>${bullets(b.lesson)}` : ""}
@@ -632,8 +634,10 @@ function rgnBody(x) {
     ${sec(x.zoning, x.zoningNote, "지구지정 · 관리")}
     <h4>5) 개발수단 — 용적률 완화 · 용도변경 · 재원 · 인센티브</h4>
     ${sec(x.tools, x.toolsNote, "개발수단")}
-    <h4>6) 재원 및 보조금 — 사업비 · 공공 재원 · 보조금 · 지원금</h4>
+    <h4>6) 재원 및 보조금 — 사업비 · 공공 재원 · 보조금 · 지원금 · 수익사업과 운영</h4>
     ${sec(x.funding, x.fundingNote, "재원 · 보조금")}
+    <p class="rg__lab">수익사업 · 운영 지속 방식</p>
+    ${(x.operation || []).length ? kvTable(x.operation) + paras(x.operationNote) : NONE("수익사업 · 운영 방식")}
     <h4>7) 시사점 — 이 사례가 유명한 이유 · 성과 · 교훈</h4>
     ${(x.famous || []).length ? `<div class="ab__why"><b>이 사례가 유명한 이유</b>${bullets(x.famous)}</div>` : NONE("유명한 이유")}
     ${x.result ? `<p class="rg__lab">성과</p>${bullets(x.result)}` : ""}

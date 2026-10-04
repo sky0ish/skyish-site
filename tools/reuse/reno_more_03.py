@@ -2,7 +2,9 @@
 # 리노베이션 노트 심화 03 — neues-museum-r, grand-parc-r, de-hallen, ndsm, chq-epic, viaduc-des-arts
 D = {
 "neues-museum-r": {
- "from": "전쟁으로 무너진 박물관 (폐허)", "to": "박물관 (보수 · 재건)", "y0": "1841~1855 건설 · 1943 · 1945 폭격으로 폐허",
+ "from": "전쟁으로 무너진 박물관 (폐허)",
+ "to": "박물관 (보수 · 재건)",
+ "y0": "1841~1855 건설 · 1943 · 1945 폭격으로 폐허",
  "archAbout": [
   "데이비드 치퍼필드 (David Chipperfield)는 런던 · 베를린에 사무소를 둔 영국 건축가로, 2023년 프리츠커상을 받았습니다. 노이에스 무제움은 1993년에 시작된 제한 공모와 이어진 전문가 심사를 거쳐 1997년에 설계권을 얻었고, 1998년 설계 착수부터 2009년 재개관까지 맡았습니다.",
   "역사 건축 보존을 전문으로 하는 영국 건축가 율리안 하라프 (Julian Harrap)가 보존 · 수복을 함께 맡았습니다. 실시 설계 · 감리는 루비크 & 뵈를린 (Lubic & Woehrlin), 구조는 IGB 잉에니외어그루페 바우엔 (Ingenieurgruppe Bauen), 수복 자문은 프로 덴크말 (Pro Denkmal), 조경은 레빈 몽시니 (Levin Monsigny)가 맡았고, 전시 디자인은 미켈레 데 루키 (Michele De Lucchi)가 했습니다.",
@@ -73,7 +75,18 @@ D = {
  "funding": [
   ["총사업비", "약 1억 9,400만 유로 — 연방건설청 (BBR) 사업 정보 기준", "https://www.bbr.bund.de/BBR/DE/Bauprojekte/berlin/kultur-und-bildung/museumsinsel/neues-museum/projektinformation.html"],
   ["다른 집계", "위키백과 등은 재건 비용을 약 2억 9,500만 유로로, 박물관 섬 마스터플랜 전체는 약 15억 유로로 적고 있습니다."],
-  ["발주 주체", "프로이센 문화유산재단 (Stiftung Preußischer Kulturbesitz) — 연방건설청 (BBR)이 대행"]
+  ["발주 주체", "프로이센 문화유산재단 (Stiftung Preußischer Kulturbesitz) — 연방건설청 (BBR)이 대행"],
+  ["운영 재원 (재단 전체, 2025년)", "프로이센 문화유산재단 (SPK) 2025년 예산 — 총지출 약 4억 1,840만 유로, 그중 운영 예산 약 2억 7,530만 유로 · 건설 예산 약 1억 4,310만 유로. 연방 약 1억 9,640만 유로 · 베를린주 약 3,860만 유로 · 다른 주 약 2,000만 유로 (노이에스 무제움 단독 금액 아님)", "https://www.preussischer-kulturbesitz.de/en/about-us/current-figures/the-2021-budget.html"]
+ ],
+ "operation": [
+  ["운영 주체", "베를린 국립박물관 (Staatliche Museen zu Berlin) — 소유 · 발주는 프로이센 문화유산재단 (Stiftung Preußischer Kulturbesitz)", "https://www.bbr.bund.de/BBR/DE/Bauprojekte/berlin/kultur-und-bildung/museumsinsel/neues-museum/projektinformation.html"],
+  ["입주 기관", "이집트 박물관과 파피루스 컬렉션 · 선사 고대사 박물관 · 고대 유물 컬렉션 일부"],
+  ["운영 성과 (방문객)", "2010년 약 110만 명 (그해 베를린 최다) → 2011년 90만 3천 명 → 2012년 70만 1천 명 → 2019년 82만 8천 명 (독일어 위키백과)"],
+  ["입장료 (2026년 기준)", "일일권 14유로부터, 18세 미만 무료 · 학생 등 할인", "https://www.visitberlin.de/en/tickets/neues-museum-berlin-day-ticket"],
+  ["공공 운영 보조", "운영 기관 베를린 국립박물관이 속한 프로이센 문화유산재단은 연방 · 각 주의 출연으로 운영 (2025년 연방 약 1억 9,640만 유로, 베를린주 약 3,860만 유로, 다른 주 약 2,000만 유로)", "https://www.preussischer-kulturbesitz.de/en/about-us/current-figures/the-2021-budget.html"]
+ ],
+ "operationNote": [
+  "국가 박물관 조직(베를린 국립박물관)이 운영하는 공공 박물관으로, 상위 재단(SPK)은 연방과 각 주의 출연으로 운영됩니다. 입장료는 일일권 14유로부터이며 18세 미만은 무료입니다. 재개관 직후 연 100만 명을 넘던 방문객은 이후 연 70만~80만 명대로 자리 잡았습니다. 박물관 단독의 수입 · 보조 비중은 확인된 자료를 찾지 못했습니다."
  ],
  "famous": [
   "2011년 EU 현대건축상 (미스 반 데어 로에상), 2010년 RIBA 유럽상 · 유로파 노스트라 상을 받았습니다.",
@@ -87,8 +100,9 @@ D = {
   "보존 방식은 사회적 논쟁을 피할 수 없으므로, 명확한 원칙(베네치아 헌장)을 세우고 공개하는 것이 중요합니다."
  ],
  "missing": [
-  "공사비의 재원 분담(연방 · 주)은 확인된 자료를 찾지 못했습니다.",
-  "층별 전시실 배치의 상세(층별 컬렉션 구성)는 확인된 자료를 찾지 못했습니다."
+  "공사비의 연방 · 주 분담 내역은 확인된 자료를 찾지 못했습니다.",
+  "층별 전시실 배치의 상세(층별 컬렉션 구성)는 확인된 자료를 찾지 못했습니다.",
+  "노이에스 무제움 단독의 입장 수입 · 운영비 · 자체 수입 비율과 2020년 이후 방문객 수는 확인된 자료를 찾지 못했습니다."
  ],
  "refs": [
   {"t": "Neues Museum — David Chipperfield Architects", "u": "https://davidchipperfield.com/projects/neues-museum"},
@@ -97,11 +111,15 @@ D = {
   {"t": "BBR Bauprojekte — Neues Museum", "u": "https://www.bbr.bund.de/BBR/DE/Bauprojekte/berlin/kultur-und-bildung/museumsinsel/neues-museum/projektinformation.html"},
   {"t": "Denkmaldatenbank Berlin — Neues Museum (09030058)", "u": "https://denkmaldatenbank.berlin.de/daobj.php?obj_dok_nr=09030058"},
   {"t": "Neues Museum / David Chipperfield Architects + Julian Harrap — ArchDaily", "u": "https://www.archdaily.com/127936/neues-museum-david-chipperfield-architects-in-collaboration-with-julian-harrap"},
-  {"t": "Pritzker Architecture Prize — Laureates", "u": "https://www.pritzkerprize.com/laureates"}
+  {"t": "Pritzker Architecture Prize — Laureates", "u": "https://www.pritzkerprize.com/laureates"},
+  {"t": "The Budget — Stiftung Preußischer Kulturbesitz", "u": "https://www.preussischer-kulturbesitz.de/en/about-us/current-figures/the-2021-budget.html"},
+  {"t": "Neues Museum Berlin: day ticket — visitBerlin", "u": "https://www.visitberlin.de/en/tickets/neues-museum-berlin-day-ticket"}
  ],
 },
 "grand-parc-r": {
- "from": "1960년대 공공 임대주택 (사회주택)", "to": "공공 임대주택 (겨울정원 · 발코니 증축 개조)", "y0": "1960년대 초 건설",
+ "from": "1960년대 공공 임대주택 (사회주택)",
+ "to": "공공 임대주택 (겨울정원 · 발코니 증축 개조)",
+ "y0": "1960년대 초 건설",
  "archAbout": [
   "라카통 & 바살 (Lacaton & Vassal)은 보르도 국립 건축조경학교에서 만난 안 라카통 (Anne Lacaton, 1955년생)과 장필리프 바살 (Jean-Philippe Vassal, 1954년생)이 1987년 파리에서 세운 사무소입니다. 바살이 니제르에서 도시계획 일을 하며 얻은 경험이 「있는 것을 문제로 보지 않는다」는 태도의 바탕이 되었고, 철거 대신 변형을 주장해 2021년 프리츠커상을 받았습니다.",
   "프레데리크 드뤼오 (Frédéric Druot)는 이들과 함께 파리 17구의 사회주택 부아르프레트르 타워 (Tour Bois-le-Prêtre, 레몽 로페즈 설계, 16층)를 주민이 사는 채로 겨울정원 · 발코니를 덧대 개조(2011년 10월 완공, 면적 8,900㎡ → 12,460㎡)했고, 이 방식을 그랑 파르크에서 더 큰 규모로 이어 갔습니다.",
@@ -160,7 +178,19 @@ D = {
  "funding": [
   ["총사업비", "개조 2,720만 유로 (세전) + 신축 8세대 120만 유로 (세전) — 설계사무소 공식 자료", "https://www.lacatonvassal.com/index.php?idp=80"],
   ["세대당 비용", "세대당 약 5만 유로 (세전), 공사 후 기존 세입자 임대료 인상 없음 — 미스 반 데어 로에 재단 · 유럽연합 발표", "https://miesbcn.com/wp-content/uploads/2019/04/CAST_4th-Press-release-Winners.pdf"],
-  ["발주 주체", "아키타니스 (Aquitanis) — 보르도 메트로폴의 공공 주택청"]
+  ["발주 주체", "아키타니스 (Aquitanis) — 보르도 메트로폴의 공공 주택청"],
+  ["재원 구성 (기존 530세대 개조, 사업 전체)", "총 3,500만 유로 — 아키타니스 77.9% (2,765만 유로) · 보르도 메트로폴 17.7% (620만 유로) · 누벨아키텐 지역 2.3% (79만 5천 유로) · 유럽지역개발기금 (ERDF · FEDER) 2.1% (73만 7천 유로) — 유럽연합 집행위원회 자료", "https://culture.ec.europa.eu/cultural-and-creative-sectors/architecture/living-spaces/catalogue/bordeaux"],
+  ["재원 구성 (신축 8세대)", "총 160만 유로 — 아키타니스 94.5% (152만 5천 유로) · 보르도 메트로폴 4.8% (7만 6,800유로) · 악시옹 로즈망 (Action Logement) 0.7% (1만 2천 유로)", "https://culture.ec.europa.eu/cultural-and-creative-sectors/architecture/living-spaces/catalogue/bordeaux"],
+  ["참고", "설계사무소 자료의 공사비 (개조 2,720만 유로 · 신축 120만 유로, 세전)와 집행위원회 자료의 사업비 (3,500만 유로 · 160만 유로)는 집계 기준이 다릅니다."]
+ ],
+ "operation": [
+  ["운영 주체", "아키타니스 (Aquitanis) — 보르도 메트로폴의 공공 주택청 (OPH), 건물 소유 · 임대 관리", "https://www.lacatonvassal.com/index.php?idp=80"],
+  ["수입 구성", "사회주택 임대료 — 개조 후 기존 세입자의 임대료를 올리지 않음 (미스 반 데어 로에 재단 · 유럽연합 2019년 발표)", "https://miesbcn.com/wp-content/uploads/2019/04/CAST_4th-Press-release-Winners.pdf"],
+  ["거주 유지", "공사 중 주민 이주 없음 — 세대별 공정 12~16일"],
+  ["공급 확대", "개조 530세대 + 신축 8세대"]
+ ],
+ "operationNote": [
+  "공공 주택청 아키타니스가 계속 소유 · 임대하는 사회주택입니다. 개조비 3,500만 유로 가운데 약 78%를 아키타니스가 부담하고 보르도 메트로폴 · 지역 · 유럽연합 기금이 나머지를 보조했으며, 기존 세입자의 임대료는 올리지 않았습니다. 아키타니스 몫을 어떻게 상환하는지는 확인된 자료를 찾지 못했습니다."
  ],
  "famous": [
   "2019년 EU 현대건축상 (미스 반 데어 로에상)을 받았습니다 — 38개국 383개 작품 가운데 선정.",
@@ -175,8 +205,9 @@ D = {
  ],
  "missing": [
   "보호 지정(문화재 · 라벨)은 확인된 자료를 찾지 못했습니다.",
-  "공공 보조금 · 국가 도시재생청 (ANRU) 등 재원 구성은 확인된 자료를 찾지 못했습니다.",
-  "에너지 절감 수치와 세대별 면적 증가의 공식 수치는 확인된 자료를 찾지 못했습니다 (Dezeen은 세대당 25~30㎡ 증가로 적음).",
+  "수익사업 · 운영 재원(임대료 수준 · 아키타니스 몫의 상환 방식 · 관리비)은 확인된 자료를 찾지 못했습니다.",
+  "국가 도시재생청 (ANRU) 지원 여부는 확인된 자료를 찾지 못했습니다.",
+  "에너지 절감 수치는 확인된 자료를 찾지 못했습니다 (세대당 추가 면적은 유럽연합 집행위원회 자료가 약 30㎡로 적음).",
   "동별 층수(G · H · I 각각)와 공사 착공 · 준공의 정확한 날짜는 확인된 자료를 찾지 못했습니다."
  ],
  "refs": [
@@ -188,11 +219,14 @@ D = {
   {"t": "Transformation of 530 Dwellings was the most significant building of 2016 — Dezeen", "u": "https://www.dezeen.com/2025/01/22/lacaton-vassal-530-dwellings-21st-century-architecture/"},
   {"t": "Grand Parc Bordeaux — Housing Evolutions", "u": "https://www.housingevolutions.eu/project/grand-parc-bordeaux/"},
   {"t": "Who Are Lacaton & Vassal? — ArchDaily", "u": "https://www.archdaily.com/958575/who-are-lacaton-and-vassal-15-things-to-know-about-the-2021-pritzker-architecture-laureates"},
-  {"t": "Tour Bois-le-Prêtre — Dezeen", "u": "https://www.dezeen.com/2013/04/16/tour-bois-le-pretre-by-frederic-druot-anne-lacaton-and-jean-philippe-vassal/"}
+  {"t": "Tour Bois-le-Prêtre — Dezeen", "u": "https://www.dezeen.com/2013/04/16/tour-bois-le-pretre-by-frederic-druot-anne-lacaton-and-jean-philippe-vassal/"},
+  {"t": "Bordeaux: a new life for 530 homes — European Commission (Culture and Creativity)", "u": "https://culture.ec.europa.eu/cultural-and-creative-sectors/architecture/living-spaces/catalogue/bordeaux"}
  ],
 },
 "de-hallen": {
- "from": "트램 차고 · 정비창", "to": "문화 복합 (영화관 · 푸드홀 · 도서관 · 호텔 · 공방)", "y0": "1902~1905 건설 · 1996 정비창 이전 · 2005 비움",
+ "from": "트램 차고 · 정비창",
+ "to": "문화 복합 (영화관 · 푸드홀 · 도서관 · 호텔 · 공방)",
+ "y0": "1902~1905 건설 · 1996 정비창 이전 · 2005 비움",
  "archAbout": [
   "건축가이자 개발 사업가 안드레 판 스티흐트 (André van Stigt)가 재개발을 이끌었습니다. 그는 암스테르담에서 올림픽 경기장, 파크하위스 더 즈베이허르 (Pakhuis de Zwijger), 엔트레포트독 (Entrepotdok), 곡물 사일로 (Graansilo's), 베스터르케르크 (Westerkerk) 등 역사 건물 재생을 오래 해 왔고, 이 사업에는 자기 돈을 함께 투자해 성공 여부에 수익을 걸었습니다. 2014년 10월 IJ상 (IJ-prijs)을 받았습니다.",
   "개발 주체 TROM (TramRemise OntwikkelingsMaatschappij, TROM 재단)은 동네 주민 자문단 (klankbordgroep), 판 스티흐트, 회사 부르흐폰즈 (Burgfonds)의 주도로 만들어졌고, 2011년 말 서구청 (stadsdeel West)이 개발자로 지정했습니다. 공동 설립자로 예트 판 덴 회벌 (Jet van den Heuvel)이 함께했습니다.",
@@ -261,6 +295,18 @@ D = {
   ["공공 재원", "노르트홀란트주 75만 유로 (총사업비의 약 2%), 정부가 통로 · 주차장 등 준공공 시설 비용 부담"],
   ["민간 투자 · 협력", "스타츠헤르스텔 암스테르담이 17번 홀 매입 · 수복 (노르트홀란트주 · 암스테르담시 지원과 국가복원기금 플러스 융자)", "https://stadsherstel.nl/nieuws/de-herontwikkeling-van-een-rijksmonument/"]
  ],
+ "operation": [
+  ["운영 주체", "개발 · 운영 TROM (TramRemise OntwikkelingsMaatschappij), 17번 홀은 스타츠헤르스텔 암스테르담 (Stadsherstel Amsterdam) 소유", "https://stadsherstel.nl/nieuws/de-herontwikkeling-van-een-rijksmonument/"],
+  ["수입 구성", "임대료 — 공공도서관 (OBA) · 호텔 (Vondel Hotels) · 영화관 (Filmhallen) · 어린이집 (Wereldkids) · 푸드홀 · 공방 · 상점 · 방송 스튜디오", "https://www.herbestemming.nl/projecten/tramremise-de-hallen-amsterdam"],
+  ["임대 구조", "대출 은행 (트리오도스)의 조건으로 임차인들이 10년 장기 임대 계약", "https://werkplaatserfgoed.nl/bouwheer-voor-de-goede-zaak-interview-andre-van-stigt/"],
+  ["관리비", "서비스 비용 연 1㎡당 20유로", "https://onh.nl/verhaal/hoe-de-hallen-weer-het-hart-van-amsterdam-west-werden"],
+  ["투자 수익", "합자회사 (CV) 투자자는 기념물 유지보수비 세금 공제로 약 9% 수익"],
+  ["사회적 임대", "취약 계층을 고용하는 사회적 기업에 낮은 임대료 — 사회적 · 상업 기업 27곳 입주, 기념물 수복 · 이발 · 자전거 수리 견습 과정 운영", "https://www.triodos.nl/showcase-de-hallen"],
+  ["운영 성과", "필름할런 방문객이 예상치(연 20만 명)의 두 배, 동네 기능 6,000㎡ 확보"]
+ ],
+ "operationNote": [
+  "공공 보조는 통로 · 주차장과 노르트홀란트주 75만 유로 정도이고, 운영은 임대 수입으로 자립합니다. 도서관 · 호텔 · 영화관 같은 앵커 임차인과 10년 장기 계약을 맺어 은행 대출을 일으켰고, 투자자에게는 기념물 세금 공제로 수익을 돌려줍니다. 사회적 기업에는 임대료를 낮춰 동네 기능을 지킵니다."
+ ],
  "famous": [
   "철거 위기의 국가 기념물을 공공 통로 중심의 문화 복합 시설로 바꿔 피터르 판 볼런호번상을 받았습니다.",
   "필름할런은 예상 방문객(연 20만 명)의 두 배를 모았습니다.",
@@ -273,6 +319,7 @@ D = {
   "기념물 유지보수비 세금 공제 같은 제도를 적극 쓰면 공공 보조금을 크게 줄일 수 있습니다."
  ],
  "missing": [
+  "연간 임대 수입 총액과 자체 수입 비율은 확인된 자료를 찾지 못했습니다.",
   "연간 전체 방문객 수는 출처가 확인된 자료를 찾지 못했습니다 (위키백과의 200만~300만 명은 출처 표시가 없음).",
   "구조 보강 방법의 상세는 확인된 자료를 찾지 못했습니다."
  ],
@@ -289,7 +336,9 @@ D = {
  ],
 },
 "ndsm": {
- "from": "조선소 (NSM · NDSM)", "to": "예술가 작업실 도시 · 창조기업 · 축제장 · 사무실", "y0": "1919~1920 선박 건조 홀 · 1984 파산",
+ "from": "조선소 (NSM · NDSM)",
+ "to": "예술가 작업실 도시 · 창조기업 · 축제장 · 사무실",
+ "y0": "1919~1920 선박 건조 홀 · 1984 파산",
  "archAbout": [
   "건축가 한 명의 작품이 아니라, 버려진 조선소 건물을 점거하던 예술가 · 공예가들이 2000년에 세운 「키네티스 노르트 재단 (Stichting Kinetisch Noord, SKN)」이 주도한 재생입니다. 1999년 암스테르담 노르트 구청의 공모에서 에바 더 클러르크 (Eva de Klerk) 등이 낸 계획이 당선되었고, 더 클러르크는 2008년까지 재단을 이끌었습니다.",
   "작업실 도시 「쿤스트스타트 (Kunststad)」는 건축가 필립 보스허르 (Filip Bosscher)가 미래 사용자들과 설계 워크숍으로 만들었고, 디나모 아키텍텐 (Dynamo architecten)이 건축 허가 · 실시 설계를 맡았습니다. 2014~2017년 선박 건조 홀 보수도 디나모가 설계했습니다 (구조 자문 스트라케이 Strackee).",
@@ -340,7 +389,7 @@ D = {
  "why": [
   "무단 점거를 합법화 · 조직화해 「네덜란드 최대의 예술가 브레드플라츠 (broedplaats)」로 만든 상향식 재생의 대표 사례입니다.",
   "사용자가 골조 안에 직접 짓는 방식으로 비용을 낮춰, 예술가들이 저렴하게 오래 머물 수 있게 했습니다.",
-  "문화가 먼저 자리 잡은 뒤 MTV · HEMA · 레드불 등 기업과 주거 개발이 뒤따르며 노르트 지역 재생을 이끌었습니다 (동시에 젠트리피케이션 논쟁도 낳았습니다)."
+  "문화가 먼저 자리 잡은 뒤 MTV · HEMA · 레드불 등 기업과 주거 개발이 뒤따르며 노르트 지역 재생을 이끌었습니다."
  ],
  "space": [
   "약 20,000㎡의 홀은 6랑 세로 홀과 가로 홀로 이루어지고, 쿤스트스타트가 홀 면적의 약 3분의 1을 차지합니다.",
@@ -358,6 +407,21 @@ D = {
   ["홀 보수비", "재단이 소유권을 넘겨받은 뒤 약 600만 유로로 선박 건조 홀 보수 (2014~2017)", "https://www.gebiedsontwikkeling.nu/artikelen/werken-aan-de-self-made-future-op-de-ndsm-werf/"],
   ["지역 관리 재원", "동쪽 부지 관리 재단이 상업 임대 면적 1㎡당 연 2.5유로를 걷어 지역 관리에 씀"]
  ],
+ "operation": [
+  ["운영 주체", "키네티스 노르트 재단 (SKN) — 선박 건조 홀 (NDSM Loods)의 소유 · 관리 주체 (2014년 소유권 인수)", "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"],
+  ["수입 구성", "작업실 임대 (약 85개 작업실 · 약 250명) + 홀을 공연 · 전시 · 박람회 · 축제 등 행사장으로 대관 (재단 정관상 목적)", "https://www.ndsmloods.nl/broedplaats/"],
+  ["사용자 투자", "예술가들이 골조 안 자기 작업실에 함께 약 500만 유로 투자 (1인 평균 약 5만 유로)", "https://www.zoutmagazine.eu/ndsm-loods-de-ultieme-broedplaats/"],
+  ["지역 관리 재원", "2010년 세운 NDSM-werf 동쪽 관리 재단이 상업 임대 면적 1㎡당 연 2.5유로를 걷어 지역 관리", "https://www.gebiedsontwikkeling.nu/artikelen/werken-aan-de-self-made-future-op-de-ndsm-werf/"],
+  ["임대 · 공급 확장", "2018년 재단이 브레드플라츠 사무국 (Bureau Broedplaatsen)과 작업실 3층 증설 타당성 조사 추진"],
+  ["대관 수입원 (2018년)", "작업실 외 홀 공간을 영화 촬영 · 사진 촬영 · 무용 · 음악 · 연극 공연 · 전시 · 경매 · 기업 행사 · 댄스 파티 · 시장 · 회의 등에 임대 (재단 2018년 연차보고서)", "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"],
+  ["상업 임대 (2018년)", "8월 10일 홀 안 식음 시설 운영자 IJver와 임대 계약, 2019년 여름 건물 인도 예정"],
+  ["판매 · 공공 기능", "2018년 6월 6일 웰컴 센터 개장 — 입주 작가 작품을 위탁 판매하고 기념품 판매, 학생 졸업 전시 · 공연에는 무료로 공간 제공"],
+  ["운영 비용 예시", "재단 이사에게 월 75유로의 이사 수당 지급 (2018년)"]
+ ],
+ "operationNote": [
+  "재단이 기념물 홀을 소유하고, 사용자가 직접 지은 작업실의 임대료와 홀 대관 수입으로 운영합니다. 바깥 부지는 상업 임차인에게 걷는 면적당 부담금으로 관리합니다. 초기에는 보조금과 사용자 자기 투자로 시작해, 소유권을 넘겨받은 뒤 홀 보수까지 재단이 맡는 구조가 되었습니다.",
+  "2018년 연차보고서를 보면 재단은 작업실 임대 외에 홀 대관(촬영 · 공연 · 기업 행사 · 시장 등), 식음 시설 임대, 웰컴 센터의 작품 위탁 판매로 수입원을 넓히고 있습니다. 금액은 공개된 자료에서 찾지 못했습니다."
+ ],
  "famous": [
   "약 85개 작업실에 약 250명이 일하는 네덜란드에서 가장 크고 오래된 예술가 브레드플라츠 가운데 하나입니다.",
   "2008년 네덜란드 건축연구소 (NAi) 건축 연감 표지에 실렸고, 2004년 정부의 혁신 · 지속가능 도시재생 사업으로 선정되었습니다.",
@@ -370,6 +434,7 @@ D = {
   "문화가 만든 지역 가치가 주거 개발로 이어질 때, 처음 사용자가 머물 수 있는 장치(소유권 · 장기 임대)가 필요합니다."
  ],
  "missing": [
+  "재단의 연간 수입 구성(임대 · 대관 비율)과 임대료 수준은 확인된 자료를 찾지 못했습니다.",
   "구청 · 시 보조금의 정확한 금액은 확인된 자료를 찾지 못했습니다.",
   "쿤스트스타트 공사비 총액은 확인된 자료를 찾지 못했습니다.",
   "기존에 적혀 있던 그린피스 입주와 「유럽 최대 벼룩시장 (IJ 할렌)」은 확인된 자료를 찾지 못했습니다."
@@ -384,11 +449,14 @@ D = {
   {"t": "NDSM-terrein — Kennisbank Herbestemming", "u": "https://www.herbestemming.nl/projecten/ndsm-terrein-amsterdam"},
   {"t": "NDSM-loods, de ultieme broedplaats — Zout Magazine", "u": "https://www.zoutmagazine.eu/ndsm-loods-de-ultieme-broedplaats/"},
   {"t": "Werken aan de Self Made Future op de NDSM-werf — Gebiedsontwikkeling.nu", "u": "https://www.gebiedsontwikkeling.nu/artikelen/werken-aan-de-self-made-future-op-de-ndsm-werf/"},
-  {"t": "NDSM Scheepsbouwloods — Strackee", "u": "https://strackee.nl/projecten-archief/ndsm-scheepsbouwloods"}
+  {"t": "NDSM Scheepsbouwloods — Strackee", "u": "https://strackee.nl/projecten-archief/ndsm-scheepsbouwloods"},
+  {"t": "Stichting Kinetisch Noord — Jaarverslag 2018", "u": "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"}
  ],
 },
 "chq-epic": {
- "from": "보세 창고 (담배 · 차 · 와인 · 증류주)", "to": "상업시설 + 지하 볼트의 이민 박물관 (EPIC)", "y0": "1820 건설 · 20세기 쇠퇴",
+ "from": "보세 창고 (담배 · 차 · 와인 · 증류주)",
+ "to": "상업시설 + 지하 볼트의 이민 박물관 (EPIC)",
+ "y0": "1820 건설 · 20세기 쇠퇴",
  "archAbout": [
   "원 건물은 스코틀랜드 출신 토목 기술자 존 레니 (John Rennie)가 설계했고, 같은 이름의 아들이 수석 조수로 일했습니다. 레니는 런던의 담배 부두 (Tobacco Dock), 더블린 근처 하우스 (Howth) · 던리어리 (Dún Laoghaire) 항구도 만든 기술자입니다. 철골은 잉글랜드 더비셔의 버털리 제철소 (Butterley Iron Foundry)가 만들었습니다.",
   "2000년대 개조는 더블린 도클랜즈 개발청 (Dublin Docklands Development Authority, DDDA)의 발주로 마이클 콜린스 어소시에이츠 (Michael Collins Associates, 현 MCA Architects)가 실행 건축 · 사업 관리 · 보존을 맡았습니다. 운영사는 남쪽 유리 정면을 아일랜드 출신 구조 기술자 피터 라이스 (Peter Rice)가 처음 설계했다고 밝히고 있습니다.",
@@ -455,6 +523,19 @@ D = {
   ["민간 매입", "2013년 7월 네빌 이스델 · 머빈 그린이 1,000만 유로에 매입"],
   ["민간 투자 (EPIC)", "네빌 이스델이 약 1,500만 유로를 전액 민간 자금으로 투자 (2016년)", "https://www.darmodyarchitecture.com/work/the-chq-building-epic-ireland/"]
  ],
+ "operation": [
+  ["운영 주체", "건물 — 네빌 이스델 · 머빈 그린 소유 (2013년 1,000만 유로 매입), 박물관 — 민간 소유 EPIC", "https://www.thejournal.ie/chq-building-sold-976978-Jul2013/"],
+  ["운영상 문제", "공공 (DDDA)이 약 4,500만 유로로 개조한 상업시설이 매각 당시 공실률 82%"],
+  ["수입 구성", "상점 · 레스토랑 · 사무 임대 + 박물관 입장 · 행사 (지하 볼트 행사 공간)", "https://www.darmodyarchitecture.com/work/the-chq-building-epic-ireland/"],
+  ["공공 보조", "EPIC은 약 1,500만 유로 전액 민간 자금으로 조성 (아이리시 인디펜던트, 위키백과 인용)"],
+  ["운영 성과", "EPIC 첫해 방문객 약 12만 명, 2019~2021년 「유럽 최고의 관광 명소」"],
+  ["재무 (EPIC)", "운영사 Epic Ireland의 2016년 12월 말까지 12개월 누적 손실 180만 유로 — 매출은 비공개 (아이리시 타임스 2018년 2월 5일)", "https://www.irishtimes.com/business/transport-and-tourism/epic-museum-eyes-profitablity-as-visitor-numbers-set-to-rise-1.3379635"],
+  ["방문객 (EPIC)", "2016년 5만 명 → 2017년 12만 명 → 2018년 최소 15만 명 예상, 2018년 말~2019년 초 손익분기 예상 (같은 기사)"],
+  ["입장료 (2018년)", "성인 14유로부터 (아이리시 타임스 2018년 7월)", "https://www.irishtimes.com/business/transport-and-tourism/dublin-emigration-museum-on-road-to-profit-as-royals-call-1.3556849"]
+ ],
+ "operationNote": [
+  "공공 개발청이 고친 쇼핑 시설은 임차인을 채우지 못해 2013년 민간에 매각되었습니다. 새 소유주는 지하 볼트에 민간 자본으로 이민 박물관을 만들었고, 개관 첫해 누적 손실 180만 유로를 기록했지만 방문객이 2016년 5만 명에서 2017년 12만 명으로 늘며 손익분기를 내다봤습니다. 지상은 상업 · 사무 임대로 운영합니다. 최근 재무 실적은 확인된 자료를 찾지 못했습니다."
+ ],
  "famous": [
   "EPIC은 월드 트래블 어워즈에서 2019 · 2020 · 2021년 3년 연속 「유럽 최고의 관광 명소」로 뽑혔습니다.",
   "아이리시 타임스는 EPIC을 「세계 최초의 완전 디지털 박물관」으로 소개했고, 2018년 유럽 올해의 박물관상 후보에 올랐습니다.",
@@ -469,7 +550,8 @@ D = {
  "missing": [
   "1차 개조의 정확한 착공 · 준공 날짜는 확인된 자료를 찾지 못했습니다 (자료에 따라 2005년 · 2007년).",
   "보호 건축물 목록 · NIAH의 원문 기록(번호 · 등재 연도)은 직접 열어 확인하지 못했습니다.",
-  "EPIC 공사의 구조 · 설비 상세는 확인된 자료를 찾지 못했습니다."
+  "EPIC 공사의 구조 · 설비 상세는 확인된 자료를 찾지 못했습니다.",
+  "EPIC의 2017년 이후 재무제표 · 최근 방문객 수와 CHQ의 현재 임대율은 확인된 자료를 찾지 못했습니다."
  ],
  "refs": [
   {"t": "CHQ Building — Wikipedia", "u": "https://en.wikipedia.org/wiki/CHQ_Building"},
@@ -479,11 +561,15 @@ D = {
   {"t": "Restoration — CHQ", "u": "https://chq.ie/history/restoration/"},
   {"t": "CHQ building sold for €10 million — TheJournal.ie", "u": "https://www.thejournal.ie/chq-building-sold-976978-Jul2013/"},
   {"t": "The CHQ Building / EPIC Ireland — Darmody Architecture", "u": "https://www.darmodyarchitecture.com/work/the-chq-building-epic-ireland/"},
-  {"t": "The CHQ Tour — EPIC", "u": "https://epicchq.com/event/the-chq-tour-epic/"}
+  {"t": "The CHQ Tour — EPIC", "u": "https://epicchq.com/event/the-chq-tour-epic/"},
+  {"t": "Epic museum eyes profitability as visitor numbers set to rise — The Irish Times", "u": "https://www.irishtimes.com/business/transport-and-tourism/epic-museum-eyes-profitablity-as-visitor-numbers-set-to-rise-1.3379635"},
+  {"t": "Dublin emigration museum on road to profit as royals call — The Irish Times", "u": "https://www.irishtimes.com/business/transport-and-tourism/dublin-emigration-museum-on-road-to-profit-as-royals-call-1.3556849"}
  ],
 },
 "viaduc-des-arts": {
- "from": "철도 고가교 (바스티유-뱅센선)", "to": "아치 아래 공예 공방 · 갤러리 + 위의 고가 산책 공원", "y0": "1859 개통 · 1969 폐선",
+ "from": "철도 고가교 (바스티유-뱅센선)",
+ "to": "아치 아래 공예 공방 · 갤러리 + 위의 고가 산책 공원",
+ "y0": "1859 개통 · 1969 폐선",
  "archAbout": [
   "고가교 보수와 아치 아래 공방은 파리 건축가 파트리크 베르제 (Patrick Berger)가 1988년 네 팀이 참여한 설계 경합에서 선정되어 맡았습니다 (조수 J. 갈리아노). 베르제는 이 작업과 앙드레 시트로엥 공원 (Parc André-Citroën)으로 2004년 프랑스 국가 건축 대상 (Grand prix national de l'architecture)을 받았습니다.",
   "위의 산책 공원 「프롬나드 플랑테 (Promenade plantée)」(현 쿨레 베르트 르네뒤몽)는 조경가 자크 베르줄리 (Jacques Vergely)와 건축가 필리프 마티외 (Philippe Mathieux)가 1988년부터 설계했습니다.",
@@ -515,7 +601,7 @@ D = {
   ["1994", "5월 바스티유 부근에서 뢰이 (Reuilly)까지 산책로 연결 개통, 10월 첫 아치 6곳 개장"],
   ["1995", "2월 아치 17곳 추가 인도"],
   ["2000", "하반기 오페라 쪽 아치 1 · 3 · 5 · 7번 개장으로 비아뒤크 데 자르 완성"],
-  ["2005", "파리시가 세마에스트에 18년 장기 임대 (bail emphytéotique) — 이후 2048년까지 연장"],
+  ["2005", "1월 6일 파리시가 세마에스트와 18년 행정 장기 임대 (bail emphytéotique administratif) 체결 — 2024년 새 임대로 2048년까지 연장"],
   ["2013", "3월 산책로 이름을 「쿨레 베르트 르네뒤몽 (Coulée verte René-Dumont)」으로 공식 변경"]
  ],
  "concept": [
@@ -545,7 +631,24 @@ D = {
  ],
  "funding": [
   ["사업 구조", "파리시가 국철 폐선 부지를 매입(1987년 결정)하고, 세마에스트가 공공 개발 위탁 (convention publique d'aménagement)으로 사업 — 2004년 위탁 종료"],
-  ["운영 구조", "2005년 파리시가 세마에스트에 18년 장기 임대, 이후 2048년까지 연장 — 세마에스트가 유지 · 임대 · 홍보 담당", "https://www.leviaducdesarts.com/a-propos"]
+  ["운영 계약 (2024년)", "파리시 의회 의안 2024 DAE 126 — 세마에스트의 행정 장기 임대 (2005년 1월 6일 체결, 2022년 12월 31일 만료 → 2024년 6월 30일까지 연장)에 이어 SEM 파리 코메르스와 24년 6개월 (2048년 12월 31일까지) 새 장기 임대", "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"],
+  ["시에 내는 사용료", "고정 18만 유로 (물가 연동) + 임대 수입에 따른 변동분 — 2025년 예상 변동분 약 17만 유로, 합계 약 35만 유로/년", "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"],
+  ["에너지 개수 투자", "SEM이 1,380만 유로 (세전, 2024년 가치)의 에너지 전환 공사를 맡고, 그 비용을 고정 사용료 산정에 반영"],
+  ["사업 이력", "1986년 9월 20일 파리시가 국철 (SNCF)에서 부지 매입, 1991년 1월 21일 의회 승인으로 세마에스트에 개발 위탁 (concession), 2000년 11월 30일 세마에스트가 산책로 · 고가교를 시에 넘김"]
+ ],
+ "operation": [
+  ["운영 주체", "SEM 파리 코메르스 (Paris Commerces, 옛 세마에스트) — 유지 · 아치 임대 · 홍보를 맡고, 공예가 협회 (Association du Viaduc des arts)와 함께 홍보", "https://www.leviaducdesarts.com/a-propos"],
+  ["토지 · 건물 구조", "파리시 소유 (고가교 아래는 시 사유재산, 위 산책로는 시 공공재산) — SEM 파리 코메르스가 행정 장기 임대로 운영, 2048년 12월 31일까지"],
+  ["수입 구성", "공예가에게 아치 (상설 60~61개)를 임대 — 약 40~45개 공예가 입주, 그중 8곳이 「살아 있는 유산 기업」 인증", "https://www.pariscommerces.fr/realisations/viaduc-des-arts-paris-12e"],
+  ["창업 지원", "2000년 91번지에 우대 조건으로 공간을 빌려주는 창업 지원 공방 (atelier relais) 개설"],
+  ["전시 공간", "1999년 55 · 57번지 전시용 아치 개장, 2007년부터 57번지만 공예 · 창작 전시장으로 운영"],
+  ["임대료 (2025년 모집, 아치별)", "51번지 152.4㎡ 연 31,000유로 · 53번지 189.1㎡ 연 39,600유로 · 57번지 152.7㎡ 연 31,000유로 · 63번지 184.5㎡ 연 38,600유로 (세전 · 관리비 별도, 3/6/9년 상업 임대) — 공예 활동 한정", "https://www.pariscommerces.fr/actualites/appel-a-candidatures-location-ateliers-d-artisans-paris-12e"],
+  ["임대 조건", "사용 면적 약 13,000㎡, 약 60개 아치 — 공예 · 창작 활동에는 활동 유지가 가능한 조건으로 임대하되, 아치 면적의 최대 30%는 공예 외 용도로 시장 임대료를 지향 (2024 DAE 126)", "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"],
+  ["위험 · 유지 부담", "SEM이 임대 · 자산 관리의 모든 위험과 소유자 몫을 포함한 공사비를 부담 (산책로에 영향을 주는 아치 방수 공사는 시 부담), 정면 보수는 반환 예정이던 공사 충당금으로 충당"],
+  ["청년 공예가 지원", "아틀리에 드 파리 (Ateliers de Paris) 인큐베이터 출신 청년 공예가 여럿이 한 아치를 나눠 쓰는 저렴한 임대 제안"]
+ ],
+ "operationNote": [
+  "파리시가 소유한 고가교 아래 약 13,000㎡를 시 출자 개발회사 SEM 파리 코메르스가 장기 임대로 맡아, 아치를 공예가에게 빌려준 임대료(2025년 모집 기준 아치당 연 3만 1천~3만 9,600유로)로 유지 · 관리 · 에너지 개수까지 부담합니다. 시는 별도 운영 보조 없이 오히려 연 약 35만 유로의 사용료를 받습니다. 아치 면적의 최대 30%는 시장 임대료를 지향해 공예 공간을 뒷받침합니다. 2025년 르파리지앵 기사(제목만 확인)가 높은 임대료와 방문객 감소를 다루고 있어 운영상 과제가 제기되고 있습니다."
  ],
  "famous": [
   "고가 위에 지은 첫 녹지 산책로로, 뉴욕 하이라인 (2009) 등 여러 도시의 고가 공원에 영향을 주었습니다.",
@@ -562,14 +665,17 @@ D = {
   "보호 지정(역사기념물 등)은 확인된 자료를 찾지 못했습니다.",
   "재원 · 보조금(공사비 금액)은 확인된 자료를 찾지 못했습니다.",
   "아치 수와 고가교 길이는 자료마다 달라(60 · 61 · 67개, 1,222m · 1.5km) 하나로 확정하지 못했습니다.",
-  "기존에 적혀 있던 「1979년 파리 도시계획연구소 (APUR) 검토」는 확인된 자료를 찾지 못했습니다."
+  "기존에 적혀 있던 「1979년 파리 도시계획연구소 (APUR) 검토」는 확인된 자료를 찾지 못했습니다.",
+  "공실률 · 연간 임대 수입 총액 · 운영 수지는 확인된 자료를 찾지 못했습니다 (2025년 르파리지앵 기사는 본문을 열지 못함)."
  ],
  "refs": [
   {"t": "Le viaduc des arts, Paris — Patrick Berger architecte", "u": "https://patrickberger.fr/Le-viaduc-des-arts-Paris"},
   {"t": "À propos — Le Viaduc des arts", "u": "https://www.leviaducdesarts.com/a-propos"},
   {"t": "Viaduc des Arts — 프랑스어 위키백과", "u": "https://fr.wikipedia.org/wiki/Viaduc_des_Arts"},
   {"t": "Coulée verte René-Dumont — 프랑스어 위키백과", "u": "https://fr.wikipedia.org/wiki/Coul%C3%A9e_verte_Ren%C3%A9-Dumont"},
-  {"t": "Le Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/realisations/viaduc-des-arts-paris-12e"}
+  {"t": "Le Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/realisations/viaduc-des-arts-paris-12e"},
+  {"t": "2024 DAE 126 Viaduc des Arts (12e) — Nouveau bail emphytéotique administratif avec la SEM Paris Commerces (Conseil de Paris)", "u": "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"},
+  {"t": "Appel à candidatures : location de 4 ateliers au Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/actualites/appel-a-candidatures-location-ateliers-d-artisans-paris-12e"}
  ],
 },
 }
