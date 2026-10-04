@@ -41,13 +41,14 @@ D = {
   ["2004", "캔 리카르트 (Can Ricart) 작업장 가동 종료 · 바르셀로나 포럼 개최 — 반대 운동 (Fotut 2004 등)"],
   ["2005~2006", "캔 리카르트 철거와 아파트 건설 계획에 주민 반발 — 「캔 리카르트를 지키자 (Salvem Can Ricart)」 · 「리베라 플랫폼 (Plataforma de la Ribera)」이 공사를 멈춤"],
   ["2006.11.24", "산업유산 보호계획 개정 최종 승인 — 보호 대상 114개 요소 (기존 46 + 신규 68)로 확대"],
-  ["2007~2008", "캔 리카르트를 카탈루냐 국가 문화재 (BCIN)로 지정 (자료에 따라 2007 또는 2008)"],
+  ["2008.4.22", "카탈루냐 정부가 캔 리카르트 건물군 (1852~1854, 건축가 Josep Oriol i Bernadet, 직물 날염 공장)을 국가 문화재 (BCIN, 역사 단지)로 지정 — 정부 보도자료 (Diputació 자료의 2007년은 틀림)"],
   ["2012.6", "옛 공업 용지의 70%에서 재생 착수, 도시개선계획 141건 (그중 85건 민간 제안)"],
   ["2013", "22 ARROBA BCN 법인 소멸 등기"],
   ["2017", "시가 참여 과정 「22@ 다시 생각하기 (Repensem el 22@)」 시작 — 1,000명 이상 참여"],
   ["2018", "시민 · 기업 · 대학 · 행정 4자 협약 「더 포용적이고 지속가능한 22@가 있는 포블레노우를 향해」 서명"],
   ["2020.9.30", "개정 계획 (MpPGM 22@) 시의회 위원회 1차 승인 · 2022.2.25 본회의 잠정 승인"],
   ["2022.5.31", "바르셀로나 도시계획 소위원회가 개정 계획을 최종 승인 — 발효"],
+  ["2023.9", "포블레노우 주민 관측소 (Observatori dels Barris del Poblenou) 보고서 — 지어진 사무실의 42%가 비어 있다고 발표, 22@ 기업 협회는 사무실 16%를 주택으로 바꾸자고 제안 (컨설팅사 Savills 는 공실률을 더 낮게 봄)"],
   ["2024.10~2025.1", "기존 공장 건물에 교육 · 문화 · 체육시설을 넣을 수 있게 하는 추가 개정 참여 과정"],
  ],
  "problem": [
@@ -98,7 +99,7 @@ D = {
  "zoning": [
   ["지정", "22@ 용도지구 — 198.26ha, 115개 블록 (2000), 2022년 개정 계획 구역"],
   ["관리 주체 · 방식", "시가 6개 전략 구역을 직접 개발하고, 나머지는 민간이 PMU · 특별계획을 제안 → 시 승인. 2022년부터는 기존 블록 (전체의 19.5%, 「존치 구역」)은 직접 허가, 빈 땅 (17.7%, 「전환 구역」)은 별도 계획"],
-  ["보존 관리", "산업유산 특별보호계획 114개 요소, 캔 리카르트는 카탈루냐 국가 문화재 (BCIN)"],
+  ["보존 관리", "산업유산 특별보호계획 114개 요소, 캔 리카르트는 카탈루냐 국가 문화재 (Bé Cultural d'Interès Nacional, 2008.4.22 지정)", "https://govern.cat/salapremsa/notes-premsa/96095/el-govern-declara-be-cultural-d-interes-nacional-un-grup-d-edificis-de-can-ricart-a-barcelona-i-el-santuari-del-miracle-a-riner"],
   ["참여 기구", "22@ 확대위원회가 계획 재검토와 결과를 감독"],
  ],
  "zoningNote": ["2020년 시 발표에 따르면 개정 뒤 최종 비율은 경제활동 70% · 주거 30% (2000년에는 주거 10%)이며, 2000년 계획에서 남은 물량을 합쳐 앞으로 15,800호가 지어질 예정입니다 (Ara 보도)."],
@@ -122,6 +123,7 @@ D = {
   ["업무 이관 (2010)", "2010.3.11 시장 명령으로 경제 진흥 업무를 바르셀로나 액티바 (Barcelona Activa)로 통합 (2010.5.7 협약, 5.15 발효), 행정 · 재무 · 법무는 시 기반시설 공기업 BIMSA 로 집중 (2010.11.26 위탁)"],
   ["사업 실적 (2010 말)", "옛 공업지역의 약 69% 재생 착수, 최종 승인 계획 127건 중 80건 (62.9%) 민간 주도 — 공공 주도 6개 구역은 92만 5,482㎡ (전환 대상의 47%)"],
   ["임대 수입 사업", "22@ 광섬유망의 다크 파이버 임대 계속 — 2010년 건물 14동 신규 연결"],
+  ["운영상 문제 (사무 공실, 2023)", "주민 관측소 조사로 사무실 42% 공실 (전체 빌딩이 빈 곳: Pere IV 105 · Àlaba 111 등), 22@ Network 는 노후 사무실 16% 주거 전환 제안", "https://www.vilaweb.cat/noticies/el-buidatge-de-les-oficines-del-22-empeny-el-districte-a-reconvertir-se-es-un-model-de-fracas/"],
  ],
  "operationNote": ["22@는 시가 계획 · 인허가로 지구를 관리하고 개발 비용을 토지 소유자에게 부담시키는 구조입니다. 초기에는 시 공기업 22 ARROBA BCN 이 사업을 관리 · 홍보했고, 지금은 시의 원스톱 창구와 기업 회원 협회 (22@ Network)가 지구의 일상 운영 · 네트워킹을 맡고 있습니다."],
  "famous": [
@@ -136,6 +138,7 @@ D = {
   "2012년 기준 포블레노우 일대 7,000개 기업 · 9만 명 고용, 그중 4,500개 기업 · 5만 6천 명이 2000년 이후 입주 (22@ 계획 자료)",
   "2012년까지 옛 공업 용지의 70%에서 재생 착수, 계획 141건으로 지상 연면적 303만㎡ 확보",
   "거주 인구 2001년 73,464명 → 90,214명 (22.8% 증가, 영문 위키 — 출처 표시 요구 상태)",
+  "2023년 9월 주민 관측소 조사: 22@ 사무실 공실 42%, 짓고 있는 건물까지 비면 53% — 주민 단체는 \"실패한 모델\"이라고 비판 (3CatInfo · VilaWeb)",
  ],
  "lesson": [
   "공업지역을 주거로 바꾸지 않고 \"도시형 지식 생산지구\"로 바꿔 일자리를 지킨 모델 — 한국 노후 산단 · 준공업지역 첨단화의 가장 직접적인 참고 사례입니다.",
@@ -143,6 +146,7 @@ D = {
   "건물 형태를 정하지 않고 권리 · 의무만 정한 유연한 계획으로, 블록 단위의 점진적 민간 개발을 이끌었습니다.",
   "산업유산 보호는 주민 운동이 이끌어 낸 것 — 계획 단계부터 보존 목록을 정하지 않으면 갈등과 철거가 생긴다는 점을 보여 줍니다.",
   "20년 뒤 주거 · 녹지 부족이 드러나 계획을 다시 쓴 점 — 산단 재생 계획에도 중간 점검 · 개정 절차가 필요합니다.",
+  "포블레노우 · 22@ 전환은 계획 수단과 부동산 동학이 생산 공간을 밀어내는 \"산업 젠트리피케이션 (industrial gentrification)\"의 대표 연구 사례로 인용됩니다 (Charnock 등 2014 · Camerin 2019 — De Boeck · Ryckewaert 2020 재인용). 바르셀로나처럼 넓은 구역 단위로 용도를 정하는 방식과 달리 브뤼셀은 블록 단위로 생산 공간을 지정해 비교 대상이 됩니다."
  ],
  "missing": [
   "주요 입주 기업의 현재 (2026) 입주 여부와 최근 입주 기업 (2015년 이후)은 일부 확인된 자료를 찾지 못했습니다.",
@@ -153,6 +157,9 @@ D = {
   "22 ARROBA BCN 의 2013년 해산 결정 문서는 확인된 자료를 찾지 못했습니다 (2010년 업무 이관까지만 확인).",
  ],
  "refs": [
+  {"t": "El Govern declara bé cultural d'interès nacional un grup d'edificis de Can Ricart (Govern.cat, 2008.4.22)", "u": "https://govern.cat/salapremsa/notes-premsa/96095/el-govern-declara-be-cultural-d-interes-nacional-un-grup-d-edificis-de-can-ricart-a-barcelona-i-el-santuari-del-miracle-a-riner"},
+  {"t": "El 22@, en crisi? Denuncien que gairebé la meitat de les oficines estan buides (3CatInfo, 2023.9.28)", "u": "https://www.3cat.cat/3catinfo/el-22-en-crisi-denuncien-que-gairebe-la-meitat-de-les-oficines-estan-buides/noticia/3252466/"},
+  {"t": "El buidatge de les oficines del 22@ empeny el districte a reconvertir-se (VilaWeb, 2023.9.27)", "u": "https://www.vilaweb.cat/noticies/el-buidatge-de-les-oficines-del-22-empeny-el-districte-a-reconvertir-se-es-un-model-de-fracas/"},
   {"t": "2010 Informe anual de les empreses i institucions municipals (Ajuntament de Barcelona) — 22 ARROBA BCN, SAU", "u": "https://ajuntament.barcelona.cat/pressupostosifinances/sites/default/files/inline-files/2010%20Informe%20anual%20GEIM.pdf"},
   {"t": "22@ Network Barcelona — Fes-te soci", "u": "https://www.22network.net/fes-te-soci-beneficis/?lang=ca"},
   {"t": "22@ Barcelona — use: urban sustainability exchange (Metropolis)", "u": "https://use.metropolis.org/case-studies/22-barcelona"},
@@ -166,6 +173,7 @@ D = {
   {"t": "Dot Jutgla & Pallares-Barbera, Industrial heritage, economic revitalization and urban compactness in Poblenou-22@Barcelona (BAGE 69, 2015)", "u": "https://bage.age-geografia.es/ojs/index.php/bage/article/download/1912/1828/1896"},
   {"t": "Fitxa16 — Can Ricart (Diputació de Barcelona, Espais buits)", "u": "https://www.diba.cat/en/web/espais-buits/detall/-/contingut/25265758/fitxa16-can-ricart"},
   {"t": "22 Arroba Bcn SA (extinguida) — 기업 등기 정보 (Empresite)", "u": "https://empresite.eleconomista.es/22-ARROBA-BCN.html"},
+  {"t": "De Boeck, S. & Ryckewaert, M. (2020) The Preservation of Productive Activities in Brussels: The Interplay between Zoning and Industrial Gentrification, Urban Planning 5(3)", "u": "https://doi.org/10.17645/up.v5i3.3092"}
  ],
 },
 
@@ -199,6 +207,7 @@ D = {
   ["주거 · 공공임대 운영", "트뤼도 (Trudo) — ANTON · GERARD", "2013년 옛 TV 공장 SAN · SBP 를 임대 로프트 240호로", "https://www.herbestemming.nl/projecten/strijp-s-eindhoven"],
   ["주거 · 공공임대 운영", "보온베드레이프 (Woonbedrijf) — SPACE-S", "2017년 7개 동 402호, 주민이 설계에 참여한 주거", "https://nl.wikipedia.org/wiki/Strijp-S"],
   ["첨단산업 · 앵커 기업", "필립스 (Philips) 일부 부서", "2016년 SFH · SEY 건물에 소규모 부서 2곳 잔류 (현재 여부는 확인하지 못함)", "https://nl.wikipedia.org/wiki/Strijp-S"],
+  ["주거 · 공공임대 운영", "보온베드레이프 (Woonbedrijf) — 합계", "SPACE-S · SAS-3 등 저렴한 임대주택 약 600호 공급, 4단계에 150호 추가 (2025 발표)", "https://www.woonbedrijf.com/nieuws/strijps-viert-start-laatste-bouwfase"],
  ],
  "timeline": [
   ["1916", "안톤 필립스 (Anton Philips)가 첫 공장 (전구 유리 공장) 건설"],
@@ -217,6 +226,7 @@ D = {
   ["2015~2016", "보관창고 1층 식품 시장 (Vershal Het Veem, 2015) · 역 이름 Strijp-S 로 변경 (2015) · 예술학교 SintLucas 입주 (2016)"],
   ["2018.1.23", "지구 용도계획 「Strijp-S 2017」 개정 확정"],
   ["2023.12.19", "지구 용도계획 「Strijp-S 4단계」 확정 — 주택 1,480호 · 업무 4.79만㎡"],
+  ["2025", "1분기 마지막 4단계 착공 · 9.19 「Vier Strijp-S」 기념 — 4단계 주택 1,480호 · 사무 · 메이커 공간 4.79만㎡ · 시설 7,000㎡, 유리 건물에 주택 177호 착공, Woonbedrijf 임대 로프트 150호 · 작업 로프트 11호 (2028~29 완공 예정)"],
  ],
  "problem": [
   "1990년대 필립스가 에인트호번에서 생산 · 본사 기능을 단계적으로 옮기면서, 도심 가장자리의 넓은 공장지대가 비게 되었습니다.",
@@ -299,6 +309,7 @@ D = {
   "2019년 주민 1,665명 중 78.2%가 20~34세, 2019년까지 기업 약 300곳 입주 (Sur Atlas)",
   "주택 약 2,000호 · 사무 · 상업 15.5만㎡ · 행사장 약 8,000㎡ 건설 (Sur Atlas)",
   "2013 굴던 페닉스 지역전환 부문 수상",
+  "Woonbedrijf 저렴한 임대주택 약 600호 (2025, Woonbedrijf 발표)",
  ],
  "lesson": [
   "한 기업이 떠난 대규모 공장단지를 시와 민간 합작회사가 통째로 사서 나눠 개발한 사례 — 노후 산단의 \"일괄 매입 · 단일 관리\" 모델입니다.",
@@ -314,8 +325,11 @@ D = {
   "용적률 등 밀도 수치 (원래 · 변경)는 확인된 자료를 찾지 못했습니다.",
   "세제 지원은 확인된 자료를 찾지 못했습니다.",
   "개발에 반대하거나 참여한 주민협의회 · 보존운동 단체는 확인된 자료를 찾지 못했습니다.",
+  "NatLab 의 문화재 등급은 공식 사이트 (시 문화재)와 nl 위키 (국가 문화재)가 달라, 국가 문화재 등록부 원문으로는 확인하지 못했습니다.",
  ],
  "refs": [
+  {"t": "Strijp-S viert start laatste bouwfase (Woonbedrijf, 2025.9.22)", "u": "https://www.woonbedrijf.com/nieuws/strijps-viert-start-laatste-bouwfase"},
+  {"t": "Fase 4 — Strijp-S (공식 사이트)", "u": "https://www.strijp-s.nl/fase4"},
   {"t": "Grondbeleid — Jaarstukken 2017 Gemeente Eindhoven", "u": "https://eindhoven.jaarverslag-2017.nl/p2683/grondbeleid"},
   {"t": "Grondbeleid — Jaarstukken 2016 Gemeente Eindhoven", "u": "https://eindhoven.jaarverslag-2016.nl/p69/grondbeleid"},
   {"t": "Historie — Strijp-S (공식 사이트)", "u": "https://www.strijp-s.nl/historie"},
@@ -337,8 +351,8 @@ D = {
   ["변경 용도", "홍콩 제2 핵심업무지구 (CBD2) — 사무 · 상업 · 호텔 · 창조산업 · 문화, 카이탁 쪽 주거 · 스포츠 · 크루즈 터미널"],
   ["원래 용도지구", "공업 (Industrial, \"I\")"],
   ["변경 용도지구", "기타 지정 용도 — 업무 (OU(B), Other Specified Uses annotated \"Business\") · 상업 (C)"],
-  ["업무 공간", "상업 · 사무 연면적 약 170만㎡ (2012) → 약 220만㎡ (2016, 사무 180만㎡), 추가 잠재량 약 500만㎡"],
-  ["종사자", "27만 명 이상 (2016)"],
+  ["업무 공간", "상업 · 사무 연면적 약 170만㎡ (2012) → 약 220만㎡ (2016) → 약 290만㎡ (2022, 70% 증가), 건설 · 승인 중인 사업까지 약 390만㎡, 최종 400만㎡ 이상 (센트럴 규모) 목표 — 입법회 문서 CB(1)74/2022(04)", "https://www.ekeo.gov.hk/filemanager/ekeo/common/about-us/dev20220222cb1-74-4-c.pdf"],
+  ["종사자", "27만 명 이상 (2016) → 약 28만 명 (2022) · 공업 빌딩 약 260동 (대부분 민간 · 소유 분산)"],
  ],
  "from": "노후 공업지역 (공업 빌딩 · 창고) + 옛 카이탁 공항",
  "to": "제2 핵심업무지구 CBD2 (사무 · 상업 · 창조산업)",
@@ -368,9 +382,11 @@ D = {
   ["2016", "시정연설 — 민간이 보행 연결 통로를 지으면 임차 조건 변경 프리미엄 면제 (시범)"],
   ["2017", "EKE 범위를 산포콩까지 확대"],
   ["2018.10.10", "1987년 이전 공업 빌딩 재건축 시 비주거 용적률 최대 20% 완화 (3년 한시)"],
-  ["2019 초", "15년 이상 공업 빌딩 통째 전환 시 변경료 면제 재개 (3년) — 전환 연면적 10%를 문화 · 창조 · 사회 용도로 지정"],
+  ["2019 초", "15년 이상 공업 빌딩 통째 전환 시 변경료 면제 재개 (「활화공하 2.0 (活化工廈2.0)」, 2024년까지 연장) — 전환 연면적 10%를 문화 · 창조 · 사회 용도로 지정"],
   ["2020", "시정연설 — 관통 · 카우룽베이 · 카이탁이 제2 핵심업무지구로 전환되었다고 평가"],
   ["2021", "예산안에서 카이탁 상업 용지 5필지를 주거로 변경 (약 5,800호) — 계획 수정 논란"],
+  ["2022.4", "EKEO 책임자 직위를 2027년 3월 31일까지 5년 연장 (입법회 제출, 2022)"],
+  ["2024~2026", "동카우룽 문화센터 개관 (2024.10) · 카이탁 스포츠 파크 개장 (2025.3.1) · 카이탁 개발구역 주요 공공 기반시설 2026년 대체로 완공 예정 (EKEO)"],
  ],
  "problem": [
   "1980년대 이후 제조업이 중국 본토로 옮겨 가고 카이탁 공항이 이전하면서, 관통 · 카우룽베이 공업 빌딩의 원래 기능이 사라졌습니다 (2007년 12월 공업 빌딩 공실률 6.7%).",
@@ -403,6 +419,7 @@ D = {
   ["2011-12 시정연설 (Policy Address 2011-12) — 「카우룽 이스트 활성화 (Energizing Kowloon East)」", "카우룽베이 · 관통 상업지구 · 옛 카이탁 공항을 제2 핵심업무지구 (CBD2)로 — 토지 용도 검토 · 도시설계 · 연결성 · 기반시설 개선, 2017 산포콩 확대", "https://www.ekeo.gov.hk/en/about-ekeo/background/index.html"],
   ["카우룽 이스트 개념 마스터플랜 (Conceptual Master Plan 5.0, 2016) · EKEO 소책자 (2012-2016+)", "「걸을 수 있는 카우룽 이스트」, 환경 개선, 개발 잠재력 (행동구역), 스마트시티 시범지구 전략", "https://www.legco.gov.hk/yr16-17/english/panels/dev/papers/dev20161122cb1-133-4-e.pdf"],
   ["카이탁 개발계획 (Kai Tak Development, 옛 동남 카우룽 개발계획 South East Kowloon Development, 2004 재검토)", "옛 공항 부지 320ha — 스포츠 단지 · 크루즈 터미널 · 주거 · 상업"],
+  ["카우룽 이스트 개념 마스터플랜 6.0 (起動九龍東概念總綱計劃6.0)", "연결 · 보행성 · 이동성 강화, 스마트 · 녹색 · 회복력 있는 CBD, 지속가능한 성장, 「창조 정신」 — 홍콩계획사학회 (HKIP) 2025 연례상 동상", "https://www.ekeo.gov.hk/tc/about-ekeo/conceptual-master-plan/index.html"],
  ],
  "lawsNote": ["규제완화의 핵심은 세 겹입니다 — 용도지역을 공업에서 업무 (OU(B))로 바꿔 계획 허가 없이 사무 · 상업을 허용하고, 토지 임차 조건 변경료 (프리미엄)를 면제하며, 재건축 시 용적률을 최대 20% 올려 준 것입니다. 정부는 땅을 사지 않고 민간 소유자가 스스로 전환하게 했습니다."],
  "tools": [
@@ -437,6 +454,7 @@ D = {
   ["토지 매각 수익", "2016년까지 정부 용지 5필지 매각 (상업 · 사무 약 27만㎡)"],
   ["공공 공간 운영", "고가도로 밑 「Fly the Flyover 01」 공연장 등 정부 부지를 예술 · 문화 · 창조 용도로 운영"],
   ["운영상 문제", "임대료 상승으로 소규모 작업실 · 예술 공간이 밀려남, 근로 인구 급증에 따른 교통 혼잡 (중문 위키)"],
+  ["운영 연장 (2022)", "책임자 2명 직위를 2022.4.1~2027.3.31 5년 연장, 「개발국 공무과 (發展局工務科)」 산하 전담 기구", "https://www.ekeo.gov.hk/filemanager/ekeo/common/about-us/dev20220222cb1-74-4-c.pdf"],
  ],
  "operationNote": ["카우룽 이스트는 단지 운영회사가 임대료로 운영하는 구조가 아니라, 정부 조직 (EKEO)이 예산으로 인력을 두고 계획 · 조정을 맡고, 공업 빌딩의 운영 · 수익은 각 민간 소유자에게 맡기는 구조입니다. 정부 쪽 수입은 토지 매각이며, 지출은 공공 공간 · 보행 개선 투자입니다."],
  "famous": [
@@ -444,12 +462,16 @@ D = {
   "2012년 「카우룽 이스트 활성화」를 주제로 한 홍콩관 전시가 제13회 베네치아 건축 비엔날레에서 상위 5위 안에 들었습니다 (중문 위키).",
   "카우룽 이스트는 홍콩의 스마트시티 시범지구로 지정되어, 새 매각 토지에 스마트 수도 계량기 · 전기차 충전 등을 의무화했습니다.",
   "고가도로 밑 공간을 공연장으로 바꾼 「Fly the Flyover」 등 장소 만들기 사업으로 알려졌지만, 임대료 상승으로 예술 공간이 밀려난다는 비판도 함께 받았습니다.",
+  "카우룽 이스트 개념 마스터플랜이 홍콩계획사학회 (Hong Kong Institute of Planners) 2025 연례상 동상을 받았습니다 (EKEO).",
  ],
  "result": [
   "상업 · 사무 연면적 약 170만㎡ (2012) → 약 220만㎡ (2016) — 사무 140만 → 180만㎡",
   "카우룽 이스트에 BEAM Plus 골드 · 플래티넘 건물 23동 (2016)",
   "관통구 근로 인구 252,724명 (2006) → 289,093명 (2011) — 교통 혼잡 심화 비판 (중문 위키)",
   "정부는 2020년 시정연설에서 제2 핵심업무지구 전환에 성공했다고 평가",
+  "2012~2020년 홍콩 전체 신규 상업 · 사무 공급의 평균 약 40%가 카우룽 이스트 (2022년 55% 예상) — 입법회 문서 (2022)",
+  "공업 빌딩 재활성화 승인 건수 중 카우룽 이스트 비중: 1.0 (2010~2016) 45% → 2.0 (2018~) 64%",
+  "새로 만들거나 고친 공공 공간 17ha 이상 (InPARK · 취핑강 정원 · 하이분로드 공원), 개발사업 130건 이상 원스톱 지원, 행사 참여 약 112만 명 (2022까지)",
  ],
  "lesson": [
   "산업단지를 공공 재개발이 아니라 \"용도지역 완화 + 변경료 면제 + 용적률 인센티브\"로 민간이 빌딩 단위로 전환하게 한 모델 — 한국 노후 산단 · 준공업지역의 지식산업센터 전환과 직접 비교할 수 있습니다.",
@@ -467,6 +489,10 @@ D = {
   "세제 지원은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "立法會CB(1)74/2022(04)號文件 — 延續起動九龍東辦事處運作 (2022)", "u": "https://www.ekeo.gov.hk/filemanager/ekeo/common/about-us/dev20220222cb1-74-4-c.pdf"},
+  {"t": "起動九龍東 — 概念總綱計劃 (EKEO, 번체 중문)", "u": "https://www.ekeo.gov.hk/tc/about-ekeo/conceptual-master-plan/index.html"},
+  {"t": "起動九龍東 — 常見問題 (EKEO, 번체 중문)", "u": "https://www.ekeo.gov.hk/tc/about-ekeo/faqs/index.html"},
+  {"t": "起動九龍東 — 背景 (EKEO, 번체 중문)", "u": "https://www.ekeo.gov.hk/tc/about-ekeo/background/index.html"},
   {"t": "Kai Tak Cruise Terminal — Wikipedia", "u": "https://en.wikipedia.org/wiki/Kai_Tak_Cruise_Terminal"},
   {"t": "LCQ14: Energizing Kowloon East Office (2012.7.4)", "u": "https://www.info.gov.hk/gia/general/201207/04/P201207040263.htm"},
   {"t": "East Kowloon Cultural Centre — Wikipedia", "u": "https://en.wikipedia.org/wiki/East_Kowloon_Cultural_Centre"},
@@ -621,6 +647,7 @@ D = {
   "용적률을 올리지 않고도 높이 · 형태 · 지원 용도 규제만 풀어 \"수직형 공장\"을 가능하게 한 특별지구 방식은, 한국 산단의 고밀 복합화 규제 설계에 참고할 만합니다.",
   "고용 센터 · 직업고교를 단지 안에 두어 지역 주민을 일자리와 직접 연결했습니다.",
   "개발과 보존의 충돌 (제독 관사 철거)은 보존 대상을 미리 정해 두어야 함을 보여 줍니다.",
+  "산업용지 보전 정책 연구에서 브루클린 해군 조선소는 공공이 산업 용지를 사들여 자격 있는 산업 용도에만 임대하는 \"산업 토지 신탁 · 은행 (industrial land trust or bank)\"의 대표 예로 꼽힙니다 (보스턴 해양산업단지 · 클리블랜드 토지은행과 함께, Chapple 2014)."
  ],
  "missing": [
   "브루클린 해군 조선소 산업사업지구 (IBZ)의 지정 연도는 확인된 자료를 찾지 못했습니다 (기존 내용의 2006년은 확인하지 못해 뺐습니다).",
@@ -636,6 +663,7 @@ D = {
   {"t": "Zoning Resolution 144-00 Special Brooklyn Navy Yard District", "u": "https://zr.planning.nyc.gov/index.php/article-xiv/chapter-4/144-00"},
   {"t": "Who we are — Brooklyn Navy Yard (BNYDC)", "u": "https://www.brooklynnavyyard.org/mission/"},
   {"t": "Brooklyn Navy Yard Releases FY25 Impact Report (BNYDC, 2026.1.8)", "u": "https://www.brooklynnavyyard.org/brooklyn-navy-yard-fy25-impact-report/"},
+  {"t": "Chapple, K. (2014) The Highest and Best Use? Urban Industrial Land and Job Creation, Economic Development Quarterly", "u": "https://doi.org/10.1177/0891242413517134"}
  ],
 },
 
@@ -669,7 +697,7 @@ D = {
  ],
  "timeline": [
   ["1909", "요한니스탈 비행장 개장 — 독일 최초의 동력 비행장, 이후 독일 항공연구소 (DVL)"],
-  ["1932~1934", "DVL 대형 풍동 건설 · 회전 탑 (Trudelturm) · 엔진 시험대 등 항공 시험시설"],
+  ["1932~1940", "DVL 항공 시험시설 건설 — 대형 풍동 (1932~1934) · 회전 탑 (Trudelturm, 1934~1936) · 방음 엔진 시험대, 건축가 헤르만 브레너 (Hermann Brenner) · 베르너 도이치만 (Werner Deutschmann)"],
   ["1950~1952", "동독 TV 센터 건설 → 1952.12.21 동독 TV (DFF) 방송 시작, 동독 과학아카데미 연구소 · 국가보위부 경비연대 입주"],
   ["1990", "국가보위부와 경비연대 해체"],
   ["1991", "학술위원회 (Wissenschaftsrat)가 아카데미 연구소를 평가 · 일부를 새 기관으로 이전 권고, 말 막스 보른 연구소 설립 · 혁신창업센터 (IGZ) 개설, 주 대학구조위원회가 훔볼트 대학 자연과학부 이전 권고"],
@@ -684,6 +712,7 @@ D = {
   ["2003.7", "주 정부 \"과감한 방향 전환\" — 구역 축소 · 조기 종료 · 신규 대출 금지 · 주 예산으로 재정 전환, 미실현 주거 용지를 업무 용지로"],
   ["2004.1.1", "WISTA 자회사 Adlershof Projekt GmbH 가 새 수탁 개발회사로 (현 WISTA.Plan GmbH)"],
   ["2005~2021", "고속도로 A113 연결 개통 (2005 · 2008) · 트램 아들러스호프 II 구간 개통 (2021)"],
+  ["2025.9", "베를린 남동부 전력 시설 방화로 3일간 정전 — 단지 기업 · 연구소가 운영 차질, 그래도 2025년 매출 · 예산 약 5% 늘어 42억 유로 이상 (주 경제부 2026.3.23 발표)"],
  ],
  "problem": [
   "통일 뒤 동독 과학아카데미 연구소와 동독 TV 가 1991년 말 문을 닫고 국가보위부 부대가 해체되면서, 수십 년 동안 울타리로 막혀 있던 넓은 땅이 서로 연결되지 않은 채 버려졌습니다.",
@@ -698,6 +727,7 @@ D = {
   "1990년대 후반 경기 침체와 재정난으로 2003년 계획을 크게 줄였습니다. 주거 목표를 대폭 낮추고, 수탁 개발회사를 WISTA 자회사로 바꿔 기업 유치 중심으로 돌렸습니다. 그 뒤 광학 · 광자학, 태양광 · 재생에너지, 마이크로시스템 · 소재, IT · 미디어, 바이오 · 환경 클러스터가 자리 잡았습니다.",
  ],
  "actors": [
+  ["도시계획가 · 건축가", "헤르만 브레너 (Hermann Brenner) · 베르너 도이치만 (Werner Deutschmann)", "1930년대 DVL 풍동 · 회전 탑 등 항공 시험시설 설계 (현 항공역학 공원의 문화재)"],
   ["도시계획가 · 건축가", "UrbanPlan (계획 그룹) + Becker Giseke Mohren Richard (조경)", "기본계획 (Rahmenplan) 수립 (1991년 발주)"],
   ["도시계획가 · 건축가", "Jourdan/Müller + Projektbüro Stadtlandschaft + BGS (교통) · Machleidt + Partner", "1993 설계 공모 1등안 → 합의안 / WISTA 부지 기반시설 · 도시설계 구상"],
   ["도시계획가 · 건축가", "Thomanek + Duquesnoy (조경) · Sauerbruch Hutton · Ortner & Ortner · Brenner & Partner · Benedikt Tonon", "항공역학 공원 설계 / 광자학 센터 신축 1 (1998) · 신축 2+3 / BESSY II / 화학 · 물리 연구소 건물"],
@@ -766,6 +796,7 @@ D = {
   "2025년 기업 약 1,300곳 · 과학기관 18곳 · 종사자 약 29,600명 · 학생 약 6,200명, 매출 · 예산 42억 유로 이상 (WISTA)",
   "2002년 유럽연합 「우수 지역 (Region of Excellence)」 선정",
   "주택 약 2,900호 완공, 약 2,400호 건설 · 계획 중 (베를린 도시개발부)",
+  "2025년 과학기관 종사자 4,200명, 훔볼트 대학 입주 기관 외부 연구비 3,800만 · 기본 재원 8,600만 유로, 비대학 연구소 예산 3억 5,600만 유로 · 외부 연구비 1억 300만 유로 (+27%) — 주 경제부 보도자료 (2026)",
  ],
  "lesson": [
   "공공 (주)이 운영회사를 세워 연구소 · 대학 · 기업을 한곳에 모은 \"과학 도시\"형 재생 — 대학 이전이 강력한 앵커가 되었습니다.",
@@ -783,6 +814,8 @@ D = {
   "개발조치 구역의 공식 해제 (Aufhebung) 시점은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Trotz Anschlag in 2025: Technologiepark Adlershof wächst weiter (Senatsverwaltung für Wirtschaft, 2026.3.23)", "u": "https://www.berlin.de/sen/web/presse/pressemitteilungen/2026/pressemitteilung.1655130.php"},
+  {"t": "Der Aerodynamische Park in Adlershof — Berliner Zentrum Industriekultur", "u": "https://industriekultur.berlin/ort/aerodynamischer-park-adlershof/"},
   {"t": "WISTA-Management GmbH Lagebericht 2017", "u": "https://www.wista.de/fileadmin/user_upload/downloads/wista/2017_WISTA_Lagebericht.pdf"},
   {"t": "WISTA Jahresbericht 2025 (WISTA Management GmbH)", "u": "https://www.wista.de/fileadmin/user_upload/downloads/jahresberichte/WISTA_Jahresbericht_2025.pdf"},
   {"t": "Unternehmensprofil — WISTA Management GmbH", "u": "https://www.wista.de/unternehmensprofil"},

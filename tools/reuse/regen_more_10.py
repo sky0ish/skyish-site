@@ -23,16 +23,21 @@ D = {
   ["첨단산업 · 창업 · 테크 허브", "테크 바르셀로나 피어 원 (Tech Barcelona Pier01)", "팔라우 데 마르 건물 안 스타트업 · 테크 허브 (입주 연도는 미확인)", "https://ca.wikipedia.org/wiki/Palau_de_Mar"],
   ["업무 · 오피스 · 컨벤션", "월드트레이드센터 바르셀로나 (World Trade Center Barcelona)", "1999.7.22 개장 · 바르셀로나 부두 (Moll de Barcelona) · 원형 타워 4동 — 임대 사무실 40~3,000㎡ · 8~1,500명 컨벤션센터 (설계 헨리 N. 콥)", "https://ca.wikipedia.org/wiki/World_Trade_Center_Barcelona"],
   ["상업 · 호텔", "그랜드 마리나 호텔 (Grand Marina, 5성)", "월드트레이드센터 바르셀로나 안 · 291실", "https://ca.wikipedia.org/wiki/World_Trade_Center_Barcelona"],
+  ["상업 · 호텔", "W 바르셀로나 호텔 (Hotel W Barcelona)", "북쪽 새 항구 입구 (Nova Bocana) 지구 — 포르트 벨 공식 사이트 입주 목록 (개장 연도 · 규모는 미확인)", "https://portvellbcn.cat/ca/"],
+  ["업무 · 기업 본사", "데시구알 본사 (Desigual Oficines Centrals)", "포르트 벨 공식 사이트의 「산업 · 기업」 입주 목록 (입주 연도 · 위치 상세 미확인)", "https://portvellbcn.cat/ca/"],
+  ["문화 · 대학", "바르셀로나 해양대학 (Facultat Nàutica de Barcelona)", "포르트 벨 공식 사이트의 「교육」 입주 목록", "https://portvellbcn.cat/ca/"],
+  ["문화 · 박물관", "바르셀로나 해양박물관 (Museu Marítim de Barcelona)", "드라사네스 레이알스 (Drassanes Reials, 옛 왕립 조선소) — 포르트 벨 공식 사이트 목록", "https://portvellbcn.cat/ca/"],
+  ["상업 · 마리나", "마리나 벨라 (Marina Vela) · 마리나 포르트 벨 (Marina Port Vell) · 마리나 바르셀로나 92", "요트 정박 · 수리 — 마리나 벨라는 북쪽 새 항구 입구 특별계획 (2001)으로 조성", "https://www.portdebarcelona.cat/ca/port-vell/historia-del-port-vell"],
   ["문화 · 영화관", "마레마그눔 옛 멀티플렉스 영화관 (cinema multisala)", "1995년 개장 때 영화관 · 식당 · 바 · 디스코텍 중심 → 영화관 건물은 이후 철거, 그 자리를 항만청 · 시와 협의해 아메리카스컵 (2024) 시설로 사용 (철수)", "https://www.ejeprime.com/comercial/klepierre-invertira-15-millones-de-euros-en-el-reposicionamiento-de-maremagnum"],
  ],
  "timeline": [
   ["1869", "바르셀로나 항만공사위원회 (Junta de Obras del Port de Barcelona) 설립"],
   ["1978", "바르셀로나 자치항 (Port Autònom de Barcelona) 정관 승인"],
-  ["1981.5", "70여 년 만에 항구를 시민에게 처음 개방 — 몰 데 라 푸스타에서 행사"],
-  ["1982~1987", "마누엘 데 솔라-모랄레스 (Manuel de Solà-Morales) 설계로 몰 데 라 푸스타 정비 (1983~1985 공사) → 1987.1 파스쿠알 마라갈 (Pasqual Maragall) 시장이 개장"],
+  ["1981", "군의 날 (Dia de les Forces Armades) 행사를 계기로 자치항 이사회가 보슈 이 알시나 부두 (옛 무랄랴 부두, 현 몰 데 라 푸스타)를 시민에게 개방 — 70여 년 만의 첫 개방"],
+  ["1982~1987", "항만과 시 (Ajuntament)가 마누엘 데 솔라-모랄레스 (Manuel de Solà-Morales)에게 부두 · 콜롬 거리 교통 재편 설계 의뢰 (1982) → 1983~1985 공사 → 1987.1 파스쿠알 마라갈 (Pasqual Maragall) 시장이 개장"],
   ["1986", "바르셀로나, 1992년 올림픽 개최지로 결정"],
   ["1987", "항만 전략계획 — 항만을 상업 · 물류 · 옛 항구 (Port Vell) 세 구역으로 재편"],
-  ["1988", "항만청이 「항만 2000 도시계획 관리단 (Gerència Urbanística Port 2000)」 설치 · 포르트 벨 특별계획 의결 · 산트 세바스티아 해수욕장 철거"],
+  ["1988", "「항만 2000 도시계획 관리단 (Gerència Urbanística Port 2000)」 설치 — 항만 기술부서 (Serveis Tècnics del Port)와 함께 포르트 벨 특별계획 작성 · 자치항 의결 · 산트 세바스티아 해수욕장 철거"],
   ["1989.5~6", "포르트 벨 특별계획, 카탈루냐 자치정부 도시계획위원회 승인 (5월) · 바르셀로나 도시계획위원회 최종 승인 (6월)"],
   ["1990~1992", "해수욕장 · 해변 간이식당 18곳 철거"],
   ["1992", "옛 일반 보관창고 (1900년 준공)를 행정용으로 1차 개조 → 1993년 카탈루냐 역사박물관 전환 결정 (팔라우 데 마르)"],
@@ -50,10 +55,12 @@ D = {
  "overview": [
   "바르셀로나 항만청이 소유 · 관리하는 국가 항만 용지 안에서, 항만청 스스로 「특별계획 (Pla Especial)」을 세워 옛 항구 약 56ha 를 해양 스포츠 · 여객 · 상업 · 문화 · 레저 공간으로 바꾼 사업입니다. 항만 기능을 완전히 없애지 않고 \"상업 항만 활동을 해양 스포츠 등 다른 항만 활동으로 대체\"하는 것을 목표로 했습니다.",
   "첫 단계는 시 쪽 해안의 몰 데 라 푸스타 정비(1980년대)로, 해안도로를 정리하고 산책로를 만들었습니다. 이어 1988년 항만청 안에 「항만 2000 도시계획 관리단」을 두고, 1989년 승인된 특별계획에 따라 에스파냐 부두 (Moll d'Espanya)에 마레마그눔 · 아쿠아리움 · IMAX 를 넣고 람블라 데 마르로 람블라스 거리와 직접 이었습니다.",
+  "바르셀로나 항만청 (카탈루냐어 공식 연혁)에 따르면 특별계획의 \"시민 항구 (Port Ciutadà)\" 모델은 ① 새 상업 · 관광 · 문화 · 서비스 용도를 에스파냐 부두 끝 (쇼핑센터 · 영화관 · 아쿠아리움)과 바르셀로나 부두 끝 (월드트레이드센터 · 뒤에 호텔)에 모으고, ② 팔라우 데 마르를 고쳐 쓰며, ③ 누 부두 · 카탈루냐 부두는 대형 요트 수리 · 정비 시설로 유지하고, ④ 몰 데 라 푸스타 · 바르셀로네타 부두 등에 큰 공공 공간을 두는 것이었습니다. 계획은 여러 차례 변경 · 개별 협약을 거쳤고 처음부터 시민 · 언론의 논쟁 대상이었습니다.",
   "옛 일반 보관창고는 팔라우 데 마르로 고쳐 카탈루냐 역사박물관 · 식당 · 업무 공간이 되었습니다. 마레마그눔은 개장 뒤 야간 유흥과 폭력 사건으로 이미지가 나빠지자 2005년 낮 시간 쇼핑 · 식당 중심으로 바꿨습니다.",
  ],
  "actors": [
-  ["도시계획가 · 건축가", "마누엘 데 솔라-모랄레스 (Manuel de Solà-Morales)", "몰 데 라 푸스타 설계 (1982~)"],
+  ["도시계획가 · 건축가", "마누엘 데 솔라-모랄레스 (Manuel de Solà-Morales)", "몰 데 라 푸스타 · 콜롬 거리 교통 재편 설계 (1982 항만 · 시 공동 의뢰, 1983~1985 시공)"],
+  ["도시계획가 · 건축가", "항만 2000 도시계획 관리단 · 항만 기술부서 (Gerència Urbanística Port 2000 · Serveis Tècnics del Port)", "포르트 벨 특별계획 (1988~1989) 작성 — 개인 계획가 이름은 공식 연혁에 없음"],
   ["도시계획가 · 건축가", "엘리오 피뇬 (Helio Piñón) · 알베르트 비아플라나 (Albert Viaplana) · 라파엘 콜 (Rafael Coll)", "람블라 데 마르 · 마레마그눔 설계"],
   ["도시계획가 · 건축가", "호안 아리아스 · 호안 솔라 / 조세프 베네딕토 · 아구스티 마테오스", "팔라우 데 마르 개조 — 1992 행정용 (아리아스 · 솔라), 1993~ 박물관 (베네딕토 · 마테오스)"],
   ["도시계획가 · 건축가", "리카르드 메르카데 (Ricard Mercadé)", "마레마그눔 리모델링 (2005 재개장)"],
@@ -83,6 +90,7 @@ D = {
  "zoning": [
   ["지정", "포르트 벨 특별계획 구역 — 1989년 승인, 약 56ha (11개 사업 구역) → 2001년 북쪽 항구 입구 추가로 약 70ha"],
   ["관리 주체 · 방식", "바르셀로나 항만청 · 포르트 벨 도시계획 관리단이 토지 소유자 겸 계획 · 관리 주체 — 시설은 양허 계약으로 민간 운영"],
+  ["용도 배치 (특별계획 모델)", "에스파냐 부두 끝 — 쇼핑 · 영화관 · 아쿠아리움 / 바르셀로나 부두 끝 — WTC · 호텔 / 누 · 카탈루냐 부두 — 대형 요트 수리 · 정비 (항만 기능 유지) / 몰 데 라 푸스타 · 바르셀로네타 부두 — 공공 공간", "https://www.portdebarcelona.cat/ca/port-vell/historia-del-port-vell"],
   ["보존 관리", "팔라우 데 마르 (옛 일반 보관창고, 1900년 준공) — 지역 문화재 (BCIL, Bé Cultural d'Interès Local) 지정"],
  ],
  "result": [
@@ -122,7 +130,7 @@ D = {
  "missing": [
   "주요 입주 시설 일부 (IMAX 영화관의 현재 여부 · 폐관 연도, 마리나 운영사)는 확인된 자료를 찾지 못했습니다.",
   "양허 사용료 · 항만청의 포르트 벨 관련 수입 규모와 공공 운영 보조금은 확인된 자료를 찾지 못했습니다.",
-  "포르트 벨 특별계획 (1989)을 작성한 도시계획가 · 건축가는 확인된 자료를 찾지 못했습니다.",
+  "포르트 벨 특별계획 (1989)은 항만 2000 도시계획 관리단과 항만 기술부서가 작성했다고만 공식 연혁에 나오며, 계획을 맡은 개인 도시계획가 · 건축가 이름은 확인된 자료를 찾지 못했습니다.",
   "재원 · 보조금 가운데 1980~90년대 총사업비 · 공공 투자액 · 양허 사용료 금액은 확인된 자료를 찾지 못했습니다.",
   "1976년 바르셀로나 광역 일반계획 (PGM) 상의 정확한 원래 용도지구 기호는 확인된 자료를 찾지 못했습니다.",
   "특별계획의 용적률 · 연면적 수치와 11개 사업 구역별 면적은 확인된 자료를 찾지 못했습니다.",
@@ -135,6 +143,8 @@ D = {
   {"t": "Klépierre invertirá 15 millones de euros en el reposicionamiento de Maremagnum — EjePrime (2023.2)", "u": "https://www.ejeprime.com/comercial/klepierre-invertira-15-millones-de-euros-en-el-reposicionamiento-de-maremagnum"},
   {"t": "Centro comercial Maremagnum — historia (Klépierre)", "u": "https://maremagnum.klepierre.es/historia"},
   {"t": "Transformació Port Vell — Port Vell Barcelona (카탈루냐어)", "u": "https://portvellbcn.cat/ca/transformacio-portvell/"},
+  {"t": "Història del Port Vell — Port de Barcelona (카탈루냐어 공식)", "u": "https://www.portdebarcelona.cat/ca/port-vell/historia-del-port-vell"},
+  {"t": "Port Vell — El Port Ciutat de Barcelona (공식 사이트 · 입주 목록)", "u": "https://portvellbcn.cat/ca/"},
   {"t": "History of Port Vell — Port de Barcelona", "u": "https://www.portdebarcelona.cat/en/port-vell/history-port-vell"},
   {"t": "El nou Port Vell — Ara, Barcelona 92 (카탈루냐어)", "u": "https://interactius.ara.cat/barcelona-92/cronica/el-nou-port-vell"},
   {"t": "25 anys de la rambla de Mar — betevé (카탈루냐어)", "u": "https://beteve.cat/societat/25-anys-rambla-mar-port-vell-maremagnum/"},
@@ -187,6 +197,7 @@ D = {
   ["2001.10", "펄 디스트릭트 개발계획 (Pearl District Development Plan) 시의회 승인"],
   ["2002", "제이미슨 스퀘어 (Jamison Square) 개장"],
   ["2005", "태너 스프링스 공원 (Tanner Springs Park) 개장"],
+  ["2009 · 현재", "리버 디스트릭트 도시재생 구역 확대 (올드타운/차이나타운 일부) → 이후 신규 TIF 를 마치고 「종료 구역」이 됨 (프로스퍼 포틀랜드)"],
   ["2013", "더 필즈 공원 (The Fields Park) 개장"],
  ],
  "problem": [
@@ -233,12 +244,13 @@ D = {
   ["주차 규제", "최소 주차 의무 없음 · 최대 주차 비율 (주거 1.5대/호 등)"],
  ],
  "zoning": [
-  ["지정", "리버 디스트릭트 도시재생 구역 (River District URA) — 1998년 9월 25일 계획 채택 (펄 디스트릭트 · 태너 베이슨 · 터미널 원 · 공업 보호구역 · 유니언역/올드타운 포함)"],
+  ["지정", "리버 디스트릭트 도시재생 구역 (River District URA) — 1998년 6월 설립 · 9월 25일 계획 문서, 처음 314.8에이커 (약 127ha) → 2009년 올드타운/차이나타운 일부 편입 확대, 현재 「종료 구역 (closed district)」 — (펄 디스트릭트 · 태너 베이슨 · 터미널 원 · 공업 보호구역 · 유니언역/올드타운 포함)"],
   ["관리 주체 · 방식", "포틀랜드 개발위원회 (현 프로스퍼 포틀랜드)가 TIF 로 사업 시행, 디자인 심의는 주민협의회 협의를 거침"],
   ["보존 관리", "NW 13번가 일대 약 8블록이 국가 사적 역사지구 (National Register Historic District) — 13번가 일대 별도 높이 제한, 브루어리 블록스의 역사 건물 3동은 시 역사자원 프로그램으로 보호"],
   ["공원", "노스 파크 블록스 3.11에이커 · 제이미슨 스퀘어 0.94 · 태너 스프링스 0.92 · 더 필즈 3.2 — 합계 8.17에이커"],
  ],
  "result": [
+  "프로스퍼 포틀랜드 집계 — 리버 디스트릭트 구역 평가액이 1999-2000 회계연도 이후 17억 달러 늘었고, 개발 비용의 90% 를 민간이 부담했습니다.",
   "인구 1990년 약 1,500명 → 2010년 5,997명 → 2020년 11,019명.",
   "노면전차 노선 400m 안에서 1998~2015년 2,300만 ft² · 주택 약 1만 8,000호 개발 (노선 전체 기준).",
   "리버 디스트릭트 구역 평가액 1998년 4억 4,600만 달러 → 2014년 22억 달러.",
@@ -284,9 +296,9 @@ D = {
   "1980년대 중반 혼합 용도 재분류의 정확한 연도 · 조례 번호는 확인된 자료를 찾지 못했습니다.",
   "개발 협약에 따른 HSP 의 공원 부지 기부 면적 · 기타 공공기여의 세부 수치는 확인된 자료를 찾지 못했습니다.",
   "NW 13번가 역사지구의 지정 연도는 확인된 자료를 찾지 못했습니다.",
-  "리버 디스트릭트 도시재생 구역의 최초 면적 (에이커)은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "River District — Prosper Portland", "u": "https://prosperportland.us/our-work/river-district/"},
   {"t": "Powell's Books — Wikipedia", "u": "https://en.wikipedia.org/wiki/Powell%27s_Books"},
   {"t": "Brewery Blocks — Wikipedia", "u": "https://en.wikipedia.org/wiki/Brewery_Blocks"},
   {"t": "Portland Streetcar: City transit targets unmet, better performance management needed — Portland City Auditor (2014.12)", "u": "https://portland.gov/sites/default/files/2021/451b-streetcar-published.pdf"},
@@ -388,6 +400,7 @@ D = {
   ["관리 주체 · 방식", "공원 구역은 국립공원청, 보존지구는 보존위원회 (1978~1995) → 해산 뒤 공원이 시와 함께 디자인 심의 참여"],
   ["보존 관리", "보존계획 (1980) · 부동산 중요도 목록 (Index of Properties) · 디자인 심의 기준 — 부트 공장 단지는 \"거의 온전히 남은\" 대표 공장 단지로 보존"],
   ["후속 지구", "해밀턴 운하 지구 (Hamilton Canal District) — 세 운하 합류부 15에이커, 주택 최대 725호 · 상업 42만 5,000ft² 계획 (2009 착공 1단계 애플턴 밀스)"],
+  ["후속 지구 (시 계획)", "해밀턴 운하 혁신지구 (Hamilton Canal Innovation District) — 잭슨 · 애플턴 · 미들섹스 (JAM) 도시재생계획의 최대 사업, 15에이커 · 총 8억 달러 민관협력 · 신규 개발 약 200만 ft² · 연 약 400만 달러 신규 세수 예상 (로웰 시) — 로웰 플랜 · 국립역사공원 · 주민상인협회 (JAMBRA) 협력", "https://www.lowellma.gov/731/Hamilton-Canal-District-Plan"],
  ],
  "result": [
   "보존위원회 · 공원 · 시 · 주 · 민간 협력으로 400동 이상 재생, 빈 공장 공간 520만 ft² 가운데 88% 개조 완료 또는 진행 (2012 내무부 증언).",
@@ -438,6 +451,7 @@ D = {
   "1972년 첫 역사지구의 정확한 지정 주체 (시 · 국가 사적)는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Hamilton Canal Innovation District Plan — City of Lowell", "u": "https://www.lowellma.gov/731/Hamilton-Canal-District-Plan"},
   {"t": "National Park Service FY 2025 Budget Justifications (Greenbook)", "u": "https://www.doi.gov/sites/default/files/documents/2024-03/fy2025-508-nps-greenbook.pdf"},
   {"t": "Lowell National Historical Park fact sheet — Pew (2018)", "u": "https://www.pew.org/en/research-and-analysis/fact-sheets/2018/03/lowell-national-historical-park"},
   {"t": "Fees & Passes — Lowell National Historical Park (NPS)", "u": "https://www.nps.gov/lowe/planyourvisit/fees.htm"},
@@ -471,6 +485,7 @@ D = {
   ["업무 · 금융 본사", "UOB 플라자 1 · 2 (UOB Plaza) — 대화은행 (United Overseas Bank)", "보트 키 맞은편 래플스 플레이스 · 플라자 1 (1995, 280m) · 플라자 2 (1973 · 1995 개조, 162m) — UOB 본사", "https://en.wikipedia.org/wiki/UOB_Plaza"],
   ["상업 · 식음 · 유흥", "CQ @ 클라크 키 (CQ @ Clarke Quay) — 캐피털랜드 통합상업신탁 (CICT)", "1993년 클라크 키 페스티벌 빌리지로 개장 · 보존 창고 블록 — 강변 식당 · 바 · 클럽, 2022~2023 재단장 (순임대면적 70% 이상 사전 계약)", "https://www.capitaland.com/en/about-capitaland/newsroom/news-releases/international/2022/jul/cq---clarke-quay-to-be-transformed-into-a-day-and-night-destinat.html"],
   ["상업 · 쇼핑 · 업무", "클라크 키 센트럴 · 리버사이드 포인트 (Clarke Quay Central · Riverside Point) — 파 이스트 오거니제이션 (Far East Organization)", "클라크 키 구역 상업 · 업무 시설 — 싱가포르강 원 회원", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
+  ["상업 · 식료품 · 음악", "페어프라이스 파이니스트 클라크 키 (FairPrice Finest) · 스위 리 클라크 키 (Swee Lee) · 슬링샷 (Slingshot)", "2024 재개장 때 입점 — 그로서 푸드홀 · 악기 매장 겸 카페 · 바 · 라이브 공연장 · 놀이기구", "https://www.timeout.com/singapore/things-to-do/cq-at-clarke-quay-ultimate-guide"],
   ["상업 · 식음", "보트 키 숍하우스 식당 · 바 (홍롱 홀딩스 · 8M 리얼 에스테이트 등 소유)", "1989~1993 복원 뒤 강변 식당 · 바 거리 — 옥외 식음 구역 (Outdoor Refreshment Areas)은 싱가포르강 원이 관리", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
   ["상업 · 쇼핑 · 식음", "로버트슨 워크 (Robertson Walk) — 프레이저스 프로퍼티 (Frasers Property)", "로버트슨 키 강변 상업 시설", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
   ["상업 · 호텔", "M 소셜 싱가포르 · 스튜디오 M 호텔 (M Social Singapore · Studio M Hotel) — 시티 디벨롭먼트 · 홍롱 홀딩스", "로버트슨 키", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
@@ -491,6 +506,8 @@ D = {
   ["2000 · 2003", "DBS 랜드 · 피뎀코 랜드 합병으로 캐피털랜드가 관리 · 2003년 영국 올솝 아키텍츠 (Alsop Architects)에 재설계 의뢰"],
   ["2008", "마리나 저수지 댐 (마리나 버라지) 완공 — 강이 담수 저수지 일부가 됨"],
   ["2022~2023", "클라크 키 자산 개선 사업 (6,200만 싱가포르달러) → 「CQ @ Clarke Quay」"],
+  ["2024.4.26", "「CQ @ 클라크 키」 재개장 — 창고 (Warehouses) · 서킷 (Circuit) · 리버프런트 (Riverfront) 3개 구역, 낮과 밤 복합 목적지로 전환"],
+  ["2025.8.7", "정부, 보트 키 · 클라크 키 활성화 대책 발표 (샨무감 내무장관 · 앨빈 탄 국무장관) — 새 바 · 클럽 · 펍 최대 3년 시범 허가, 목~토 · 공휴일 전날 주류 판매 새벽 4시까지 (1년 시범), 서큘러 로드 차량 통제, 싱가포르강 원이 민간 경비 배치"],
  ],
  "problem": [
   "강변의 무허가 정착지 · 노점 · 돼지 · 오리 농장 · 가내공업 · 하역업이 하수와 쓰레기를 그대로 흘려보내, 싱가포르강은 심한 악취가 나는 \"죽은 강\"이었습니다.",
@@ -565,6 +582,7 @@ D = {
   ["사업 구성", "싱가포르강 축제 · 성 패트릭의 날 거리 축제, 보트 키 옥외 식음 구역 (Outdoor Refreshment Areas) 관리, 공공 설치물 · 정부 기관 협업", "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"],
   ["민간 운영사", "CQ @ 클라크 키 — 캐피털랜드 통합상업신탁 (CICT) 소유 · 캐피털랜드 인베스트먼트 관리, 임대 수입 (2022 개선 때 순임대면적 70% 이상 사전 계약)", "https://www.capitaland.com/en/about-capitaland/newsroom/news-releases/international/2022/jul/cq---clarke-quay-to-be-transformed-into-a-day-and-night-destinat.html"],
   ["운영상 문제", "야간 유흥 중심 상권 — 낮 시간 활력을 위해 2022~2023 자산 개선 (6,200만 싱가포르달러) 추진"],
+  ["정부 활성화 대책 (2025)", "야간 상권 침체에 대응해 신규 유흥업소 최대 3년 시범 허가 · 목~토 새벽 4시 주류 판매 1년 시범 · 서큘러 로드 통제 — 싱가포르 나이트라이프 사업자협회 · 싱가포르강 원과 협력, SRO 는 민간 경비 · 비상계획 담당", "https://www.meti.gov.sg/newsroom/transcripts-of-doorstop-on-the-revitalisation-measures-at-boat-quay-and-clarke-quay"],
  ],
  "operationNote": [
   "보존 · 정화는 정부가 했지만 운영은 민간에 넘어가 있습니다. 숍하우스 · 창고는 민간 소유자 · 리츠 (CICT)가 임대 수입으로 운영하고, 강 전체는 토지 소유자 · 사업자 42곳이 모인 싱가포르강 원 (SRO)이 지역 관리자로 축제 · 옥외 식음 구역 · 공공 설치물을 맡습니다. SRO 는 2017년 URA 시범 업무개선지구 (BID)의 첫 사례입니다.",
@@ -579,6 +597,8 @@ D = {
   "용적률 수치는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Transcripts of Doorstop on the Revitalisation Measures at Boat Quay and Clarke Quay (2025.8.7) — Ministry of Trade and Industry", "u": "https://www.meti.gov.sg/newsroom/transcripts-of-doorstop-on-the-revitalisation-measures-at-boat-quay-and-clarke-quay"},
+  {"t": "An ultimate guide to the new CQ @ Clarke Quay — Time Out Singapore", "u": "https://www.timeout.com/singapore/things-to-do/cq-at-clarke-quay-ultimate-guide"},
   {"t": "UOB Plaza — Wikipedia", "u": "https://en.wikipedia.org/wiki/UOB_Plaza"},
   {"t": "Pilot Business Improvement District Programme — URA", "u": "https://www.ura.gov.sg/place-management/business-improvement-district-bid/"},
   {"t": "Singapore River One — URA Pilot BID Programme", "u": "https://www.ura.gov.sg/place-management/business-improvement-district-bid/singapore-river-one/"},
@@ -637,6 +657,7 @@ D = {
   ["1984", "그랜빌 아일랜드 양조장 설립 (2009년 몰슨 인수)"],
   ["2014", "에밀리 카 이전 계획 속 관리 주체를 항만공사로 넘기는 방안 논의 (밴쿠버 시 반대)"],
   ["2016~2017", "CMHC 가 「그랜빌 아일랜드 2040」 착수 (2016.2 마이클 스티븐슨 특별자문 임명) · 2017년 계획 발표 · 에밀리 카 대학 그레이트 노던 웨이로 이전"],
+  ["2023~2024", "체인 앤 포지 빌딩 (Chain & Forge) — 옛 주차 건물 · 주차장을 상가 · 식당 · 광장으로 (약 1만 7천 ft², 최대 7개 사업체) — CMHC 의 수십 년 만의 첫 대형 재개발"],
  ],
  "problem": [
   "1950~60년대 화재와 산업 이전으로 공장들이 떠나면서, 섬은 낡고 비어 가는 공업 지대가 되었습니다.",
@@ -706,6 +727,7 @@ D = {
   ["운영 주체", "캐나다 모기지주택공사 (CMHC) — 연방 소유지를 비영리 방식으로 직접 운영, 그랜빌 아일랜드 협의회 (Granville Island Council)가 자문", "https://admin.granvilleisland.com/faqs/"],
   ["수입 구성", "섬 안의 상업 임대료 (CMHC 직접 임차인)와 공영 주차 요금 — 연간 운영비 · 시설 투자를 이 수입으로 충당해야 하는 자립 원칙", "https://admin.granvilleisland.com/faqs/"],
   ["토지 · 건물 임대 구조", "CMHC 직접 임대 + 헤드 리스 (Head Lease) 임차인이 다시 임대하는 구조 — 퍼블릭 마켓 장인 프로그램 · 문화 파트너 프로그램 · 버스킹 프로그램 운영", "https://admin.granvilleisland.com/faqs/"],
+  ["임대 조건 사례 (2023)", "체인 앤 포지 빌딩 신규 임대 — 연 ft² 당 75달러 + 총매출의 8% + 관리비 ft² 당 60.95달러 (상가 · 식당 약 9,000ft², 점포 727~4,550ft²)", "https://dailyhive.com/vancouver/chain-forge-building-granville-island"],
   ["자립도", "1979년 (CMHC 측 발표) 또는 1983년 (글로브 앤 메일)부터 팬데믹 전까지 정부 보조 없이 자립 — 연방 소유지라 차입 · 부채 불가", "https://www.newswire.ca/news-releases/granville-island-receives-up-to-21-7-million-for-pandemic-recovery-efforts-in-the-federal-budget-885398357.html"],
   ["공공 운영 보조금", "팬데믹 때 연방 긴급 운영자금 승인 (2020.7) · CMHC 임대료 감면 프로그램 (2020.9.14 신청 시작) · 2021-2022 연방 예산 최대 2,170만 캐나다달러", "https://www.newswire.ca/news-releases/granville-island-receives-up-to-21-7-million-for-pandemic-recovery-efforts-in-the-federal-budget-885398357.html"],
   ["운영 성과", "사업체 300곳 이상 · 종사자 3,000명 이상 · 연간 방문객 약 1,000만 명", "https://granvilleisland.com/about-us"],
@@ -725,6 +747,7 @@ D = {
   "연방 정부의 1973년 토지 인수 가격은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "Granville Island's first major retail and restaurant redevelopment near completion — Daily Hive (2023.11)", "u": "https://dailyhive.com/vancouver/chain-forge-building-granville-island"},
   {"t": "Arts Club Theatre Company — Wikipedia", "u": "https://en.wikipedia.org/wiki/Arts_Club_Theatre_Company"},
   {"t": "Granville Island Public Market — Wikipedia", "u": "https://en.wikipedia.org/wiki/Granville_Island_Public_Market"},
   {"t": "Overview (Mission · Vision) — Granville Island Administration", "u": "https://admin.granvilleisland.com/about-granville-island/mission-vision/"},
@@ -744,3 +767,27 @@ D = {
  ],
 },
 }
+
+# ── 보강 (정책 조사 04 : 미국 · 캐나다 제도 원문 확인분, 2026-10) ──────────────────────────
+D["lowell-mills"]["laws"].append(
+ ["연방 역사건물 재생 세액공제 (Internal Revenue Code §47)", "국가 사적 · 등록 역사지구의 수익용 건물을 내무장관 재생 기준에 맞춰 고치면 적격 공사비의 20% 를 세액공제 — 2017년 감세법 (Public Law 115-97) 이후 5년에 나눠 청구, NPS · IRS · 주 역사보존국 공동 운영", "https://www.irs.gov/businesses/small-businesses-self-employed/rehabilitation-credit"])
+D["lowell-mills"]["refs"] += [
+ {"t": "Rehabilitation Credit — IRS", "u": "https://www.irs.gov/businesses/small-businesses-self-employed/rehabilitation-credit"},
+ {"t": "Federal Historic Preservation Tax Incentives — NPS", "u": "https://www.nps.gov/subjects/taxincentives/index.htm"},
+]
+
+D["pearl-district"]["zoning"].append(
+ ["시 전체 산업용지와의 관계", "포틀랜드는 도심 창고지 (펄)를 혼합 용도로 바꾼 한편, 항만 · 철도 · 공항이 있는 포틀랜드 하버 · 컬럼비아 코리도어 · 브루클린 야드는 2018년 「핵심 산업용지 중첩지구 (Prime Industrial Overlay, 시 법전 33.471)」로 묶어 공업 개발 용량을 줄이는 전환을 금지하거나 상쇄를 요구합니다", "https://portland.gov/sites/default/files/code/33.471-prime-industrial-overlay-zone.pdf"])
+D["pearl-district"]["lesson"].append(
+ "같은 도시 안에서 \"전환할 곳 (도심 창고지)\"과 \"지킬 곳 (항만 · 물류 산업지)\"을 지도로 나눈 점 — 한국 노후 공업지역 전환도 지킬 산업용지의 선을 함께 그어야 합니다.")
+D["pearl-district"]["refs"] += [
+ {"t": "Chapter 33.471 Prime Industrial Overlay Zone — Portland Zoning Code", "u": "https://portland.gov/sites/default/files/code/33.471-prime-industrial-overlay-zone.pdf"},
+ {"t": "Lester, Kaza & Kirk (2013) Making Room for Manufacturing: Understanding Industrial Land Conversion in Cities. JAPA 79(4)", "u": "https://doi.org/10.1080/01944363.2014.915369"},
+]
+
+D["granville-island"]["lesson"].append(
+ "메트로 밴쿠버에서 산업용지는 지역 면적의 4% 지만 일자리의 27% 를 맡고 땅값이 북미 최고 수준이어서, 광역 정부가 「광역 산업용지 전략 (2020)」 · 「Metro 2050 (2023)」으로 산업용지를 지키고 다층화를 권합니다 — 시장 · 예술과 가동 공장을 한 섬에 남긴 그랜빌 아일랜드는 이런 \"생산 공간 보존형 재생\"의 이른 사례로 읽을 수 있습니다.")
+D["granville-island"]["refs"] += [
+ {"t": "Regional Industrial Lands Strategy — Executive Summary (Metro Vancouver, 2020)", "u": "https://metrovancouver.org/services/regional-planning/Documents/regional-industrial-lands-strategy-executive-summary.pdf"},
+ {"t": "Metro 2050 Implementation Guideline — Industrial and Employment Lands (Metro Vancouver, 2023)", "u": "https://metrovancouver.org/services/regional-planning/Documents/metro-2050-implementation-guideline-industrial-and-employment-lands.pdf"},
+]

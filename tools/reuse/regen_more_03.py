@@ -31,7 +31,7 @@ D = {
  ],
  "timeline": [
   ["1997.5.7", "헤닝 포셰라우 (Henning Voscherau) 시장이 하펜시티 계획 발표"],
-  ["1997.8.20", "시의회 (Bürgerschaft)가 「21세기 함부르크의 입지 · 항만 개발 (Hamburgs Standort- und Hafenentwicklung im 21. Jahrhundert)」 결정 — 특별자산 「도시와 항만」 설치, 개발회사 GHS (현 HafenCity Hamburg GmbH) 설립"],
+  ["1997.8.20", "시의회 (Bürgerschaft)가 「21세기 함부르크의 입지 · 항만 개발 (Hamburgs Standort- und Hafenentwicklung im 21. Jahrhundert)」 결정 — 특별자산 「도시와 항만」 설치, 개발 · 관리를 맡을 회사 GHS (현 HafenCity Hamburg GmbH)가 공모 준비 등을 담당"],
   ["1999", "마스터플랜 국제 공모 — 함부르크플란 (Hamburgplan) 팀 · 케이스 크리스티안서 (Kees Christiaanse) · ASTOC 당선"],
   ["2000.2.29", "시 정부 (Senat)가 마스터플랜 의결"],
   ["2001", "첫 건물 (SAP, 현 KLU · MSH) 착공 · 10월 새 시 정부가 지하철 U4 건설 결정"],
@@ -63,7 +63,7 @@ D = {
   ["도시계획가 · 건축가", "케이스 크리스티안서 (Kees Christiaanse) · ASTOC · 함부르크플란 (Hamburgplan) 팀", "1999년 마스터플랜 국제 공모 당선 → 2000년 마스터플랜 수립 (이후 개정의 바탕)"],
   ["도시계획가 · 건축가", "헤어초크 & 드 뫼롱 (Herzog & de Meuron)", "엘프필하모니 설계 — 옛 창고 카이슈파이허 A 의 외피를 남겨 그 위에 콘서트홀을 얹음"],
   ["주관 기관", "자유한자도시 함부르크 (Freie und Hansestadt Hamburg) — 시의회 (Bürgerschaft) · 시 정부 (Senat) · 당시 도시개발부", "1997년 사업 결정 · 마스터플랜 공모 준비 · 2000년 의결 · 지구상세계획 확정 · U4 · 대학 · 콘서트홀 등 공공 투자"],
-  ["사업 시행", "HafenCity Hamburg GmbH (1997년 GHS 로 설립, 시 100% 소유)", "특별자산 「도시와 항만」 신탁 관리 · 토지 배정 (안한트가베) · 기반시설 · 공공 공간 조성 · 홍보 · 이웃 형성 지원 — 감독이사회 의장은 재무 장관, 시장실 · 경제 · 교육 · 도시개발 · 문화 장관 참여"],
+  ["사업 시행", "HafenCity Hamburg GmbH (옛 이름 GHS, 시 100% 소유)", "특별자산 「도시와 항만」 신탁 관리 · 토지 배정 (안한트가베) · 기반시설 · 공공 공간 조성 · 홍보 · 이웃 형성 지원 — 감독이사회 의장은 재무 장관, 시장실 · 경제 · 교육 · 도시개발 · 문화 장관 참여"],
   ["재원", "특별자산 「도시와 항만」 (Sondervermögen Stadt und Hafen)", "하펜시티 시유지 전체를 담은 자산 — 토지 매각 수익으로 기반시설 · 알텐베르더 터미널 비용 충당"],
   ["관련 기관", "독일 지속가능건축협회 (DGNB)", "하펜시티 환경 마크를 DGNB 특별 인증으로 통합"],
   ["대학 · 연구", "하펜시티 대학 (HCU, 2014) · 퀴네 물류대학 (KLU, 2010) · 메디컬스쿨 함부르크 (MSH, 2010)", "지구 안 교육 · 연구 거점"],
@@ -96,6 +96,7 @@ D = {
   ["홍수 관리", "건물 · 공공 공간을 평상 만조선 위 약 7.6m 의 인공 지반 위에, 그 높이까지 방수"],
  ],
  "result": [
+  "엘브타워 (Elbtower, 데이비드 치퍼필드 설계, 계획 245m · 64층, 시그나 프라임 사업비 약 9억 5천만 유로) — 2021.10 착공, 2023.10 시그나가 대금을 못 내 약 100m 에서 공사 중단, 2024 시그나 파산. 2025.10 시가 높이 199m · 10만㎡ 로 줄인 설계 (5억 9,500만 유로)로 자연사박물관을 넣는 계획 발표",
   "2021년 기준 기업 약 930곳 · 일자리 약 1만 5천 개 · 주택 약 3,600호 완공 · 사업 85건 완공, 55건 공사 · 계획 중",
   "주민 8,062명 (2024.12.31) — 자녀 있는 가구 비율 22.6% (함부르크 평균 18%, 2019)",
   "U4 지하철 3개 역 · S반 엘브브뤼켄역, 하펜시티 대학 · 엘프필하모니 (2017) 개관",
@@ -138,6 +139,7 @@ D = {
   "규제완화로서 용적률을 얼마나 높였는지 (완화 전후 수치)는 확인된 자료를 찾지 못했습니다. (계획 밀도 GFZ 3.7~6.1 만 확인)",
   "공공 공간 설계자 (기존 노트의 EMBT 등)는 확인된 자료를 찾지 못해 뺐습니다.",
   "시의회 결정 (Drucksache 15/7460)과 지구상세계획 원문 링크는 직접 열어 확인하지 못했습니다.",
+  "개발회사 GHS 의 정확한 설립 연도는 독일어 원문에서 확인하지 못했습니다 (1997년 설이 있으나 미확인).",
  ],
  "refs": [
   {"t": "위키백과(독) — HafenCity", "u": "https://de.wikipedia.org/wiki/HafenCity"},
@@ -150,6 +152,7 @@ D = {
   {"t": "Hamburg 문화미디어청 — Besuch der Elbphilharmonie-Plaza bleibt kostenlos (2023.8.16)", "u": "https://www.hamburg.de/politik-und-verwaltung/behoerden/behoerde-fuer-kultur-und-medien/aktuelles/pressemeldungen/besuch-auf-plaza-der-elbphilharmonie-leibt-konstenlos-235248"},
   {"t": "Hamburg 문화미디어청 — Plaza-Eintritt entlastet Kulturetat", "u": "https://www.hamburg.de/politik-und-verwaltung/behoerden/behoerde-fuer-kultur-und-medien/aktuelles/pressemeldungen/plaza-eintritt-entlastet-kultur-eta-1190728"},
   {"t": "schuhkurier — Westfield Hamburg-Überseequartier wurde eröffnet (2025)", "u": "https://www.schuhkurier.de/westfield-hamburg-ueberseequartier-wurde-eroeffnet/"},
+  {"t": "위키백과(독) — Elbtower", "u": "https://de.wikipedia.org/wiki/Elbtower"},
  ],
 },
 "kings-cross": {
@@ -167,7 +170,7 @@ D = {
  "from": "철도 화물 부지 (Railway Lands) · 가스 공장", "to": "업무 · 주거 · 교육 · 문화 혼합 도심",
  "zoneFrom": "철도 용지 — 킹스크로스 기회지역 (King's Cross Opportunity Area)", "zoneTo": "개요 계획허가 2004/2307/P 혼합 용도 (B1 · 주거 · A1~A5 · D1 · D2)",
  "tenants": [
-  ["첨단산업 · 앵커 기업 (본사)", "구글 영국 본사 「플랫폼 37 (Platform 37, KGX1)」", "토머스 헤더윅 · 비야케 잉엘스 설계, 길이 330m · 11층 「랜드스크레이퍼」, 사무 약 86만 제곱피트 · 직원 4,000명 수용, 지붕 정원 — 2026.3 구글이 연내 개장 발표 (2013.1 100만 제곱피트 확보 발표)"],
+  ["첨단산업 · 앵커 기업 (본사)", "구글 영국 본사 「플랫폼 37 (Platform 37, KGX1)」", "토머스 헤더윅 · 비야케 잉엘스 설계, 길이 330m · 11층 「랜드스크레이퍼」, 사무 약 86만 제곱피트 · 직원 4,000명 수용, 지붕 정원 — 2026.3 이름 「플랫폼 37」 공개 (알파고 \"37수\"에서 따옴), 2026년 여름부터 구글 딥마인드 · 구글 팀 입주 시작, 1층에 무료 공공 공간 「AI 익스체인지 (The AI Exchange)」 · 런던 야생동물 트러스트와 만든 옥상 정원 (2013.1 100만 제곱피트 확보 발표)", "https://blog.google/company-news/inside-google/around-the-globe/google-europe/united-kingdom/platform-37-the-ai-exchange/"],
   ["첨단산업 · 앵커 기업 (사무)", "메타 (Meta)", "2022.3.30 입주 발표 — 11-21 캐널 리치 (42.5만 제곱피트, 4,000명, 단지 최대 업무 건물, 베넷 어소시에이츠) + 10 루이스 큐빗 스퀘어 (19.6만 제곱피트 · 9층, AHMM) = 62만 제곱피트 이상 · 최대 5,000석", "https://www.kingscross.co.uk/press/2022/04/04/meta-announces-arrival-kingscross"],
   ["첨단산업 · 글로벌 기업 체험관", "삼성 KX (Samsung KX)", "2019.8.2 개장 — 콜 드롭스 야드 중앙, 헤더윅 스튜디오의 「키싱 루프」 아래 최상층 2만 제곱피트 체험관, 세계 최초 세로형 10m 곡면 스크린 · 게임 · 커넥티드 키친 · 행사, 일자리 88개, 센트럴 세인트 마틴스 · UCL 등과 협력 · 현재도 운영 (상담 · 수리 · 워크숍 · 카페)", "https://www.kingscross.co.uk/press/2018/06/15/samsung-to-open-20000-sq-ft-digital-playground-at-coal-drops-yard"],
   ["첨단산업 · 앵커 기업 (본사)", "아스트라제네카 (AstraZeneca)", "2022년 본사를 킹스크로스 센트럴로 이전"],
@@ -253,6 +256,7 @@ D = {
   "일자리 2011년 8천 개 → 2019년 2만 7천 개, 거주 인구 1만 2,200명 (2020)",
   "구글 · 메타 · 유니버설 뮤직 등 입주 — 업무 47% · 주거 25% · 교육 10% 의 혼합 도심",
   "저렴주택은 2006년 약속 (750호)에서 2015년 2단계 조정을 거침 — 공공 보조 축소의 영향",
+  "캠던 구 일자리는 킹스크로스 · 유스턴 전략 재개발에 힘입어 2011~2031년 31% 늘 것으로 전망되었고, 구글 · 런던예술대학 센트럴 세인트 마틴스 · 크릭 연구소 입주로 런던 고용의 무게중심이 옮겨 간다는 평가가 나왔습니다 (Ferm · Jones 2016, URS 2014 인용)."
  ],
  "lesson": [
   "철도 · 산업 부지를 \"업무 + 교육 + 주거 + 문화\"의 고밀 혼합 도심으로 바꾼 사례 — 산업 건물 재사용이 지구 브랜드가 되었습니다.",
@@ -294,6 +298,7 @@ D = {
   {"t": "Camden Council 담당관 보고서 — KXC s106 Deed of Variation (2004/2307/P, 사본)", "u": "https://michaeledwards.org.uk/wp-content/uploads/2015/04/kxc-s106-variation-lbc-officers-report.pdf"},
   {"t": "Chris Gossop, Strategic Visions for the King's Cross Opportunity Area (ISOCARP 2007)", "u": "https://www.isocarp.net/Data/case_studies/940.pdf"},
   {"t": "Wikipedia — Platform 37 (Google KGX1)", "u": "https://en.wikipedia.org/wiki/Platform_37"},
+  {"t": "Google 공식 블로그 — Platform 37 and the AI Exchange (2026)", "u": "https://blog.google/company-news/inside-google/around-the-globe/google-europe/united-kingdom/platform-37-the-ai-exchange/"},
   {"t": "King's Cross — Meta announces its arrival at King's Cross (2022.4.4)", "u": "https://www.kingscross.co.uk/press/2022/04/04/meta-announces-arrival-kingscross"},
   {"t": "King's Cross — Samsung to open 20,000 sq ft digital playground at Coal Drops Yard (2018.6.15)", "u": "https://www.kingscross.co.uk/press/2018/06/15/samsung-to-open-20000-sq-ft-digital-playground-at-coal-drops-yard"},
   {"t": "Samsung UK Newsroom — Samsung redefines the future of retail with new experience space in London (2019)", "u": "https://news.samsung.com/uk/samsung-redefines-the-future-of-retail-with-new-experience-space-in-london"},
@@ -302,6 +307,7 @@ D = {
   {"t": "Related Argent — New Waitrose opens at King's Cross (2015.9.24)", "u": "https://relatedargent.co.uk/2015/09/24/new-waitrose-opens-kings-cross"},
   {"t": "Cinema Treasures — Everyman King's Cross", "u": "https://cinematreasures.org/theaters/56781"},
   {"t": "Wikipedia — Francis Crick Institute", "u": "https://en.wikipedia.org/wiki/Francis_Crick_Institute"},
+  {"t": "Ferm, J. & Jones, E. (2016) Mixed-use 'Regeneration' of Employment Land in the Post-industrial City: Challenges and Realities in London, European Planning Studies", "u": "https://doi.org/10.1080/09654313.2016.1209465"}
  ],
 },
 "dublin-docklands": {
@@ -332,16 +338,16 @@ D = {
   ["1796", "그랜드 캐널 독 개장 — 당시 세계 최대 규모의 독, 이후 철도 발달로 쇠퇴 · 1960년대 거의 버려짐"],
   ["1986.11", "세관부두 개발청 (Custom House Docks Development Authority) 설립"],
   ["1987", "재정법 1987 (Finance Act, 제30조)으로 국제금융서비스센터 (IFSC) 출범 — 11ha, 법인세 10% 특례"],
-  ["1997", "더블린 도클랜즈 개발청법 (DDDA Act 1997) — 개발청 설립 · 세관부두 개발청 해산 · 마스터플랜 수립"],
+  ["1997.3.27", "더블린 도클랜즈 개발청법 (DDDA Act 1997) 제정 — 개발청 설립 · 세관부두 개발청 해산 · 마스터플랜 수립"],
   ["1998", "개발청이 그랜드 캐널 독 가스공장 부지를 1,900만 유로에 매입 → 2002~2006 정화에 5,200만 유로 (지하 8m 차단벽)"],
   ["2003", "아일랜드 전국 법인세 12.5% 시행 (IFSC 10% 특례는 2005년 종료)"],
   ["2004", "구글 입주 — 이후 페이스북 · 트위터 · 링크드인 등이 모여 \"실리콘 독스\" (2011년 첫 등장)"],
-  ["2006.11", "개발청이 컨소시엄으로 아이리시 글래스 보틀 부지 매입 (4억 1,200만 유로) — 2011년 땅값 4,500만 유로로 폭락"],
+  ["2006.11~2007", "개발청이 합작사 벡베이 (Becbay)로 아이리시 글래스 보틀 부지 매입 (4억 1,200만 유로, 영문 위키 2006.11 · RTÉ 2007) — 2011년 땅값 4,500만 유로, 개발청 손실 5,210만 유로"],
   ["2007.3.12", "도클랜즈 철도역 개통"],
   ["2008~2010", "그랜드 캐널 광장 (2008) · 그랜드 캐널 극장 (현 보드 가스 에너지 극장, 2010) 개장"],
   ["2012", "5.31 정부가 개발청 해산 방침 발표 · 12.18 노스 로츠 · 그랜드 캐널 독 SDZ 지정 (계획개발법 2000)"],
   ["2014.5.16", "국가계획위원회 (An Bord Pleanála)가 SDZ 계획 승인"],
-  ["2016.3.1", "개발청 공식 해산 — 계획 기능은 더블린 시의회로"],
+  ["2015.12.24 · 2016.3.1", "개발청 해산법 (Dublin Docklands Development Authority (Dissolution) Act 2015) 제정 → 2016.3.1 해산, 권리 · 기능을 더블린 시의회로 넘기고 도클랜즈 감독 · 협의 포럼 설치"],
   ["2020.2", "고등법원이 SDZ 높이 완화 허가를 취소 (변경 시 새 공공 협의 필요)"],
   ["2023", "SDZ 건물 높이 변경 승인 (블록 3D 제외)"],
  ],
@@ -370,12 +376,12 @@ D = {
  ],
  "laws": [
   ["재정법 1987 (Finance Act 1987, 제30조)", "IFSC 의 금융 서비스에 법인세 10% 적용 (EU 승인, 2005년 종료) — 2003년부터 전국 12.5%"],
-  ["더블린 도클랜즈 개발청법 1997 (Dublin Docklands Development Authority Act, 1997)", "개발청 설립 · 협의회 · 집행이사회 · 마스터플랜 (제24조) · 계획구역 (제25조) · 토지 강제 수용 (제27조) · 공공기관 토지 이전 (제28조) · 정부 보조 · 차입 · 정부 보증 (제29~31조)", "https://www.irishstatutebook.ie/eli/1997/act/7/enacted/en/print"],
+  ["더블린 도클랜즈 개발청법 1997 (Dublin Docklands Development Authority Act, 1997 — 1997.3.27 제정)", "개발청 설립 · 협의회 · 집행이사회 · 마스터플랜 (제24조) · 계획구역 (제25조) · 토지 강제 수용 (제27조) · 공공기관 토지 이전 (제28조) · 정부 보조 · 차입 · 정부 보증 (제29~31조)", "https://www.irishstatutebook.ie/eli/1997/act/7/enacted/en/print"],
   ["도클랜즈 마스터플랜 (Dublin Docklands Area Master Plan, 1997~ · 제24조)", "사회 · 경제 재생 · 물리 환경 개선 · 금융 서비스 발전 목표 — 다양한 사회 계층의 주택, 빈 땅 개발, 건축 문화유산 보존, 교통 계획을 반드시 담도록 함"],
   ["계획구역과 제25조 인증 (Section 25 Planning Scheme · Certificate)", "장관이 승인한 계획구역에 맞는 개발은 개발청 인증만으로 계획허가 면제 (\"exempted development\") — 일반 허가 · 이의 절차를 거치지 않는 신속 허가 특례"],
   ["계획개발법 2000 (Planning and Development Act 2000) — 노스 로츠 · 그랜드 캐널 독 계획 (North Lotts and Grand Canal Dock Planning Scheme, 2014)", "2012.12.18 SDZ 22ha 지정 → 2013.11 계획 작성 → 2014.5.16 승인. 20개 블록별 용도 · 높이 · 건축선을 미리 정함 (2018 · 2023 변경)", "https://www.dublincity.ie/planning-and-land-use/learn-about-councils-plans-city/strategic-development-zones-sdzs/north-lotts-and-grand-central-dock-sdz"],
   ["더블린 시 개발계획 2022~2028 (Dublin City Development Plan) — SDRA 6 도클랜즈", "약 520ha 를 전략개발 · 재생지역으로 관리, 노스 로츠 · 그랜드 캐널 독 (2014) · 풀벡 웨스트 (2019, 34ha) 계획 반영", "https://www.dublincity.ie/dublin-city-development-plan-2022-2028/written-statement/chapter-13-strategic-development-regeneration-areas/138-sdra-6-docklands"],
-  ["개발청 해산 (2012 결정 · 2016.3.1 해산)", "계획 기능을 더블린 시의회로 이관, 법정 자문기구 (DOCF) 설치"],
+  ["더블린 도클랜즈 개발청 해산법 2015 (Dublin Docklands Development Authority (Dissolution) Act 2015, 2015.12.24)", "개발청 해산 (2016.3.1) · 권리 · 자산 · 부채를 더블린 시의회로 이전 · 마스터플랜과 계획구역의 효력 · 제25조 인증 신청 처리 규정 · 도클랜즈 감독 · 협의 포럼 (Docklands Oversight and Consultative Forum) 설치 (제5부)", "https://www.irishstatutebook.ie/eli/2015/act/55/enacted/en/print"],
  ],
  "lawsNote": ["규제완화의 핵심은 (1) 특정 지역 금융업에 대한 법인세 특례, (2) 개발청이 만든 계획구역에 맞으면 일반 계획허가를 면제하는 제25조 인증, (3) 이후의 전략개발지구 (SDZ)로 미리 정한 계획 안에서 빠르게 허가하는 방식입니다. 반면 개발청법은 기존 공동체 · 사회주택 · 문화유산 보존을 마스터플랜의 필수 내용으로 정했습니다."],
  "tools": [
@@ -437,6 +443,7 @@ D = {
  ],
  "refs": [
   {"t": "Dublin Docklands Development Authority Act, 1997 (Irish Statute Book)", "u": "https://www.irishstatutebook.ie/eli/1997/act/7/enacted/en/print"},
+  {"t": "Dublin Docklands Development Authority (Dissolution) Act 2015 (Irish Statute Book)", "u": "https://www.irishstatutebook.ie/eli/2015/act/55/enacted/en/print"},
   {"t": "Wikipedia — Dublin Docklands Development Authority", "u": "https://en.wikipedia.org/wiki/Dublin_Docklands_Development_Authority"},
   {"t": "Wikipedia — Dublin Docklands", "u": "https://en.wikipedia.org/wiki/Dublin_Docklands"},
   {"t": "Wikipedia — Docklands Strategic Development Zone", "u": "https://en.wikipedia.org/wiki/Docklands_Strategic_Development_Zone"},
@@ -610,16 +617,16 @@ D = {
  "spec": [
   ["위치", "네덜란드 로테르담 — 마스강 (Nieuwe Maas) 북안 메르버-피르하번스 (Merwe-Vierhavens, M4H, 스히담 경계) · 남안 헤이플라트 (Heijplaat)의 옛 RDM 조선소 터"],
   ["면적", "M4H 계획 구역 207ha (그중 수면 80ha 이상 — 메르버 · 케일러 · 레크 · 에이설 항) — 로테르담 도심과 비슷한 크기"],
-  ["기간", "2007 시-항만공사 「스타츠하번스」 협약 · 2011 구조비전 → 2017 메이커 지구 비전 · 2019 공간 골격 → 2025 초 M4H 통합 계획 의결 · 공사 2020~2035"],
+  ["기간", "2007 시-항만공사 「스타츠하번스」 협약 · 2011 구조비전 → 2017 메이커 지구 비전 · 2019 공간 골격 → 2024.11.28 M4H 통합 계획 의결 · 공사 2020~2035"],
   ["원래 용도", "M4H — 1911~1930년에 만든 항만 (1950년대부터 과일 · 냉동 · 청과 물류 \"디스트리파크\"), RDM — 1902년 설립 조선소 (선박 355척 · 잠수함 16척, 최대 7천 명 고용, 1983 파산 · 1996 조선 중단)"],
   ["변경 용도", "RDM — 응용과학대학 · 직업학교 · 기업이 함께 쓰는 「RDM 캠퍼스 · 이노베이션 독」, M4H — 혁신 제조업 (메이커) · 업무 · 주거 · 문화 · 교육 혼합"],
   ["원래 용도지구", "항만 · 산업 용지 — 소음 구역이 설정된 산업단지 「Havens-Noordwest en Oost-Frankenland」 · 영업 · 산업 관리조례"],
-  ["변경 용도지구", "M4H 통합 계획 (bestemmingsplan M4H, 2025 의결) — 5개 소지구 (갈릴레이파크 · 마르코니 지구 · 케일러 지구 · 후스토베흐 · 메르버하번), 산업 소음 구역 일부 해제"],
-  ["계획 규모", "2019 환경영향평가 범위: 업무 34.9만~53.5만㎡ · 주택 4,626~6,594호 · 편의시설 8.6만~12.9만㎡ → 2025 통합 계획 1단계 약 2,500호 (소음 제약으로 현실 목표 2,764호, 원래 목표 7,000호)"],
+  ["변경 용도지구", "M4H 통합 계획 (bestemmingsplan M4H, 2024.11.28 시의회 의결) — 1단계 메르버하번 · 혁신 거점 갈릴레이파크, 이후 마르코니 · 케일러 지구 (공간 골격의 5개 소지구 (갈릴레이파크 · 마르코니 지구 · 케일러 지구 · 후스토베흐 · 메르버하번), 산업 소음 구역 일부 해제"],
+  ["계획 규모", "2019 환경영향평가 범위: 업무 34.9만~53.5만㎡ · 주택 4,626~6,594호 · 편의시설 8.6만~12.9만㎡ → 2024 통합 계획: 주택 약 2,500호 (임대 · 분양, 모든 가격대) · 혁신 제조 · 상점 · 지역시설 (초등학교 · 보건센터) 약 3만㎡ · 음식점 · 체육 (네덜란드어 위키: 현실 목표 2,764호, 원래 목표 7,000호)"],
   ["사업비", "약 15억 유로 (추정)"],
  ],
  "from": "항만 (과일 · 물류 부두) · 조선소 (RDM)", "to": "혁신 제조 (메이커 지구) · 교육 캠퍼스 · 주거 혼합",
- "zoneFrom": "항만 · 산업 용지 (소음 구역 산업단지 Havens-Noordwest en Oost-Frankenland)", "zoneTo": "M4H 통합 계획 (bestemmingsplan M4H, 2025) 혼합 용도 · RDM 캠퍼스",
+ "zoneFrom": "항만 · 산업 용지 (소음 구역 산업단지 Havens-Noordwest en Oost-Frankenland)", "zoneTo": "M4H 통합 계획 (bestemmingsplan M4H, 2024) 혼합 용도 · RDM 캠퍼스",
  "tenants": [
   ["첨단산업 · 대학 연구", "로테르담 응용과학대학 (Hogeschool Rotterdam) · 알베다 직업학교 (Albeda College)", "2009.2 RDM 캠퍼스 입주 (현재 RDM 은 로테르담 응용과학대학 · 테크니크 칼리지 로테르담과 인턴 · 프로젝트 협력) — 옛 기계 공장 「RDM 이노베이션 독」에서 교육 · 기업 한 지붕"],
   ["첨단산업 · 창업 · 기업 집적", "RDM Rotterdam 입주 기업 60여 곳", "스타트업 ~ 다국적 해양 · 해상 기업 — 이노베이션 독 · 메디셰 디엔스트 건물, 수소 · 수중 · 드론 시험장 · 필드랩", "https://www.rdmrotterdam.nl/ondernemen"],
@@ -644,7 +651,7 @@ D = {
   ["2018.5", "헤이플라트 (옛 조선소 · 주거지 · 검역소 포함) 국가 보호 도시경관 지정"],
   ["2018.6", "로테르담 국제건축비엔날레 (IABR)가 M4H HAKA 건물에서 공간 골격 초안 공개 · 「테스트 사이트 M4H+」"],
   ["2019.6.27", "시의회 「M4H 공간 골격 (Ruimtelijk Raamwerk M4H)」 확정 · 9월 통합 계획 환경영향평가 범위 공고"],
-  ["2025 초", "시의회가 M4H 통합 계획 의결 — 메르버하번 1단계 약 2,500호 건설 가능"],
+  ["2024.11~12", "시의회가 M4H 통합 계획 의결 (11.28) — 메르버하번 약 2,500호 · 약 3만㎡ 비주거, 이어 12월 「메르버하번 도시설계안 (Stedenbouwkundig plan Merwehaven)」 의결 (2023.6 메르버하번 마스터플랜 바탕) · 갈릴레이파크 옛 Ferro 부지에 해양 제조기업 공동 건물 「Ferro Offices」 착공"],
  ],
  "problem": [
   "도시와 맞닿은 옛 항만은 항만 기능이 줄었지만, 장기 임대 (erfpacht) 계약 · 환경 허가 · 산업 소음 구역 때문에 사실상 기존 용도에 묶여 새 기능을 들이기 어려웠습니다.",
@@ -660,7 +667,7 @@ D = {
  "actors": [
   ["도시계획가 · 건축가", "DELVA 조경 · 도시설계 (DELVA Landscape Architects / Urbanism) · Site Urban Development · Skonk · 후다펠 코펑 (Goudappel Coffeng)", "M4H 공간 골격 (Ruimtelijk Raamwerk, 2019) 작성 — 공간 구조 · 교통"],
   ["도시계획가 · 건축가", "Team1010 · 아키텍처 워크룸 (Architecture Workroom) · DELVA · 메이커 지구 프로그램 사무국", "IABR 테스트 사이트 M4H+ (2018) — 지속가능 개발 8원칙 공동 작성"],
-  ["주관 기관", "로테르담 시 (Gemeente Rotterdam) — 시의회 · 시 집행부 (B&W)", "구조비전 (2011) · 공간 골격 (2019) · 통합 계획 (2025) 의결 · 환경영향평가 주관"],
+  ["주관 기관", "로테르담 시 (Gemeente Rotterdam) — 시의회 · 시 집행부 (B&W)", "구조비전 (2011) · 공간 골격 (2019) · 통합 계획 (2024) 의결 · 환경영향평가 주관"],
   ["토지 소유 · 공동 시행", "로테르담 항만공사 (Havenbedrijf Rotterdam N.V.)", "항만 토지 소유 · 장기 임대 (erfpacht) · 공동 개발 — RDM 터도 장기 임대로 관리, 혁신 프로그램 PortXL 을 M4H 에 둠"],
   ["사업 조직", "로테르담 메이커 지구 프로그램 사무국 (Programmabureau Rotterdam Makers District / M4H)", "시 · 항만공사 공동 사업 조직 — 계획 발주 · 통합 계획 준비"],
   ["관련 기관", "환경청 DCMR · 스히담 시 (Gemeente Schiedam)", "환경 · 소음 구역 조정 (DCMR 이 환경영향평가 업무 수행), 산업단지가 걸친 인접 시 (공동 허가권자)"],
@@ -677,7 +684,8 @@ D = {
   ["M4H 통합 계획 환경영향평가 범위 (Notitie Reikwijdte en Detailniveau M4H, 2019.9)", "업무 · 주택 물량 범위, 소음 구역 해제 방향, 위기 · 회복법 활용 방안", "https://m4hrotterdam.nl/wp-content/uploads/2019/11/Notitie-Reikwijdte-en-Detailniveau-M4H_17-9.pdf"],
   ["위기 · 회복법 (Crisis- en herstelwet, Chw)", "스타츠하번스 일대를 \"개발 지역\"으로 지정 — 일시적으로 일부 환경 기준에서 벗어날 수 있음. 통합 계획을 \"혁신 실험\"으로 신청해 환경계획법 (Omgevingswet)을 앞당겨 적용하는 \"확장 통합 계획\" 가능"],
   ["소음 구역 해제 (dezonering) — 산업단지 Havens-Noordwest en Oost-Frankenland", "산업 소음 구역을 후스토 띠 · FTR · 과즙 단지 · 변전소로 줄여 주거를 가능하게 함 (스히담 계획과 함께)"],
-  ["M4H 통합 계획 (bestemmingsplan M4H, 2025 초 시의회)", "메르버하번 1단계 약 2,500호 등 혼합 용도 확정"],
+  ["메르버하번 마스터플랜 (Masterplan Merwehaven, 2023.6) · 메르버하번 도시설계안 (Stedenbouwkundig plan Merwehaven, 2024.12 시의회)", "약 2,500호 · 메이커 작업공간 혼합 · 공공 공간 · 문화유산 · 물 안전 · 지속가능성 기준을 구체화", "https://m4hrotterdam.nl/nieuws/vaststelling-stedenbouwkundigplan-merwehaven/"],
+  ["M4H 통합 계획 (bestemmingsplan M4H, 2024.11.28 시의회)", "메르버하번 약 2,500호 (임대 · 분양) · 혁신 제조 · 상점 · 초등학교 · 보건센터 약 3만㎡ · 음식점 · 체육 시설 허용, 갈릴레이파크를 항만 연계 혁신 거점으로", "https://m4hrotterdam.nl/nieuws/bestemmingsplan-m4h-vastgesteld-door-gemeenteraad-rotterdam/"],
  ],
  "lawsNote": ["규제완화의 핵심은 산업 소음 구역을 줄이고 (dezonering), 위기 · 회복법의 \"개발 지역 · 혁신 실험\" 특례로 환경 기준과 계획 절차를 유연하게 한 것입니다. 그럼에도 남은 항만 소음 때문에 주택 목표가 7,000호에서 약 2,764호로 줄었습니다."],
  "tools": [
@@ -697,11 +705,12 @@ D = {
  ],
  "result": [
   "RDM — 2009년부터 교육 · 혁신 제조 캠퍼스 (해상풍력 · 수소 · 디지털화 분야 실험장)",
-  "M4H — 2019 공간 골격 · 2025 통합 계획 의결로 메르버하번 1단계 약 2,500호 착수 가능",
+  "M4H — 2019 공간 골격 · 2024.11 통합 계획 의결로 메르버하번 약 2,500호 착수 가능, 갈릴레이파크 Ferro Offices 착공",
  ],
  "lesson": [
   "항만 · 공업지를 주거로 서둘러 바꾸지 않고 \"제조 혁신 + 교육\"으로 먼저 전환하며, 토지 소유자 (항만공사)와 시가 함께 시행하는 모델 — 노후 산단 첨단화에 직접 참고할 만합니다.",
   "다만 남아 있는 산업 소음 때문에 주택 목표가 크게 줄어든 점은, 산업과 주거를 섞을 때 환경 규제 조정이 사업 성패를 가른다는 교훈입니다.",
+  "로테르담은 런던 · 브뤼셀과 함께 유럽 연구 사업 「Cities of Making」 (2018)의 도시 제조업 비교 사례 도시였습니다 — 메이커 지구 (M4H) 같은 \"도시 안 제조업 회귀\" 정책 논의의 맥락입니다 (Ferm 2023)."
  ],
  "funding": [
   ["총사업비", "M4H 약 15억 유로 (추정, 네덜란드어 위키백과)"],
@@ -731,7 +740,8 @@ D = {
   "용적률 완화 수치는 확인된 자료를 찾지 못했습니다.",
   "RDM 캠퍼스 건물 개조를 설계한 건축가는 확인된 자료를 찾지 못했습니다.",
   "M4H 개발에 참여한 주민협의회 · 시민단체 (헤이플라트 주민 외)는 확인된 자료를 찾지 못했습니다.",
-  "세제 · 재정 지원과 2025년 통합 계획의 세부 내용 · 원문 링크는 확인된 자료를 찾지 못했습니다.",
+  "세제 · 재정 지원은 확인된 자료를 찾지 못했습니다.",
+  "통합 계획 의결 시기는 공식 M4H 사이트 (2024.11.28)와 네덜란드어 위키 (2025 초)가 다르며, 공식 사이트를 따랐습니다. 2,764호 상한 · 7,000호 원래 목표는 네덜란드어 위키에만 있어 공식 원문으로 확인하지 못했습니다.",
  ],
  "refs": [
   {"t": "위키백과(네) — Merwe-Vierhavens", "u": "https://nl.wikipedia.org/wiki/Merwe-Vierhavens"},
@@ -741,7 +751,10 @@ D = {
   {"t": "Notitie Reikwijdte en Detailniveau M4H Rotterdam (2019.9, 시 · 항만공사)", "u": "https://m4hrotterdam.nl/wp-content/uploads/2019/11/Notitie-Reikwijdte-en-Detailniveau-M4H_17-9.pdf"},
   {"t": "RDM Rotterdam", "u": "https://www.rdmrotterdam.nl/en/"},
   {"t": "RDM Rotterdam — Ondernemen", "u": "https://www.rdmrotterdam.nl/ondernemen"},
+  {"t": "M4H Rotterdam — Bestemmingsplan M4H vastgesteld door Gemeenteraad Rotterdam (2024)", "u": "https://m4hrotterdam.nl/nieuws/bestemmingsplan-m4h-vastgesteld-door-gemeenteraad-rotterdam/"},
+  {"t": "M4H Rotterdam — Vaststelling Stedenbouwkundigplan Merwehaven (2025.3.14)", "u": "https://m4hrotterdam.nl/nieuws/vaststelling-stedenbouwkundigplan-merwehaven/"},
   {"t": "Gebiedsontwikkeling.nu — RDM Campus Rotterdam, waardecreatie door herontwikkeling", "u": "https://www.gebiedsontwikkeling.nu/artikelen/rdm-campus-rotterdam-waardecreatie-door-herontwikkeling/"},
+  {"t": "Ferm, J. (2023) Hyper-Competitive Industrial Markets: Implications for Urban Planning and the Manufacturing Renaissance, Urban Planning 8(4)", "u": "https://doi.org/10.17645/up.v8i4.7114"}
  ],
 },
 }

@@ -396,7 +396,7 @@ D = {
   "사업은 노르트라인베스트팔렌 주의 국제건축전시회 엠셔 파크 (IBA Emscher Park, 1989/1990~1999)의 대표 사업이었습니다.",
  ],
  "spec": [
-  ["원 건축물", "마이데리히 제철소 — 1902년 아우구스트 티센 (August Thyssen)이 「제철 주식회사 (Aktiengesellschaft für Hüttenbetrieb)」로 설립, 1901년 착공"],
+  ["원 건축물", "마이데리히 제철소 — 1902년 아우구스트 티센 (August Thyssen)이 「제철 주식회사 (Aktiengesellschaft für Hüttenbetrieb)」로 설립, 1901년 착공 · 1908년 완공, 용광로 5기 (3기 현존)"],
   ["원래 용도", "특수 선철 생산 — 84년간 3,700만 톤 (1903년 5월 16일 1호 용광로 화입 ~ 1985년)"],
   ["폐쇄", "3 · 4호 용광로 1968/1970년, 1 · 2호 1982년, 5호 1985년 정지"],
   ["변경 용도", "경관공원 — 5호 용광로 전망대, 가스탱크 다이빙장, 광석 벙커 정원 · 암벽 등반장 (약 400개 루트), 주조장 · 송풍기동 · 발전동 공연 · 행사장, 조명 예술"],
@@ -424,10 +424,12 @@ D = {
   ["1996", "12월 조너선 파크의 조명 설치 점등 · 1호 주조장 야외 극장 · 1996~1998년 가스탱크를 다이빙 센터로"],
   ["1997", "발전동을 행사장으로 개조 · 운영 회사 설립"],
   ["1999", "IBA 엠셔 파크 종료"],
+  ["2000", "5월 26일 옛 제철소가 뒤스부르크시 건축 기념물 (Baudenkmal, 목록 506번)로 등재"],
   ["2002~2003", "송풍기동 · 주조장을 다목적 공연장으로 개조 · 1호 주조장에 투명 막 지붕"],
   ["2024", "2월 노르트라인베스트팔렌 「정원 기념물 (Gartendenkmal)」로 보호 지정 발표"],
  ],
  "heritage": [
+  ["건축 기념물 (Baudenkmal, 2000) — 뒤스부르크시 기념물 목록 506번", "「옛 티센 용광로 제철소 마이데리히 (ehemaliges Thyssen-Hochofenwerk Meiderich)」, 엠셔 거리 71 — 2000년 5월 26일 등재. 건설 1901~1908년, 1902~1985년 가동, 용광로 5기 중 3기 현존 (독일어 위키백과 「뒤스부르크 마이데리히/베크 건축 기념물 목록」, 시 하급 기념물청 목록 기준)", "https://de.wikipedia.org/wiki/Liste_der_Baudenkm%C3%A4ler_in_Duisburg-Meiderich/Beeck"],
   ["정원 기념물 (Gartendenkmal, 2024 발표)", "2022년 시행된 노르트라인베스트팔렌 새 기념물보호법이 만든 「정원 기념물」 범주로, 뒤셀도르프 지방정부가 기념물보호청의 평가를 거쳐 공원 전체와 그 안의 기반시설 · 산업 유구를 보호 대상으로 올렸습니다 (2024년 2월 7일 공원 보도자료). 피아차 메탈리카와 조너선 파크의 조명 설치도 평가 요소였습니다.", "https://www.landschaftspark.de/site/assets/files/31438/lp_pm_der_landschaftspark_ist_jetzt_gartendenkmal.pdf"],
  ],
  "concept": [
@@ -504,11 +506,11 @@ D = {
  "missing": [
   "시 보조금 · 수입 가운데 경관공원 부문만의 금액은 공개 자료에서 따로 나뉘지 않아 확인하지 못했습니다 (운영사 전체 수치만 확인).",
   "부지 매입가와 주 · 연방 재원 분담액은 확인된 자료를 찾지 못했습니다.",
-  "1994년 이전 제철소 건물의 개별 문화재 (건축 기념물) 지정 여부 · 연도는 확인된 자료를 찾지 못했습니다.",
   "공모에 참가한 다른 네 팀의 이름은 확인된 자료를 찾지 못했습니다.",
   "식물을 이용한 토양 정화 (식물 정화)는 열어 본 원문에서 확인하지 못해 뺐습니다.",
  ],
  "refs": [
+  {"t": "Wikipedia (독일어) — Liste der Baudenkmäler in Duisburg-Meiderich/Beeck (Nr. 506)", "u": "https://de.wikipedia.org/wiki/Liste_der_Baudenkm%C3%A4ler_in_Duisburg-Meiderich/Beeck"},
   {"t": "Landschaftspark Duisburg-Nord — Resident companies (입주 업체 목록)", "u": "https://www.landschaftspark.de/en/visitor-information/resident-companies/"},
   {"t": "Stadt Duisburg — Beteiligungsbericht 2018 (뒤스부르크 콘토어 홀 관리)", "u": "https://www.duisburg.de/vv/produkte/pro_du/dez_i/20/jahresuebersicht.php.media/85935/Beteiligungsbericht-2018.pdf"},
   {"t": "Stadt Duisburg — Jahresübersicht Beteiligungsunternehmen, Berichtsjahr 2024", "u": "https://www.duisburg.de/vv/produkte/pro_du/dez_i/20/jahresuebersicht.php.media/109221/Jahresuebersicht-2024Gesamtdokument.pdf"},
@@ -537,7 +539,7 @@ D = {
   ["원 건축물", "신코 부두 보세 창고 (新港埠頭保税倉庫) — 2호관 1907년 착공 · 1911년 준공, 1호관 1908년 착공 · 1913년 준공"],
   ["원 설계", "대장성 임시건축부 (부장 쓰마키 요리나카 (妻木頼黄))"],
   ["구조", "벽돌 조적조 일부 철골조 — 일본어 위키백과 · 건설신문은 지상 3층, 요코하마시 인정 기록은 \"벽돌조 2층\"으로 적음. 벽돌 사이에 철재를 넣은 보강"],
-  ["규모", "전체 길이 약 150m · 연면적 17,163㎡ (1호관 5,575㎡ · 2호관 10,755㎡) · 국산 벽돌 636만 개"],
+  ["규모", "전체 길이 약 150m (일본어 위키백과) · 연면적 17,163㎡ (1호관 5,575㎡ · 2호관 10,755㎡) · 국산 벽돌 636만 개 / 1호관: 건축면적 1,953㎡, 길이 76m · 폭 22.6m · 높이 17.8m (1호관 공식)", "https://akarenga.yafjp.org/about/"],
   ["원래 용도", "세관 보세 창고 (1945~1956년경 연합군 접수 · 1989년 창고 용도 폐지)"],
   ["변경 용도", "1호관 — 홀 · 전시 등 문화 시설, 2호관 — 상점 · 레스토랑"],
   ["개조 설계", "신이 지아키 도시건축설계 (新居千秋都市建築設計) · 구조 TIS & PARTNERS"],

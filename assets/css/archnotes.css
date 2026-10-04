@@ -232,3 +232,25 @@ details.an__award > summary small { color: #8a7f79; margin-left: 6px; }
   .rg__anchor .ab__spec tr { padding: 8px 0; border-bottom: 1px solid #eadfd3; }
   .rg__anchor .ab__spec th { padding: 0 0 2px; }
 }
+/* 나라별 지원정책 */
+.pol { border: 2px solid #2b5d9b; border-radius: 10px; background: #f6f9fd; padding: 10px 14px; margin: 6px 0 18px; }
+.pol > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.pol > summary::-webkit-details-marker { display: none; }
+.pol > summary b { color: #2b5d9b; font-size: 1.05rem; }
+.pol > summary span { color: #6b6460; font-size: .88rem; }
+.pol .an__chips { margin: 10px 0; }
+.pol__sum { color: #3d3633; line-height: 1.7; }
+.pol__item { border-top: 1px solid #dbe3ee; padding: 10px 0; line-height: 1.7; }
+.pol__item p { margin: 2px 0; }
+.pol__name { font-weight: 700; color: #1f2d44; }
+.pol__name a { color: #2b5d9b; }
+.pol__name span { font-weight: 400; color: #7b746f; font-size: .88rem; margin-left: 6px; }
+.pol__law { color: #5f5652; font-size: .92rem; }
+.pol__note { color: #8b1e2d; font-size: .9rem; }
+.pol__cases a { color: #1f7a6c; }
+/* ★ 핵심 사례 */
+.an__key { display: inline-block; font-size: .74rem; font-weight: 700; color: #fff; background: #c0392b; border-radius: 5px; padding: 0 7px; margin-right: 4px; }
+.an__chips button.an__keychip { color: #c0392b; border-color: #c0392b; font-weight: 700; }
+.an__chips button.an__keychip.on { background: #c0392b; color: #fff; }
+.an__home { margin: 10px 0 0; font-weight: 700; color: #2c2725; }
+.an__home a { color: #2b5d9b; }

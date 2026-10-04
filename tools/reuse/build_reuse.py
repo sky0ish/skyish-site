@@ -91,6 +91,40 @@ def enrich(x, firm_hint="", archdaily=True):
     return dict(x, imgs=imgs, ad=ad, more=fix_drawings(more.get("drawings", [])), refs=refs), nfile
 
 
+def append_more(items, pattern):
+    """보강 전용 파일 (regen_add*.py · reno_add*.py) — 덮어쓰지 않고 목록은 뒤에 덧붙이고, 비어 있던 칸만 채웁니다"""
+    for mp in sorted(glob.glob(os.path.join(HERE, pattern))):
+        ns = {}
+        exec(compile(io.open(mp, encoding="utf-8").read(), mp, "exec"), ns)
+        for x in items:
+            add = ns["D"].get(x["id"])
+            if not add:
+                continue
+            for k, v in add.items():
+                if isinstance(v, list):
+                    have = x.get(k) or []
+                    x[k] = have + [i for i in v if i not in have]
+                elif isinstance(v, dict) and isinstance(x.get(k), dict):
+                    for kk, vv in v.items():
+                        x[k][kk] = (x[k].get(kk) or []) + [i for i in vv if i not in (x[k].get(kk) or [])] if isinstance(vv, list) else x[k].get(kk, vv)
+                elif not x.get(k):
+                    x[k] = v
+
+
+def add_homes(items):
+    """공식 홈페이지 (homes*.py 의 H = {id: [{"t", "u"}]}) → x["home"]"""
+    H = {}
+    for f in sorted(glob.glob(os.path.join(HERE, "homes*.py"))):
+        ns = {}
+        exec(compile(io.open(f, encoding="utf-8").read(), f, "exec"), ns)
+        for k, v in ns["H"].items():
+            H.setdefault(k, [])
+            H[k] += [h for h in v if h.get("u") and h["u"] not in [g["u"] for g in H[k]]]
+    for x in items:
+        if H.get(x["id"]):
+            x["home"] = H[x["id"]]
+
+
 def renovations():
     R = load_parts("reno[0-9]*.py", "R")
     skip = [t for t in os.environ.get("RENO_SKIP", "").split(",") if t]      # 아직 조사 중인 묶음
@@ -106,11 +140,14 @@ def renovations():
                 refs = x.get("refs", []) + more.get("refs", [])
                 x.update(more)
                 x["refs"] = refs
+    append_more(R, "reno_add*.py")
+    add_homes(R)
     print("■ 리노베이션", len(R))
     out = []
     for x in R:
         firm = ""
-        for k, v in x.get("spec", []):
+        for row in x.get("spec", []):                         # 세 번째 칸(원문 링크)이 있을 수 있습니다
+            k, v = row[0], row[1]
             if "개조 설계" in k or k == "설계":
                 m = re.search(r"\(([^)]+)\)", v)
                 firm = m.group(1) if m else ""
@@ -150,6 +187,8 @@ def regenerations():
                 refs = x.get("refs", []) + more.get("refs", [])
                 x.update(more)
                 x["refs"] = refs
+    append_more(U, "regen_add*.py")
+    add_homes(U)
     kp = os.path.join(HERE, "regen_keep.py")                         # 옛 건물을 보존 · 활용한 사례만
     if os.path.exists(kp):
         ns = {}
@@ -185,7 +224,53 @@ def write(fname, items):
     print("→", p, len(items))
 
 
+def policies():
+    """나라별 노후 산업지역 재생 · 활용 지원정책 (policy*.py 의 P) → policies.json"""
+    P = []
+    for f in sorted(glob.glob(os.path.join(HERE, "policy[0-9]*.py"))):
+        ns = {}
+        exec(compile(io.open(f, encoding="utf-8").read(), f, "exec"), ns)
+        for c in ns["P"]:                                       # 같은 나라는 하나로 합칩니다 (정책 · 출처 · 못 찾은 자료 덧붙임)
+            have = next((q for q in P if q["nat"] == c["nat"]), None)
+            if not have:
+                P.append(c)
+                continue
+            for it in c.get("items", []):                       # 같은 이름의 정책은 수단 · 사례 · 비고를 합칩니다
+                same = next((i for i in have.get("items", []) if i.get("name") == it.get("name")), None)
+                if not same:
+                    have.setdefault("items", []).append(it)
+                    continue
+                for k in ("tools", "cases"):
+                    same[k] = (same.get(k) or []) + [v for v in (it.get(k) or []) if v not in (same.get(k) or [])]
+                if it.get("note") and it["note"] not in (same.get("note") or ""):
+                    same["note"] = ((same.get("note") or "") + " " + it["note"]).strip()
+                if not same.get("u") and it.get("u"):
+                    same["u"] = it["u"]
+            for k in ("refs", "missing"):
+                have[k] = have.get(k, []) + [i for i in c.get(k, []) if i not in have.get(k, [])]
+            if not have.get("summary"):
+                have["summary"] = c.get("summary", "")
+    ids = {}                                                     # 사례 id → (갈래, 한글 이름)
+    for x in load_parts("regen[0-9]*.py", "U"):
+        ids[x["id"]] = ("regeneration", x.get("ko", x["id"]))
+    for x in load_parts("reno[0-9]*.py", "R"):
+        ids.setdefault(x["id"], ("renovation", x.get("ko", x["id"])))
+    for c in P:
+        for it in c.get("items", []):
+            bad = [i for i in it.get("cases", []) if i not in ids]
+            if bad:
+                print("   ! 없는 사례 id:", c["nat"], it.get("name", "")[:30], bad)
+            it["cases"] = [{"id": i, "k": ids[i][0], "ko": ids[i][1]} for i in it.get("cases", []) if i in ids]
+    io.open(os.path.join(ROOT, "assets", "data", "policies.json"), "w", encoding="utf-8").write(
+        json.dumps({"made": time.strftime("%Y-%m-%d"), "items": P}, ensure_ascii=False, separators=(",", ":")))
+    print("→ policies.json", len(P), "나라", sum(len(c.get("items", [])) for c in P), "정책")
+
+
 if __name__ == "__main__":
+    if "--정책" in sys.argv:
+        policies()
+        sys.exit()
+    policies()
     if "--도시재생" not in sys.argv:
         renovations()
     if "--리노베이션" not in sys.argv:

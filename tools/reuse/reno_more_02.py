@@ -32,7 +32,7 @@ D = {
  "timeline": [
   ["1962", "덴마크 농업 곡물회사 (DLG)의 곡물 사일로로 사용 시작 — 노르하운 최대의 산업 건물"],
   ["사용 기간", "꼭대기의 낙서 「Hva drikker Mølr」로 코펜하겐 시민에게 상징처럼 알려짐"],
-  ["2008", "코베가 노르하운 도시계획(마스터플랜)을 맡기 시작"],
+  ["2008", "코베가 슬레트 (Sleth) · 폴리폼 (Polyform)과 함께 도시개발공사 「뷔 오 하운 (By & Havn)」의 노르하운 공모에 당선 — 이후 마스터플랜 자문 (2050년 주민 4만 명 · 일자리 4만 개 목표)"],
   ["2013", "운이온쿨 · NRE 가 코베에 사일로 개조 설계를 의뢰"],
   ["2015년 5월", "착공 — 외벽 콘크리트를 30km 넘게 잘라 내어 창을 냄"],
   ["2017년 5월", "완공 — 아파트 · 1층 갤러리 · 꼭대기 레스토랑 개장"],
@@ -88,6 +88,7 @@ D = {
   "공공 보조금 없이 민간(운이온쿨 · NRE)이 개발하고, 고가 아파트 분양으로 사업비를 회수하는 구조입니다. 레스토랑과 갤러리는 건물을 시민에게 여는 장치이자 상업 임대 공간입니다.",
  ],
  "missing": [
+  "CTBUH 2018 유럽 최우수 고층건물상은 영어 위키백과로만 확인했고 CTBUH 원문은 확인하지 못했습니다.",
   "레스토랑 실로의 현재 운영사와 영업 여부, 1층 갤러리의 현재 운영 주체는 확인된 자료를 찾지 못했습니다.",
   "레스토랑 임대 조건 · 관리조합(공용관리비) 구조는 확인된 자료를 찾지 못했습니다.",
   "원 사일로의 설계자 · 시공자는 확인된 자료를 찾지 못했습니다.",
@@ -96,6 +97,7 @@ D = {
   "공공 보조금 · 세제 혜택은 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "DI Rådgiverne — COBE vandt Nordhavn", "u": "https://www.danskindustri.dk/brancher/di-radgiverne/fokusomrader/radgiverbranchens-vardiskabelse/cases---gode-eksempler-pa-branchens-offentlige-vardiskabelse/cobe/"},
   {"t": "Bolius — Fra kornsilo til eksklusive lejligheder (2018)", "u": "https://www.bolius.dk/fra-kornsilo-til-eksklusive-lejligheder-48879"},
   {"t": "UNIONKUL — The Silo", "u": "https://unionkul.dk/the-silo/"},
   {"t": "Byggematerialer.dk — The Silo, Nordhavn: ombygning til boliger", "u": "https://www.byggematerialer.dk/the-silo-nordhavn-ombygning-til-boliger/projekt.html"},
@@ -106,6 +108,7 @@ D = {
  ],
 },
 "westergasfabriek": {
+ "archName": "메카누 (마스터플랜) · 구스타프슨 포터 (공원) · 원 건축 이사크 호스할크",
  "from": "석탄가스 공장", "to": "문화공원 (공연 · 전시 · 방송 · 영화관 · 식당)", "y0": "1883~85 건설 · 1967 가스 생산 중단",
  "archAbout": [
   "원 건물 대부분은 암스테르담 건축가 「이사크 호스할크 (Isaac Gosschalk, 1838~1907)」가 설계했습니다. 그는 네덜란드 신르네상스 (Hollandse neorenaissance) 양식의 대표 건축가로, 흐로닝언 역과 함께 이 가스공장이 그의 주요작으로 꼽힙니다. 기술 · 배치 계획은 런던의 임페리얼 콘티넨털 가스협회 (ICGA)가 보낸 오스트리아 기술자 「율리우스 파차니 (Julius Pazzani)」가 맡았습니다.",
@@ -124,7 +127,7 @@ D = {
   ["면적", "부지 약 13.5ha (메카누) — 공원 11.5ha(구스타프슨 포터) · 역사 건물 재개발 8,000㎡ · 신축 3,500㎡"],
   ["개장", "2003년 「문화공원 베스테르가스파브릭 (Cultuurpark Westergasfabriek)」 · 공원 완공 2004년 · 2018년 「베스테르가스 (Westergas)」로 개칭"],
   ["보호", "국가기념물 (rijksmonument) 단지 337499 — 18개 구성 기념물"],
-  ["수상", "유럽연합 문화유산상 / 유로파 노스트라 상 (보존 부문)"],
+  ["수상", "유럽연합 문화유산상 / 유로파 노스트라 상 (European Heritage Awards / Europa Nostra Awards) 2010 — 보존 · 재활용 부문 (등록번호 HA-2010/NL/05)"],
  ],
  "tenants": [
   ["문화 · 공연장", "가스하우더르 (Gashouder)", "옛 가스탱크(1902~03) · 세계적 공연 · 클럽 행사장 — 베스테르가스가 직접 운영", "https://westergas.nl/en/whats-here/"],
@@ -154,6 +157,7 @@ D = {
   ["2000~2001", "건물 MAB 에 이양 · 토양 정화(오염토 격리) 시작, 2001년 공원 공사 착수"],
   ["2003", "「문화공원 베스테르가스파브릭」 개장 · 건물 임대 재개"],
   ["2004", "구스타프슨 포터 공원 완공"],
+  ["2010", "4월 1일, 유럽연합 문화유산상 / 유로파 노스트라 상 (보존 · 재활용 부문) 수상 — \"산업적 성격을 지키는 지속적이고 단순한 개보수\"를 높이 평가"],
   ["2018", "이름을 「베스테르가스 (Westergas)」로 바꿈"],
  ],
  "heritage": [
@@ -216,7 +220,6 @@ D = {
   "방송 스튜디오의 현재 입주 여부는 확인된 자료를 찾지 못했습니다.",
   "임대 · 대관 수입 규모와 연간 방문객 수는 확인된 자료를 찾지 못했습니다.",
   "건물 개보수 총사업비와 MAB 융자 금액은 확인된 자료를 찾지 못했습니다.",
-  "유로파 노스트라 상의 수상 연도는 원문으로 확인하지 못했습니다(2010년 보도로 인용됨).",
  ],
  "refs": [
   {"t": "Westergas — What's here (In the District)", "u": "https://westergas.nl/en/whats-here/"},
@@ -233,9 +236,12 @@ D = {
   {"t": "Wikipedia (en) — Westergasfabriek", "u": "https://en.wikipedia.org/wiki/Westergasfabriek"},
   {"t": "Quote — Duncan Stutterheim: 'Westergas is Amsterdamse legacy'", "u": "https://www.quotenet.nl/vastgoed/a45048362/duncan-stutterheim-goede-westergast-westergas/"},
   {"t": "Vastgoedjournaal — Westergasfabriek voor €75 miljoen naar nieuwe eigenaar (2018)", "u": "https://vastgoedjournaal.nl/news/34568/westergasfabriek-voor-euro-75-miljoen-naar-nieuwe-eigenaar"},
+  {"t": "European Heritage Awards / Europa Nostra — The Westergasfabriek (2010)", "u": "https://www.europeanheritageawards.eu/winners/the-westergasfabriek/"},
+  {"t": "European Heritage Awards Archive — The gas-works Westergasfabriek (HA-2010/NL/05)", "u": "https://europeanheritageawards-archive.eu/laureates-1978-2022/detail/the-gas-works-westergasfabriek-amsterdam"},
  ],
 },
 "sapporo-factory": {
+ "archName": "다이세이 건설 (설계 · 시공) · 사업 삿포로 맥주",
  "from": "맥주 공장 (삿포로 맥주 제1공장)", "to": "복합 상업시설 (쇼핑 · 영화관 · 호텔 · 홀 · 브루어리)", "y0": "1876 개척사 맥주 양조장 · 1989 생산 종료",
  "archAbout": [
   "설계는 「다이세이 건설 (大成建設)」이 맡았고, 시공은 다이세이 건설 외 11개사 공동기업체입니다. 사업 주체는 공장 주인이던 「삿포로 맥주 (サッポロビール)」로, 1985년 사내에 재개발 프로젝트 팀을 두어 직접 개발했습니다.",
@@ -272,6 +278,7 @@ D = {
   ["1887", "시부사와 에이이치 등이 민간 「삿포로 맥주회사」로 재출발"],
   ["1892", "북3조 거리에 면한 벽돌 양조 건물 건립 (현 렌가관의 가장 오래된 동)"],
   ["1983~1985", "제1공장의 에니와 이전 결정, 1985년 사내 재개발 프로젝트 팀 설치"],
+  ["1988", "삿포로 개기 120주년 「삿포로 · 고향 문화 백선」 건물 부문 1번으로 선정 (공장 가동 중)"],
   ["1988~1989", "「삿포로 팩토리」 계획 발표 · 1989년 맥주 생산 종료"],
   ["1990", "11월 14일 착공"],
   ["1993", "4월 9일 「생활공방 · 삿포로 팩토리」 개업"],
@@ -284,7 +291,7 @@ D = {
  ],
  "heritage": [
   ["삿포로시 활용촉진 경관자원 제7호 (札幌市 活用促進景観資源, 2020)", "「구 삿포로 맥주회사 공장 (개척사 맥주 양조장)」 — 2020년 12월 15일 등록. 1892년 벽돌 건물의 외벽과 광장의 굴뚝이 보존되어 상업시설로 활용되고 있음을 경관 가치로 명시.", "https://www.city.sapporo.jp/keikaku/keikan/singikai/kaisai/documents/r2dai3kai_houkokusiryou1-2.pdf"],
-  ["삿포로 · 고향 문화 백선 (さっぽろ・ふるさと文化百選)", "「구 삿포로 맥주회사 공장」으로 선정 — 남은 벽돌 건물 3동이 대상 (선정 연도는 원문 미확인)."],
+  ["삿포로 · 고향 문화 백선 (さっぽろ・ふるさと文化百選, 1988)", "건물 부문 1번 (No.001) 「구 삿포로 맥주회사 공장」 — 1988년 삿포로 개기 120주년 기념으로 시민 공모를 거쳐 선정. 시 문화재 데이터베이스는 「메이지 25년(1892)에 지은 풍격 있는 붉은 벽돌 건물」로 설명", "https://jmapps.ne.jp/sapporo_bunka/det.html?data_id=5817"],
  ],
  "concept": [
   "공장의 상징이던 붉은 벽돌 건물과 검은 철 굴뚝을 살리고, 새로 지은 동들도 붉은 벽돌과 어울리게 디자인했습니다. 옆의 나가야마 기념공원과도 이어지도록 계획했습니다.",
@@ -335,8 +342,8 @@ D = {
   "1조관 · 2조관 · 3조관 · 프런티어관의 주요 상업 점포(앵커 점포) 현황은 공식 층별 안내로 확인하지 못했습니다.",
   "재원 · 보조금(총사업비 포함)은 확인된 자료를 찾지 못했습니다.",
   "1892년 벽돌 건물의 원 설계자는 확인된 자료를 찾지 못했습니다.",
-  "「삿포로 · 고향 문화 백선」 선정 연도는 원문으로 확인하지 못했습니다.",
   "연간 매출 · 임대 수입과 최근 연간 방문객 수는 확인된 자료를 찾지 못했습니다.",
+  "BCS상 (제35회) · 삿포로시 도시경관상 (제6회)의 수상 연도는 원문으로 확인하지 못했습니다.",
  ],
  "refs": [
   {"t": "サッポロ不動産開発 — サッポロファクトリー", "u": "https://www.sapporo-re.jp/portfolio/sapporofactory/"},
@@ -346,6 +353,8 @@ D = {
   {"t": "サッポロファクトリー — 札幌開拓使麦酒醸造所・見学館", "u": "https://sapporofactory.jp/shop/detail/160"},
   {"t": "Wikipedia (ja) — サッポロファクトリー", "u": "https://ja.wikipedia.org/wiki/サッポロファクトリー"},
   {"t": "日本食糧新聞 — サッポロファクトリーの入場者が1カ月で100万人に (1993)", "u": "https://news.nissyoku.co.jp/news/nss-7540-0010"},
+  {"t": "札幌市 文化財データベース — 旧札幌麦酒会社工場 (さっぽろ・ふるさと文化百選)", "u": "https://jmapps.ne.jp/sapporo_bunka/det.html?data_id=5817"},
+  {"t": "Wikipedia (ja) — さっぽろ・ふるさと文化百選", "u": "https://ja.wikipedia.org/wiki/さっぽろ・ふるさと文化百選"},
  ],
 },
 "lingotto": {
@@ -365,7 +374,7 @@ D = {
   ["개조 설계", "렌초 피아노 빌딩 워크숍 (RPBW)"],
   ["협력", "구조 · 설비 — 오브 아럽 (Ove Arup & Partners) · 피아트 엔지니어링, 음향 — 아럽 어쿠스틱스 · 뮐러 BBM, 미술관 지붕 — RFR"],
   ["발주처", "1983 공모 단계 피아트 (Fiat S.p.A.) / 1991~2003 공사 단계 링고토 S.p.A. · 파테 (Pathé) · 팔라초 그라시 (Palazzo Grassi)"],
-  ["공모 · 공사", "1982~84년 국제 아이디어 공모 (20개 안, 당선작 없음) → 1985년 RPBW 의뢰 → 1991~2003년 3단계 공사"],
+  ["공모 · 공사", "국제 아이디어 공모 (20개 안, 당선작 없음) — 연도는 자료마다 1982 (이탈리아어 위키백과) · 1983 (RPBW 상세 · 토리노 박물관) · 1984 (RPBW 본문)로 다름 → RPBW 의뢰 1985년 (RPBW · 이탈리아어 위키백과) 또는 1983년 (토리노 박물관) → 1991~2003년 3단계 공사"],
   ["규모", "건물 부피 100만㎥ · 길이 500m · 5층 / 복합시설 약 246,000㎡ (토리노 박물관)"],
   ["위치", "이탈리아 토리노 니차 거리 (Via Nizza) 230~294"],
   ["수상", "유럽 철골구조상 (European Award for Steel Structure, 1997)"],
@@ -390,7 +399,7 @@ D = {
   ["1923~1927", "양 끝 나선 경사로 (1923~26) · 지붕 시험 주행로 (1926~27) 완성"],
   ["1939~1944", "생산 일부를 미라피오리 공장으로 옮김 · 폭격 피해 (1942 · 1944) 뒤 1945~47년 복구"],
   ["1982", "공장 폐쇄 — 마지막 차종 란치아 델타"],
-  ["1983~1984", "피아트 주도 국제 아이디어 공모 — 20개 안 가운데 당선작 없음"],
+  ["1982~1984", "피아트 주도 국제 아이디어 공모 (consultazione) — 20개 안 가운데 당선작 없음 (공모 연도는 자료마다 1982 · 1983 · 1984)"],
   ["1985", "피아트가 RPBW 에 개조 의뢰"],
   ["1992", "전시센터 (링고토 피에레) 개장 — 첫 행사 토리노 모터쇼"],
   ["1994", "컨벤션센터 · 조반니 아녤리 강당 개관 (아바도 지휘 베를린 필) · 지붕 위 유리 회의실 「볼라 (Bolla)」"],
@@ -399,7 +408,9 @@ D = {
   ["2002", "쇼핑몰 · 사무 공간 · 토리노 공대 개관 · 9월 20일 피나코테카 아녤리 「보석 상자 (Scrigno)」 개관"],
   ["2003", "두 번째 호텔 개관 — 개조 완료"],
  ],
- "heritage": [],
+ "heritage": [
+  ["문화재 보호 (Vincolo della Soprintendenza)", "토리노시가 펴낸 「소프린텐덴차 보호 대상 건물 · 구역 (Edifici o ambiti sottoposti a vincolo dalla Soprintendenza)」 목록에 \"Via NIZZA 230~294 짝수 — Lingotto\" · \"Via FENOGLIETTI 15 — Lingotto\"로 올라 있음 — 외부 간판 · 진열창 변경에도 소프린텐덴차 허가 필요. 지정 연도는 목록에 없음", "https://www.comune.torino.it/media/4845"],
+ ],
  "concept": [
   "RPBW 는 두 가지 목표를 세웠습니다 — 공장을 다목적 센터로 되살리는 것, 그리고 건축적 정체성을 지키는 것. 그래서 바깥 모습은 거의 그대로 두고 안을 크게 바꿨습니다.",
   "개조는 1991~2003년 세 단계로 진행했고, 완성된 구역부터 차례로 문을 열어 전체가 끝나기를 기다리지 않았습니다(전시장 1992 → 컨벤션 · 강당 1994 → 호텔 1995 → 상업 · 대학 · 미술관 2002 → 호텔 2003). 피아노는 링고토에 \"진짜 도시의 한 조각\"을 만들고 싶었다고 말했습니다.",
@@ -453,8 +464,8 @@ D = {
   "피아트(현 스텔란티스) 본사 기능과 엑소르 · 교통규제청 · 치과대학의 현재 입주 여부는 공식 원문으로 확인하지 못했습니다.",
   "시설별 수입 · 공공 운영 보조금 · 방문객 수는 확인된 자료를 찾지 못했습니다.",
   "개조 총사업비 · 공공 재원은 확인된 자료를 찾지 못했습니다.",
-  "공장의 문화재 보호 지정(vincolo) 여부 · 연도는 확인된 자료를 찾지 못했습니다.",
   "피나코테카 아녤리의 입장료 수입 · 예산 규모는 확인된 자료를 찾지 못했습니다.",
+  "링고토의 문화재 보호 지정 연도 · 근거 고시는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
   {"t": "Lingotto Hotels — Il Lingotto", "u": "https://www.lingotto-hotels.com/it/il-lingotto/"},
@@ -465,6 +476,7 @@ D = {
   {"t": "Wikipedia (it) — Lingotto (comprensorio)", "u": "https://it.wikipedia.org/wiki/Lingotto_(comprensorio)"},
   {"t": "Wikipedia (en) — Lingotto", "u": "https://en.wikipedia.org/wiki/Lingotto"},
   {"t": "Il Giornale delle Fondazioni — Fondazione Pinacoteca del Lingotto (censimento 2013)", "u": "https://www.ilgiornaledellefondazioni.com/censimento_fondazioni/fondazione-pinacoteca-del-lingotto-giovanni-e-marella-agnelli_2013"},
+  {"t": "Comune di Torino — Edifici o ambiti sottoposti a vincolo dalla Soprintendenza", "u": "https://www.comune.torino.it/media/4845"},
  ],
 },
 "zollverein": {
@@ -580,6 +592,7 @@ D = {
   "건설 · 개조는 유럽 기금(EFRE 8,260만 유로)과 주 · 시 재원으로 했고, 운영은 시 · 주가 세운 공익 재단이 맡아 주 정부의 기관 운영 지원을 바탕으로 하되, 공간 임대 · 행사 · 관광 수입과 재단 후원으로 보탭니다. 즉 공공 보조 의존도가 높은 \"재단 + 상업 임대\" 혼합 모델입니다.",
  ],
  "missing": [
+  "세계유산 등재일은 자료마다 2001년 12월 13일 (유네스코 신규 등재 공지) · 12월 14일 (독일어 위키백과 · 레드닷 박물관)로 다릅니다.",
   "입주 기업 전체 목록과 2014년 이후 입주 기업 수 변화는 확인된 자료를 찾지 못했습니다.",
   "레드닷 디자인 박물관(보일러동) 개조 공사비는 확인된 자료를 찾지 못했습니다.",
   "1986년 주 정부의 부지 매입 금액은 확인된 자료를 찾지 못했습니다.",
@@ -609,7 +622,7 @@ D = {
   "전체 부지(약 17ha)의 마스터플랜은 2006년 이후 「라파엘 비뇰리 (Rafael Viñoly)」의 안이 쓰였고, 주변에 「프랭크 게리 (Frank Gehry)」와 「포스터 + 파트너스 (Foster + Partners)」의 주거동, 1단계 「서커스 웨스트 빌리지」(심슨호 (SimpsonHaugh) · dRMM)가 들어섰습니다. 공공 공간은 「LDA 디자인」, 발전소 지붕 정원은 「앤디 스터전 (Andy Sturgeon)」이 맡았습니다.",
  ],
  "spec": [
-  ["원 건축물", "배터시 발전소 — A 발전소 1929~1935 · B 발전소 1937~1941 공사 후 전쟁으로 중단, 1955년 완공. 굴뚝 4개"],
+  ["원 건축물", "배터시 발전소 — A 발전소 1929~1935 (1933년 첫 발전) · B 발전소 1937~1941 공사 후 전쟁으로 중단, 터빈 홀 B 는 1944년 가동 (공식 발표), 네 번째 굴뚝 1955년 완공. 굴뚝 4개"],
   ["원 설계", "엔지니어 레너드 피어스 · C. S. 앨럿 앤드 선 / 건축 J. 시오 핼리데이 (핼리데이 앤드 애거트) / 외관 자문 자일스 길버트 스콧"],
   ["원래 용도", "석탄 화력발전소 — 런던 전력의 약 5분의 1 공급 (윌킨슨에어)"],
   ["폐쇄", "A 1975년 · B 1983년 — 이후 약 40년 가까이 방치, 여러 개발 실패"],
@@ -653,6 +666,9 @@ D = {
   ["2021", "9월 20일 지하철 노던선 연장 (배터시 파워 스테이션역 개통) · 5월 발전소 첫 입주"],
   ["2022", "10월 14일, 발전소 일반 개장 — 폐쇄 약 40년 만"],
   ["2023", "애플 런던 사무실 입주"],
+  ["2024", "3월, 상업 자산 11억 파운드 재융자 (가치 약 17억 파운드)"],
+  ["2025", "10월, PNB · EPF 가 BNP 파리바를 자문사로 두고 상업 자산 매각을 검토한다는 보도 → 10월 29일 두 기관이 \"당장 매각 계획은 없다\"고 발표"],
+  ["2026", "9월 애플 뮤직 홀 개관 · 10월 1일 누적 방문객 5,000만 명"],
  ],
  "heritage": [
   ["등록 건축물 2급* (Listed Building Grade II*, 1980 · 2007)", "잉글랜드 국가유산목록 등록번호 1357620 — 1980년 10월 14일 2급 지정, 2007년 2급*로 상향. 개발 조건으로 굴뚝은 \"같은 모양으로 (like for like)\" 재건하도록 요구됨."],
@@ -687,6 +703,7 @@ D = {
   ["기반시설 분담", "지하철 노던선 연장 공사비 11억 파운드 가운데 개발사가 2억 7천만 파운드 부담 (2021년 개통)", "https://en.wikipedia.org/wiki/Battersea_Power_Station"],
   ["민간 융자 (2013)", "개발 · 토지 재융자 신디케이트 대출 7억 9,020만 파운드 (약 40억 링깃) — CIMB 등 국제 은행단 (말레이 메일, 2013-11-25)", "https://www.malaymail.com/news/money/2013/11/25/battersea-power-station-development-secures-790m-syndicated-financing/569137"],
   ["건물 상업 자산 매각 (2018~19)", "발전소 건물(2단계)의 상업 자산 — 사무 54만 ft² · 상업 · 식음 · 레저 42만 ft² — 을 PNB 65% · EPF 35% 합작사 (PNB-Kwasa International 2)가 15억 8,300만 파운드 (약 85억 1천만 링깃)에 매입, 2018년 12월 계약 · 2019년 완료 (에지 말레이시아 · 아시아 애셋 매니지먼트)", "https://theedgemalaysia.com/article/epf-pnb-complete-acquisition-battersea-power-station-commercial-assets"],
+  ["재융자 (2024)", "2024년 3월 발전소 상업 자산 (애플 임대 사무 50만 ft² · 쇼핑 42만 ft² · 전망 시설)을 11억 파운드 대출로 재융자 — 자산 가치 약 17억 파운드로 평가 (비즈나우, 2025-10-24)", "https://www.bisnow.com/london/news/capital-markets/battersea-on-the-block-131539"],
  ],
  "famous": [
   "핑크 플로이드의 1977년 앨범 「애니멀스 (Animals)」 표지 — 굴뚝 사이에 떠 있는 돼지 풍선으로 세계적으로 알려졌습니다 (윌킨슨에어).",
@@ -707,6 +724,7 @@ D = {
   ["지분 구조 (2026)", "부지 전체는 S P 세티아 · 사임 다비 부동산 각 40% · EPF 20%, 발전소 건물 상업 자산은 PNB 65% · EPF 35% 합작사가 따로 소유 (에지프롭, 2026-10-01)", "https://edgeprop.my/content/1917660/battersea-power-station-welcomes-50-millionth-visitor"],
   ["운영 성과 · 방문객", "2026년 10월 1일 누적 방문객 5,000만 명 — 일반 개장 (2022-10) 후 4년이 안 되어 달성, 남은 16에이커 부지에 최대 320만 ft² 를 더하는 마스터플랜 변경 신청 중 (에지프롭)", "https://edgeprop.my/content/1917660/battersea-power-station-welcomes-50-millionth-visitor"],
   ["입장료 (리프트 109)", "2022년 11월 15일 개장 시 요금 — 어른 15.90파운드 · 어린이 11.50파운드 · 가족 50.40파운드부터 (수수료 포함, 공식 발표)", "https://batterseapowerstation.co.uk/news/battersea-power-station-lift-109-will-open-on-15th-november/"],
+  ["매각 검토 보도 (2025)", "2025년 10월 블룸버그 · 그린 스트리트 보도 — 소유주가 BNP 파리바를 자문사로 매각 가능성 검토 (주거 · 50 일렉트릭 불러바드 사무동 · 아트오텔 164실은 제외). 10월 29일 PNB · EPF 는 \"투자의 잠재력 실현에 전념, 당장 매각 계획 없음\"이라고 발표", "https://www.malaymail.com/news/money/2025/10/29/pnb-epf-reaffirm-commitment-to-battersea-project-in-london-says-no-immediate-plan-to-exit/196490"],
  ],
  "operationNote": [
   "공공 운영 보조금 없이, 말레이시아 국부 · 연기금 성격의 장기 투자자가 건물을 보유하고 대형 오피스(애플) · 상업 · 레저 임대와 주거 분양으로 투자금을 회수하는 민간 부동산 모델입니다. 공공 부문은 지하철 연장 같은 기반시설을 개발사 분담금과 함께 만들었습니다.",
@@ -730,6 +748,9 @@ D = {
   {"t": "Asia Asset Management — Malaysia funds acquire phase two of Battersea for £1.58bn (2018)", "u": "https://www.asiaasset.com/pension-funds/malaysia-funds-acquire-phase-two-of-battersea-project-for-1-58-billion/"},
   {"t": "EdgeProp — Battersea Power Station welcomes 50 millionth visitor (2026)", "u": "https://edgeprop.my/content/1917660/battersea-power-station-welcomes-50-millionth-visitor"},
   {"t": "Battersea Power Station — Lift 109 will open on 15th November (2022)", "u": "https://batterseapowerstation.co.uk/news/battersea-power-station-lift-109-will-open-on-15th-november/"},
+  {"t": "Bisnow — Battersea Owners Weigh Sale Of London Icon As Value Nears £1.7B (2025)", "u": "https://www.bisnow.com/london/news/capital-markets/battersea-on-the-block-131539"},
+  {"t": "Malay Mail — PNB, EPF reaffirm commitment to Battersea, no immediate plan to exit (2025)", "u": "https://www.malaymail.com/news/money/2025/10/29/pnb-epf-reaffirm-commitment-to-battersea-project-in-london-says-no-immediate-plan-to-exit/196490"},
+  {"t": "The Star — PNB, EPF reaffirm commitment to Battersea investment (2025)", "u": "https://www.thestar.com.my/business/business-news/2025/10/29/pnb-epf-reaffirm-commitment-to-battersea-investment-no-immediate-plans-to-exit"},
  ],
 },
 }

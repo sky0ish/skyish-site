@@ -22,9 +22,9 @@ D = {
   ["건축주 · 운영", "건축주 프로이센 문화유산재단 (Stiftung Preußischer Kulturbesitz, 연방건설청 BBR 대행) · 운영 베를린 국립박물관 (Staatliche Museen zu Berlin)"],
   ["공모", "1993~1997년 제한 공모와 전문가 심사 → 1997년 치퍼필드 선정"],
   ["공사 기간", "2003년 착공 ~ 2009년 완공, 2009년 10월 16일 재개관"],
-  ["규모", "연면적 약 19,600㎡ (BBR) · 사용 면적 약 9,600㎡ — 설계사무소 자료는 20,500㎡ / 길이 105m · 폭 40m, 옛 중앙 계단실 높이 31m"],
+  ["규모", "연면적 약 19,600㎡ (BBR) · 사용 면적 약 9,600㎡ — 설계사무소 자료는 20,500㎡ / 길이 105m · 폭 40m, 옛 중앙 계단실 높이 31m (영어 위키백과)"],
   ["공사비", "약 1억 9,400만 유로 (연방건설청 BBR 「Gesamtkosten rund 194 Millionen Euro」) — 독일어 위키백과 등은 약 2억 9,500만 유로로 적음"],
-  ["수상", "2010 RIBA 유럽상 · 2010 유로파 노스트라 상 · 2010 대(大) 니케상 · 2011 EU 현대건축상 (미스 반 데어 로에상) · 2011 독일 건축상 · 2014 역사적 공학 기념물 지정"]
+  ["수상", "2010 노스트라 상 (Nostra Award, EU 집행위원회 · 유로파 노스트라) · 2010년 5월 8일 독일건축가협회 (BDA) 대(大) 니케상 (Große Nike)과 「디테일 완성도」 부문 니케상 · 2010 RIBA 유럽상 · 2011년 6월 20일 EU 현대건축상 (미스 반 데어 로에상) · 2011 독일 건축상 · 2014 역사적 공학 기념물 지정"]
  ],
  "tenants": [
   ["문화 · 박물관", "이집트 박물관과 파피루스 컬렉션 (Ägyptisches Museum und Papyrussammlung)", "2009년 재개관과 함께 입주", "https://de.wikipedia.org/wiki/Neues_Museum_(Berlin)"],
@@ -43,7 +43,7 @@ D = {
   ["1997", "데이비드 치퍼필드 선정 — 율리안 하라프와 협력"],
   ["1999", "박물관 섬이 유네스코 세계유산으로 등재, 보수 작업 착수 (1999~2009)"],
   ["2003", "본공사 착공"],
-  ["2008", "시민단체 「옛 베를린 협회 (Gesellschaft Historisches Berlin)」가 유네스코에 위험 유산 지정을 요청하는 등 재건 방식 논쟁"],
+  ["2006~2008", "재건 방식 논쟁 — 2006년 3월 「옛 베를린 협회 (Gesellschaft Historisches Berlin)」가 1만 4천여 명 서명으로 연방의회에 청원(유리 입구동 반대 · 원형 복원 요구), 2007년 3월 5일부터 주민발안 「박물관 섬을 구하라 (Rettet die Museumsinsel)」 서명 운동, 2008년 유네스코에 위험 유산 지정 요청 (영어 위키백과)"],
   ["2009", "10월 16일 재개관"],
   ["2011", "EU 현대건축상 (미스 반 데어 로에상) · 독일 건축상 수상"],
   ["2014", "7월 4일 독일 「역사적 공학 기념물 (Historisches Wahrzeichen der Ingenieurbaukunst)」 지정"]
@@ -56,7 +56,8 @@ D = {
  "concept": [
   "치퍼필드는 베네치아 헌장 (Charter of Venice)의 원칙에 따라 「고고학적 접근」을 택했습니다. 보존 상태가 제각각인 남은 구조물을 그대로 존중하면서 원래의 볼륨을 고치고 되살리되, 「새것은 잃어버린 것을 흉내 내지 않으면서 그것을 비춘다」는 방식입니다.",
   "옛 모습을 그대로 복제하지도, 폐허로 남겨 두지도 않았습니다. 남은 벽화 · 기둥 · 총탄과 화재 흔적까지 보존하고, 사라진 부분만 단순한 새 재료로 채워 1855년의 건물, 전쟁의 상처, 2009년의 개입이 한눈에 겹쳐 보이게 했습니다.",
-  "새 중앙 계단은 원래 계단의 형태를 따르되 장식 없는 단순한 건축 언어로 다시 만들었습니다. 두 중정에는 유리 지붕을 씌워 실내 전시 공간으로 바꾸었습니다."
+  "새 중앙 계단은 원래 계단의 형태를 따르되 장식 없는 단순한 건축 언어로 다시 만들었습니다. 두 중정에는 유리 지붕을 씌워 실내 전시 공간으로 바꾸었습니다.",
+  "독일어 위키백과는 완전히 무너진 북서 날개와 남동 돌출부를 「원래의 볼륨과 공간 순서를 가깝게 따라」 새로 짓고, 남은 부분은 수복 · 보완했다고 정리합니다. 재개관과 함께 이집트 박물관 · 선사 고대사 박물관이 원래 자리로 돌아왔습니다."
  ],
  "strategy": {
   "keep": ["남은 벽화 · 기둥 · 바닥 · 총탄과 화재 흔적", "원래 평면 (두 중정과 중앙 계단실)", "19세기 철골 구조와 돔 홀 · 볼트 천장 (수복)"],
@@ -66,7 +67,8 @@ D = {
  "why": [
   "역사 건축의 상처를 지우지 않으면서 온전한 박물관으로 되살린 보존 · 재건의 모범으로, 2011년 EU 현대건축상 등 건축 · 문화유산 분야의 주요 상을 함께 받았습니다.",
   "재개관 이듬해(2010) 약 110만 명이 찾아 베를린에서 가장 많이 찾은 박물관이 되었습니다.",
-  "복원 방식에 대한 시민 논쟁(2008년 유네스코 청원)까지 낳으며 「무엇을, 어떻게 남길 것인가」라는 문화유산 보존 논의의 기준점이 되었습니다."
+  "복원 방식에 대한 시민 논쟁(2008년 유네스코 청원)까지 낳으며 「무엇을, 어떻게 남길 것인가」라는 문화유산 보존 논의의 기준점이 되었습니다.",
+  "비판도 일찍부터 있었습니다 — 1997년 베를린 궁전관리청 부청장 헬무트 뵈르슈수판 (Helmut Börsch-Supan)이 재건 구상을 비판했고, 2006~2007년 원형 복원을 요구하는 청원 · 주민발안이 이어졌습니다."
  ],
  "space": [
   "길이 105m · 폭 40m의 직사각형 3층 건물로, 그리스 중정과 이집트 중정 두 개를 날개들이 둘러싸고, 그 사이에 중앙 계단실(옛 높이 31m)이 있습니다.",
@@ -87,7 +89,7 @@ D = {
  "operation": [
   ["운영 주체", "베를린 국립박물관 (Staatliche Museen zu Berlin) — 소유 · 발주는 프로이센 문화유산재단 (Stiftung Preußischer Kulturbesitz)", "https://www.bbr.bund.de/BBR/DE/Bauprojekte/berlin/kultur-und-bildung/museumsinsel/neues-museum/projektinformation.html"],
   ["입주 기관", "이집트 박물관과 파피루스 컬렉션 · 선사 고대사 박물관 · 고대 유물 컬렉션 일부"],
-  ["운영 성과 (방문객)", "2010년 약 110만 명 (그해 베를린 최다) → 2011년 90만 3천 명 → 2012년 70만 1천 명 → 2019년 82만 8천 명 (독일어 위키백과)"],
+  ["운영 성과 (방문객)", "2010년 약 110만 명 (그해 베를린 최다) → 2011년 90만 3천 명 → 2012년 70만 1천 명 → 2019년 82만 8천 명 (베를린 국립박물관 가운데 최다) — 독일어 위키백과", "https://de.wikipedia.org/wiki/Neues_Museum_(Berlin)"],
   ["입장료 (2026년 기준)", "일일권 14유로부터, 18세 미만 무료 · 학생 등 할인", "https://www.visitberlin.de/en/tickets/neues-museum-berlin-day-ticket"],
   ["공공 운영 보조", "운영 기관 베를린 국립박물관이 속한 프로이센 문화유산재단은 연방 · 각 주의 출연으로 운영 (2025년 연방 약 1억 9,640만 유로, 베를린주 약 3,860만 유로, 다른 주 약 2,000만 유로)", "https://www.preussischer-kulturbesitz.de/en/about-us/current-figures/the-2021-budget.html"]
  ],
@@ -132,8 +134,8 @@ D = {
   "크리스토프 위탱 (Christophe Hutin)은 보르도의 건축가로 이 사업에 공동 설계자로 참여했습니다. 조경은 시릴 마를랭 (Cyrille Marlin)이 맡았습니다."
  ],
  "spec": [
-  ["원 건축물", "그랑 파르크 단지 (Cité du Grand Parc) G · H · I 동 — 10층 · 15층 규모 3개 동, 530세대"],
-  ["단지 계획", "건축가 장 루아예 (Jean Royer)의 계획 — 60ha 부지에 4,000세대, 1959~1975년 보르도 도시건설회사 (SBUC)와 공공 주택청 아키타니스 (Aquitanis)가 건설"],
+  ["원 건축물", "그랑 파르크 단지 (Cité du Grand Parc) G · H · I 동 — 구노 (Gounod) · 헨델 (Haendel) · 앵그르 (Ingres) 동, 10층 · 15층 규모 3개 동, 530세대"],
+  ["단지 계획", "건축가 장 루아예 (Jean Royer)의 계획 — 60ha 부지에 4,000세대, 1959~1975년 보르도 도시건설회사 (SBUC)와 아키타니스가 건설 (프랑스어 위키백과) / EU 집행위원회 자료는 1954~1975년 건설로 적음"],
   ["원 준공", "1960년대 초"],
   ["원래 용도", "공공 임대주택 (HLM)"],
   ["변경 용도", "공공 임대주택 — 530세대 개조 + 신규 8세대, 모든 세대에 겨울정원 · 발코니 증축"],
@@ -157,7 +159,8 @@ D = {
   ["2016", "준공 · 인도"],
   ["2018", "6월 단지의 옛 연회장 (salle des fêtes)이 20여 년 만에 다시 문을 엶"],
   ["2019", "4월 10일 EU 현대건축상 (미스 반 데어 로에상) 발표 — 38개국 383개 작품 가운데 선정, 5월 7일 바르셀로나 시상"],
-  ["2021", "라카통 & 바살 프리츠커상 수상 — 그랑 파르크가 대표작으로 소개됨"]
+  ["2021", "라카통 & 바살 프리츠커상 수상 — 그랑 파르크가 대표작으로 소개됨"],
+  ["2025", "12월 9일 보도 — 그랑 파르크 지구 전체를 2035년까지 2억 8,100만 유로로 재생: 약 3,500호 개보수 · 56호만 철거 · 약 1,000호 신축 (보르도시 · 메트로폴 · 사회주택 사업자 4곳 — 아키타니스 · 앵시테 (InCité) · CDC 아비타 (CDC Habitat) · 빌로지아 (Vilogia))"]
  ],
  "concept": [
   "설계의 경제 원칙은 「기존 건물을 최대한 남기고 구조 · 계단 · 바닥에는 큰 공사를 하지 않는 것」입니다. 그렇게 아낀 돈을 넉넉한 증축에 몰아, 집의 질과 크기를 오래도록 높이는 데 썼습니다.",
@@ -205,7 +208,8 @@ D = {
   "2019년 EU 현대건축상 (미스 반 데어 로에상)을 받았습니다 — 38개국 383개 작품 가운데 선정.",
   "2021년 라카통 & 바살이 프리츠커상을 받을 때 「주민을 내보내지 않고 530세대를 고친」 대표작으로 소개되었습니다.",
   "Dezeen은 이 사업을 2016년의 가장 중요한 건물로 꼽으며, 철거가 일반적이던 프랑스 사회주택에 대안을 보여 준 사례로 평가했습니다.",
-  "「절대 철거하지 말고 늘 변형하라」는 원칙을 대규모 단지에서 실제 비용과 공정으로 증명했습니다."
+  "「절대 철거하지 말고 늘 변형하라」는 원칙을 대규모 단지에서 실제 비용과 공정으로 증명했습니다.",
+  "2025년 지역 언론은 2035년까지의 그랑 파르크 지구 재생(2억 8,100만 유로, 철거 56호에 그침)을 소개하며 G · H · I 동 개조를 그 출발점으로 다뤘습니다 (세대당 약 20㎡ 증가 · 약 5만 1천 유로로 기술)."
  ],
  "lesson": [
   "철거 대상으로 보이던 단지도 구조를 그대로 두고 바깥에 공간을 더하면, 같은 돈으로 더 넓고 밝은 집을 만들 수 있습니다.",
@@ -218,7 +222,8 @@ D = {
   "국가 도시재생청 (ANRU) 지원 여부는 확인된 자료를 찾지 못했습니다.",
   "에너지 절감 수치는 확인된 자료를 찾지 못했습니다 (세대당 추가 면적은 유럽연합 집행위원회 자료가 약 30㎡로 적음).",
   "동별 층수(G · H · I 각각)와 공사 착공 · 준공의 정확한 날짜는 확인된 자료를 찾지 못했습니다.",
-  "주요 입주 시설은 공공임대 주택 외에 확인된 자료를 찾지 못했습니다 (단지 상가 · 공공시설의 G · H · I 동 입주 여부 미확인)."
+  "주요 입주 시설은 공공임대 주택 외에 확인된 자료를 찾지 못했습니다 (단지 상가 · 공공시설의 G · H · I 동 입주 여부 미확인).",
+  "단지 착공 연도는 원문이 둘로 갈립니다 (프랑스어 위키백과 1959년, EU 집행위원회 1954년)."
  ],
  "refs": [
   {"t": "Transformation de 530 logements, Grand Parc — Lacaton & Vassal", "u": "https://www.lacatonvassal.com/index.php?idp=80"},
@@ -230,7 +235,8 @@ D = {
   {"t": "Grand Parc Bordeaux — Housing Evolutions", "u": "https://www.housingevolutions.eu/project/grand-parc-bordeaux/"},
   {"t": "Who Are Lacaton & Vassal? — ArchDaily", "u": "https://www.archdaily.com/958575/who-are-lacaton-and-vassal-15-things-to-know-about-the-2021-pritzker-architecture-laureates"},
   {"t": "Tour Bois-le-Prêtre — Dezeen", "u": "https://www.dezeen.com/2013/04/16/tour-bois-le-pretre-by-frederic-druot-anne-lacaton-and-jean-philippe-vassal/"},
-  {"t": "Bordeaux: a new life for 530 homes — European Commission (Culture and Creativity)", "u": "https://culture.ec.europa.eu/cultural-and-creative-sectors/architecture/living-spaces/catalogue/bordeaux"}
+  {"t": "Bordeaux: a new life for 530 homes — European Commission (Culture and Creativity)", "u": "https://culture.ec.europa.eu/cultural-and-creative-sectors/architecture/living-spaces/catalogue/bordeaux"},
+  {"t": "Quartier Grand Parc à Bordeaux : un renouvellement urbain de 281 millions d'euros d'ici 2035 — Bordeaux Immo9 (2025)", "u": "https://www.bordeauximmo9.com/actualites/urbanisme-architecture/grand-parc-bordeaux-renouvellement-urbain-2035"}
  ],
 },
 "de-hallen": {
@@ -243,14 +249,14 @@ D = {
   "원 건물은 암스테르담시 공공사업국 (Dienst der Publieke Werken)이 설계했습니다."
  ],
  "spec": [
-  ["원 건축물", "서부 트램 차고 (Westelijke Tramremise) · 톨렌스 거리 차고 (Remise Tollensstraat) — 1902~1905년, 개통 당시 암스테르담 최대의 트램 차고"],
+  ["원 건축물", "서부 트램 차고 (Westelijke Tramremise) · 톨렌스 거리 차고 (Remise Tollensstraat) — 네덜란드어 위키백과는 1902~1905년 건설, 운영 측 「역사 (Historie)」는 1901~1928년 단계적 건설 (홀 7개와 바깥 정비동)로 적음. 국가 기념물 등록 설명은 트램 보관 홀 5개를 기록"],
   ["원 설계자", "암스테르담시 공공사업국 (Dienst der Publieke Werken)"],
   ["원래 용도", "시영 트램 차고 (선로 21개, 전동차 135대) → 1908년 버스 차고 · 1922년 트램 · 버스 중앙 정비창, 1932년 이후 정비창 전용"],
   ["폐쇄", "1996년 시 교통공사 (GVB) 정비창 이전 → 2005년까지 교통박물관 트램 · 소규모 창작 기업 → 2005년 비움, 2010년 1월 점거"],
   ["변경 용도", "필름할런 (Filmhallen, 7관) · 푸드할런 (Foodhallen) · 암스테르담 공공도서관 (OBA) 분관 · 호텔 더 할런 · 방송 스튜디오 · 공방 · 상점 · 어린이집 · 갤러리"],
   ["개조 설계 · 개발", "안드레 판 스티흐트 (André van Stigt) — 개발 TROM"],
   ["협력", "스타츠헤르스텔 암스테르담 (Stadsherstel Amsterdam) — 17번 홀(옛 말 트램 차고)과 주택 매입 · 수복"],
-  ["공사 기간", "2013년 1월 착공 ~ 2014년 4월 1단계 개장 ~ 2015년 2월 5일 공식 개관 (공사 22개월)"],
+  ["공사 기간", "2013년 1월 착공 (설계자 사무소 자료는 2012년 12월) ~ 2014년 4월 1단계 개장 ~ 2015년 2월 5일 공식 개관 (공사 22개월)"],
   ["규모", "옛 홀 약 22,000㎡ (트리오도스 은행) · 사용 면적 15,504㎡ (재생 지식은행), 그중 동네 기능 6,000㎡"],
   ["사업비", "총 3,750만 유로"],
   ["수상", "피터르 판 볼런호번상 (Pieter van Vollenhovenprijs) · 2014 IJ상 (판 스티흐트)"]
@@ -345,7 +351,8 @@ D = {
   "연간 임대 수입 총액과 자체 수입 비율은 확인된 자료를 찾지 못했습니다.",
   "연간 전체 방문객 수는 출처가 확인된 자료를 찾지 못했습니다 (위키백과의 200만~300만 명은 출처 표시가 없음).",
   "구조 보강 방법의 상세는 확인된 자료를 찾지 못했습니다.",
-  "푸드할런 점포 수와 호텔 객실 수는 확인된 자료를 찾지 못했습니다."
+  "푸드할런 점포 수와 호텔 객실 수는 확인된 자료를 찾지 못했습니다.",
+  "공식 개관일은 운영 측 「역사」가 2015년 2월 5일, 설계자 사무소 (Bureau Van Stigt) 자료가 2월 15일로 달라 운영 측 날짜를 따랐습니다."
  ],
  "refs": [
   {"t": "De Hallen (Amsterdam) — 네덜란드어 위키백과", "u": "https://nl.wikipedia.org/wiki/De_Hallen_(Amsterdam)"},
@@ -357,7 +364,8 @@ D = {
   {"t": "Showcase De Hallen — Triodos", "u": "https://www.triodos.nl/showcase-de-hallen"},
   {"t": "De herontwikkeling van een rijksmonument — Stadsherstel", "u": "https://stadsherstel.nl/nieuws/de-herontwikkeling-van-een-rijksmonument/"},
   {"t": "Bouwheer voor de goede zaak: interview André van Stigt — Werkplaats Erfgoed", "u": "https://werkplaatserfgoed.nl/bouwheer-voor-de-goede-zaak-interview-andre-van-stigt/"},
-  {"t": "Over De Hallen — De Hallen Amsterdam", "u": "https://www.dehallen-amsterdam.nl/over-de-hallen"}
+  {"t": "Over De Hallen — De Hallen Amsterdam", "u": "https://www.dehallen-amsterdam.nl/over-de-hallen"},
+  {"t": "Tramremise De Hallen — Bureau Van Stigt", "u": "https://burovanstigt.nl/tramremise-de-hallen/"}
  ],
 },
 "ndsm": {
@@ -398,11 +406,11 @@ D = {
   ["1978", "9월 27일 신조 중단"],
   ["1984", "후속 조선소 파산 — 부지는 노르트 구청 관리, 빈 건물은 점차 점거됨"],
   ["1990", "1월 25일 폭풍으로 대형 문형 크레인 파손 — 조선 재개 계획 무산"],
-  ["1999", "노르트 구청의 문화 용도 공모 — 키네티스 노르트 작업 그룹 (에바 더 클러르크 등) 당선"],
+  ["1999", "노르트 구청의 문화 용도 공모 — 키네티스 노르트 작업 그룹 (에바 더 클러르크 등) 당선 (재단 자료 기준, 다른 자료는 2001년 공모로 적음)"],
   ["2000", "키네티스 노르트 재단 설립, 2001년부터 여러 기관의 보조금으로 시범 사용"],
   ["2004", "쿤스트스타트 공사 시작 — 정부가 가장 혁신적이고 지속가능한 도시재생 사업 가운데 하나로 선정"],
   ["2006", "7월 선박 건조 홀 · 바깥 마당 · 선대를 재단에 넘김"],
-  ["2007", "8월 6일 조선소 5개 건물 국가 기념물 등재, 쿤스트스타트 골조 인도 · 개장, 2월 MTV 네트웍스 베네룩스 이전"],
+  ["2007", "2월 MTV 네트웍스 베네룩스가 옛 목공장으로 이전, 6월 헤마 (HEMA) 본사 이전 발표, 8월 6일 조선소 5개 건물 국가 기념물 등재, 쿤스트스타트 골조 인도 · 개장"],
   ["2013", "10월 22일 크레인 13호를 개조한 크레인 호텔 파랄다 (Crane Hotel Faralda) 개장"],
   ["2014", "재단이 선박 건조 홀 소유권 인수 — 2014~2017년 약 600만 유로 보수"],
   ["2021", "STRAAT 거리예술 박물관 개관"],
@@ -452,7 +460,8 @@ D = {
   ["대관 수입원 (2018년)", "작업실 외 홀 공간을 영화 촬영 · 사진 촬영 · 무용 · 음악 · 연극 공연 · 전시 · 경매 · 기업 행사 · 댄스 파티 · 시장 · 회의 등에 임대 (재단 2018년 연차보고서)", "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"],
   ["상업 임대 (2018년)", "8월 10일 홀 안 식음 시설 운영자 IJver와 임대 계약, 2019년 여름 건물 인도 예정"],
   ["판매 · 공공 기능", "2018년 6월 6일 웰컴 센터 개장 — 입주 작가 작품을 위탁 판매하고 기념품 판매, 학생 졸업 전시 · 공연에는 무료로 공간 제공"],
-  ["운영 비용 예시", "재단 이사에게 월 75유로의 이사 수당 지급 (2018년)"]
+  ["운영 비용 예시", "재단 이사에게 월 75유로의 이사 수당 지급 (2018년)"],
+  ["작업실 소유 구조", "사용자가 철골 골조 안에 자기 작업실을 직접 짓고 그 작업실의 소유자가 됨 — 자리가 나는 것은 평균 2년에 한 번, 나가는 사용자는 인수 대금 (overnamesom)을 받음. 모든 (전)임차인은 시의 작업실 · 브레드플라츠 사무국 (Ateliers en Broedplaatsen Amsterdam, ABA)의 심사를 거쳐야 함", "https://www.ndsmloods.nl/wachtlijst/"]
  ],
  "operationNote": [
   "재단이 기념물 홀을 소유하고, 사용자가 직접 지은 작업실의 임대료와 홀 대관 수입으로 운영합니다. 바깥 부지는 상업 임차인에게 걷는 면적당 부담금으로 관리합니다. 초기에는 보조금과 사용자 자기 투자로 시작해, 소유권을 넘겨받은 뒤 홀 보수까지 재단이 맡는 구조가 되었습니다.",
@@ -488,7 +497,9 @@ D = {
   {"t": "Werken aan de Self Made Future op de NDSM-werf — Gebiedsontwikkeling.nu", "u": "https://www.gebiedsontwikkeling.nu/artikelen/werken-aan-de-self-made-future-op-de-ndsm-werf/"},
   {"t": "NDSM Scheepsbouwloods — Strackee", "u": "https://strackee.nl/projecten-archief/ndsm-scheepsbouwloods"},
   {"t": "Stichting Kinetisch Noord — Jaarverslag 2018", "u": "https://ndsmloods.nl/broedplaats/2018-jaarverslag-skn-2/"},
-  {"t": "Hoofdkantoor HEMA en VNU Media geopend — Architectenweb", "u": "https://architectenweb.nl/nieuws/artikel.aspx?id=24130"}
+  {"t": "Hoofdkantoor HEMA en VNU Media geopend — Architectenweb", "u": "https://architectenweb.nl/nieuws/artikel.aspx?id=24130"},
+  {"t": "Hoofdkantoor Hema naar NDSM-terrein — NH Nieuws (2007)", "u": "https://www.nhnieuws.nl/nieuws/2216/hoofdkantoor-hema-naar-ndsm-terrein"},
+  {"t": "Wachtlijst — NDSM Loods", "u": "https://www.ndsmloods.nl/wachtlijst/"}
  ],
 },
 "chq-epic": {
@@ -631,10 +642,10 @@ D = {
   ["원 건축물", "바스티유 고가교 (Viaduc de la Bastille) — 1859년 개통, 높이 약 10m, 석재 · 분홍 벽돌 아치"],
   ["원 설계", "에밀 뷔녜 (Émile Vuigner) · 알베르 바송피에르스브랭 (Albert Bassompierre-Sewrin)"],
   ["원래 용도", "파리-바스티유-뱅센 철도 (뱅센선) — 1969년 폐선, 일부는 RER A선으로 대체"],
-  ["규모", "아치 67개 · 1.5km 이상 (설계자 자료) — 운영사 자료는 1.5km · 상설 아치 60~61개, 프랑스어 위키백과는 1,222m · 아치 약 60개"],
+  ["규모", "아치 67개 · 1.5km 이상 (설계자 자료) / 아치 약 60개 · 사용 면적 약 13,000㎡ (파리시 의안 2024 DAE 126) / 운영사 1.5km · 상설 아치 60~61개 / 프랑스어 위키백과 1,222m / 12구청: 아치 62개, 그중 50개 가까이 공예용"],
   ["변경 용도", "아치 아래 — 공예 공방 · 쇼룸 · 갤러리 · 카페 (약 40~45개 공예가) / 위 — 길이 4.7km 녹지 산책로의 시작 구간"],
   ["개조 설계", "고가교 · 공방 — 파트리크 베르제 (Patrick Berger) / 산책 공원 — 자크 베르줄리 (Jacques Vergely) · 필리프 마티외 (Philippe Mathieux)"],
-  ["건축주 · 운영", "파리시 — 세마에스트 (SEMAEST, 현 SEM 파리 코메르스)가 개발 · 관리 · 임대"],
+  ["건축주 · 운영", "파리시 — 1991년 1월 21일 의회 승인 개발 위탁 (concession)으로 세마에스트 (SEMAEST, 현 SEM 파리 코메르스)가 조성, 2005년부터 행정 장기 임대로 운영 (2048년까지)", "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"],
   ["설계 경합", "1988년 (4개 팀) — 베르제 선정"],
   ["공사 기간", "1992년 공사 시작 → 1994년 10월 첫 아치 6곳 개장 → 1997년 마지막 아치 → 2000년 하반기 완성 (설계자 자료의 인도 연도 1996년)"],
   ["산책로 면적", "약 3.7ha (산책로 자체)"],
@@ -654,18 +665,18 @@ D = {
   ["상업 · 공예 공방", "아틀리에 르 탈레크 (Atelier Le Tallec)", "손으로 그린 도자기 장식 (1994~2015, 철수)", "https://fr.wikipedia.org/wiki/Viaduc_des_Arts"]
  ],
  "timeline": [
-  ["1859", "바스티유선 개통 — 고가교 완공 (1853년 「파리-스트라스부르」 철도회사에 노선 면허)"],
+  ["1859", "동부철도회사 (Compagnie des chemins de fer de l'Est)가 지은 고가교 위로 뱅센선 개통 (1853년 「파리-스트라스부르」 철도회사에 노선 면허)"],
   ["1969", "RER A선 개통으로 폐선 — 파리 구간은 방치"],
   ["1982", "국가가 바스티유 광장을 새 오페라 극장 부지로 선정 — 파리시는 공모 조건에 산책로 연결을 넣음"],
   ["1983", "11월 23일 「파리 동부 정비 계획」에 프롬나드 플랑테를 주요 사업으로 포함"],
   ["1984", "바스티유역 철거 (1989년 오페라 바스티유 개관)"],
-  ["1987", "파리시 의회가 산책로 원칙을 승인하고 국철 (SNCF) 폐선 부지 매입 결정"],
+  ["1986~1987", "1986년 9월 20일 파리시가 국철 (SNCF)에서 고가교 부지 매입 (2024 DAE 126), 1987년 파리시 의회가 산책로 원칙 승인 (운영사 연표)"],
   ["1988", "산책로 1단계 공사 시작 · 고가교 설계 경합 (4개 팀) — 파트리크 베르제 선정"],
   ["1992", "고가교 아치 보수 공사 시작 (랑부예 ~ 디드로 구간)"],
   ["1993", "7월 첫 입주 심사, 10월 첫 임대 계약 / 위키백과는 산책로 개장 연도로 기록"],
   ["1994", "5월 바스티유 부근에서 뢰이 (Reuilly)까지 산책로 연결 개통, 10월 첫 아치 6곳 개장"],
   ["1995", "2월 아치 17곳 추가 인도"],
-  ["2000", "하반기 오페라 쪽 아치 1 · 3 · 5 · 7번 개장으로 비아뒤크 데 자르 완성"],
+  ["2000", "11월 30일 세마에스트가 산책로 (시 공공재산)와 고가교 (시 사유재산)를 파리시에 양도, 하반기 오페라 쪽 아치 1 · 3 · 5 · 7번 개장으로 완성"],
   ["2005", "1월 6일 파리시가 세마에스트와 18년 행정 장기 임대 (bail emphytéotique administratif) 체결 — 2024년 새 임대로 2048년까지 연장"],
   ["2013", "3월 산책로 이름을 「쿨레 베르트 르네뒤몽 (Coulée verte René-Dumont)」으로 공식 변경"]
  ],
@@ -741,7 +752,8 @@ D = {
   {"t": "Le Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/realisations/viaduc-des-arts-paris-12e"},
   {"t": "2024 DAE 126 Viaduc des Arts (12e) — Nouveau bail emphytéotique administratif avec la SEM Paris Commerces (Conseil de Paris)", "u": "https://a06-v7.apps.paris.fr/a06/jsp/site/plugins/odjcp/DoDownload.jsp?id_entite=62099&id_type_entite=6"},
   {"t": "Appel à candidatures : location de 4 ateliers au Viaduc des arts — Paris Commerces", "u": "https://www.pariscommerces.fr/actualites/appel-a-candidatures-location-ateliers-d-artisans-paris-12e"},
-  {"t": "Ateliers — Le Viaduc des arts", "u": "https://www.leviaducdesarts.com/ateliers"}
+  {"t": "Ateliers — Le Viaduc des arts", "u": "https://www.leviaducdesarts.com/ateliers"},
+  {"t": "Le Viaduc des Arts — Mairie du 12e", "u": "https://mairie12.paris.fr/pages/le-viaduc-des-arts-10365"}
  ],
 },
 }

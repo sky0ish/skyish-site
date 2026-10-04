@@ -18,6 +18,7 @@ D = {
  "from": "조선소 · 가스공장 · 화력발전소 · 석탄 부두 (매립지)", "to": "고층 주거 · 업무 · 쇼핑 · 도요스 시장",
  "zoneFrom": "공업 · 항만 용지 (매립지)", "zoneTo": "재개발등촉진구를 정하는 지구계획 (再開発等促進区を定める地区計画, 2002) + 토지구획정리 (土地区画整理事業)",
  "tenants": [
+  ["상업 · 식음 · 온천", "도요스 센캬쿠반라이 (豊洲 千客万来) — 만요클럽 (万葉倶楽部)", "2024.2.1 개장 · 도요스 시장 6가구 북동쪽 — 9층 온천동 (24시간) · 3층 식당동 (해산물 · 에도 요리 푸드코트), 유리카모메 시조마에역과 보행 데크로 연결", "https://ja.wikipedia.org/wiki/%E8%B1%8A%E6%B4%B2_%E5%8D%83%E5%AE%A2%E4%B8%87%E6%9D%A5"],
   ["첨단산업 · 앵커 기업 (본사)", "NTT 데이터 (NTTデータ)", "도요스에 본사 — IT 서비스 (일본어 위키백과 「豊洲」)", "https://ja.wikipedia.org/wiki/%E8%B1%8A%E6%B4%B2"],
   ["첨단산업 · 앵커 기업 (본사)", "SCSK", "도요스에 본사 — IT 서비스"],
   ["업무 · 앵커 기업 (본사)", "IHI (옛 이시카와지마하리마 중공업)", "옛 조선소 터에 본사 빌딩 (2006 준공) — 원 지주 기업이 그대로 본사를 둠"],
@@ -46,8 +47,9 @@ D = {
   ["2006", "마치비라키 · 유리카모메 도요스역 개업 (3월) · 어반독 라라포트 도요스 개장 (10.5) · IHI 본사 빌딩 준공"],
   ["2007", "가스공장 터 조사에서 벤젠 등 유해물질이 환경기준을 크게 초과 — 이전 논란 확대"],
   ["2016.8.31", "고이케 유리코 지사가 시장 개장 연기 · 9월 「성토 미시행」 문제 발각"],
-  ["2018.10", "도요스 시장 개장 (쓰키지 이전)"],
+  ["2018.10.11", "도요스 시장 개장 (쓰키지 이전)"],
   ["2019.6.28", "도쿄도 도요스지구 토지구획정리 환지처분 공고"],
+  ["2024.2.1", "도요스 시장 옆 상업시설 「도요스 센캬쿠반라이 (豊洲 千客万来)」 개장 — 만요클럽 운영 온천 · 식당가, 당초 2018 예정에서 약 5년 지연"],
  ],
  "problem": [
   "1950년대부터 도요스는 조선 · 가스 · 화력발전 · 석탄 부두가 모인 도쿄의 공업 · 에너지 기지였으나, 에너지 시설이 차례로 폐지되고 2002년 IHI 조선소가 문을 닫으면서 넓은 땅이 비게 되었습니다.",
@@ -75,7 +77,7 @@ D = {
  ],
  "laws": [
   ["도요스 1~3초메 지구 마치즈쿠리 방침 (豊洲1～3丁目地区まちづくり方針, 도쿄도, 2001.10.10)", "약 60ha 의 마스터플랜 — IT · 신에너지 차세대 산업 · 업무 거점, 도크 터 수변 교류 공간, 도심 근접 주거, 유리카모메 연장과 맞춘 교통 결절점 · 6개 구역 · 계획 거주 2만 2,000명 · 취업 3만 3,000명 · 약 20년 정비", "https://www.toshiseibi.metro.tokyo.lg.jp/kanko/toyosu/index.html"],
-  ["도시계획법 — 도요스 2·3초메 지구 지구계획 (재개발등촉진구, 豊洲二・三丁目地区地区計画（再開発等促進区）, 2002.6.28 결정 · 최종 변경 2020.11.26)", "공장 · 항만 용지의 \"합리적이고 고도의 토지 이용\" 을 위해 용도 · 용적 등의 일반 규제를 지구계획으로 다시 정함 — 교통 결절 · 업무 상업 · 도크 터 교류 · 수변 주거 기능", "https://www.city.koto.lg.jp/390111/machizukuri/toshi/chiku/kekaku/7736.html"],
+  ["도시계획법 — 도요스 2·3초메 지구 지구계획 (재개발등촉진구, 豊洲二・三丁目地区地区計画（再開発等促進区）, 2002.6.28 결정 · 최종 변경 2021.11.26 — 고토구 공식 누리집)", "공장 · 항만 용지의 \"합리적이고 고도의 토지 이용\" 을 위해 용도 · 용적 등의 일반 규제를 지구계획으로 다시 정함 — 교통 결절 · 업무 상업 · 도크 터 교류 · 수변 주거 기능", "https://www.city.koto.lg.jp/390111/machizukuri/toshi/chiku/kekaku/7736.html"],
   ["토지구획정리법 (土地区画整理法) — 도요스지구 토지구획정리사업 (도쿄도, 1993 도시계획 결정 · 1997 사업계획)", "대가구 방식으로 공장 부지를 재편, 도로 · 공원 확보", "https://www.toshiseibi.metro.tokyo.lg.jp/daiichiseibi/chiku/tochikukaku/toyosu"],
   ["토지구획정리법 — 도요스 2초메 토지구획정리사업 (UR, 2003.11 인가)", "23.6ha, 평균 감보율 약 22.7%", "https://www.ur-net.go.jp/produce/case/case016.html"],
   ["UR 3초메 주택 가구 디자인 방침 (都市再生機構住宅街区デザイン方針)", "여러 사업자의 건축을 조화로운 가로 경관으로 유도 · 디자인 방침 조정회의 운영"],
@@ -140,7 +142,7 @@ D = {
   "공업지역에서 어떤 용도지역으로 바뀌었는지 (용도지역 명칭) 는 확인된 자료를 찾지 못했습니다.",
   "도쿄가스 계열로부터 매입한 용지 대금의 상대방별 내역과 토양오염 대책 공사비 최종 총액은 확인된 자료를 찾지 못했습니다.",
   "도요스 1~3초메 마치즈쿠리 방침 · 지구계획의 마스터플랜을 맡은 도시계획가 (개인 · 사무소) 는 확인된 자료를 찾지 못했습니다.",
-  "지구계획 결정일은 자료마다 다릅니다 (마치즈쿠리 협의회 · UR: 2002.6.28, 고토구 누리집: 2000.6.28) — 본문은 2002년으로 적었습니다.",
+  "지구계획 계획도서 PDF (고토구) 는 스캔 이미지라 용적률 수치를 원문에서 읽지 못했습니다.",
  ],
  "refs": [
   {"t": "위키백과(일) — 豊洲", "u": "https://ja.wikipedia.org/wiki/%E8%B1%8A%E6%B4%B2"},
@@ -158,6 +160,8 @@ D = {
   {"t": "日本経済新聞 — 都の市場会計、18年度営業赤字100億円台 豊洲移転で", "u": "https://www.nikkei.com/article/DGXMZO49933660Y9A910C1L83000/"},
   {"t": "東京都 都政改革本部 — 第8回 市場問題プロジェクトチーム 資料 (2017)", "u": "https://www.toseikaikaku.metro.tokyo.lg.jp/shijoupt08/04_shijoupt08shiryou.pdf"},
   {"t": "東京都中央卸売市場 — 令和6年度 中央卸売市場会計決算", "u": "https://www.shijou.metro.tokyo.lg.jp/documents/d/shijou/settlement_r06_1-pdf"},
+  {"t": "江東区 — 豊洲二・三丁目地区（再開発等促進区）決定日 · 最終変更日", "u": "https://www.city.koto.lg.jp/390111/machizukuri/toshi/chiku/kekaku/7736.html"},
+  {"t": "위키백과(일) — 豊洲 千客万来", "u": "https://ja.wikipedia.org/wiki/%E8%B1%8A%E6%B4%B2_%E5%8D%83%E5%AE%A2%E4%B8%87%E6%9D%A5"},
  ],
 },
 
@@ -176,7 +180,7 @@ D = {
  "from": "위스키 증류소 (구더햄 앤 워츠)", "to": "보행 전용 문화 · 상업 지구 + 주변 고층 주거",
  "zoneFrom": "공업 (증류소)", "zoneTo": "King-Parliament Secondary Plan OPA No. 2 (1994) + Zoning By-law 1994-0396 — 혼합 용도, 유산 보존 조건",
  "tenants": [
-  ["문화 · 공연장", "영 센터 (Young Centre for the Performing Arts) — 솔피퍼 극단 (Soulpepper) · 조지브라운 대학 연극학교 (George Brown Theatre School)", "솔피퍼의 본거지 · 대학 연극 교육 (2005년 12월 개관 예정으로 발표)", "https://en.wikipedia.org/wiki/Distillery_District"],
+  ["문화 · 공연장", "영 센터 (Young Centre for the Performing Arts) — 솔피퍼 극단 (Soulpepper) · 조지브라운 대학 연극학교 (George Brown Theatre School)", "2006.1.15 개관 · 공연장 4곳과 스튜디오 4곳을 두 기관이 공유 · 설계 KPMB 아키텍츠 (토머스 페인) — 솔피퍼의 본거지 · 대학 연극 교육", "https://en.wikipedia.org/wiki/Young_Centre_for_the_Performing_Arts"],
   ["상업 · 식음 (양조)", "밀 스트리트 브루잉 (Mill Street Brewing Company)", "옛 페인트 공장 (63호 건물) 에 입주 — 마이크로 브루어리 (2008 시 보고서 기준)", "https://www.toronto.ca/legdocs/mmis/2008/pb/bgrd/backgroundfile-14571.pdf"],
   ["문화 · 예술 공간", "아트스케이프 (Artscape)", "옛 케이스 상품 창고 (74호 건물) 사용 (2008 시 보고서 기준)", "https://www.toronto.ca/legdocs/mmis/2008/pb/bgrd/backgroundfile-14571.pdf"],
   ["문화 · 갤러리", "코킨 갤러리 (Corkin Gallery)", "유산 건물 개조 — 설계 시무-서트클리프 (Shim-Sutcliffe)", "https://www.eraarch.ca/projects/the-distillery-district/"],
@@ -198,7 +202,7 @@ D = {
   ["2001", "시티스케이프 홀딩스 (Cityscape Holdings) 매입"],
   ["2003.5.22", "보행 지구로 일반 개장"],
   ["2005", "던디 리얼티 (Dundee Realty) 가 50% 지분 파트너로 참여 · 30층 타워+5층 로프트 (약 400세대) 분양 시작"],
-  ["2006", "영 센터 (Young Centre for the Performing Arts) — 솔피퍼 극단 · 조지브라운 대학 연극학교 입주"],
+  ["2006.1.15", "영 센터 (Young Centre for the Performing Arts) 공식 개관 — 솔피퍼 극단 · 조지브라운 대학 연극학교 공동 시설 (공연장 4 · 스튜디오 4)"],
   ["2007~2008", "남동쪽 35 · 40층 타워 OPA · 재조닝 신청 → 주민 워킹그룹 8회 협의 → 온타리오 지방위원회 (OMB) 상소 · 합의 추진"],
  ],
  "problem": [
@@ -213,6 +217,7 @@ D = {
  ],
  "actors": [
   ["도시계획가 · 건축가", "ERA 아키텍츠 (ERA Architects) — 앤드루 프루스 (Andrew Pruss) · 마이클 매클렐런드 (Michael McClelland)", "1996년부터 지구 전체의 책임 건축가 (Architect of Record) · 유산 건축가 — 2001년 이후 대규모 적응적 재사용 주도"],
+  ["도시계획가 · 건축가", "KPMB 아키텍츠 (KPMB Architects) — 토머스 페인 (Thomas Payne)", "영 센터 설계 (2006 개관)"],
   ["도시계획가 · 건축가", "아키텍츠얼라이언스 (architectsAlliance)", "구더햄 콘도 (30층 타워+5층 로프트, 2005) · 남동쪽 35 · 40층 타워안 (2008)"],
   ["도시계획가 · 건축가", "시무-서트클리프 (Shim-Sutcliffe) · KPMB · 콰드랭글 (Quadrangle) · 자이들러 (Zeidler) 등", "개별 유산 건물의 개조 설계 (예: 코킨 갤러리 — 시무-서트클리프)"],
   ["도시계획가 · 건축가", "데이비드 로버츠 부자 (David Roberts Sr. · Jr.)", "원래 증류소 건물군 설계 · 건설 (1859~1895)"],
@@ -263,6 +268,7 @@ D = {
   ["민간 투자 (지분)", "2005년 던디 리얼티가 지분 50% 파트너로 참여"],
   ["공공 기여 (섹션 37)", "1995년 섹션 37 협약 — 개발 허용과 유산 보존 조건 교환 (금액 미확인)", "https://www.toronto.ca/legdocs/mmis/2008/pb/bgrd/backgroundfile-14571.pdf"],
   ["보존 공사 담보", "건축허가 전 보존 공사비를 신용장 (Letter of Credit) 으로 담보", "https://www.toronto.ca/legdocs/mmis/2008/pb/bgrd/backgroundfile-14571.pdf"],
+  ["문화시설 사업비 · 보조금 (영 센터, 시설 하나)", "총 1,400만 캐나다달러를 조지브라운 대학과 솔피퍼가 반씩 부담 — 마이클 영 가족재단 300만 달러 기부, 온타리오주 문화부 200만 달러, 연방 문화유산부 60만 달러", "https://en.wikipedia.org/wiki/Young_Centre_for_the_Performing_Arts"],
  ],
  "famous": [
   "북미 최대의 빅토리아 시대 산업 건축 군으로 알려져 있으며, 1988년 캐나다 국가사적으로 지정되었습니다.",
@@ -297,6 +303,7 @@ D = {
   {"t": "The Cultural Landscape Foundation — Gooderham and Worts Distillery Complex", "u": "https://www.tclf.org/landscapes/gooderham-and-worts-distillery-complex"},
   {"t": "Lost Rivers — Historic Distillery District", "u": "https://lostrivers.ca/points/distillerydistrict.htm"},
   {"t": "The Distillery District (공식)", "u": "https://www.thedistillerydistrict.com/"},
+  {"t": "Wikipedia — Young Centre for the Performing Arts", "u": "https://en.wikipedia.org/wiki/Young_Centre_for_the_Performing_Arts"},
  ],
 },
 
@@ -470,7 +477,9 @@ D = {
   ["1990.4.10", "폴스 크리크 북부 공식개발계획 (ODP) 채택 — By-law No. 6650"],
   ["1997", "옛 CPR 라운드하우스를 라운드하우스 커뮤니티 아트 · 레크리에이션 센터로 개관"],
   ["2006", "밴쿠버 도심 인구 1970~80년대 약 6,000명 → 4만 3,000명 이상"],
-  ["2020년대", "약 82ha 중 약 10ha (북동 폴스 크리크) 미개발 · 주 정부에 대한 최종 대금 미지급"],
+  ["2018", "밴쿠버 시 · BC 하우징 · 콩코드 퍼시픽, 비시장 주택 최대 650세대 (3개 부지) 양해각서 체결"],
+  ["2023.2.13", "시가 콩코드 퍼시픽과 토지 거래 합의안 발표 — 비시장 주택 650세대 이상 · 현금 기여 1억 1,000만 달러 + 매입 옵션가 1,100만 달러 면제 (ODP · 조닝 개정 필요)"],
+  ["2020년대", "약 82ha 중 약 10ha (북동 폴스 크리크) 미개발 · 주 정부에 대한 최종 대금 미지급 (Geoff Meggs)"],
  ],
  "problem": [
   "폴스 크리크는 원주민 (츨레일와우투스 · 머스퀴엄 · 스쿼미시) 의 식량 수역이었지만, 제재소 등 공업의 하수 · 독성 폐수로 오염된 수로가 되었습니다.",
@@ -516,6 +525,7 @@ D = {
   ["보존 관리", "옛 CPR 라운드하우스 → 커뮤니티 아트센터 (1997, 공원위원회 · RCARS 공동 운영)"],
  ],
  "result": [
+  "1990년 이후 비시장 주택 6개 사업 · 540세대 이상 공급 — 콩코드 소유 미개발 비시장 주택 부지 6곳이 남아 시가 매입 옵션 보유 (2023, 밴쿠버 시)",
   "콩코드 퍼시픽은 약 1만 1,000세대를 지어 원안 9,100세대를 넘김",
   "밴쿠버 도심 인구 약 6,000명 (1970~80년대) → 4만 3,000명 이상 (2006) — 북안에만 약 5만 명이 새로 거주 (영어 위키백과)",
   "\"밴쿠버리즘\" 으로 알려진 기단 + 가는 타워 고밀 주거 모델",
@@ -532,6 +542,7 @@ D = {
   ["토지 매각 수익", "1988년 콩코드 퍼시픽에 약 82ha 를 3억 2,000만 달러에 매각 — 계약금 5,000만 달러, 1995~2002 9회 분납, 실현 밀도에 따른 참여 저당"],
   ["공공 기여", "학교 부지 무상 제공 · 도서관 공사비 절반 · 커뮤니티센터 · 보육시설 8곳 등을 시 · 교육청에 무상 제공, 근린공원 17.05ha", "https://web.archive.org/web/2023/https://bylaws.vancouver.ca/odp/odp-false-creek-north.pdf"],
   ["민간 투자", "콩코드 퍼시픽 (리카싱 등 홍콩 자본) 이 약 1만 1,000세대를 개발 (총투자액 미확인)"],
+  ["공공 기여 (2023 합의안)", "비시장 주택 부지 3곳 (650세대 이상, BC 하우징과 공동 개발 · 소방서 · 보육시설 입지) + 현금 1억 1,000만 캐나다달러 (북동 폴스 크리크 가로망 재원) + 시의 매입 옵션가 1,100만 달러 면제 = 총 1억 2,100만 달러", "https://web.archive.org/web/2025/https://vancouver.ca/news-calendar/new-housing-agreement-would-deliver-more-than-650-affordable-homes-in-false-creek-north.aspx"],
  ],
  "famous": [
   "기단 위 가는 타워 · 보행 가로 · 수변 공원을 결합한 \"밴쿠버리즘 (Vancouverism)\" 의 대표 사례로, 트레버 보디가 이 이름으로 이론화했습니다.",
@@ -567,6 +578,7 @@ D = {
   {"t": "The Globe and Mail — Urban planner Stanley Kwok combined high density and livability in Expo 86 redevelopment", "u": "https://www.theglobeandmail.com/canada/article-urban-planner-stanley-kwok-high-density-livability-expo-86/"},
   {"t": "Spacing Vancouver — Stanley Kwok and the Two False Creeks (2012)", "u": "https://spacing.ca/vancouver/2012/05/09/stanley-kwok-and-the-two-false-creeks/"},
   {"t": "Métropolitiques — Vancouverism: hybridisation and spread of an urban model", "u": "https://metropolitiques.eu/vancouverism-hybridisation-and.html"},
+  {"t": "City of Vancouver (2023.2.13) — New housing agreement would deliver more than 650 affordable homes in False Creek North [웨이백 머신 사본]", "u": "https://web.archive.org/web/2025/https://vancouver.ca/news-calendar/new-housing-agreement-would-deliver-more-than-650-affordable-homes-in-false-creek-north.aspx"},
  ],
 },
 
@@ -721,3 +733,20 @@ D = {
  ],
 },
 }
+
+# ── 보강 (노후 산업지역 지원정책 조사 · policy02 와 연결) — 법령 원문 · 공개 논문 기준 ──
+D["toyosu"]["laws"].append(
+ ["도시계획법 제12조의5 제3항 — 재개발등촉진구의 요건 (都市計画法 · 再開発等促進区)", "토지 이용 상황이 현저히 바뀌고 있거나 바뀔 것이 확실한 구역 · 적정한 공공시설 정비가 필요한 구역 · 고도 이용이 도시 기능 증진에 기여 · 용도지역이 정해진 구역 — 도요스 공장 · 항만 용지 전환의 법적 근거", "https://laws.e-gov.go.jp/law/343AC0000000100"])
+D["toyosu"]["lesson"].append(
+ "가나가와현 대규모 공장 터 116곳 가운데 77% 가 토지이용 전환됐고, 연구자들은 지자체가 공장 폐쇄 정보를 일찍 얻어 개발자와 사전 협의해야 한다고 결론지었습니다 (土屋 외 2019) — 도요스도 공공 마스터플랜 (2001) 과 지구계획으로 전환의 방향을 먼저 정한 경우입니다.")
+D["toyosu"]["refs"] += [{"t": "e-Gov 法令検索 — 都市計画法", "u": "https://laws.e-gov.go.jp/law/343AC0000000100"},
+ {"t": "土屋 · 中井 · 沼田 (2019) 大規模工場跡地の土地利用転換に関する研究, 都市計画論文集 54(3)", "u": "https://doi.org/10.11361/journalcpij.54.1237"}]
+
+D["minato-mirai-21"]["laws"] += [
+ ["수도권 기성 시가지 공업등제한법 (首都圏の既成市街地における工業等の制限に関する法律, 昭和34年法律第17号 → 2002.7.12 폐지)", "도쿄 23구와 함께 요코하마 · 가와사키의 공장 신 · 증설을 제한 — 임해부 공장 이전과 공장 터 전환을 재촉한 배경", "https://hourei.ndl.go.jp/simple/detail?lawId=0000051031&current=-1"],
+ ["도시재생특별조치법 제36조 — 도시재생특별지구의 용적률 (都市再生特別措置法)", "특구의 용적률 최고한도는 400% 이상으로 정해야 하고 용도 · 높이 · 벽면 위치를 지구마다 새로 정함 — 52가구 800% → 880% 완화의 근거", "https://laws.e-gov.go.jp/law/414AC0000000022"]]
+D["minato-mirai-21"]["lesson"].append(
+ "요코하마 · 가와사키는 1959년 공업등제한법으로 공장 신 · 증설이 묶여 대공장이 밖으로 옮겨 갔습니다 (土屋 외 2019) — 미나토미라이21 은 이런 「공장 억제」 시대에 생긴 대형 공장 터를 공공 주도로 도심으로 바꾼 경우입니다.")
+D["minato-mirai-21"]["refs"] += [{"t": "国立国会図書館 日本法令索引 — 首都圏の既成市街地における工業等の制限に関する法律", "u": "https://hourei.ndl.go.jp/simple/detail?lawId=0000051031&current=-1"},
+ {"t": "e-Gov 法令検索 — 都市再生特別措置法", "u": "https://laws.e-gov.go.jp/law/414AC0000000022"},
+ {"t": "土屋 · 中井 · 沼田 (2019) 大規模工場跡地の土地利用転換に関する研究, 都市計画論文集 54(3)", "u": "https://doi.org/10.11361/journalcpij.54.1237"}]

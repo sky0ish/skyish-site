@@ -5,7 +5,7 @@ D = {
 "castlefield-manchester": {
  "spec": [
   ["위치", "영국 그레이터 맨체스터, 맨체스터 도심 남서쪽 — 브리지워터 운하 (Bridgewater Canal) 종점 · 어웰강 (River Irwell)변, 로마 요새 마무키움 (Mamucium) 터"],
-  ["면적", "맨체스터에서 가장 큰 보존지구의 하나 (시의회) — 정확한 면적은 확인하지 못했습니다"],
+  ["면적", "보존지구는 맨체스터에서 가장 큰 것의 하나 (시의회, 면적 미확인) — 캐슬필드를 포함한 중앙 맨체스터 도시개발구역 약 180ha (1988 명령)"],
   ["기간", "1978년 그레이터 맨체스터 의회 부지 매입 → 1979년 보존지구 → 1982년 「도시 유산 공원」 → 1988~1996년 중앙 맨체스터 개발공사 → 2022년 캐슬필드 고가 공원"],
   ["원래 용도", "운하 하역장 · 운하 창고 (그로서스 창고 c.1771~1775, 머천츠 창고 c.1827, 미들 창고 1831) · 세계 최초의 여객 철도 종착역 리버풀 로드역 (1830) · 철도 고가교 · 시장"],
   ["변경 용도", "과학산업박물관 (1983) · 전시장 (G-Mex, 1986 → 현 맨체스터 센트럴) · 사무 · 아파트 · 펍 · 식당 · 야외 공연장 (1993) · 유스호스텔 · 고가 공원 (2022)"],
@@ -44,7 +44,7 @@ D = {
   ["1983", "옛 화물역에 과학산업박물관 개관 · 로마 정원 조성"],
   ["1985.6.26", "보존지구 확장 (엘즈미어 가 · 헐름홀 로드 · 어웰강 사이)"],
   ["1986", "옛 센트럴역에 G-Mex 전시장 개관 · 그로서스 창고 부분 복원"],
-  ["1988~1996", "중앙 맨체스터 개발공사 (CMDC)가 캐슬필드를 포함한 도심 남부를 관할"],
+  ["1988~1996", "중앙 맨체스터 개발공사 (CMDC) — 1988.6.30 설립 명령 시행 (약 180ha), 1996.4.1 해산 명령 시행"],
   ["1992~1996", "미들 창고 → 캐슬 키 (상가 · 사무 · 아파트, 1992) · 머천츠 창고 → 사무 (1996)"],
   ["1993", "야외 공연장 (Castlefield Arena) 조성 · 방문자센터 개관"],
   ["2022.7", "내셔널 트러스트가 1892년 철도 고가교 (2등급 등록)를 시범 고가 공원으로 개방"],
@@ -74,7 +74,8 @@ D = {
  ],
  "laws": [
   ["지방정부 · 계획 · 토지법 1980 제16부 (Local Government, Planning and Land Act 1980, Part XVI)", "도시개발구역 지정 (제134조) · 도시개발공사 설립 (제135조) · 토지 이전 · 수용 (제141~142조) · 계획 통제 (제148~149조). 중앙 맨체스터 개발공사의 근거", "https://www.legislation.gov.uk/ukpga/1980/65/part/XVI"],
-  ["중앙 맨체스터 개발공사 설립 · 해산 명령 (CMDC (Area and Constitution) Order · (Dissolution) Order 1996)", "개발구역 지정과 공사 설립, 1996년 해산 — 계획 권한을 시의회로 되돌림"],
+  ["중앙 맨체스터 개발공사 지역 · 구성 명령 1988 (Central Manchester Development Corporation (Area and Constitution) Order 1988, SI 1988/1144)", "1988.5.10 제정 · 6.30 시행 — 맨체스터시 약 180ha 를 도시개발구역으로 지정하고 개발공사 설립 (환경부 장관 니컬러스 리들리)", "https://www.legislation.gov.uk/uksi/1988/1144/made"],
+  ["중앙 맨체스터 개발공사 해산 명령 1996 (CMDC (Dissolution) Order 1996, SI 1996/966)", "1996.3.28 제정 · 4.1 시행 — 맨체스터 · 트래퍼드 의회와 협의 후 해산, 같은 해 계획 기능 · 재산 이전 명령도 함께", "https://www.legislation.gov.uk/uksi/1996/966/made"],
   ["캐슬필드 보존지구 (Castlefield Conservation Area, 1979 지정 · 1985 확장)", "보존지구 안의 철거 · 신축을 통제하고, 새 건물은 높이 · 규모 · 재료를 기존 건물에 맞추도록 한 시의회 지침", "https://www.manchester.gov.uk/parks-leisure-and-the-arts/parks-playgrounds-allotments-and-open-spaces/conservation-areas/introduction11"],
   ["계획 (등록건축물 · 보존지구) 법 1990 (Planning (Listed Buildings and Conservation Areas) Act 1990)", "현행 보존지구 지정 (제69조) · 등록 건축물 변경 허가 (제7~8조)의 근거 — 리버풀 로드역은 1963년 1등급 등록", "https://www.legislation.gov.uk/ukpga/1990/9/contents"],
   ["도시 유산 공원 (Urban Heritage Park, 1982)", "법정 지정이 아닌 비공식 명칭 — 보존 · 계획 의견 · 관광 재원 확보를 목표로 한 이해관계자 위원회의 브랜드"],
@@ -91,9 +92,9 @@ D = {
  ],
  "zoning": [
   ["지정", "캐슬필드 보존지구 — 1979.10.13 지정, 1980.1 특별 보존지구, 1985.6.26 확장"],
-  ["도시개발구역", "1988~1996 중앙 맨체스터 개발공사 구역 (캐슬필드 · 포모나 · 센트럴 · 가이소른 · 피카딜리 등 6개 지역)"],
+  ["도시개발구역", "1988~1996 중앙 맨체스터 개발공사 구역 약 180ha (캐슬필드 · 포모나 · 센트럴 · 가이소른 · 피카딜리 등 6개 지역)", "https://www.legislation.gov.uk/uksi/1988/1144/made"],
   ["관리 주체 · 방식", "맨체스터 시의회 (보존지구 지침 · 계획 허가) + 캐슬필드 관리회사 (1992, 공공공간 관리)"],
-  ["보존 관리", "리버풀 로드역 1등급 등록 (1963.12.18), 철도 고가교 2등급 등록 · 로마 요새 일부 복원"],
+  ["보존 관리", "리버풀 로드역 · 역장 주택 1등급 등록 (1963.12.18, 히스토릭 잉글랜드 1291477 — 1830년 조지 스티븐슨, 1808년 주택), 철도 고가교 2등급 등록 · 로마 요새 일부 복원", "https://historicengland.org.uk/listing/the-list/list-entry/1291477"],
  ],
  "result": [
   "CMDC 전체 구역 성과 (1988~1996): 주택 2,583호, 비주거 약 14만㎡, 일자리 약 4,944개, 민간투자 3억 300만 파운드, 버려진 땅 약 35만㎡ 정비.",
@@ -139,9 +140,12 @@ D = {
   "마스터플랜 · 설계를 맡은 도시계획가 · 건축가는 확인된 자료를 찾지 못했습니다.",
   "캐슬필드 보존지구의 정확한 면적은 확인된 자료를 찾지 못했습니다.",
   "용적률 완화 수치는 확인된 자료를 찾지 못했습니다.",
-  "CMDC 가 캐슬필드에만 쓴 공공 재원의 공식 수치(시기 포함)는 확인된 자료를 찾지 못했습니다 — 위키백과는 약 4천만 파운드로 적고 있습니다.",
+  "CMDC 가 캐슬필드에만 쓴 공공 재원의 공식 수치는 확인된 자료를 찾지 못했습니다 — 위키백과는 약 4천만 파운드 · 기간 1988~1998 로 적지만, 법령상 CMDC 는 1996.4.1 해산했습니다.",
  ],
  "refs": [
+  {"t": "legislation.gov.uk — The Central Manchester Development Corporation (Area and Constitution) Order 1988", "u": "https://www.legislation.gov.uk/uksi/1988/1144/made"},
+  {"t": "legislation.gov.uk — The Central Manchester Development Corporation (Dissolution) Order 1996", "u": "https://www.legislation.gov.uk/uksi/1996/966/made"},
+  {"t": "Historic England — Former Liverpool Road Railway Station, Station Masters House (List Entry 1291477)", "u": "https://historicengland.org.uk/listing/the-list/list-entry/1291477"},
   {"t": "Science Museum Group — Annual Report and Accounts 2023–24 (PDF)", "u": "https://www.sciencemuseumgroup.org.uk/sites/default/files/2024-11/E03091147_Science%20Museum%20Group%20ARA%2023-24%20Accessible.pdf"},
   {"t": "Wikipedia — Science and Industry Museum", "u": "https://en.wikipedia.org/wiki/Science_and_Industry_Museum"},
   {"t": "National Trust — Castlefield Viaduct (visit page)", "u": "https://www.nationaltrust.org.uk/visit/cheshire-greater-manchester/castlefield-viaduct"},
@@ -245,7 +249,7 @@ D = {
   ["민간 저에너지 개발", "리틀 켈햄 — 1.5ha, 헥타르당 102호"],
  ],
  "zoning": [
-  ["지정", "켈햄 아일랜드 산업 보존지구 — 1985.5 지정, 1999 · 2008 · 2025 확장 → 「켈햄 아일랜드 · 니프센드 산업 보존지구」"],
+  ["지정", "켈햄 아일랜드 산업 보존지구 — 1985.5 지정, 확장 1999 · 2008 · 2025 (시의회 누리집) → 「켈햄 아일랜드 · 니프센드 산업 보존지구 (Kelham Island and Neepsend Industrial Conservation Area)」. 2008 실행계획은 \"1985 지정 · 1986 확장\"으로 적어 확장 연도가 원문끼리 다릅니다"],
   ["계획 구역", "켈햄 니프센드 실행계획 구역 — 우드사이드 · 니프센드 중심부 · 켈햄 강변 3개 성격 지역"],
   ["관리 주체 · 방식", "셰필드 시의회 보존팀 — 보존지구 평가서 · 관리계획 (2025~2026 승인)"],
   ["보존 관리", "코니시 플레이스 · 글로브 웍스 · 그린 레인 웍스 2*등급, 팻 캣 펍 2등급, 둑 · 볼 스트리트 다리 등록 · 백투백 주택 긴급 등록"],
@@ -391,7 +395,7 @@ D = {
  "laws": [
   ["지방정부 · 계획 · 토지법 1980 제16부 (Local Government, Planning and Land Act 1980, Part XVI)", "도시개발구역 지정 (제134조) · 도시개발공사 설립 (제135조) · 목적 「지역의 재생」 (제136조) · 공공 토지 이전 (제141조) · 계획 통제 (제148~149조)", "https://www.legislation.gov.uk/ukpga/1980/65/part/XVI"],
   ["같은 법 별표 32 — 기업구역 (Schedule 32, Enterprise Zones)", "기업구역 계획(scheme) 자체가 계획 허가를 주어 개별 허가 절차를 생략 · 재산세 면제 근거", "https://www.legislation.gov.uk/ukpga/1980/65/schedule/32"],
-  ["LDDC (지역 · 구성) 명령 1980 (London Docklands Development Corporation (Area and Constitution) Order 1980)", "약 8제곱마일을 도시개발구역으로 지정하고 LDDC 설립 — 1981.7 상원 승인, 그리니치 · 루이셤 제외", "https://api.parliament.uk/historic-hansard/lords/1981/jul/01/london-docklands-development-corporation"],
+  ["LDDC (지역 · 구성) 명령 1980 (London Docklands Development Corporation (Area and Constitution) Order 1980, SI 1981/936)", "약 8제곱마일을 도시개발구역으로 지정하고 LDDC 설립 — 이름은 1980 명령이지만 1981년 법령 번호로 공포, 1981.7.1 상원 승인 (같은 날 개정 명령 SI 1981/937), 그리니치 · 루이셤 제외", "https://api.parliament.uk/historic-hansard/lords/1981/jul/01/london-docklands-development-corporation"],
   ["아일 오브 독스 기업구역 (Isle of Dogs Enterprise Zone, 1982.4.26~1992.4.26)", "10년간 사업용 재산세 면제 · 개발토지세 면제 · 상업 · 공업 건물 투자 100% 자본공제 · 간소화된 계획"],
   ["아일 오브 독스 설계 지침 (Isle of Dogs Design Guide, 1982)", "토지이용 규정 대신 \"개발 기회\"를 보여 주는 유연한 지침 (워드 사장이 지나친 규정을 빼도록 수정)"],
   ["런던 도클랜즈 전략계획 (London Docklands Strategic Plan, 1976)", "도클랜즈 합동위원회의 자문 계획 — 공공주택 · 제조업 · 지역 고용 중심, LDDC 출범 뒤 사실상 대체됨"],
@@ -462,6 +466,7 @@ D = {
   "LDDC 공식 결산 자료 (lddc-history.org.uk)는 사이트에 접속할 수 없어 사본(LDDC 개요)으로 확인했습니다.",
  ],
  "refs": [
+  {"t": "legislation.gov.uk — The London Docklands Development Corporation (Area and Constitution) Order 1980 (SI 1981/936)", "u": "https://www.legislation.gov.uk/uksi/1981/936/contents/made"},
   {"t": "Wikipedia — Canary Wharf", "u": "https://en.wikipedia.org/wiki/Canary_Wharf"},
   {"t": "Wikipedia — ExCeL London", "u": "https://en.wikipedia.org/wiki/ExCeL_London"},
   {"t": "Wikipedia — London City Airport", "u": "https://en.wikipedia.org/wiki/London_City_Airport"},
@@ -550,6 +555,7 @@ D = {
   ["등록 건축물 지정 (Listed Building, 1952.6.28 · 1985.6.19 개정)", "창고 5동 1등급 — 변경 · 철거에 등록 건축물 허가 필요", "https://historicengland.org.uk/listing/the-list/list-entry/1068410"],
   ["계획 (등록건축물 · 보존지구) 법 1990 (Planning (Listed Buildings and Conservation Areas) Act 1990)", "현행 등록 건축물 · 보존지구 보호 근거", "https://www.legislation.gov.uk/ukpga/1990/9/contents"],
   ["리버풀 해양상업도시 세계유산 (Liverpool – Maritime Mercantile City, 2004~2021)", "앨버트 독을 포함한 6개 구역 — 2021년 등재 취소"],
+  ["머지사이드 개발공사 계획 기능 명령 1981 (Merseyside Development Corporation (Planning Functions) Order 1981, SI 1981/561) · 토지 이전 명령 1981 (SI 1981/999~1003)", "MDC 에 계획 허가권을 주고 영국철도청 · 지방정부 · 머지 도크 · 하버 회사의 땅을 MDC 로 이전 — 1988 · 1990 계획 기능 명령으로 범위 조정", "https://www.legislation.gov.uk/uksi/1981/561/contents/made"],
  ],
  "lawsNote": ["규제완화의 핵심은 개발공사가 지방정부의 계획 통제를 넘어 빠르게 결정하고 공공 재원으로 부두 · 창고를 먼저 고친 점입니다. 반대로 건물 자체는 1952년부터 1등급 등록으로 강하게 보호되어, \"철거 없는 개조\"가 전제가 되었습니다."],
  "tools": [
@@ -605,10 +611,12 @@ D = {
   "1980년대 창고 개조 전체의 마스터플랜 · 설계를 맡은 건축가(테이트 리버풀의 제임스 스털링 외)는 확인된 자료를 찾지 못했습니다.",
   "앨버트 독 복원에 들어간 공공 (MDC) 투입액은 확인된 자료를 찾지 못했습니다 — 민간 (애로크로프트) 1억 파운드 이상만 확인했습니다.",
   "앨버트 독 일대 보존지구의 이름 · 지정 연도는 확인된 자료를 찾지 못했습니다.",
-  "MDC 관할 면적 · 설립 명령의 정확한 날짜는 확인된 자료를 찾지 못했습니다 (자료에 따라 1980 · 1981로 다릅니다).",
+  "MDC 관할 면적과 지역 · 구성 명령의 정확한 날짜는 확인된 자료를 찾지 못했습니다 — 1981년 계획 기능 · 토지 이전 명령은 legislation.gov.uk 에서 확인했습니다 (구조 엔지니어 회고는 \"1980년 설립\"으로 적음).",
+  "해양박물관 개관 연도는 원문끼리 다릅니다 — 위키백과 1980 시범 · 1984 개관 · 1986 확장, 앨버트 독 공식 사이트 \"1986년 독에 처음 문을 연 공공 건물\".",
   "용적률 완화 수치는 확인된 자료를 찾지 못했습니다.",
  ],
  "refs": [
+  {"t": "legislation.gov.uk — The Merseyside Development Corporation (Planning Functions) Order 1981", "u": "https://www.legislation.gov.uk/uksi/1981/561/contents/made"},
   {"t": "National Museums Liverpool — Annual Report and Accounts 2023-24 (GOV.UK PDF)", "u": "https://assets.publishing.service.gov.uk/media/687a45845f0f5104b9806b94/National_Liverpool_Museum_Annual_Report_and_Accounts_2023-24.pdf"},
   {"t": "Place North West — JLL wins Albert Dock brief (2016.3.24)", "u": "https://www.placenorthwest.co.uk/jll-wins-albert-dock-brief/"},
   {"t": "Royal Albert Dock Liverpool — History", "u": "https://albertdock.com/history/"},
@@ -640,7 +648,7 @@ D = {
  "zoneFrom": "항만 (Haven)",
  "zoneTo": "주거 중심 혼합 용도계획 (bestemmingsplan, Wonen)",
  "tenants": [
-  ["문화 · 창작 공간", "로츠 6 (Loods6, 로츠 6 재단)", "KNSM 섬 옛 KNSM 창고 — 아틀리에 · 작업실 232곳, 상점 · 식당, 행사장 (바가허할 · 센트럴 할 · 콤파스잘)", "https://loods6.nl/locations"],
+  ["문화 · 창작 공간", "로츠 6 (Loods6, 로츠 6 재단)", "1920~22 KNSM 환적 · 세관 창고 (J.G. · A.D. 반 헨트 설계, 시 기념물), 1994~97 개조 — 아틀리에 · 작업실 232곳, 상점 · 식당, 행사장 (바가허할 · 센트럴 할 · 콤파스잘)", "https://loods6.nl/locations"],
   ["문화 · 창작 공간", "콰란타이너헤바우 (Quarantainegebouw, 레이트란트 공원)", "스타츠헤르스텔 소유 건물 — 아틀리에 12곳 · 음악 스튜디오 2곳 · 카페 식당, 로츠 6 재단 관리", "https://loods6.nl/locations"],
   ["문화 · 공연장", "무지크헤바우 안 헷 IJ (Muziekgebouw aan 't IJ) · 빔하위스 (Bimhuis)", "2005.6.15 개관 (3XN 설계, 건설비 6천만 유로) — 피트 하인카더 IJ 터널 위 콘서트홀, 재즈 공연장 빔하위스가 한 건물에"],
   ["상업 · 호텔", "로이드 호텔 (Lloyd Hotel)", "1921 이민자 호텔 → 2004 호텔 (MVRDV 개조) → 2021 매각 · 2023 재개장"],
@@ -664,6 +672,7 @@ D = {
   ["1997", "자바 섬 용도계획 확정 (쇠르트 수테르스 설계) · 피트 하인 터널 개통"],
   ["2001~2005", "얀 스하퍼르 다리 (2001) · 로이드 호텔 국가기념물 (2001) → 호텔 재개장 (2004, MVRDV) · IJ 트램 (2005)"],
   ["2002", "보르네오 · 스포렌뷔르흐, 하버드 「베로니카 러지 그린 도시설계상」 수상"],
+  ["2021~2023", "주택협회 더 케이가 로츠 6 입주자 단체를 제소 (2021.4.23) → 2022년 화해, 더 케이가 재단에서 금전 요구 없이 완전히 물러남 (팔로 더 머니 2023.7.27)"],
  ],
  "problem": [
   "1935년 일반 확장계획에서 이미 \"역사적 실수\"라 불릴 만큼 동부 항만은 바다 쪽 접근이 나빴고, 컨테이너 · 벌크 화물과 대형 선박에 부두 · 수역이 너무 작았습니다.",
@@ -743,7 +752,7 @@ D = {
   ["운영 주체 (문화 · 작업 공간)", "로츠 6 재단 (Stichting Kunstwerk Loods6) — 옛 KNSM 창고를 소유하고 아틀리에 · 작업실 232곳과 식당 · 상점 · 행사장을 운영, 세 건물 약 2만 5천㎡ 관리", "https://loods6.nl/locations"],
   ["토지 · 건물 임대 구조", "재단이 1990년대 시의 장기 토지 임대 (erfpacht)를 2046년까지 일시 선납 — 주택협회 더 케이에서 1,150만 길더를 빌려 2012년 모두 상환 (팔로 더 머니, 2020)"],
   ["수입 구성", "로츠 6 연 임대 수입 약 170만 유로 · 재단 운영 자본 약 1,300만 유로 (팔로 더 머니, 2020)"],
-  ["운영상 문제", "1998년부터 재단의 유일한 이사가 된 더 케이가 로츠 6 를 담보로 로이드 호텔 개발용 1,200만 유로 대출을 받고, 2018년 임대권 매각 · 재단 정관 변경을 추진해 입주자들이 반발 (팔로 더 머니, 2020)"],
+  ["운영상 문제 → 해결", "1998년부터 재단의 유일한 이사가 된 더 케이가 로츠 6 를 담보로 로이드 호텔 개발용 1,200만 유로 대출, 2018년 임대권을 약 2,500만 유로에 파는 안 · 2020년 정관 변경 (건물 가치 4,200만 · 적립금 1,400만 유로를 더 케이로)을 추진 → 2021 제소 → 2022~23 더 케이가 금전 요구 없이 재단에서 철수, 입주자가 재단 운영권 회복", "https://www.ftm.nl/artikelen/woningcorporatie-amsterdam-nederlaag-vermogen-loods-6"],
   ["운영 주체 (호텔)", "로이드 호텔 — 더 케이 재원으로 복원 (2004 호텔), 2021년 매각 뒤 내부 개조해 2023년 재개장"],
  ],
  "operationNote": [
@@ -759,6 +768,8 @@ D = {
   "용적률 수치는 확인된 자료를 찾지 못했습니다 — 밀도 (헥타르당 약 100호)로만 확인했습니다.",
  ],
  "refs": [
+  {"t": "Follow the Money (2023.7.27) — Woningcorporatie geeft strijd tegen kunstenaars om miljoenenpand op", "u": "https://www.ftm.nl/artikelen/woningcorporatie-amsterdam-nederlaag-vermogen-loods-6"},
+  {"t": "Wikipedia (NL) — Loods 6", "u": "https://nl.wikipedia.org/wiki/Loods_6"},
   {"t": "Wikipedia (NL) — Muziekgebouw aan 't IJ", "u": "https://nl.wikipedia.org/wiki/Muziekgebouw_aan_%27t_IJ"},
   {"t": "Gemeente Amsterdam (Ontwikkelingsbedrijf) — De jaren negentig: Amsterdam in ontwikkeling. Krassen op de eeuwigheid (PDF)", "u": "https://assets.amsterdam.nl/publish/pages/919482/krassen_op_de_eeuwigheid.pdf"},
   {"t": "Stichting Kunstwerk Loods6 — Our buildings", "u": "https://loods6.nl/locations"},
