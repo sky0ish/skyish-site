@@ -212,7 +212,7 @@
           </div>
 
           <div class="fb-mapbox">
-            <div class="fb-map" id="dc-map0"></div>
+            <div class="fb-map" id="dc-map0" data-gg="light"></div>
             <div class="fb-legend dc-legend-both" id="dc-legend0"></div>
             <div class="fb-busy" id="dc-busy0">자료를 불러오는 중입니다…</div>
           </div>
@@ -237,7 +237,7 @@
           </div>
 
           <div class="fb-mapbox">
-            <div class="fb-map" id="dc-map5"></div>
+            <div class="fb-map" id="dc-map5" data-gg="light"></div>
             <div class="fb-legend dc-legend-both" id="dc-legend5"></div>
             <div class="fb-busy" id="dc-busy5">자료를 불러오는 중입니다…</div>
           </div>
@@ -262,7 +262,7 @@
 
           <div class="dc-net-grid">
             <div class="fb-mapbox dc-net-map">
-              <div class="fb-map" id="dc-map4"></div>
+              <div class="fb-map" id="dc-map4" data-gg="dark"></div>
               <div class="fb-legend" id="dc-legend4"></div>
               <div class="fb-busy" id="dc-busy4">자료를 불러오는 중입니다…</div>
             </div>
@@ -450,6 +450,8 @@
   <div id="site-footer"></div>
 
   <script src="assets/vendor/leaflet/leaflet.js?v=202609010300"></script>
+  <!-- 경기도 경계선 — data-gg 가 붙은 지도에 저절로 얹힙니다 (2026-10-15) -->
+  <script src="assets/js/gg-boundary.js?v=202610150900"></script>
   <script src="assets/js/main.js?v=202610051200" defer></script>
   <script src="assets/js/defense-cluster.js?v=202609171100" defer></script>
   <script src="assets/js/defense-graph.js?v=202609091500" defer></script>
