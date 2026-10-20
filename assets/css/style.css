@@ -3088,6 +3088,12 @@ html[data-cp]:not([data-cp="tome"]) .contact-top .contact-grid { display: none; 
 
 .ahint--how { flex-basis: 100%; margin: 4px 0 0; font-size: .8rem; line-height: 1.5;
   opacity: .75; }
+/* 폰 — 단추 아래 설명글은 걷고 찾는 칸이 곧바로 올라오게.
+   「핸드폰 어플인데 여기 위의 데이터 설명은 필요없어 바로 검색창이 올라오게」
+   (잘못됐다는 알림은 is-info 가 없어 그대로 보입니다) */
+@media (max-width: 760px) {
+  #addrsec .section-head .lead, .ahint.is-info, .ahint--how { display: none; }
+}
 
 /* 주소록 — 일련번호 칸 */
 .nimp__tbl td.ano { width: 3.2em; text-align: right; padding-right: 10px;
@@ -3316,6 +3322,10 @@ html[data-cp]:not([data-cp="tome"]) .contact-top .contact-grid { display: none; 
 .td[draggable="true"] { cursor: grab; }
 .td.is-drag { opacity: .4; }
 .td.is-over { box-shadow: 0 -3px 0 0 var(--teal); }
+/* 홈 — 왼쪽 해야할일 · 오른쪽 To BUY 를 나란히. 좁은 화면에서는 위아래로 */
+.todo-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem; align-items: start; }
+.todo-pair .todo { max-width: none; }
+@media (max-width: 960px) { .todo-pair { grid-template-columns: minmax(0, 1fr); gap: 2rem; } }
 
 /* 표 머리글을 눌러 차례 바꾸기 — 방산 페이지와 같은 모양 */
 .fb-sort { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: .25rem; font: inherit; color: inherit; }

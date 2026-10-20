@@ -33,7 +33,9 @@ const KINDS = {
           empty: "아직 적은 살 것이 없습니다 — 위에 적어 보세요.", name: "살 것 목록" },
 };
 
-export async function initTodo(mountId = "todoapp", sectionId = "todosec", kind = "todo") {
+/*  opts.title — 머리 제목을 바꿉니다 (안 주면 「10월 21일(수) 해야할일」).
+    홈에서 해야할일 옆에 To BUY 를 나란히 둘 때 씁니다. */
+export async function initTodo(mountId = "todoapp", sectionId = "todosec", kind = "todo", opts = {}) {
   const K = KINDS[kind] || KINDS.todo;
   const T = K.table, LS_KEY = K.ls, P = K.pre;
   const mount = document.getElementById(mountId);
@@ -190,7 +192,7 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec", kind 
   }
 
   function render() {
-    $("tdTitle").textContent = TL.todayTitle();
+    $("tdTitle").textContent = (opts && opts.title) || TL.todayTitle();
     const c = TL.counts(rows);
     $("tdCount").textContent = c.total
       ? K.left + " " + c.open + (c.star ? " · 중요 " + c.star : "") + (c.today ? " · 오늘까지 " + c.today : "") +

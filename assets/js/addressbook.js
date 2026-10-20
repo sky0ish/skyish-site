@@ -2016,7 +2016,10 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       (FSA ? "" :
         '<label class="nbtn afiles">📄 엑셀 고르기' +
           '<input type="file" id="abFiles" accept=".xlsx,.xls" multiple hidden></label>') +
-      '<span class="ahint" id="abHint">' +
+      /* is-info — 「다 읽었습니다」 같은 설명. 폰에서는 감춰 찾는 칸이 곧바로 올라옵니다
+         (「핸드폰 어플인데 위의 데이터 설명은 필요없어. 바로 검색창이 올라오게」).
+         잘못됐다는 알림은 is-info 없이 나오므로 폰에서도 보입니다. */
+      '<span class="ahint is-info" id="abHint">' +
         "고른 자료는 이 화면에만 그려집니다. 어디로도 올라가지 않습니다." +
       "</span>" +
       /* 얼굴 사진 옮기는 길 — 자료가 들어와도 지우지 않습니다.
@@ -2037,7 +2040,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
 
   const hint = document.getElementById("abHint");
   const body = document.getElementById("abBody");
-  const say  = (t) => { hint.textContent = t; };
+  const say  = (t, info) => { hint.textContent = t; hint.classList.toggle("is-info", !!info); };
 
   let rows = [], cur = "all", major = "", shownCount = PAGE;
   let histIndex = null;                   // 리멤버 명함 이력 (이름 → stack) — 00.주소록/리멤버_명함이력.json
@@ -2742,7 +2745,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     const nh = rows.filter((r) => r.hist).length;
     say(readSummary(loaded) + "을 읽었습니다. " +
         (nh ? "옛 명함과 소속·직함이 다른 분 " + nh.toLocaleString("ko-KR") + "명에 「최신정보」 를 달았습니다. " : "") +
-        "겹친 것은 새 쪽으로 하나만 남겼습니다. 이 화면에만 있습니다.");
+        "겹친 것은 새 쪽으로 하나만 남겼습니다. 이 화면에만 있습니다.", true);
     ui();
     refreshPhotoNames();          // 누가 사진이 있는지 미리 모읍니다 (조용히)
     /* 폴더를 못 여는 곳(폰)에서는 담아 둡니다 — 다음부터 고르지 않아도 폅니다.
@@ -2887,7 +2890,7 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
       rows = dropHidden(applyExtras(mergeSame(c.rows), await allExtras()),
                         await hiddenKeys());
       say(`담아 둔 ${readSummary(rows)} — 이 폰 브라우저에만 있습니다. ` +
-          "새 엑셀을 읽히려면 「엑셀 고르기」.");
+          "새 엑셀을 읽히려면 「엑셀 고르기」.", true);
       ui();
     } else {
       const not = document.getElementById("abNot");

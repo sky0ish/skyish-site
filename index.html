@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script>document.documentElement.classList.add('js');</script>
-  <link rel="stylesheet" href="assets/css/style.css?v=202610040700">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610210730">
   <!-- 달력이 쓸 것들을 미리 받아 둡니다 — 안 그러면 파일을 줄줄이 하나씩 받느라
        1초를 그냥 씁니다 (문서 → home-cal → auth → gcal → supabase 순서로 기다림) -->
   <link rel="modulepreload" href="assets/js/home-cal.js?v=202610040700">
@@ -29,11 +29,15 @@
     /* 달력은 여기서 곧바로 시작합니다 — 문서 끝에 두면 다 읽은 뒤에야 움직입니다.
        모듈 대본은 문서를 막지 않으므로 화면이 늦어지지 않습니다. */
     import { initHomeCal } from "./assets/js/home-cal.js?v=202610040700";
-    import { initTodo } from "./assets/js/todo.js?v=202610210700";
+    import { initTodo } from "./assets/js/todo.js?v=202610210730";
     /* 해야할일 — 주인으로 들어오셨을 때만 히어로 바로 아래에 펼칩니다.
        아니면 initTodo 가 그 자리를 통째로 걷어 갑니다. */
-    const todoUp = () => initTodo("todoapp", "hotodo")
-      .then((ok) => { const s = document.getElementById("hotodo"); if (ok && s) s.hidden = false; })
+    /* 오른쪽 칸에는 To BUY(살 것 목록)를 함께 — 「오른쪽 비어있는칸에 To BUY 리스트도 함께 보이게」 */
+    const todoUp = () => Promise.all([
+        initTodo("todoapp", "hotodo"),
+        initTodo("buyapp", "hobuy", "buy", { title: "To BUY" }).catch(() => false),
+      ])
+      .then(([ok]) => { const s = document.getElementById("hotodo"); if (ok && s) s.hidden = false; })
       .catch(() => {});
     if (document.readyState === "loading")
       document.addEventListener("DOMContentLoaded", () => { initHomeCal(); todoUp(); });
@@ -80,7 +84,11 @@
           <span class="eyebrow">해야할일</span>
           <h2 class="section-title">What to do...</h2>
         </div>
-        <div id="todoapp"><p class="nempty">확인 중…</p></div>
+        <!-- 왼쪽 해야할일 · 오른쪽 To BUY (좁은 화면에서는 위아래로) -->
+        <div class="todo-pair">
+          <div id="todoapp"><p class="nempty">확인 중…</p></div>
+          <div id="hobuy"><div id="buyapp"><p class="nempty">확인 중…</p></div></div>
+        </div>
       </div>
     </section>
 
