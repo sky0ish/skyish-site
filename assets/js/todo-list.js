@@ -6,7 +6,9 @@
 //
 //  줄 하나 = { id, text, done, star, due, done_at, created_at }
 //    · 별표(star) 는 맨 위로,  완료(done) 는 맨 아래로 (줄을 긋습니다)
-//    · 그 안에서는 마감(due)이 가까운 것 → 먼저 적은 것 차례
+//    · 새로 적은 줄은 그 묶음의 맨 위에 섭니다 — 「새로 입력시 맨위로. 미루고 오래되면 아래로」
+//      (그래서 손대지 않고 묵은 줄은 새 줄에 밀려 저절로 내려갑니다)
+//    · 손으로 정한 차례가 없는 줄은 마감(due)이 가까운 것 → 나중에 적은 것(새 것) 차례
 //    · 완료된 것은 방금 끝낸 것이 완료 묶음의 맨 위에 옵니다 — 「아래로 내려가되」 바로 보이게
 //
 //  화면이 없는 셈 모듈입니다 — node 나 브라우저 시험 페이지에서 시험합니다 (tools/test/todo.mjs).
@@ -54,7 +56,7 @@ export function sortItems(items, today) {
     return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : "9999-99-99";      // 마감 없는 것은 뒤로
   };
   /* 손으로 정한 차례(sort)가 있으면 그것이 먼저입니다 — 「자유롭게 위아래 순서를 바꿀 수 있게」.
-     없는 줄은 마감·적은 때 차례로 그 뒤에 섭니다. */
+     없는 줄은 마감 → 새 것 먼저 차례로 그 뒤에 섭니다. */
   const sv = (x) => (typeof x.sort === "number" && isFinite(x.sort) ? x.sort : Infinity);
   return L.slice().sort((a, b) => {
     const r = rank(a) - rank(b);
@@ -64,7 +66,7 @@ export function sortItems(items, today) {
     if (s) return s;
     const d = dueKey(a).localeCompare(dueKey(b));
     if (d) return d;
-    return at(a.created_at) - at(b.created_at);
+    return at(b.created_at) - at(a.created_at);                    // 새 것이 위, 묵은 것이 아래
   });
   /* t 는 지금은 쓰지 않지만, 「오늘 것만」 거를 때를 위해 받아 둡니다 */
 }
@@ -99,11 +101,13 @@ export function reorder(items, id, dir, today) {
   return out;
 }
 
-/** 새 줄이 설 자리 — 그 묶음의 맨 아래 */
+/** 새 줄이 설 자리 — 그 묶음의 맨 위 (지금 가장 작은 차례보다 하나 작게).
+ *  「새로 입력시 위치를 맨위로 나오게. 미루고 오래되면 아래로 내려가게」
+ *  ▲▼·끌어놓기를 하면 그 묶음이 0,1,2… 로 다시 매겨지므로 수가 한없이 작아지지 않습니다. */
 export function nextSort(items) {
   const L = (Array.isArray(items) ? items : []).filter((x) => x && !x.done);
-  const m = L.reduce((n, x) => (typeof x.sort === "number" && x.sort > n ? x.sort : n), -1);
-  return m + 1;
+  const m = L.reduce((n, x) => (typeof x.sort === "number" && isFinite(x.sort) && x.sort < n ? x.sort : n), 1);
+  return m - 1;
 }
 
 /** 남은 것 · 완료 · 별표 · 오늘 마감 셈 */

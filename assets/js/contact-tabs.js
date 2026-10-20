@@ -11,7 +11,7 @@
 import { initAddr } from "./addressbook.js?v=202609170900";
 import { initSites } from "./sites.js?v=202609010300";
 import { initOrgs } from "./orgs.js?v=202609010300";
-import { initTodo } from "./todo.js?v=202610032000";
+import { initTodo } from "./todo.js?v=202610210700";
 import { initCost } from "./cost.js?v=202610040600";
 import { initGrocery } from "./grocery.js?v=202610040500";
 import { initNews } from "./news.js?v=202610041000";

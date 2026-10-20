@@ -4,12 +4,13 @@
 //  아직 그 SQL 을 안 돌리셨으면 이 브라우저의 저장소(localStorage)에 두고 알려 드립니다 —
 //  그래도 곧바로 쓸 수 있고, 표를 만든 뒤에는 「표로 옮기기」 로 넘깁니다.
 //
-//  · 적고 Enter(또는 ＋ 추가) → 줄이 생깁니다. 마감 날짜는 선택입니다.
+//  · 적고 Enter(또는 ＋ 추가) → 줄이 맨 위에 생깁니다 (별표 줄 바로 아래). 마감 날짜는 선택입니다.
+//    묵은 줄은 새 줄에 밀려 아래로 내려갑니다.
 //  · ✓ 를 누르면 줄을 긋고 아래로,  ★ 를 누르면 맨 위로
 //  · 글을 누르면 그 자리에서 고칩니다 (Enter 저장 · Esc 취소),  ✕ 는 지우기
 //  · ▲▼ 로 한 칸씩, 또는 줄을 끌어다 놓아 차례를 바꿉니다 (별표끼리 · 보통끼리)
 import { sb, currentUser, myProfile } from "../../auth/auth.js";
-import * as TL from "./todo-list.js?v=202609101700";
+import * as TL from "./todo-list.js?v=202610210700";
 
 export const OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
 const NL = String.fromCharCode(10);
@@ -78,12 +79,12 @@ export async function initTodo(mountId = "todoapp", sectionId = "todosec", kind 
     if (!it) return;
     it.sort = TL.nextSort(rows);
     if (local) {
-      rows.push(Object.assign({ id: "l" + Date.now() + Math.random().toString(36).slice(2, 6) }, it));
+      rows.unshift(Object.assign({ id: "l" + Date.now() + Math.random().toString(36).slice(2, 6) }, it));
       writeLocal(); return;
     }
     const r = await sb.from(T).insert(Object.assign({ created_by: user.id }, it)).select().single();
     if (r.error) throw r.error;
-    rows.push(r.data);
+    rows.unshift(r.data);
   }
 
   async function patch(id, change) {

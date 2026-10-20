@@ -27,10 +27,10 @@ const L = [
   it("완료B", { done: true, done_at: "2026-09-10T10:00:00Z" }),
   it("마감오늘", { due: T, created_at: "2026-09-09T00:00:00Z" }),
 ];
-eq("★ 별표 → 보통(마감 가까운 것 먼저) → 완료(방금 끝낸 것부터)",
-   sortItems(L, T).map((x) => x.id), ["별표", "마감오늘", "보통1", "보통2", "완료B", "완료A"]);
-eq("별표가 둘이면 먼저 적은 것", sortItems([it("b", { star: true, created_at: "2026-09-02T00:00:00Z" }),
-   it("a", { star: true, created_at: "2026-09-01T00:00:00Z" })]).map((x) => x.id), ["a", "b"]);
+eq("★ 별표 → 보통(마감 가까운 것 먼저, 그다음 새 것) → 완료(방금 끝낸 것부터)",
+   sortItems(L, T).map((x) => x.id), ["별표", "마감오늘", "보통2", "보통1", "완료B", "완료A"]);
+eq("별표가 둘이면 새 것이 위", sortItems([it("a", { star: true, created_at: "2026-09-01T00:00:00Z" }),
+   it("b", { star: true, created_at: "2026-09-02T00:00:00Z" })]).map((x) => x.id), ["b", "a"]);
 eq("완료한 별표도 아래로", sortItems([it("x", { star: true, done: true }), it("y")]).map((x) => x.id), ["y", "x"]);
 eq("원본을 안 건드린다", L[0].id, "보통1");
 eq("험한 것", [sortItems(null), sortItems([null, {}])], [[], []]);
@@ -81,7 +81,21 @@ eq("빈 데 놓으면 맨 아래로", reorder(M, "a", ""), [{ id: "b", sort: 0 }
 eq("별표는 보통 줄과 섞이지 않는다", reorder(M, "s", 1), []);
 eq("완료한 줄은 못 옮긴다", reorder(M, "d", -1), []);
 eq("없는 줄", reorder(M, "없음", 1), []);
-eq("새 줄은 맨 아래 차례", [nextSort(M), nextSort([]), nextSort([it("d", { done: true, sort: 9 })])], [3, 0, 0]);
+/* 「새로 입력시 위치를 맨위로 나오게. 미루고 오래되면 아래로 내려가게」 */
+eq("새 줄은 맨 위 차례", [nextSort(M), nextSort([]), nextSort([it("d", { done: true, sort: 9 })]),
+   nextSort([it("p", { sort: 4 }), it("q", { sort: 7 })]), nextSort([it("n")])], [-1, 0, 0, 0, 0]);
+{
+  /* 새 줄을 셋 차례로 적으면 → 가장 나중 것이 맨 위, 처음 것은 한 칸씩 밀려 내려갑니다 */
+  const W = [it("묵은1", { sort: 0 }), it("묵은2", { sort: 1 }), it("별", { star: true, sort: 0 })];
+  for (const id of ["새1", "새2", "새3"]) W.push(it(id, { sort: nextSort(W) }));
+  eq("새로 적은 것이 별표 바로 아래 맨 위로, 묵은 것은 아래로",
+     sortItems(W).map((x) => x.id), ["별", "새3", "새2", "새1", "묵은1", "묵은2"]);
+  /* 위아래로 옮기면 0,1,2… 로 다시 매겨 수가 한없이 작아지지 않는다 */
+  const ch = reorder(W, "새1", -1);
+  const W2 = W.map((x) => Object.assign({}, x, (ch.find((c) => c.id === x.id) || {})));
+  eq("옮긴 뒤 차례", sortItems(W2).filter((x) => !x.star).map((x) => x.id + ":" + x.sort),
+     ["새3:0", "새1:1", "새2:2", "묵은1:3", "묵은2:4"]);
+}
 
 console.log(bad ? `\n✗ ${bad} 군데 어긋납니다\n` : "\n✓ 모두 지납니다\n");
 globalThis.__testBad = bad;
