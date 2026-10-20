@@ -45,11 +45,20 @@
           </label>
         </div>
 
-        <!-- 갈래 : 산업 · 주택 · 도시쇠퇴 · 기타 (main.js 가 개수와 함께 채웁니다) -->
+        <!-- 갈래 : 산업 · 주택 · 도시쇠퇴 · 균형발전 · 중첩규제 · 기타 (main.js 가 개수와 함께 채웁니다) -->
         <nav class="archcats" id="archive-cats" aria-label="분석 갈래"></nav>
         <p class="archive-summary" id="archive-summary"></p>
 
         <div class="mapcards" id="mapcards">
+
+          <a class="mapcard reveal" href="balanced-dmz.html" data-cat="balanced"
+             data-title="균형발전 경기 강원 DMZ 접경권 초광역 지방소멸대응기금 특수상황지역 접경권발전지원 앵커기업 특산물 군납 푸드테크 K-뷰티 balanced">
+            <img src="assets/img/balanced-dmz-card.jpg"
+                 alt="경기·강원 접경 15개 시군 위에 앵커기업과 경기–강원 5대 벨트를 그린 지도">
+            <span class="mapcard__by">Jeehyun NAM</span>
+            <span class="mapcard__title">[경기·강원 DMZ 접경권 균형발전]</span>
+            <span class="mapcard__foot">지도 7 · 차트 3 · 표 6</span>
+          </a>
 
           <a class="mapcard reveal" href="defense-cluster.html" data-cat="industry"
              data-title="경기도 방위산업 기업체와 연구장비 방산 클러스터 defense 산업">
@@ -86,7 +95,7 @@
           ✎ 새 분석물은 <code>pictures.html</code> 의 <code>.mapcards</code> 안에
           <code>&lt;a class="mapcard" data-cat="…"&gt;</code> 한 덩어리를 추가하면 목록에 붙습니다.
           <code>data-cat</code> 은 <code>industry</code>(산업) · <code>housing</code>(주택) ·
-          <code>decline</code>(도시쇠퇴) · <code>etc</code>(기타) 중 하나이며, 없으면 기타로 들어갑니다.
+          <code>decline</code>(도시쇠퇴) · <code>balanced</code>(균형발전) · <code>regulation</code>(중첩규제) · <code>etc</code>(기타) 중 하나이며, 없으면 기타로 들어갑니다.
           지도·차트가 들어가는 글은 별도 페이지를 만들어 카드에 링크를 겁니다.
         </p>
       </div>
@@ -94,6 +103,6 @@
   </main>
 
   <div id="site-footer"></div>
-  <script src="assets/js/main.js?v=202610051200" defer></script>
+  <script src="assets/js/main.js?v=202610152100" defer></script>
 </body>
 </html>

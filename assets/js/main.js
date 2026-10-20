@@ -33,10 +33,12 @@
         { label: "학위논문",   file: "works.html?tab=theses"  }
       ] },
       { label: "DATA", file: "pictures.html",
-        also: ["defense-cluster.html", "flood-basement.html"], sub: [
+        also: ["defense-cluster.html", "flood-basement.html", "balanced-dmz.html"], sub: [
         { label: "산업",     file: "pictures.html?cat=industry" },
         { label: "주택",     file: "pictures.html?cat=housing"  },
         { label: "도시쇠퇴", file: "pictures.html?cat=decline"  },
+        { label: "균형발전", file: "pictures.html?cat=balanced" },
+        { label: "중첩규제", file: "pictures.html?cat=regulation" },
         { label: "기타",     file: "pictures.html?cat=etc"      }
       ] },
       { label: "TRAVEL",   file: "travel.html", also: ["travel-post.html", "travel-gri.html"], sub: [
@@ -1493,6 +1495,8 @@
     { key: "industry", label: "산업"     },
     { key: "housing",  label: "주택"     },
     { key: "decline",  label: "도시쇠퇴" },
+    { key: "balanced", label: "균형발전" },
+    { key: "regulation", label: "중첩규제" },
     { key: "etc",      label: "기타"     }
   ];
 
