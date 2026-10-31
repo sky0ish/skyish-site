@@ -391,6 +391,20 @@
   <script src="assets/data/talks.js?v=202609010300" defer></script>
   <script src="assets/js/talks.js?v=202609010300" defer></script>
   <script src="assets/js/main.js?v=202610051200" defer></script>
+  <!-- 첫 화면 맨 위 이름(JEEHYUN NAM)을 누르면 명함 그림을 내려받습니다.
+       이름표는 main.js 가 그리므로, 그 뒤에 이 화면에서만 바꿔 끼웁니다 (다른 화면의 이름표는 예전처럼 첫 화면으로). -->
+  <script type="module">
+    const card = () => {
+      const b = document.querySelector(".site-header .brand");
+      if (!b) return false;
+      b.href = "assets/img/namecard.png";
+      b.setAttribute("download", "JeehyunNam_namecard.png");
+      b.title = "명함 내려받기";
+      b.setAttribute("aria-label", "JEEHYUN NAM — 명함 내려받기");
+      return true;
+    };
+    if (!card()) document.addEventListener("DOMContentLoaded", card);
+  </script>
 
 </body>
 </html>

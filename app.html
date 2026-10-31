@@ -121,6 +121,32 @@
     filter: drop-shadow(0 2px 3px rgba(28, 26, 25, .22)); }
   .app__note { margin: 18px 0 0; font-size: .74rem; line-height: 1.7;
     color: var(--mauve, #8d8578); }
+
+  /* 내 명함 — 「My WAY…」 제목이나 맨 아래 단추를 누르면 명함이 화면 가득 뜹니다.
+     앱(홈 화면에 담은 것)에는 뒤로 가기 단추가 없을 수 있어서
+     그림 파일로 넘어가지 않고 이 화면 위에 띄웠다가 닫습니다. */
+  .app__head h1 button { all: unset; cursor: pointer; }
+  .app__head h1 button:active { opacity: .6; }
+  .app__card { display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; margin: 22px 0 0; padding: 13px 10px; box-sizing: border-box;
+    border: 1px solid #ddd6c9; border-bottom: 3px solid #cfc7b8; border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f3ee 100%);
+    color: var(--ink, #1c1a19); font: inherit; font-size: .9rem; font-weight: 700;
+    box-shadow: 0 4px 12px rgba(28, 26, 25, .1); cursor: pointer; }
+  .app__card:active { transform: translateY(2px); border-bottom-width: 1px; }
+  .ncard { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+    background: rgba(20, 18, 16, .88); }
+  .ncard[hidden] { display: none; }
+  .ncard img { display: block; width: 100%; max-width: 900px; max-height: 72vh;
+    object-fit: contain; border-radius: 10px; background: #fff;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .45); }
+  .ncard__btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .ncard__btns a, .ncard__btns button { min-width: 92px; padding: 11px 16px; border: 0;
+    border-radius: 999px; font: inherit; font-size: .88rem; font-weight: 700;
+    text-align: center; cursor: pointer; background: #fff; color: #1c1a19; }
+  .ncard__btns .is-go { background: #4f9d92; color: #fff; }
 </style>
   <!-- 달력이 쓸 것들을 미리 받아 둡니다 — 안 그러면 파일을 줄줄이 하나씩 받느라
        1초를 그냥 씁니다 (문서 → home-cal → auth → gcal → supabase 순서로 기다림) -->
@@ -134,7 +160,8 @@
 </head>
 <body>
 <main class="app">
-  <div class="app__head"><h1>My WAY…</h1><span>skyish.kr</span>
+  <div class="app__head"><h1><button type="button" id="apMe" aria-haspopup="dialog"
+      title="내 명함 보기">My WAY…</button></h1><span>skyish.kr</span>
     <!-- 앱으로 열면 주소창이 없어 새로고침할 길이 없습니다 — 단추로 대신합니다 -->
     <button type="button" class="app__reload app__gcal" id="apGcal"
       aria-label="구글 달력 잇기" title="구글 달력 잇기">구글달력</button>
@@ -162,12 +189,24 @@
     <a href="index.html"><i>🏠</i>홈페이지</a>
   </div>
 
-  <p class="app__note"><span class="app__ver" style="opacity:.55">판 2026.09.11 · 옛 화면이면 오른쪽 위 ⟳</span><br>
+  <p class="app__note"><span class="app__ver" style="opacity:.55">판 2026.10.31 · 옛 화면이면 오른쪽 위 ⟳</span><br>
     이 화면을 폰·태블릿의 홈 화면에 담으시면 앱처럼 쓰실 수 있습니다.<br>
     안드로이드 크롬: ⋮ 메뉴 → <b>홈 화면에 추가</b> ·
     아이폰 사파리: 공유 단추 → <b>홈 화면에 추가</b>
   </p>
+
+  <!-- 맨 아래 — 내 명함 -->
+  <button type="button" class="app__card" id="apCard" aria-haspopup="dialog">🪪 내 명함</button>
 </main>
+
+<div class="ncard" id="ncard" role="dialog" aria-modal="true" aria-label="남지현 명함" hidden>
+  <img src="assets/img/namecard.png" alt="남지현 명함 — 경기연구원 도시주택실 선임연구위원, 경기도 균형발전지원센터장" decoding="async">
+  <div class="ncard__btns">
+    <button type="button" class="is-go" id="ncShare" hidden>보내기</button>
+    <a href="assets/img/namecard.png" download="JeehyunNam_namecard.png">내려받기</a>
+    <button type="button" id="ncClose">닫기</button>
+  </div>
+</div>
 
 <script type="module">
   // 오늘 날짜 — 「2026.09.01 (월)」
@@ -207,6 +246,40 @@
       b.disabled = false; b.textContent = "구글달력";
       alert("구글과 잇지 못했습니다 — " + (err && err.message || "다시 눌러 주세요"));
     }
+  });
+
+  // 내 명함 — 「My WAY…」 제목이나 맨 아래 단추로 엽니다.
+  // 폰의 뒤로 가기는 명함만 닫게 합니다 (앱이 꺼지지 않게).
+  const nc = document.getElementById("ncard");
+  const openCard = () => {
+    if (!nc.hidden) return;
+    nc.hidden = false;
+    readyShare();
+    history.pushState({ ncard: 1 }, "");
+    document.getElementById("ncClose").focus();
+  };
+  const closeCard = () => { if (!nc.hidden) history.back(); };
+  window.addEventListener("popstate", () => { nc.hidden = true; });
+  document.getElementById("apMe").addEventListener("click", openCard);
+  document.getElementById("apCard").addEventListener("click", openCard);
+  document.getElementById("ncClose").addEventListener("click", closeCard);
+  nc.addEventListener("click", (e) => { if (e.target === nc) closeCard(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCard(); });
+  // 보내기 — 폰이 그림 보내기를 받아 주면(카카오톡·문자 등) 단추가 보입니다.
+  // 명함을 처음 열 때 한 번만 그림을 받아 둡니다 (앱을 열 때마다 받지 않게).
+  const share = document.getElementById("ncShare");
+  let cardFile = null;
+  const readyShare = () => {
+    if (cardFile || !navigator.canShare) return;
+    fetch("assets/img/namecard.png").then((r) => r.blob()).then((blob) => {
+      const f = new File([blob], "JeehyunNam_namecard.png", { type: "image/png" });
+      if (!navigator.canShare({ files: [f] })) return;
+      cardFile = f;
+      share.hidden = false;
+    }).catch(() => {});
+  };
+  share.addEventListener("click", () => {
+    if (cardFile) navigator.share({ files: [cardFile], title: "남지현 명함" }).catch(() => {});
   });
 
   // 새로고침 — 시각을 붙여 부르므로 저장돼 있던 옛 화면을 지나칩니다
