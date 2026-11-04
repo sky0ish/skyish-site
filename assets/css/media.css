@@ -1,0 +1,48 @@
+/* ── BLOG ▸ NEWS / YOUTUBE (media.html) ───────────────────────
+   목록 줄·갈래 단추는 news.css(최신뉴스)의 nws__* 를 그대로 씁니다. */
+
+.md-badge { background: #eef0f7; color: var(--navy); font-weight: 500; }
+.md-news .nws__mon { font-size: 1.25rem; }
+
+/* 유튜브 — 그림 카드 격자 */
+.md-yt {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 1.4rem 1.2rem;
+}
+.md-yt__it { display: flex; flex-direction: column; min-width: 0; }
+.md-yt__play, .md-yt__frame {
+  position: relative; display: block; width: 100%; aspect-ratio: 16 / 9;
+  border: 0; padding: 0; border-radius: 12px; overflow: hidden; background: var(--charcoal); cursor: pointer;
+}
+.md-yt__play img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s var(--ease); }
+.md-yt__play:hover img { transform: scale(1.04); }
+.md-yt__play:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.md-yt__btn {
+  position: absolute; left: 50%; top: 50%; width: 56px; height: 40px; margin: -20px 0 0 -28px;
+  border-radius: 10px; background: rgba(20, 18, 17, .72); transition: background .2s;
+}
+.md-yt__btn::after {
+  content: ""; position: absolute; left: 23px; top: 12px;
+  border-style: solid; border-width: 8px 0 8px 14px; border-color: transparent transparent transparent #fff;
+}
+.md-yt__play:hover .md-yt__btn { background: #c4302b; }
+.md-yt__len {
+  position: absolute; right: 8px; bottom: 8px; padding: 1px 6px; border-radius: 4px;
+  background: rgba(0, 0, 0, .78); color: #fff; font-size: .72rem; font-variant-numeric: tabular-nums;
+}
+.md-yt__txt { padding: .65rem .1rem 0; }
+.md-yt__t {
+  color: var(--ink); text-decoration: none; font-weight: 600; line-height: 1.45; word-break: keep-all;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.md-yt__t:hover { color: var(--navy); text-decoration: underline; }
+.md-yt__m { margin: .3rem 0 0; font-size: .78rem; color: var(--mauve); }
+.md-yt__s {
+  margin: .35rem 0 0; font-size: .8rem; color: #6b6461; line-height: 1.55;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.md-yt__talk {
+  display: inline-block; margin-top: .35rem; font-size: .74rem; font-weight: 600; color: var(--teal-text);
+  border: 1px solid var(--teal); border-radius: 999px; padding: .05rem .6rem;
+}
+.md-yt__talk:hover { background: var(--teal); color: #fff; }

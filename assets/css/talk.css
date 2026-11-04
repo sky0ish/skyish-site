@@ -1,0 +1,61 @@
+/* ── 발표 하나의 행사 개요 (talk.html) ─────────────────────── */
+.tk-back { margin: 0 0 1.6rem; font-size: .88rem; }
+.tk-back a { color: var(--mauve); }
+.tk-back a:hover { color: var(--teal-text); }
+
+.tk-head { max-width: 860px; margin-bottom: 2.4rem; }
+.tk-kicker { display: flex; align-items: center; gap: .7rem; margin: 0 0 .9rem; color: var(--mauve); font-weight: 700; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.tk-tag { font-size: .72rem; font-weight: 600; color: var(--teal-text); border: 1px solid var(--teal); border-radius: 999px; padding: .15em .75em; }
+.tk-title { font: 700 clamp(1.5rem, 3.4vw, 2.3rem)/1.35 var(--font-body); color: var(--ink); word-break: keep-all; margin: 0; }
+.tk-host { margin: .8rem 0 0; color: #4a4442; font-size: 1.02rem; line-height: 1.6; word-break: keep-all; }
+
+.tk-sec { max-width: 960px; padding: 1.6rem 0; border-top: 1px solid var(--line); }
+.tk-sec h2 { font: 600 1.08rem var(--font-body); color: var(--navy); margin: 0 0 1rem; }
+
+.tk-dl { display: grid; grid-template-columns: 6.5rem 1fr; gap: .55rem 1.2rem; margin: 0; }
+.tk-dl dt { color: var(--mauve); font-size: .88rem; }
+.tk-dl dd { margin: 0; line-height: 1.6; word-break: keep-all; }
+.tk-about { margin: 1.1rem 0 0; line-height: 1.75; color: #3c3634; max-width: 70ch; word-break: keep-all; }
+
+.tk-prog { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.tk-prog th, .tk-prog td { text-align: left; vertical-align: top; padding: .55rem .4rem; border-bottom: 1px solid var(--line-soft); }
+.tk-prog th { width: 8.5rem; color: var(--mauve); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tk-prog td { line-height: 1.55; word-break: keep-all; }
+.tk-who { display: block; color: var(--mauve); font-size: .82rem; margin-top: .15rem; }
+
+.tk-pgroup + .tk-pgroup { margin-top: 1.1rem; }
+.tk-pgroup h3 { font: 600 .86rem var(--font-body); color: var(--mauve); margin: 0 0 .5rem; }
+.tk-pgroup h3 small { font-weight: 400; }
+.tk-people { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.tk-person { display: inline-flex; flex-direction: column; padding: .45rem .8rem; border: 1px solid var(--line); border-radius: 10px; background: var(--white); min-width: 0; }
+.tk-person b { font-weight: 600; font-size: .92rem; }
+.tk-person span { font-size: .74rem; color: var(--mauve); }
+.tk-person.is-me { border-color: var(--teal); background: rgba(79, 157, 146, .07); }
+
+.tk-links { margin: 0; padding: 0; list-style: none; }
+.tk-links li { padding: .6rem 0; border-bottom: 1px solid var(--line-soft); display: flex; flex-wrap: wrap; gap: .2rem .8rem; align-items: baseline; }
+.tk-links a { color: var(--navy); font-weight: 500; line-height: 1.5; word-break: keep-all; }
+.tk-links a:hover { text-decoration: underline; }
+.tk-links small { color: var(--mauve); font-size: .78rem; }
+.tk-vids { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 1rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.tk-vids a { display: flex; flex-direction: column; gap: .45rem; color: var(--ink); font-weight: 500; font-size: .9rem; line-height: 1.45; }
+.tk-vids img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; background: var(--charcoal); }
+.tk-vids a:hover span { color: var(--navy); text-decoration: underline; }
+
+.tk-empty { color: var(--mauve); padding: 1.2rem 0; }
+.tk-more { margin: 1.6rem 0 0; font-size: .88rem; }
+.tk-more a { color: var(--teal-text); }
+.tk-more a:hover { text-decoration: underline; }
+
+.tk-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 3rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+.tk-nav a { display: flex; flex-direction: column; gap: .25rem; font-weight: 600; line-height: 1.45; word-break: keep-all; }
+.tk-nav a:hover { color: var(--teal-text); }
+.tk-nav small { font-weight: 400; color: var(--mauve); font-size: .78rem; }
+.tk-nav__prev { text-align: right; }
+
+@media (max-width: 640px) {
+  .tk-dl { grid-template-columns: 4.8rem 1fr; }
+  .tk-prog th { width: auto; white-space: normal; }
+  .tk-nav { grid-template-columns: 1fr; }
+  .tk-nav__prev { text-align: left; }
+}

@@ -450,3 +450,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # 이어서 BLOG ▸ NEWS / YOUTUBE — 경기연구원 남지현이 나온 기사·영상 (tools/news/me.py).
+    #   news.yml 을 고치지 않고 매일 아침 같이 돌도록 여기서 부릅니다. 결과는 assets/data/news/me-*.json
+    #   (news.yml 이 이 폴더를 올립니다). 실패해도 최신뉴스에는 영향이 없습니다.
+    if not ONLY and not SRC and not FIRST:
+        try:
+            import me
+            me.main()
+        except Exception as e:
+            print("■ 내 이름 뉴스·유튜브 — 못 함:", e)

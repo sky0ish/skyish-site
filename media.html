@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News & YouTube — Jee-Hyun NAM</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#4f9d92">
+<link rel="apple-touch-icon" href="assets/img/app/icon-192.png">
+  <meta name="description" content="경기연구원 남지현 선임연구위원이 나온 언론 기사와 유튜브 영상을 모았습니다.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f9d92'/%3E%3Ctext x='16' y='23' font-family='Arial' font-size='20' font-weight='bold' fill='white' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js');</script>
+  <link rel="stylesheet" href="assets/css/style.css?v=202610210730">
+  <link rel="stylesheet" href="assets/css/news.css?v=202610041000">
+  <link rel="stylesheet" href="assets/css/media.css?v=202611042200">
+</head>
+<body>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section" style="padding-top:7rem">
+      <div class="container container--wide">
+        <div class="section-head" style="margin-bottom:1.6rem">
+          <span class="eyebrow">Press &amp; Media</span>
+          <h1 class="section-title" id="mdTitle">NEWS</h1>
+          <p class="lead" style="margin-top:1rem" id="mdLead">
+            경기연구원 남지현이 나온 언론 기사와 영상을 모았습니다.
+          </p>
+        </div>
+
+        <nav class="nws__cats" id="mdTabs" aria-label="갈래">
+          <button type="button" data-tab="news">NEWS</button>
+          <button type="button" data-tab="youtube">YOUTUBE</button>
+        </nav>
+
+        <div class="nws__bar">
+          <div class="nws__srcs" id="mdYears"></div>
+          <input class="nws__q" id="mdQ" type="search" placeholder="낱말로 찾기 (예: 반환공여지)" aria-label="낱말로 찾기">
+        </div>
+        <p class="nws__note" id="mdNote"></p>
+
+        <div id="mdBody"><p class="nws__empty">불러오는 중…</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="assets/js/main.js?v=202610051200" defer></script>
+  <script type="module" src="assets/js/media.js?v=202611042200"></script>
+</body>
+</html>

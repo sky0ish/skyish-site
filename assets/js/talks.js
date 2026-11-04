@@ -20,11 +20,14 @@
     return m ? m[1] : "기타";
   }
 
+  /* 제목을 누르면 그 행사의 개요(일시·장소·주최·프로그램·함께한 분·관련 기사) — talk.html?k=<sort>
+     개요는 assets/data/talk-info.json 에 있습니다. */
   function itemHtml(t) {
     return '<li class="pub">' +
         '<span class="pub__date">' + esc(t.date) + "</span>" +
         '<span class="pub__body">' +
-          '<span class="pub__title">' + esc(t.title) + "</span>" +
+          '<a class="pub__title" href="talk.html?k=' + encodeURIComponent(t.sort) + '">' + esc(t.title) +
+            '<span class="pub__ext" aria-hidden="true">›</span></a>' +
           (t.host ? '<span class="pub__meta">' + esc(t.host) + "</span>" : "") +
         "</span>" +
         (t.tag ? '<span class="pub__role">' + esc(t.tag) + "</span>" : "") +

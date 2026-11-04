@@ -69,13 +69,16 @@
         { label: "종합",     file: "map.html?g=all"    },
         { label: "기타",     file: "map.html?g=etc"    }
       ] },
-      { label: "BLOG",     file: "blog.html", sub: [
+      /* NEWS · YOUTUBE — 경기연구원 남지현이 나온 기사·영상 (media.html, 누구나 봅니다) */
+      { label: "BLOG",     file: "blog.html", also: ["media.html"], sub: [
         { label: "Schedule", file: "blog.html?cat=schedule" },
         { label: "Diary",    file: "blog.html?cat=diary"    },
         { label: "사람들",   file: "blog.html?cat=people"   },
         { label: "Uploads",  file: "blog.html?cat=uploads"  },
         { label: "회의록",   file: "blog.html?cat=minutes"  },
         { label: "일상",     file: "blog.html?cat=daily"    },
+        { label: "NEWS",     file: "media.html?tab=news"    },
+        { label: "YOUTUBE",  file: "media.html?tab=youtube" },
         { label: "ETC",      file: "blog.html?cat=etc"      }
       ] },
       /* CONTACT 을 누르면 주소록으로 (「여기서 Contact 을 누르면 주소록으로 가게 해줘」) —
@@ -1298,7 +1301,8 @@
 
     function show(n) {
       idx = (n + figs.length) % figs.length;
-      img.src = figs[idx].src;
+      /* 사진첩 격자는 미리보기(800px)를 그립니다 — 크게 볼 때만 큰 사진(data-full)을 받습니다 */
+      img.src = (figs[idx].dataset && figs[idx].dataset.full) || figs[idx].src;
       img.alt = figs[idx].alt || "";
     }
     function open(n) {
