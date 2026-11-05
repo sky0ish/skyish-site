@@ -240,8 +240,44 @@
     return LENS.filter(function (l) { return l[1].test(s); }).map(function (l) { return l[0]; });
   }
 
+  /* 그 발표에서 맡은 역할 — 행사 개요의 role(발표 형식)에서 처음 나오는 낱말로.
+     적힌 것이 없으면 제목(「— 지정토론」 등)과 갈래(특강·교육)로 짐작하고, 그래도 없으면 발표. */
+  var ROLES = [
+    { id: "chair",   name: "좌장",     re: /좌장/ },
+    { id: "keynote", name: "기조발제", re: /기조/ },
+    { id: "talk",    name: "발표",     re: /발표|발제/ },
+    { id: "disc",    name: "토론",     re: /토론|패널|토의/ },
+    { id: "lect",    name: "강연",     re: /특강|강의|강연/ },
+    { id: "adv",     name: "자문",     re: /자문|위원/ },
+    { id: "host",    name: "주관",     re: /주관/ },
+    { id: "attend",  name: "참석",     re: /참관|참석/ }
+  ];
+  var ROLE = {};
+  ROLES.forEach(function (r) { ROLE[r.id] = r; });
+  function roleOf(t, info) {
+    var s = String((info && info.role) || "");
+    var best = null, at = 1e9;
+    ROLES.forEach(function (r) {
+      var m = r.re.exec(s);
+      if (m && m.index < at) { at = m.index; best = r; }
+    });
+    if (best) return best;
+    if (/(지정|종합|패널)?토론$/.test(String(t.title || ""))) return ROLE.disc;
+    if (/^(특강|교육|강연)$/.test(t.tag || "")) return ROLE.lect;
+    if (/^(참관)$/.test(t.tag || "")) return ROLE.attend;
+    if (/^(자문)$/.test(t.tag || "")) return ROLE.adv;
+    return ROLE.talk;
+  }
+
+  /* 소속 글 → 대표 기관 이름 하나 (별칭으로 모은 이름, 없으면 글 그대로) */
+  function orgName(txt) {
+    var h = scan(txt)[0];
+    return h ? h.name : String(txt || "").replace(/\s+/g, " ").trim();
+  }
+
   var api = { FIELDS: FIELDS, KINDS: KINDS, TYPES: TYPES, LENS: LENS,
-              kindOf: kindOf, fieldsOf: fieldsOf, orgsOf: orgsOf, lensOf: lensOf };
+              kindOf: kindOf, fieldsOf: fieldsOf, orgsOf: orgsOf, lensOf: lensOf, orgName: orgName,
+              ROLES: ROLES, roleOf: roleOf };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TalkStats = api;
 })(typeof window !== "undefined" ? window : this);

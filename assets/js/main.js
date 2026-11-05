@@ -19,18 +19,19 @@
        `also` 는 그 메뉴에 속한 다른 화면들 — 지금 보고 있는 쪽을 밝혀 줍니다. */
     nav: [
       /* 첫 화면이 곧 ABOUT 입니다 (예전 about.html 은 이리로 넘어옵니다) */
-      { label: "ABOUT",    file: "index.html", also: ["about.html", "presentations.html", "talk.html"], sub: [
+      { label: "ABOUT",    file: "index.html", also: ["about.html"], sub: [
         { label: "Education",     file: "index.html#education"  },
         { label: "Career",        file: "index.html#career"     },
         { label: "Awards",        file: "index.html#awards"     },
-        { label: "Committees",    file: "index.html#committees" },
-        { label: "Presentations", file: "presentations.html"    }
+        { label: "Committees",    file: "index.html#committees" }
       ] },
-      { label: "RESEARCH", file: "works.html", sub: [
+      /* Presentations(대외 발표 게시판)는 RESEARCH 아래에 — presentations.html · 발표 하나는 talk.html */
+      { label: "RESEARCH", file: "works.html", also: ["presentations.html", "talk.html"], sub: [
         { label: "Journals",   file: "works.html?tab=papers"  },
         { label: "Reports",    file: "works.html?tab=reports" },
         { label: "이슈 대응",  file: "works.html?tab=issues"  },
-        { label: "학위논문",   file: "works.html?tab=theses"  }
+        { label: "학위논문",   file: "works.html?tab=theses"  },
+        { label: "Presentations", file: "presentations.html" }
       ] },
       { label: "DATA", file: "pictures.html",
         also: ["defense-cluster.html", "flood-basement.html", "balanced-dmz.html"], sub: [

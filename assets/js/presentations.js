@@ -8,6 +8,7 @@
        · 주소에 상태가 남습니다: presentations.html?q=국회&y=2025&yt=1&f=usfk&org=국토연구원
    ● 아래: 주제별 통계 (전체 발표 기준)
        분야별 발표 수 · 분야의 흐름(연도) · 자주 쓴 키워드 · 기관 연결망(텍스트마이닝)
+   ● 맨 아래: 연구주제별 자문단 — 로그인한 주인에게만 (일정의 회의·자문 기록까지 읽습니다)
        분석 규칙(분야 낱말·기관 별칭)은 assets/js/talk-stats.js 에 있습니다.
 
    데이터: assets/data/talks.js (window.TALKS) + assets/data/talk-info.json
@@ -48,14 +49,16 @@
       var people = (I.people || []).filter(function (p) { return p && p.name; });
       var it = {
         t: t, I: I, k: String(t.sort), year: String(t.sort).slice(0, 4),
-        kind: S.kindOf(t.tag), vids: vids, soon: t.sort > today,
+        kind: S.kindOf(t.tag), role: S.roleOf(t, I), vids: vids, soon: t.sort > today,
         fields: S.fieldsOf(t, I), orgs: S.orgsOf(t, I)
       };
       /* 찾기용 — [이름표, 글] */
       it.parts = [
-        ["제목", t.title], ["행사", [t.host, I.event].filter(Boolean).join(" · ")], ["갈래", t.tag],
+        ["제목", t.title], ["행사", [t.host, I.event].filter(Boolean).join(" · ")], ["갈래", t.tag], ["역할", S.roleOf(t, I).name],
         ["날짜", t.date + " " + t.sort], ["장소", I.where], ["주최·주관", [I.host, I.org, I.support].filter(Boolean).join(" · ")],
-        ["개요", I.about]
+        ["개요", I.about],
+        ["발표 내용", I.talk ? [I.talk.title, I.talk.summary].concat(I.talk.points || [], I.talk.outline || []).filter(Boolean).join(" · ") : ""],
+        ["키워드", I.talk && (I.talk.keywords || []).join(" ")]
       ].concat(people.map(function (p) { return ["함께한 분", p.name + " " + [p.title, p.org].filter(Boolean).join(" ")]; }))
        .concat((I.program || []).map(function (p) { return ["프로그램", [p.item, p.who].filter(Boolean).join(" — ")]; }))
        .concat(it.orgs.map(function (o) { return ["기관", o.name]; }))
@@ -67,12 +70,13 @@
   }
 
   /* ── 상태 (주소에 남김) ─────────────────────────────────── */
-  var st = { q: "", g: "all", y: "all", yt: false, f: "", kw: "", org: "" };
+  var st = { q: "", g: "all", y: "all", r: "all", yt: false, f: "", kw: "", org: "" };
   (function () {
     var sp = new URLSearchParams(location.search);
     st.q = sp.get("q") || "";
     st.g = sp.get("g") || "all";
     st.y = sp.get("y") || "all";
+    st.r = sp.get("r") || "all";
     st.yt = sp.get("yt") === "1";
     st.f = sp.get("f") || "";
     st.kw = sp.get("kw") || "";
@@ -83,6 +87,7 @@
     if (st.q) sp.set("q", st.q);
     if (st.g !== "all") sp.set("g", st.g);
     if (st.y !== "all") sp.set("y", st.y);
+    if (st.r !== "all") sp.set("r", st.r);
     if (st.yt) sp.set("yt", "1");
     if (st.f) sp.set("f", st.f);
     if (st.f && st.kw !== "") sp.set("kw", st.kw);
@@ -102,6 +107,7 @@
   function pass(it, skip) {
     if (skip !== "g" && st.g !== "all" && it.kind !== st.g) return false;
     if (skip !== "y" && st.y !== "all" && it.year !== st.y) return false;
+    if (skip !== "r" && st.r !== "all" && it.role.id !== st.r) return false;
     if (skip !== "yt" && st.yt && !it.vids.length) return false;
     if (st.f) {
       var f = it.fields.filter(function (x) { return x.id === st.f; })[0];
@@ -156,7 +162,8 @@
         (t.host ? '<span class="pub__meta">' + hl(t.host, tms) + "</span>" : "") +
         whyHtml(it, tms) +
       "</span>" +
-      (t.tag ? '<span class="pub__role">' + esc(t.tag) + "</span>" : "") +
+      '<span class="pb-side"><b class="pb-rl pb-rl--' + it.role.id + '" title="이 발표에서 맡은 역할">' + esc(it.role.name) + "</b>" +
+        (t.tag ? '<span class="pub__role">' + esc(t.tag) + "</span>" : "") + "</span>" +
     "</li>";
   }
 
@@ -179,6 +186,14 @@
     var yc = {}, yAll = 0;
     base.filter(function (it) { return pass(it, "y"); }).forEach(function (it) { yAll++; yc[it.year] = (yc[it.year] || 0) + 1; });
     var ytN = base.filter(function (it) { return pass(it, "yt") && it.vids.length; }).length;
+    var rc = {};
+    base.filter(function (it) { return pass(it, "r"); }).forEach(function (it) { rc[it.role.id] = (rc[it.role.id] || 0) + 1; });
+    $("pbRoles").innerHTML = '<span class="pb-lab">맡은 역할</span>' +
+      '<button type="button" class="pb-chip' + (st.r === "all" ? " on" : "") + '" data-r="all">모두</button>' +
+      S.ROLES.filter(function (r) { return rc[r.id] || st.r === r.id; }).map(function (r) {
+        return '<button type="button" class="pb-chip pb-chip--rl' + (st.r === r.id ? " on" : "") + '" data-r="' + r.id + '">' +
+          '<i class="pb-rl pb-rl--' + r.id + '">' + esc(r.name) + "</i> <b>" + (rc[r.id] || 0) + "</b></button>";
+      }).join("");
     var ys = Object.keys(yc).sort().reverse();
     $("pbYears").innerHTML =
       '<button type="button" class="pb-chip pb-chip--yt' + (st.yt ? " on" : "") + '" data-yt="1" aria-pressed="' + st.yt + '">▶ 유튜브 있는 발표 <b>' + ytN + "</b></button>" +
@@ -199,7 +214,7 @@
     $("pbActive").innerHTML = act.join("");
     $("pbActive").hidden = !act.length;
 
-    $("pbClr").classList.toggle("on", !!(st.q || st.g !== "all" || st.y !== "all" || st.yt || st.f || st.org));
+    $("pbClr").classList.toggle("on", !!(st.q || st.g !== "all" || st.y !== "all" || st.r !== "all" || st.yt || st.f || st.org));
     var first = ITEMS.length ? ITEMS[ITEMS.length - 1].year : "", last = ITEMS.length ? ITEMS[0].year : "";
     $("pbCount").innerHTML = "모두 <strong>" + ITEMS.length + "</strong>건 · " + first + "–" + last +
       (pick.length !== ITEMS.length ? " · 지금 보이는 것 <strong>" + pick.length + "</strong>건" : "") +
@@ -229,6 +244,7 @@
         '<button type="button" class="gsearch__clr" id="pbClr">✕ 검색 해제</button>' +
       "</form>" +
       '<nav class="gtabs pb-kinds" id="pbKinds" aria-label="행사 갈래"></nav>' +
+      '<div class="pb-chips" id="pbRoles" aria-label="맡은 역할"></div>' +
       '<div class="pb-chips" id="pbYears" aria-label="연도"></div>' +
       '<div class="pb-active" id="pbActive" hidden></div>' +
       '<p class="talks-sum pb-count" id="pbCount"></p>' +
@@ -247,7 +263,7 @@
       st.q = q.value; saveState(); drawBoard();
     });
     $("pbClr").addEventListener("click", function () {
-      st = { q: "", g: "all", y: "all", yt: false, f: "", kw: "", org: "" };
+      st = { q: "", g: "all", y: "all", r: "all", yt: false, f: "", kw: "", org: "" };
       q.value = ""; saveState(); drawBoard(); markStats();
     });
     $("pbKinds").addEventListener("click", function (e) {
@@ -263,6 +279,11 @@
       else st.y = b.dataset.y;
       saveState(); drawBoard();
     });
+    $("pbRoles").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-r]");
+      if (!b) return;
+      st.r = b.dataset.r; saveState(); drawBoard();
+    });
     $("pbActive").addEventListener("click", function (e) {
       var b = e.target.closest("[data-clear]");
       if (!b) return;
@@ -276,7 +297,7 @@
     if ("f" in o) { st.f = o.f; st.kw = o.kw == null ? "" : String(o.kw); }
     if ("org" in o) st.org = o.org;
     if ("q" in o) { st.q = o.q; $("pbQ").value = o.q; }
-    st.g = "all"; st.y = "all"; st.yt = false;
+    st.g = "all"; st.y = "all"; st.r = "all"; st.yt = false;
     saveState(); drawBoard(); markStats();
     var top = $("pbApp").getBoundingClientRect().top + window.pageYOffset - 90;
     window.scrollTo({ top: top, behavior: "smooth" });
@@ -571,6 +592,246 @@
     [].forEach.call($("pbStats").querySelectorAll(".pb-olink"), function (b) { b.classList.toggle("on", b.dataset.o === st.org); });
   }
 
+  /* ── 연구주제별 자문단 (주인에게만) ──────────────────────────
+     · 공개 행사: talk-info.json 의 「함께한 분」 중 발제·토론·좌장·사회·기조
+       (인사말·축사 같은 의례 순서와 정치인은 빼고)
+     · 회의·자문: 로그인한 주인의 일정(notes, schedule)에 적힌 「만난 사람」
+     · 경기연구원 분(동료)과 남지현 본인은 뺍니다. 같은 날 같은 분은 한 번으로 셉니다.
+     분야는 위 「분야별 발표」와 같은 규칙(talk-stats.js)으로 행사 이름에서 붙입니다. */
+  var OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
+  function ownerHint() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!/skyish-auth|^sb-.*-auth-token$/.test(k)) continue;
+        var v = JSON.parse(localStorage.getItem(k) || "null");
+        var u = v && (v.user || (v.currentSession && v.currentSession.user));
+        if (u && u.email && OWNERS.indexOf(String(u.email).toLowerCase()) >= 0) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  var CEREMONY = /^(인사말|개회사|환영사|축사|폐회사|기념사|격려사)$/;
+  var POLITICIAN = /국회의원|도의원|시의원|^의원$|도지사|^지사$|시장$|군수|구청장|장관|차관/;
+  var SELF_ORG = /경기연구원|\bGRI\b/;
+  var COUNCIL = /(시|도|군|구)의회|(민주당|국민의힘|정의당|진보당|국회의원실?)$/;   /* 의원·정당 (의회 사무처·전문위원실 직원은 남김) */
+  var STAFF = /전문위원실|사무처|정책지원|입법조사/;
+  var ROLE_RANK = ["좌장", "기조강연", "기조연설", "기조발제", "주제발표", "발제", "발표", "토론", "패널", "사회", "자문·회의", "참석"];
+
+  function splitPeople(str) {
+    var out = [], depth = 0, cur = "";
+    String(str || "").split("").forEach(function (ch) {
+      if (ch === "(" || ch === "（") depth++;
+      if (ch === ")" || ch === "）") depth = Math.max(0, depth - 1);
+      if ((ch === "," || ch === "，") && !depth) { out.push(cur); cur = ""; } else cur += ch;
+    });
+    out.push(cur);
+    return out.map(function (x) {
+      var m = /^\s*([^\s(（]+)\s*(?:[(（](.*)[)）])?\s*$/.exec(x);
+      return m ? { name: m[1], org: (m[2] || "").trim() } : null;
+    }).filter(function (p) { return p && /^([가-힣]{2,4}|[A-Za-z][A-Za-z .'-]{1,30})$/.test(p.name); });
+  }
+
+  /* 같은 분을 한 줄로 — 「성균관대 ○○센터」·「성균관대학교」 처럼 적은 소속을 같은 열쇠로 */
+  function orgKey(org) {
+    var o = S.orgName(org).replace(/^[(（]\s*(주|사)\s*[)）]\s*|^㈜\s*/, "");
+    var m = /^([가-힣A-Za-z]+?)(대학교|대)(?=[\s(·,]|$)/.exec(o);
+    o = m ? m[1] + "대학교" : o.split(/[\s(·,]/)[0];
+    return o.replace(/^(국립|한국)/, "");
+  }
+
+  function buildAdvisors(notes) {
+    var P = {}, byName = {}, EXCL = {};
+    function key(name, org) { return name + "|" + (org ? orgKey(org) : ""); }
+    function add(name, title, org, enc) {
+      if (!name || name === "남지현" || EXCL[name] || SELF_ORG.test(org || "")) return;
+      if ((title && POLITICIAN.test(title)) || (COUNCIL.test(org || "") && !STAFF.test(org || ""))) { EXCL[name] = 1; return; }
+      var k = key(name, org);
+      var r = P[k] || (P[k] = { name: name, title: "", orgs: {}, enc: {} });
+      if (title && !r.title) r.title = title;
+      if (org) r.orgs[org] = (r.orgs[org] || 0) + 1;
+      var ek = enc.date || enc.label;
+      var old = r.enc[ek];
+      if (!old || (old.src === "note" && enc.src === "talk")) r.enc[ek] = enc;   /* 같은 날은 한 번 — 공개 행사 쪽을 남김 */
+      (byName[name] = byName[name] || {})[k] = 1;
+    }
+    ITEMS.forEach(function (it) {
+      var d = it.k.slice(0, 4) + "-" + it.k.slice(4, 6) + "-" + it.k.slice(6, 8);
+      (it.I.people || []).forEach(function (p) {
+        if (!p || !p.name) return;
+        if (CEREMONY.test(p.role || "") || POLITICIAN.test(p.title || "")) { EXCL[p.name] = 1; return; }
+        add(p.name, p.title, p.org, { date: d, label: it.t.title, host: it.t.host, k: it.k, fields: it.fields.map(function (f) { return f.id; }), role: p.role || "참석", src: "talk" });
+      });
+    });
+    /* 일정 글 — 행사 이름(event)이 적힌 회의·자문만 (사적인 모임·메모는 건너뜀) */
+    (notes || []).forEach(function (n) {
+      if (!n.event || /^\s*</.test(n.event)) return;
+      var label = n.event;
+      var fs = S.fieldsOf({ title: [n.event, n.title].filter(Boolean).join(" ") }, null).map(function (f) { return f.id; });
+      splitPeople(n.people).forEach(function (p) {
+        add(p.name, "", p.org, { date: n.event_date || "", label: label, fields: fs, role: "자문·회의", src: "note" });
+      });
+    });
+    /* 소속을 안 적은 기록은 같은 이름이 한 분뿐이면 그분께 붙입니다 */
+    Object.keys(P).forEach(function (k) {
+      if (!/\|$/.test(k)) return;
+      var name = k.slice(0, -1), others = Object.keys(byName[name] || {}).filter(function (x) { return x !== k && P[x]; });
+      if (others.length !== 1) return;
+      var to = P[others[0]], from = P[k];
+      Object.keys(from.enc).forEach(function (e) { if (!to.enc[e]) to.enc[e] = from.enc[e]; });
+      if (!to.title) to.title = from.title;
+      delete P[k];
+    });
+    /* 같은 이름인데 소속이 달리 적힌 기록 — 같은 연구 분야에서 만났으면 한 분으로 봅니다
+       (예: LHRI·LH 토지주택연구원, 前·現 소속). 분야가 겹치지 않으면 동명이인으로 남깁니다. */
+    var fieldsOfRec = function (r) {
+      var f = {};
+      Object.keys(r.enc).forEach(function (e) { r.enc[e].fields.forEach(function (x) { f[x] = 1; }); });
+      return f;
+    };
+    Object.keys(byName).forEach(function (name) {
+      var ks = Object.keys(byName[name]).filter(function (k) { return P[k]; });
+      for (var i = 0; i < ks.length; i++) {
+        for (var j = i + 1; j < ks.length; j++) {
+          var A = P[ks[i]], B = P[ks[j]];
+          if (!A || !B) continue;
+          var fa = fieldsOfRec(A), fb = fieldsOfRec(B);
+          if (!Object.keys(fa).some(function (x) { return fb[x]; })) continue;
+          Object.keys(B.enc).forEach(function (e) { if (!A.enc[e]) A.enc[e] = B.enc[e]; });
+          Object.keys(B.orgs).forEach(function (o) { A.orgs[o] = (A.orgs[o] || 0) + B.orgs[o]; });
+          if (!A.title) A.title = B.title;
+          delete P[ks[j]];
+        }
+      }
+    });
+    return Object.keys(P).map(function (k) {
+      var r = P[k];
+      r.list = Object.keys(r.enc).map(function (e) { return r.enc[e]; }).sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
+      r.orgList = Object.keys(r.orgs).sort(function (a, b) { return r.orgs[b] - r.orgs[a]; });
+      r.org = r.orgList[0] || "";
+      r.roles = {};
+      r.list.forEach(function (e) { r.roles[e.role] = (r.roles[e.role] || 0) + 1; });
+      r.fields = {};
+      r.list.forEach(function (e) { e.fields.forEach(function (f) { r.fields[f] = (r.fields[f] || 0) + 1; }); });
+      return r;
+    });
+  }
+
+  var ADV = { all: [], f: "all", q: "", more: false };
+  function advRows() {
+    var f = ADV.f, q = norm(ADV.q).trim();
+    return ADV.all.filter(function (r) { return f === "all" || r.fields[f]; })
+      .filter(function (r) { return !q || norm([r.name, r.title, r.org].join(" ")).indexOf(q) >= 0 || tight([r.name, r.org].join("")).indexOf(tight(q)) >= 0; })
+      .sort(function (a, b) {
+        var fa = f === "all" ? a.list.length : a.fields[f], fb = f === "all" ? b.list.length : b.fields[f];
+        return fb - fa || b.list.length - a.list.length || (b.list[0].date || "").localeCompare(a.list[0].date || "");
+      });
+  }
+  function rolesText(r) {
+    return Object.keys(r.roles).sort(function (a, b) {
+      var ia = ROLE_RANK.indexOf(a), ib = ROLE_RANK.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    }).map(function (k) { return k + (r.roles[k] > 1 ? " " + r.roles[k] : ""); }).join(" · ");
+  }
+  function encText(e) {
+    return (e.date || "").replace(/-/g, ".") + " " + e.label;
+  }
+  function drawAdv() {
+    var fc = { all: ADV.all.length };
+    ADV.all.forEach(function (r) { Object.keys(r.fields).forEach(function (f) { fc[f] = (fc[f] || 0) + 1; }); });
+    var fields = S.FIELDS.filter(function (f) { return fc[f.id]; }).sort(function (a, b) { return fc[b.id] - fc[a.id]; });
+    $("advChips").innerHTML = [["all", "전체"]].concat(fields.map(function (f) { return [f.id, f.name]; })).map(function (x) {
+      return '<button type="button" class="pb-chip' + (ADV.f === x[0] ? " on" : "") + '" data-af="' + x[0] + '">' + esc(x[1]) + " <b>" + (fc[x[0]] || 0) + "</b></button>";
+    }).join("");
+    var rows = advRows(), shown = ADV.more ? rows : rows.slice(0, 40);
+    var f = ADV.f;
+    $("advCount").textContent = (f === "all" ? "전체" : FIELD[f].name) + " · " + rows.length + "명" +
+      (f === "all" ? "" : " — 이 분야 행사에서 만난 횟수 순");
+    $("advBody").innerHTML = rows.length ? shown.map(function (r, i) {
+      var fl = f === "all" ? r.list : r.list.filter(function (e) { return e.fields.indexOf(f) >= 0; });
+      var href = "contact.html?p=addr&who=" + encodeURIComponent(r.name) + (r.org ? "&org=" + encodeURIComponent(r.org) : "");
+      var where = fl.slice(0, 3).map(function (e) {
+        var t = esc(encText(e));
+        return e.k ? '<a href="talk.html?k=' + e.k + '">' + t + "</a>" : "<span>" + t + "</span>";
+      }).join("") + (fl.length > 3 ? "<small>외 " + (fl.length - 3) + "건</small>" : "");
+      return "<tr><td>" + (i + 1) + "</td>" +
+        '<td><a class="adv-name" href="' + href + '" title="' + esc(r.name) + ' 명함 보기">' + esc(r.name) + "</a></td>" +
+        "<td>" + esc([r.title, r.org].filter(Boolean).join(" · ")) +
+          (r.orgList.length > 1 ? '<small class="adv-also">다른 소속: ' + esc(r.orgList.slice(1, 3).join(", ")) + "</small>" : "") + "</td>" +
+        '<td class="adv-n"><b>' + fl.length + "</b>" + (f !== "all" && r.list.length > fl.length ? "<small>/" + r.list.length + "</small>" : "") + "</td>" +
+        "<td>" + esc(rolesText(r)) + "</td>" +
+        '<td class="adv-where">' + where + "</td></tr>";
+    }).join("") : '<tr><td colspan="6" class="pb-empty">맞는 분이 없습니다.</td></tr>';
+    $("advMore").hidden = rows.length <= 40;
+    $("advMore").textContent = ADV.more ? "앞의 40명만 보기" : "모두 보기 (" + rows.length + "명)";
+  }
+  function advCsv() {
+    var f = ADV.f, rows = advRows();
+    var q = function (v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var lines = [["분야", "이름", "직함", "소속", "이 분야 횟수", "전체 횟수", "역할", "최근", "함께한 자리"].join(",")];
+    rows.forEach(function (r) {
+      var fl = f === "all" ? r.list : r.list.filter(function (e) { return e.fields.indexOf(f) >= 0; });
+      lines.push([f === "all" ? "전체" : FIELD[f].name, r.name, r.title, r.org, fl.length, r.list.length, rolesText(r),
+        (r.list[0].date || ""), fl.map(encText).join(" / ")].map(q).join(","));
+    });
+    var blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "자문단_" + (f === "all" ? "전체" : FIELD[f].name.replace(/[·\/]/g, "_")) + ".csv";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  function drawAdvisors() {
+    var mount = $("pbAdv");
+    if (!mount || !ownerHint()) return;
+    import(new URL("auth/auth.js", location.href).href).then(function (A) {
+      return Promise.resolve(A.currentUser && A.currentUser()).then(function (u) {
+        if (!u || OWNERS.indexOf(String(u.email || "").toLowerCase()) < 0) return null;
+        var all = [];
+        var page = function (from) {
+          return A.sb.from("notes").select("id,title,tag,event_date,people,event").eq("category", "schedule")
+            .not("people", "is", null).neq("people", "").order("event_date", { ascending: false }).range(from, from + 999)
+            .then(function (r) {
+              if (r.error) throw r.error;
+              all = all.concat(r.data || []);
+              return (r.data || []).length === 1000 ? page(from + 1000) : all;
+            });
+        };
+        return page(0).catch(function () { return []; });
+      });
+    }).then(function (notes) {
+      if (notes === null) return;
+      ADV.all = buildAdvisors(notes);
+      if (!ADV.all.length) return;
+      var nTalk = ADV.all.filter(function (r) { return r.list.some(function (e) { return e.src === "talk"; }); }).length;
+      mount.innerHTML = '<div class="pb-card pb-card--wide adv" id="advisors">' +
+        '<h3 class="pb-card__h">연구주제별 자문단 <span class="adv-lock">🔒 주인에게만 보입니다</span>' +
+        "<small>공개 행사에서 함께 발제·토론·좌장을 맡은 분(" + nTalk + "명)과 일정에 적어 둔 자문회의·회의에서 만난 분을 분야별로 모았습니다 — 모두 " + ADV.all.length +
+        "명. 경기연구원 동료와 의례 순서(인사말·축사)·정치인은 뺐습니다. 이름을 누르면 주소록 명함이 열립니다.</small></h3>" +
+        '<div class="pb-chips" id="advChips"></div>' +
+        '<div class="adv-tools"><input type="search" id="advQ" placeholder="이름·기관으로 찾기" aria-label="자문단 찾기">' +
+          '<span class="adv-count" id="advCount"></span><button type="button" class="pb-chip" id="advCsv">CSV 내려받기</button></div>' +
+        '<div class="adv-wrap"><table class="adv-table"><thead><tr><th>#</th><th>이름</th><th>직함 · 소속</th><th>횟수</th><th>역할</th><th>함께한 자리</th></tr></thead>' +
+        '<tbody id="advBody"></tbody></table></div>' +
+        '<p class="adv-more-row"><button type="button" class="pb-chip" id="advMore"></button></p></div>';
+      drawAdv();
+      $("advChips").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-af]");
+        if (!b) return;
+        ADV.f = b.dataset.af; ADV.more = false; drawAdv();
+      });
+      var t;
+      $("advQ").addEventListener("input", function (e) {
+        clearTimeout(t);
+        t = setTimeout(function () { ADV.q = e.target.value; drawAdv(); }, 150);
+      });
+      $("advMore").addEventListener("click", function () { ADV.more = !ADV.more; drawAdv(); });
+      $("advCsv").addEventListener("click", advCsv);
+      if (location.hash === "#advisors") mount.scrollIntoView();
+    }).catch(function () {});
+  }
+
   /* ── 풍선 도움말 (막대·칸·기관) ───────────────────────────── */
   function tooltip() {
     var tip = $("pbTip");
@@ -610,6 +871,7 @@
         mountBoard();
         drawBoard();
         drawStats();
+        drawAdvisors();
         tooltip();
         if (location.hash === "#analysis") {
           var el = $("analysis");

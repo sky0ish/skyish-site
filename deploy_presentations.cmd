@@ -3,7 +3,7 @@ chcp 65001 >nul
 cd /d "%~dp0"
 
 echo ============================================
-echo  skyish.kr 배포 — Presentations 게시판 · 2026 발표 · 주제별 통계 · 명함 연결
+echo  skyish.kr 배포 — Presentations 게시판 (발표 내용 · 역할 배지 · 자문단)
 echo ============================================
 echo.
 
@@ -33,7 +33,7 @@ if not errorlevel 1 (
 )
 
 echo [3/5] 커밋
-git commit -m "Presentations 를 따로 떨어진 게시판으로 (검색·유튜브 바로가기·주제별 통계·기관 연결망) · 2026 워크숍·세미나 27건 · 함께한 분 이름 → 명함"
+git commit -m "Presentations 보강 — 메뉴를 RESEARCH 아래로 · 발표 내용 요약(1.세미나_토론 발표자료) · 줄마다 맡은 역할 배지 · 연구주제별 자문단(주인에게만)"
 echo.
 
 :pull
@@ -61,7 +61,7 @@ if errorlevel 1 (
 echo.
 echo ============================================
 echo  올렸습니다. 1~2분 뒤 skyish.kr 에 반영됩니다.
-echo  ABOUT ^> Presentations 를 누르면 게시판(검색 · 유튜브 · 주제별 통계)이 열리고,
+echo  RESEARCH ^> Presentations 를 누르면 게시판(검색 · 유튜브 · 주제별 통계)이 열리고,
 echo  발표 쪽 「함께한 분」 이름을 누르면 주소록 명함으로 갑니다 ^(로그인한 주인에게만^).
 echo ============================================
 

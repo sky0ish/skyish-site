@@ -116,11 +116,13 @@
     var t = list[i], info = infoAll[String(t.sort)] || {};
     document.title = t.title + " — Jee-Hyun NAM";
 
-    var has = info.event || info.when || info.where || info.host || info.about ||
+    var has = info.event || info.when || info.where || info.host || info.about || info.talk ||
               (info.program || []).length || (info.people || []).length || (info.links || []).length;
 
     var h = '<header class="tk-head">' +
-      '<p class="tk-kicker"><span class="tk-tag">' + esc(t.tag || "발표") + "</span>" + esc(t.date) + "</p>" +
+      '<p class="tk-kicker">' +
+        (window.TalkStats ? (function (r) { return '<b class="tk-rl tk-rl--' + r.id + '">' + esc(r.name) + "</b>"; })(window.TalkStats.roleOf(t, info)) : "") +
+        '<span class="tk-tag">' + esc(t.tag || "발표") + "</span>" + esc(t.date) + "</p>" +
       '<h1 class="tk-title">' + esc(t.title) + "</h1>" +
       (t.host ? '<p class="tk-host">' + esc(t.host) + "</p>" : "") +
       "</header>";
@@ -132,6 +134,21 @@
         h += '<section class="tk-sec"><h2>행사 개요</h2>' +
           (dl ? '<dl class="tk-dl">' + dl + "</dl>" : "") +
           (info.about ? '<p class="tk-about">' + esc(info.about) + "</p>" : "") + "</section>";
+      }
+      /* 발표 내용 — 1.세미나_토론 의 발표 자료에서 옮긴 요약·핵심·목차·키워드 */
+      var T = info.talk;
+      if (T && (T.summary || (T.points || []).length || (T.outline || []).length)) {
+        h += '<section class="tk-sec tk-talk"><h2>발표 내용</h2>' +
+          (T.title && T.title !== t.title ? '<p class="tk-talk__t">「' + esc(T.title) + "」</p>" : "") +
+          (T.summary ? '<p class="tk-about tk-talk__sum">' + esc(T.summary) + "</p>" : "") +
+          ((T.points || []).length ? '<h3 class="tk-talk__h">핵심 내용</h3><ul class="tk-talk__pts">' +
+            T.points.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "") +
+          ((T.outline || []).length ? '<h3 class="tk-talk__h">목차</h3><ol class="tk-talk__toc">' +
+            T.outline.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol>" : "") +
+          ((T.keywords || []).length ? '<p class="tk-talk__kw">' + T.keywords.map(function (x) {
+            return '<a href="presentations.html?q=' + encodeURIComponent(x) + '">#' + esc(x) + "</a>";
+          }).join("") + "</p>" : "") +
+          "</section>";
       }
       if ((info.program || []).length) {
         h += '<section class="tk-sec"><h2>프로그램</h2><table class="tk-prog"><tbody>' +

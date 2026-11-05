@@ -72,3 +72,26 @@
 .tk-person--card:hover b { color: var(--teal-text); }
 .tk-card { font-style: normal; font-size: .68rem; color: var(--teal-text); margin-top: .15rem; opacity: .75; }
 .tk-person--card:hover .tk-card { opacity: 1; }
+
+/* 발표 내용 */
+.tk-talk__t { margin: 0 0 .6rem; font-weight: 600; color: var(--ink); word-break: keep-all; }
+.tk-talk__sum { margin-top: 0; }
+.tk-talk__h { font: 600 .86rem var(--font-body); color: var(--mauve); margin: 1.3rem 0 .5rem; }
+.tk-talk__pts, .tk-talk__toc { margin: 0; padding-left: 1.2rem; max-width: 80ch; line-height: 1.75; color: #3c3634; word-break: keep-all; }
+.tk-talk__pts { list-style: disc; }
+.tk-talk__toc { list-style: decimal; }
+.tk-talk__pts li::marker { color: var(--teal); }
+.tk-talk__toc li::marker { color: var(--mauve); font-variant-numeric: tabular-nums; }
+.tk-talk__kw { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 1.2rem 0 0; }
+.tk-talk__kw a { font-size: .8rem; color: var(--teal-text); border: 1px solid rgba(79, 157, 146, .45); border-radius: 100px; padding: .2em .75em; }
+.tk-talk__kw a:hover { background: rgba(79, 157, 146, .08); }
+
+/* 맡은 역할 배지 (presentations 목록과 같은 빛깔) */
+.tk-rl { display: inline-block; font-size: .74rem; font-weight: 700; line-height: 1.6; color: #fff; background: #2f7a6f; border-radius: 5px; padding: 0 8px; }
+.tk-rl--keynote { background: #1f5a52; }
+.tk-rl--disc    { background: #2b4a9a; }
+.tk-rl--chair   { background: #7a4f96; }
+.tk-rl--lect    { background: #8a5a2b; }
+.tk-rl--adv     { background: #6b625d; }
+.tk-rl--host    { background: #3d7a3d; }
+.tk-rl--attend  { background: #fff; color: #6b625d; border: 1px solid #b9b2ac; }

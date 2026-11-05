@@ -56,6 +56,28 @@ a.pb-yt:hover { background: #a8201a; color: #fff; }
   color: var(--navy); border: 1px solid var(--navy); border-radius: 5px; padding: 0 6px;
 }
 
+/* 맡은 역할 — 줄 오른쪽 끝, 갈래 배지 앞 */
+.pb-side { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; align-self: center; }
+.pb-side .pub__role { margin: 0; }
+.pb-rl {
+  display: inline-block; font-style: normal; font-size: .72rem; font-weight: 700; line-height: 1.6;
+  color: #fff; background: #2f7a6f; border-radius: 5px; padding: 0 7px; white-space: nowrap;
+}
+.pb-rl--keynote { background: #1f5a52; }
+.pb-rl--disc    { background: #2b4a9a; }
+.pb-rl--chair   { background: #7a4f96; }
+.pb-rl--lect    { background: #8a5a2b; }
+.pb-rl--adv     { background: #6b625d; }
+.pb-rl--host    { background: #3d7a3d; }
+.pb-rl--attend  { background: #fff; color: #6b625d; border: 1px solid #b9b2ac; padding: 0 6px; }
+.pb-lab { font-size: .78rem; color: var(--mauve); margin-right: 4px; }
+.pb-chip--rl { padding-left: .55em; }
+.pb-chip--rl.on { background: #fff; color: var(--ink); border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink) inset; }
+.pb-chip--rl.on b { color: var(--ink); }
+@media (max-width: 600px) {
+  .pb-side { order: 2; margin-left: auto; align-self: baseline; }
+}
+
 /* ── 주제별 통계 ─────────────────────────────────────────── */
 .pb-ana { background: var(--paper-2); }
 .pb-card {
@@ -168,6 +190,31 @@ a.pb-yt:hover { background: #a8201a; color: #fff; }
 .pb-pairs h4 { font: 600 .9rem var(--font-body); margin: 0 0 .5rem; color: var(--ink); }
 .pb-pairs ol { margin: 0; padding-left: 1.2rem; font-size: .82rem; line-height: 1.9; color: #5a5450; }
 .pb-pairs b { color: var(--teal-text); font-weight: 600; margin-left: .2rem; }
+
+/* ── 연구주제별 자문단 (주인에게만) ── */
+#pbAdv .adv { margin-top: 1.2rem; }
+.adv-lock { display: inline-block; margin-left: .5rem; font-size: .72rem; font-weight: 600; color: var(--navy);
+  border: 1px solid var(--navy); border-radius: 100px; padding: .05em .6em; vertical-align: .15em; }
+.adv-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: .9rem 0 .8rem; }
+.adv-tools input { flex: 0 1 260px; min-width: 180px; border: 1px solid var(--line); border-radius: 100px; padding: .45rem .9rem;
+  font-family: inherit; font-size: .85rem; background: #fff; }
+.adv-tools input:focus { outline: none; border-color: var(--teal); }
+.adv-count { font-size: .82rem; color: var(--mauve); margin-right: auto; }
+.adv-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.adv-table { width: 100%; border-collapse: collapse; font-size: .84rem; min-width: 760px; }
+.adv-table th { text-align: left; font-weight: 500; color: var(--mauve); font-size: .76rem; border-bottom: 1px solid var(--line); padding: .4rem .45rem; white-space: nowrap; }
+.adv-table td { padding: .5rem .45rem; border-bottom: 1px solid var(--line-soft); vertical-align: top; line-height: 1.5; }
+.adv-table td:first-child { color: var(--mauve); width: 2rem; font-variant-numeric: tabular-nums; }
+.adv-name { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.adv-name:hover { color: var(--teal-text); text-decoration: underline; }
+.adv-n { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.adv-n b { color: var(--teal-text); font-weight: 700; }
+.adv-n small { color: var(--mauve); margin-left: 1px; }
+.adv-where a, .adv-where span { display: block; color: #4a4442; font-size: .78rem; }
+.adv-where a:hover { color: var(--teal-text); text-decoration: underline; }
+.adv-where small { color: var(--mauve); font-size: .74rem; }
+.adv-more-row { margin: .9rem 0 0; }
+.adv-also { display: block; color: var(--mauve); font-size: .74rem; }
 
 /* 풍선 도움말 */
 /* 좁은 화면 — 단추 줄은 옆으로 밀어 보고, 연결망은 옆으로 넘겨 봅니다 */
