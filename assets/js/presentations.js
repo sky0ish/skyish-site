@@ -79,6 +79,7 @@
     st.r = sp.get("r") || "all";
     st.yt = sp.get("yt") === "1";
     st.f = sp.get("f") || "";
+    if (st.f === "defense") st.f = "usfk";   /* 방산·국방 AI 는 반환공여지와 한 분야로 합쳤습니다 */
     st.kw = sp.get("kw") || "";
     st.org = sp.get("org") || "";
   })();
@@ -717,14 +718,49 @@
     });
   }
 
-  var ADV = { all: [], f: "all", q: "", more: false };
+  var ADV = { all: [], f: "all", q: "", more: false, sort: "n", dir: -1, order: [] };
+  /* 그 분이 가장 많이 만난 분야 (같으면 분야 칩 차례) */
+  function mainField(r) {
+    var best = "", bn = 0;
+    ADV.order.forEach(function (id) { if ((r.fields[id] || 0) > bn) { bn = r.fields[id]; best = id; } });
+    return best;
+  }
+  function relList(r) {
+    return ADV.f === "all" ? r.list : r.list.filter(function (e) { return e.fields.indexOf(ADV.f) >= 0; });
+  }
+  function topRole(r) {
+    var best = 99;
+    Object.keys(r.roles).forEach(function (k) { var i = ROLE_RANK.indexOf(k); best = Math.min(best, i < 0 ? 98 : i); });
+    return best;
+  }
+  var SORTS = {
+    name:   { dir: 1,  fn: function (a, b) { return a.name.localeCompare(b.name, "ko"); } },
+    org:    { dir: 1,  fn: function (a, b) { return (a.org || "\uffff").localeCompare(b.org || "\uffff", "ko"); } },
+    field:  { dir: 1,  fn: function (a, b) {
+      var fa = mainField(a), fb = mainField(b);
+      var ia = fa ? ADV.order.indexOf(fa) : 99, ib = fb ? ADV.order.indexOf(fb) : 99;
+      return ia - ib || (b.fields[fb] || 0) - (a.fields[fa] || 0) || 0;
+    } },
+    n:      { dir: -1, fn: function (a, b) { return relList(a).length - relList(b).length; } },
+    role:   { dir: 1,  fn: function (a, b) { return topRole(a) - topRole(b); } },
+    recent: { dir: -1, fn: function (a, b) {
+      var la = relList(a)[0], lb = relList(b)[0];
+      return ((la && la.date) || "").localeCompare((lb && lb.date) || "");
+    } }
+  };
   function advRows() {
     var f = ADV.f, q = norm(ADV.q).trim();
+    var S0 = SORTS[ADV.sort] || SORTS.n, dir = ADV.dir;
     return ADV.all.filter(function (r) { return f === "all" || r.fields[f]; })
-      .filter(function (r) { return !q || norm([r.name, r.title, r.org].join(" ")).indexOf(q) >= 0 || tight([r.name, r.org].join("")).indexOf(tight(q)) >= 0; })
+      .filter(function (r) {
+        if (!q) return true;
+        var fn = Object.keys(r.fields).map(function (id) { return FIELD[id] ? FIELD[id].short + " " + FIELD[id].name : ""; }).join(" ");
+        return norm([r.name, r.title, r.org, fn].join(" ")).indexOf(q) >= 0 || tight([r.name, r.org].join("")).indexOf(tight(q)) >= 0;
+      })
       .sort(function (a, b) {
-        var fa = f === "all" ? a.list.length : a.fields[f], fb = f === "all" ? b.list.length : b.fields[f];
-        return fb - fa || b.list.length - a.list.length || (b.list[0].date || "").localeCompare(a.list[0].date || "");
+        return dir * S0.fn(a, b) ||
+          relList(b).length - relList(a).length || b.list.length - a.list.length ||
+          (b.list[0].date || "").localeCompare(a.list[0].date || "");
       });
   }
   function rolesText(r) {
@@ -740,15 +776,28 @@
     var fc = { all: ADV.all.length };
     ADV.all.forEach(function (r) { Object.keys(r.fields).forEach(function (f) { fc[f] = (fc[f] || 0) + 1; }); });
     var fields = S.FIELDS.filter(function (f) { return fc[f.id]; }).sort(function (a, b) { return fc[b.id] - fc[a.id]; });
+    ADV.order = fields.map(function (x) { return x.id; });
+    [].forEach.call(document.querySelectorAll(".adv-table th[data-sort]"), function (th) {
+      var on = th.dataset.sort === ADV.sort;
+      th.setAttribute("aria-sort", on ? (ADV.dir > 0 ? "ascending" : "descending") : "none");
+      th.querySelector("i").textContent = on ? (ADV.dir > 0 ? "▲" : "▼") : "↕";
+    });
     $("advChips").innerHTML = [["all", "전체"]].concat(fields.map(function (f) { return [f.id, f.name]; })).map(function (x) {
       return '<button type="button" class="pb-chip' + (ADV.f === x[0] ? " on" : "") + '" data-af="' + x[0] + '">' + esc(x[1]) + " <b>" + (fc[x[0]] || 0) + "</b></button>";
     }).join("");
     var rows = advRows(), shown = ADV.more ? rows : rows.slice(0, 40);
     var f = ADV.f;
-    $("advCount").textContent = (f === "all" ? "전체" : FIELD[f].name) + " · " + rows.length + "명" +
-      (f === "all" ? "" : " — 이 분야 행사에서 만난 횟수 순");
+    var SORT_NAME = { name: "이름", org: "소속", field: "분야", n: "횟수", role: "역할", recent: "최근 만난 날" };
+    $("advCount").textContent = (f === "all" ? "전체" : FIELD[f].name) + " · " + rows.length + "명 · " +
+      SORT_NAME[ADV.sort] + (ADV.dir > 0 ? " 오름차순" : " 내림차순");
     $("advBody").innerHTML = rows.length ? shown.map(function (r, i) {
-      var fl = f === "all" ? r.list : r.list.filter(function (e) { return e.fields.indexOf(f) >= 0; });
+      var fl = relList(r);
+      var fchips = ADV.order.filter(function (id) { return r.fields[id]; })
+        .sort(function (x, y) { return r.fields[y] - r.fields[x] || ADV.order.indexOf(x) - ADV.order.indexOf(y); })
+        .map(function (id) {
+          return '<button type="button" class="adv-f adv-f--' + id + (id === f ? " on" : "") + '" data-af="' + id + '" title="' + esc(FIELD[id].name) + ' 분야만 보기">' +
+            esc(FIELD[id].short) + (r.fields[id] > 1 ? " " + r.fields[id] : "") + "</button>";
+        }).join("");
       var href = "contact.html?p=addr&who=" + encodeURIComponent(r.name) + (r.org ? "&org=" + encodeURIComponent(r.org) : "");
       var where = fl.slice(0, 3).map(function (e) {
         var t = esc(encText(e));
@@ -758,20 +807,23 @@
         '<td><a class="adv-name" href="' + href + '" title="' + esc(r.name) + ' 명함 보기">' + esc(r.name) + "</a></td>" +
         "<td>" + esc([r.title, r.org].filter(Boolean).join(" · ")) +
           (r.orgList.length > 1 ? '<small class="adv-also">다른 소속: ' + esc(r.orgList.slice(1, 3).join(", ")) + "</small>" : "") + "</td>" +
+        '<td class="adv-fs">' + (fchips || '<span class="adv-none">—</span>') + "</td>" +
         '<td class="adv-n"><b>' + fl.length + "</b>" + (f !== "all" && r.list.length > fl.length ? "<small>/" + r.list.length + "</small>" : "") + "</td>" +
         "<td>" + esc(rolesText(r)) + "</td>" +
         '<td class="adv-where">' + where + "</td></tr>";
-    }).join("") : '<tr><td colspan="6" class="pb-empty">맞는 분이 없습니다.</td></tr>';
+    }).join("") : '<tr><td colspan="7" class="pb-empty">맞는 분이 없습니다.</td></tr>';
     $("advMore").hidden = rows.length <= 40;
     $("advMore").textContent = ADV.more ? "앞의 40명만 보기" : "모두 보기 (" + rows.length + "명)";
   }
   function advCsv() {
     var f = ADV.f, rows = advRows();
     var q = function (v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    var lines = [["분야", "이름", "직함", "소속", "이 분야 횟수", "전체 횟수", "역할", "최근", "함께한 자리"].join(",")];
+    var lines = [["보기", "이름", "직함", "소속", "주 분야", "분야(횟수)", "이 분야 횟수", "전체 횟수", "역할", "최근", "함께한 자리"].join(",")];
     rows.forEach(function (r) {
       var fl = f === "all" ? r.list : r.list.filter(function (e) { return e.fields.indexOf(f) >= 0; });
-      lines.push([f === "all" ? "전체" : FIELD[f].name, r.name, r.title, r.org, fl.length, r.list.length, rolesText(r),
+      var mf = mainField(r);
+      var fs = ADV.order.filter(function (id) { return r.fields[id]; }).map(function (id) { return FIELD[id].name + " " + r.fields[id]; }).join(" / ");
+      lines.push([f === "all" ? "전체" : FIELD[f].name, r.name, r.title, r.org, mf ? FIELD[mf].name : "", fs, fl.length, r.list.length, rolesText(r),
         (r.list[0].date || ""), fl.map(encText).join(" / ")].map(q).join(","));
     });
     var blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
@@ -812,7 +864,10 @@
         '<div class="pb-chips" id="advChips"></div>' +
         '<div class="adv-tools"><input type="search" id="advQ" placeholder="이름·기관으로 찾기" aria-label="자문단 찾기">' +
           '<span class="adv-count" id="advCount"></span><button type="button" class="pb-chip" id="advCsv">CSV 내려받기</button></div>' +
-        '<div class="adv-wrap"><table class="adv-table"><thead><tr><th>#</th><th>이름</th><th>직함 · 소속</th><th>횟수</th><th>역할</th><th>함께한 자리</th></tr></thead>' +
+        '<div class="adv-wrap"><table class="adv-table"><thead><tr><th>#</th>' +
+          [["name", "이름"], ["org", "직함 · 소속"], ["field", "분야"], ["n", "횟수"], ["role", "역할"], ["recent", "함께한 자리"]].map(function (c) {
+            return '<th data-sort="' + c[0] + '" aria-sort="none"><button type="button" class="adv-sort">' + c[1] + ' <i aria-hidden="true">↕</i></button></th>';
+          }).join("") + "</tr></thead>" +
         '<tbody id="advBody"></tbody></table></div>' +
         '<p class="adv-more-row"><button type="button" class="pb-chip" id="advMore"></button></p></div>';
       drawAdv();
@@ -827,6 +882,19 @@
         t = setTimeout(function () { ADV.q = e.target.value; drawAdv(); }, 150);
       });
       $("advMore").addEventListener("click", function () { ADV.more = !ADV.more; drawAdv(); });
+      mount.querySelector(".adv-table thead").addEventListener("click", function (e) {
+        var th = e.target.closest("th[data-sort]");
+        if (!th) return;
+        var k = th.dataset.sort;
+        if (ADV.sort === k) ADV.dir = -ADV.dir;
+        else { ADV.sort = k; ADV.dir = SORTS[k].dir; }
+        drawAdv();
+      });
+      $("advBody").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-af]");
+        if (!b) return;
+        ADV.f = ADV.f === b.dataset.af ? "all" : b.dataset.af; ADV.more = false; drawAdv();
+      });
       $("advCsv").addEventListener("click", advCsv);
       if (location.hash === "#advisors") mount.scrollIntoView();
     }).catch(function () {});

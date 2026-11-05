@@ -216,6 +216,34 @@ a.pb-yt:hover { background: #a8201a; color: #fff; }
 .adv-more-row { margin: .9rem 0 0; }
 .adv-also { display: block; color: var(--mauve); font-size: .74rem; }
 
+/* 자문단 — 분야 칩 · 열 머리 눌러 정렬 */
+.adv-table th[data-sort] { padding: 0; }
+.adv-sort { border: 0; background: none; font: inherit; color: inherit; cursor: pointer; padding: .4rem .45rem; white-space: nowrap; }
+.adv-sort i { font-style: normal; font-size: .7em; opacity: .45; margin-left: .15em; }
+.adv-table th[aria-sort="ascending"] .adv-sort, .adv-table th[aria-sort="descending"] .adv-sort { color: var(--ink); font-weight: 600; }
+.adv-table th[aria-sort="ascending"] i, .adv-table th[aria-sort="descending"] i { opacity: 1; color: var(--teal-text); }
+.adv-sort:hover { color: var(--teal-text); }
+.adv-fs { min-width: 9rem; }
+.adv-f {
+  display: inline-block; margin: 0 4px 4px 0; border: 0; cursor: pointer; font-family: inherit;
+  font-size: .72rem; font-weight: 700; line-height: 1.6; color: #fff; border-radius: 5px; padding: 0 7px; white-space: nowrap;
+  background: #6b625d; opacity: .92;
+}
+.adv-f:hover, .adv-f.on { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--ink); }
+.adv-f--usfk     { background: #6b5b4b; }
+.adv-f--defense  { background: #4b5563; }
+.adv-f--north    { background: #2f7a6f; }
+.adv-f--heritage { background: #8a5a2b; }
+.adv-f--regen    { background: #7a4f96; }
+.adv-f--station  { background: #2b4a9a; }
+.adv-f--housing  { background: #b8860b; }
+.adv-f--soc      { background: #b0466b; }
+.adv-f--machi    { background: #3d7a3d; }
+.adv-f--policy   { background: #455a8a; }
+.adv-f--data     { background: #0f6f7c; }
+.adv-none { color: var(--mauve); }
+.adv-table { min-width: 900px; }
+
 /* 풍선 도움말 */
 /* 좁은 화면 — 단추 줄은 옆으로 밀어 보고, 연결망은 옆으로 넘겨 봅니다 */
 @media (max-width: 640px) {
