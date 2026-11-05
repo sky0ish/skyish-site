@@ -1,13 +1,13 @@
 /* ------------------------------------------------------------------
-   대외 발표 목록 — about.html 의 #talks-board 를 채웁니다.
+   첫 화면(index.html) 「Presentations」 — 최근 발표 몇 건만 보여 줍니다.
 
-   assets/data/talks.js 의 window.TALKS 를 읽어 연도별로 묶어 그립니다.
-   RESEARCH 목록(.pub-*)과 같은 마크업을 써서 스타일을 공유합니다.
-
-   main.js 와 분리해 둔 이유: 다른 작업과 충돌하지 않도록.
+   전체 목록·검색·유튜브·주제별 통계는 따로 떨어진 게시판 presentations.html 에 있습니다.
+   데이터는 assets/data/talks.js 의 window.TALKS.
    ------------------------------------------------------------------ */
 (function () {
   "use strict";
+
+  var SHOW = 6;
 
   function esc(s) {
     return String(s == null ? "" : s)
@@ -15,13 +15,6 @@
       .replace(/"/g, "&quot;");
   }
 
-  function yearOf(t) {
-    var m = /^(\d{4})/.exec(String(t.sort || t.date || ""));
-    return m ? m[1] : "기타";
-  }
-
-  /* 제목을 누르면 그 행사의 개요(일시·장소·주최·프로그램·함께한 분·관련 기사) — talk.html?k=<sort>
-     개요는 assets/data/talk-info.json 에 있습니다. */
   function itemHtml(t) {
     return '<li class="pub">' +
         '<span class="pub__date">' + esc(t.date) + "</span>" +
@@ -44,34 +37,17 @@
       return;
     }
 
-    var items = talks.slice().sort(function (a, b) {
-      return (b.sort || 0) - (a.sort || 0);
-    });
+    var items = talks.slice().sort(function (a, b) { return (b.sort || 0) - (a.sort || 0); });
+    var years = items.map(function (t) { return String(t.sort).slice(0, 4); });
 
-    // 연도별로 묶기 (최신 연도부터)
-    var groups = {}, order = [];
-    items.forEach(function (t) {
-      var y = yearOf(t);
-      if (!groups[y]) { groups[y] = []; order.push(y); }
-      groups[y].push(t);
-    });
-
-    var years = order.filter(function (y) { return y !== "기타"; });
-    var first = years.length ? years[years.length - 1] : "";
-    var last  = years.length ? years[0] : "";
-
-    var html =
-      '<p class="talks-sum">총 <strong>' + items.length + "</strong>건" +
-      (first && last ? " · " + esc(first) + "–" + esc(last) : "") + "</p>";
-
-    html += order.map(function (y) {
-      return '<div class="pub-subgroup">' +
-          '<h3 class="pub-subgroup__title">' + esc(y) + " <span>" + groups[y].length + "</span></h3>" +
-          '<ol class="pub-list">' + groups[y].map(itemHtml).join("") + "</ol>" +
-        "</div>";
-    }).join("");
-
-    mount.innerHTML = html;
+    mount.innerHTML =
+      '<p class="talks-sum">총 <strong>' + items.length + "</strong>건 · " + esc(years[years.length - 1]) + "–" + esc(years[0]) +
+        " · 최근 " + SHOW + "건</p>" +
+      '<ol class="pub-list">' + items.slice(0, SHOW).map(itemHtml).join("") + "</ol>" +
+      '<p class="talks-more" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:2rem">' +
+        '<a class="btn btn--solid" href="presentations.html">전체 ' + items.length + '건 보기 · 검색 <span class="arrow" aria-hidden="true">→</span></a>' +
+        '<a class="btn btn--ghost" href="presentations.html#analysis">주제별 통계 · 기관 연결망 <span class="arrow" aria-hidden="true">→</span></a>' +
+      "</p>";
   }
 
   if (document.readyState === "loading") {

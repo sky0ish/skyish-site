@@ -2272,6 +2272,32 @@ export async function initAddr(mountId = "addrapp", sectionId = "addrsec") {
     sel.addEventListener("change", () => { major = sel.value; shownCount = PAGE; paint(); });
     document.getElementById("abXls").addEventListener("click", () => download(shown()));
     paint();
+    openWho();
+  }
+
+  /* ── 다른 화면에서 「이 분 명함」 으로 왔을 때 ──
+     contact.html?p=addr&who=이름&org=소속 — 발표 개요(talk.html)의 「함께한 분」 이름을 누르면 옵니다.
+     이름으로 찾아 두고, 한 분으로 좁혀지면(동명이인은 소속으로) 그 명함을 바로 엽니다. 한 번만. */
+  let whoDone = false;
+  function openWho() {
+    if (whoDone) return;
+    const sp = new URLSearchParams(location.search);
+    const who = (sp.get("who") || "").trim();
+    if (!who) return;
+    whoDone = true;
+    const key = (v) => String(v || "").replace(/\s+/g, "").toLowerCase();
+    const hits = rows.filter((r) => key(r.name) === key(who));
+    const q = document.getElementById("abQ");
+    if (q) { q.value = who; q.dispatchEvent(new Event("input")); }
+    const org = (sp.get("org") || "").trim();
+    let pick = hits.length === 1 ? hits[0] : null;
+    if (!pick && hits.length > 1 && org) {
+      const k = key(org);
+      pick = hits.find((r) => [r.company, r.orgDept].some((v) => v && (key(v).indexOf(k) >= 0 || k.indexOf(key(v)) >= 0))) || null;
+    }
+    if (pick) detail(pick);
+    else if (!hits.length) say(who + " — 주소록에 같은 이름의 명함이 없습니다.", true);
+    else say(who + " — 같은 이름이 " + hits.length + "분 있습니다. 아래에서 골라 주세요.", true);
   }
 
   /* ── 한 사람 자세히 ── */

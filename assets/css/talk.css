@@ -40,7 +40,12 @@
 .tk-vids { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 1rem; margin: 0 0 1rem; padding: 0; list-style: none; }
 .tk-vids a { display: flex; flex-direction: column; gap: .45rem; color: var(--ink); font-weight: 500; font-size: .9rem; line-height: 1.45; }
 .tk-vids img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; background: var(--charcoal); }
-.tk-vids a:hover span { color: var(--navy); text-decoration: underline; }
+.tk-vids a:hover > span:not(.tk-vids__img) { color: var(--navy); text-decoration: underline; }
+.tk-vids__img { position: relative; display: block; aspect-ratio: 16 / 9; background: var(--charcoal); border-radius: 10px; overflow: hidden; }
+.tk-vids small { color: var(--mauve); font-size: .76rem; font-weight: 400; }
+.tk-yt { position: absolute; left: 8px; top: 8px; font-size: .72rem; font-weight: 700; line-height: 1.6;
+  color: #fff; background: #d93025; border-radius: 5px; padding: 0 7px; }
+.tk-sec h2 small { font-weight: 400; color: var(--mauve); font-size: .82rem; margin-left: .2rem; }
 
 .tk-empty { color: var(--mauve); padding: 1.2rem 0; }
 .tk-more { margin: 1.6rem 0 0; font-size: .88rem; }
@@ -59,3 +64,11 @@
   .tk-nav { grid-template-columns: 1fr; }
   .tk-nav__prev { text-align: left; }
 }
+
+/* 주인에게만 — 이름을 누르면 주소록 명함으로 */
+.tk-person--card { padding: 0; }
+.tk-person--card a { display: flex; flex-direction: column; padding: .45rem .8rem; color: inherit; border-radius: 10px; }
+.tk-person--card:hover { border-color: var(--teal); background: rgba(79, 157, 146, .06); }
+.tk-person--card:hover b { color: var(--teal-text); }
+.tk-card { font-style: normal; font-size: .68rem; color: var(--teal-text); margin-top: .15rem; opacity: .75; }
+.tk-person--card:hover .tk-card { opacity: 1; }

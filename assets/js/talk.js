@@ -25,10 +25,33 @@
     return val ? "<dt>" + esc(label) + "</dt><dd>" + esc(val) + "</dd>" : "";
   }
 
+  /* 주인(로그인한 남지현)에게만 — 이름을 누르면 그 분 명함(주소록)이 열립니다.
+     주소록은 주인만 보는 곳이라, 다른 분께는 이름만 보입니다.
+     contact.html?p=addr&who=이름&org=소속 → addressbook.js 의 openWho() 가 찾아 엽니다. */
+  var OWNERS = ["whlove@gmail.com", "skyish76@gmail.com"];
+  var OWNER = (function () {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!/skyish-auth|^sb-.*-auth-token$/.test(k)) continue;
+        var v = JSON.parse(localStorage.getItem(k) || "null");
+        var u = v && (v.user || (v.currentSession && v.currentSession.user));
+        if (u && u.email && OWNERS.indexOf(String(u.email).toLowerCase()) >= 0) return true;
+      }
+    } catch (e) {}
+    return false;
+  })();
+
   function personHtml(p) {
     var bits = [p.title, p.org].filter(Boolean).map(esc).join(" · ");
-    return '<li class="tk-person' + (p.name === "남지현" ? " is-me" : "") + '">' +
-      "<b>" + esc(p.name) + "</b>" + (bits ? "<span>" + bits + "</span>" : "") + "</li>";
+    var inner = "<b>" + esc(p.name) + "</b>" + (bits ? "<span>" + bits + "</span>" : "");
+    if (OWNER && p.name !== "남지현") {
+      var href = "contact.html?p=addr&who=" + encodeURIComponent(p.name) +
+                 (p.org ? "&org=" + encodeURIComponent(p.org) : "");
+      return '<li class="tk-person tk-person--card"><a href="' + href + '" title="' + esc(p.name) + ' 명함 보기">' +
+        inner + '<i class="tk-card" aria-hidden="true">명함 ›</i></a></li>';
+    }
+    return '<li class="tk-person' + (p.name === "남지현" ? " is-me" : "") + '">' + inner + "</li>";
   }
 
   var ROLE_ORDER = ["기조발제", "기조강연", "축사", "환영사", "개회사", "인사말", "사회", "좌장", "발제", "발표", "주제발표", "토론", "패널", "참석"];
@@ -50,30 +73,34 @@
     }).join("");
   }
 
-  function linksHtml(links) {
+  /* 유튜브 영상과 그 밖의 자료(기사·안내)를 나눕니다 */
+  function splitLinks(links) {
     var vids = [], rest = [];
-    links.forEach(function (l) {
+    (links || []).forEach(function (l) {
       var u = safeUrl(l.u);
       if (!u) return;
       (ytId(u) ? vids : rest).push(l);
     });
-    var h = "";
-    if (vids.length) {
-      h += '<ul class="tk-vids">' + vids.map(function (l) {
-        var id = ytId(l.u);
-        return '<li><a href="' + esc(l.u) + '" target="_blank" rel="noopener">' +
-          '<img src="https://i.ytimg.com/vi/' + esc(id) + '/mqdefault.jpg" alt="" loading="lazy" width="320" height="180" onerror="this.style.visibility=\'hidden\'">' +
-          "<span>" + esc(l.t || "YouTube 영상") + "</span></a></li>";
-      }).join("") + "</ul>";
-    }
-    if (rest.length) {
-      h += '<ul class="tk-links">' + rest.map(function (l) {
-        var meta = [l.src, (l.d || "").replace(/-/g, ".")].filter(Boolean).map(esc).join(" · ");
-        return '<li><a href="' + esc(l.u) + '" target="_blank" rel="noopener">' + esc(l.t || l.u) + "</a>" +
-          (meta ? "<small>" + meta + "</small>" : "") + "</li>";
-      }).join("") + "</ul>";
-    }
-    return h;
+    return { vids: vids, rest: rest };
+  }
+
+  function vidsHtml(vids) {
+    return '<ul class="tk-vids">' + vids.map(function (l) {
+      var id = ytId(l.u);
+      var meta = [String(l.src || "").replace(/^(YouTube|유튜브)\s*·\s*/, ""), (l.d || "").replace(/-/g, ".")].filter(Boolean).map(esc).join(" · ");
+      return '<li><a href="' + esc(l.u) + '" target="_blank" rel="noopener">' +
+        '<span class="tk-vids__img"><img src="https://i.ytimg.com/vi/' + esc(id) + '/mqdefault.jpg" alt="" loading="lazy" width="320" height="180" onerror="this.style.visibility=\'hidden\'">' +
+        '<b class="tk-yt">▶ 유튜브</b></span>' +
+        "<span>" + esc(l.t || "유튜브 영상") + "</span>" + (meta ? "<small>" + meta + "</small>" : "") + "</a></li>";
+    }).join("") + "</ul>";
+  }
+
+  function restHtml(rest) {
+    return '<ul class="tk-links">' + rest.map(function (l) {
+      var meta = [l.src, (l.d || "").replace(/-/g, ".")].filter(Boolean).map(esc).join(" · ");
+      return '<li><a href="' + esc(l.u) + '" target="_blank" rel="noopener">' + esc(l.t || l.u) + "</a>" +
+        (meta ? "<small>" + meta + "</small>" : "") + "</li>";
+    }).join("") + "</ul>";
   }
 
   function render(talks, infoAll) {
@@ -83,7 +110,7 @@
     var i = -1;
     list.forEach(function (t, n) { if (String(t.sort) === k) i = n; });
     if (i < 0) {
-      app.innerHTML = '<p class="tk-empty">그 발표를 찾지 못했습니다. <a href="index.html#talks">목록으로</a></p>';
+      app.innerHTML = '<p class="tk-empty">그 발표를 찾지 못했습니다. <a href="presentations.html">목록으로</a></p>';
       return;
     }
     var t = list[i], info = infoAll[String(t.sort)] || {};
@@ -116,8 +143,12 @@
       if ((info.people || []).length) {
         h += '<section class="tk-sec"><h2>함께한 분</h2>' + peopleHtml(info.people) + "</section>";
       }
-      if ((info.links || []).length) {
-        h += '<section class="tk-sec"><h2>관련 자료</h2>' + linksHtml(info.links) + "</section>";
+      var L = splitLinks(info.links);
+      if (L.vids.length) {
+        h += '<section class="tk-sec" id="youtube"><h2>유튜브 <small>' + L.vids.length + "</small></h2>" + vidsHtml(L.vids) + "</section>";
+      }
+      if (L.rest.length) {
+        h += '<section class="tk-sec"><h2>관련 기사·자료</h2>' + restHtml(L.rest) + "</section>";
       }
     } else {
       h += '<p class="tk-empty">이 발표의 행사 자료는 아직 정리하지 못했습니다.</p>';
