@@ -162,8 +162,8 @@
         (t.host ? '<span class="pub__meta">' + hl(t.host, tms) + "</span>" : "") +
         whyHtml(it, tms) +
       "</span>" +
-      '<span class="pb-side"><b class="pb-rl pb-rl--' + it.role.id + '" title="이 발표에서 맡은 역할">' + esc(it.role.name) + "</b>" +
-        (t.tag ? '<span class="pub__role">' + esc(t.tag) + "</span>" : "") + "</span>" +
+      '<span class="pb-side">' + (t.tag ? '<span class="pub__role">' + esc(t.tag) + "</span>" : "") +
+        '<b class="pb-rl pb-rl--' + it.role.id + '" title="이 발표에서 맡은 역할">' + esc(it.role.name) + "</b></span>" +
     "</li>";
   }
 

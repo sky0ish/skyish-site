@@ -240,17 +240,18 @@
     return LENS.filter(function (l) { return l[1].test(s); }).map(function (l) { return l[0]; });
   }
 
-  /* 그 발표에서 맡은 역할 — 행사 개요의 role(발표 형식)에서 처음 나오는 낱말로.
-     적힌 것이 없으면 제목(「— 지정토론」 등)과 갈래(특강·교육)로 짐작하고, 그래도 없으면 발표. */
+  /* 그 발표에서 맡은 역할 — 주관 · 발표 · 토론 · 참석 넷으로만 나눕니다 (이 차례로 보입니다).
+     행사 개요의 role(발표 형식)에서 먼저 나오는 낱말로 정하고
+       주관: 주관·주최(직접 연 워크숍 등)
+       발표: 발표·발제·기조발제·기조발표·특강·강의·강연
+       토론: 토론·패널·토의·좌장
+       참석: 참석·참관·자문·위원
+     적힌 것이 없으면 제목(「— 지정토론」 등)과 갈래(참관·자문)로 짐작하고, 그래도 없으면 발표. */
   var ROLES = [
-    { id: "chair",   name: "좌장",     re: /좌장/ },
-    { id: "keynote", name: "기조발제", re: /기조/ },
-    { id: "talk",    name: "발표",     re: /발표|발제/ },
-    { id: "disc",    name: "토론",     re: /토론|패널|토의/ },
-    { id: "lect",    name: "강연",     re: /특강|강의|강연/ },
-    { id: "adv",     name: "자문",     re: /자문|위원/ },
-    { id: "host",    name: "주관",     re: /주관/ },
-    { id: "attend",  name: "참석",     re: /참관|참석/ }
+    { id: "host",   name: "주관", re: /주관|주최/ },
+    { id: "talk",   name: "발표", re: /발표|발제|기조|특강|강의|강연/ },
+    { id: "disc",   name: "토론", re: /토론|패널|토의|좌장/ },
+    { id: "attend", name: "참석", re: /참관|참석|자문|위원/ }
   ];
   var ROLE = {};
   ROLES.forEach(function (r) { ROLE[r.id] = r; });
@@ -263,9 +264,7 @@
     });
     if (best) return best;
     if (/(지정|종합|패널)?토론$/.test(String(t.title || ""))) return ROLE.disc;
-    if (/^(특강|교육|강연)$/.test(t.tag || "")) return ROLE.lect;
-    if (/^(참관)$/.test(t.tag || "")) return ROLE.attend;
-    if (/^(자문)$/.test(t.tag || "")) return ROLE.adv;
+    if (/^(참관|자문)$/.test(t.tag || "")) return ROLE.attend;
     return ROLE.talk;
   }
 

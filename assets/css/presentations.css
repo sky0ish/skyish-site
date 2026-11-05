@@ -56,7 +56,7 @@ a.pb-yt:hover { background: #a8201a; color: #fff; }
   color: var(--navy); border: 1px solid var(--navy); border-radius: 5px; padding: 0 6px;
 }
 
-/* 맡은 역할 — 줄 오른쪽 끝, 갈래 배지 앞 */
+/* 맡은 역할 — 줄 오른쪽 맨 끝, 갈래 배지 뒤 */
 .pb-side { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; align-self: center; }
 .pb-side .pub__role { margin: 0; }
 .pb-rl {
