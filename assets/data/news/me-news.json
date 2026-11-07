@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-06 10:39",
+ "updated": "2026-11-07 09:59",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -189,6 +189,15 @@
    "u": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1VQ2t4M194RmVkRGsxRWl6M25VSk96Zm50dmhEMnJZMnhadlRVandXX2Zjczhod1FFTWtpLTlaZUJYY2R1aGhqY0Yya09ROEtrQ1hLUUYyV09yeGM?oc=5",
    "d": "2025-09-26",
    "src": "경기일보",
+   "s": "",
+   "role": "남지현 경기연구원",
+   "via": "구글뉴스"
+  },
+  {
+   "t": "경동대, ‘2025 지역대학과 함께하는 경기북부 발전 세미나’ 개최",
+   "u": "https://news.google.com/rss/articles/CBMiXkFVX3lxTFA3djhfeThJSVNpS24wUndfNXNxRzB3MFE3d1JkUXkyXzY3bGJlamV5TWs2YkoxdHdreFFOeWZxbWpXcHI1NVc5eElXNmJOemE5LU1zQnpIeld1Z2hYX0HSAWpBVV95cUxOYzRXdk1zRjJLYkJXMGdKMkM3N2FsUHJjZm4zSUJ5Mk1pbUk2ajR6b29UMC1xQy11VTZCWmptZDlxelZfMDFob3NZRlNfSUVWODYxWGV5Y1did0p0UVlKWXRKVUpwU0ZvQnhB?oc=5",
+   "d": "2025-09-26",
+   "src": "대학저널",
    "s": "",
    "role": "남지현 경기연구원",
    "via": "구글뉴스"
