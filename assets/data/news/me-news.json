@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09 10:00",
+ "updated": "2026-11-10 12:39",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -854,6 +854,15 @@
    "src": "동아경제",
    "s": "",
    "role": "경기연구원 남지현",
+   "via": "구글뉴스"
+  },
+  {
+   "t": "[경기도] “반지하 주택 해소 위해 3법 개정하자”…경기도 주최 국회 토론회서 한 목소리",
+   "u": "https://news.google.com/rss/articles/CBMiQkFVX3lxTE5JdFdEMVhOUVRNZE1VYlduMGxsS3IxQzB1ckJZZEd6MnlSd2xEWF9QRVlwMG5BZ3JieDN0dXVNYUNTdw?oc=5",
+   "d": "2023-09-25",
+   "src": "성남포커스",
+   "s": "",
+   "role": "남지현 연구위원",
    "via": "구글뉴스"
   },
   {
