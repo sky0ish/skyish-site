@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-13 10:57",
+ "updated": "2026-11-14 10:30",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -681,6 +681,15 @@
    "src": "위클리서울",
    "s": "(사진설명) 발제를 맡은 경기연구원 공간주거연구실 남지현 연구위원이 발표를 준비하고 있다.",
    "role": "경기연구원 공간주거연구실 연구위원"
+  },
+  {
+   "t": "경기도, '반지하 거주민 주거상향' 국회 토론회 개최",
+   "u": "https://news.google.com/rss/articles/CBMicEFVX3lxTE80QjV5LVVEYmNVVm5uOGFNeGN3SkJwWHdwaHhVMWRLRDJ3MnpKS1g3QzMzTTNhbV9tc2VCVnozN29qZFpCYmlyQmc3c2x4LTJMcTdsaTNNQ29UVTBJQVlMeXdWbnhYaEdJaWUxU21RQXbSAXBBVV95cUxPNEI1eS1VRGJjVVZubjhhTXhjd0pCcFh3cGh4VTFkS0QydzJ6SktYN0MzM00zYW1fbXNlQlZ6MzdvamRaQmJpckJnN3NseC0yTHE3bGkzTUNvVFUwSUFZTHl3Vm54WGhHSWllMVNtUUF2?oc=5",
+   "d": "2024-07-12",
+   "src": "글로벌경제신문",
+   "s": "",
+   "role": "남지현 연구위원",
+   "via": "구글뉴스"
   },
   {
    "t": "경기도, ‘반지하 주거 상향 3법’ 개정 국회토론회 12일 개최",
