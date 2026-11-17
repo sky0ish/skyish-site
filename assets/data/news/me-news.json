@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-16 10:08",
+ "updated": "2026-11-17 12:59",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -829,6 +829,15 @@
    "u": "https://news.google.com/rss/articles/CBMickFVX3lxTE14SzVYYm5JaUVCNEpmQm1NXzhKY3hGNkZ1ZzA1OUFaY0hkd0FtU2x6Q0NBVmdtcTNSTGQwRGRXZU81WHVtdC11bFlEcTN2OWViMnBIVlZsXzZGSWdWRkpCSzJHUzlXckRTdEhBWHR2SXRtQdIBdkFVX3lxTE5QZzBsQ2piUUV4OWNSYmdGcTljbGVyUVcwZkIyNU1pQkNuRVhIVFBKUXdGdkZHdTRVLUFsalBPNFRyVDZ1cE1nR0dJWDl0OXd5dVBicGxmQUdWZE9xSUYtSUJfNTdKX0ZreVhnT3ltSXpreUYwOUE?oc=5",
    "d": "2023-12-05",
    "src": "LG헬로비전",
+   "s": "",
+   "role": "남지현 연구위원",
+   "via": "구글뉴스"
+  },
+  {
+   "t": "[KHARN칸] LH, 외국인 근로자 주거지원 방안 마련 세미나",
+   "u": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE12WmF6YzBJU3h4QXBveUI2ZWNzWnZiaXN3N2FDLUhyVk9QSm5xV1dJRUdrcUR1SlpfOGZMZm5OMzBoQkRhcW5NTFJ2dzVjejVBbXUyQ2ZxSnh1VUk?oc=5",
+   "d": "2023-11-27",
+   "src": "kharn.kr",
    "s": "",
    "role": "남지현 연구위원",
    "via": "구글뉴스"
