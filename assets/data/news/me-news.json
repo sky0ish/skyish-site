@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-17 12:59",
+ "updated": "2026-11-18 11:58",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -849,6 +849,15 @@
    "src": "경인일보",
    "s": "남지현 경기연구원 연구위원이 '경기도 농어촌 외국인노동자 주거현황 및 개선방안'…을 발표했다.",
    "role": "경기연구원 연구위원"
+  },
+  {
+   "t": "LH 경기남부, 토지주택연구원·경기연구원과 공동 세미나 개최",
+   "u": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9OU1BOZEkyai1Wei00UUEzNGF6UllJbUVjbnEwanBnTEdfV2ZDeDlaY0JUMkJvUGp2N0NPSENNM1BhMUdIbnFpdk1mZWdTUXQ1NnVnOHdnaEMtRE9r?oc=5",
+   "d": "2023-11-22",
+   "src": "경기신문",
+   "s": "",
+   "role": "남지현 경기연구원",
+   "via": "구글뉴스"
   },
   {
    "t": "힘싣는 반지하 침수방지법…'침수지도'도 나올까:동아경제신문 & daenews.co.kr",
