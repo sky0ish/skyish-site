@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-19 11:40",
+ "updated": "2026-11-20 11:25",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -925,6 +925,15 @@
    "src": "비전21뉴스",
    "s": "발제를 맡은 남지현 경기연구원 박사는 도시진화와 쇠퇴, 소멸도시, 축소도시 등 도시의 발전단계 과정과 도시쇠퇴를 적절하게 대응할 수 있도록…",
    "role": "경기연구원 박사"
+  },
+  {
+   "t": "김동연 “메가시티는 경기-충남 도민 위한 기회”",
+   "u": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFBfQkduQnRSQXZ0NW4wQmpRbS1RZ2hud2R5d0lVZGVsMXNqU3BiaWQ4VDc4aWF3cHVXUWVqbE5oYWdkWXZudzBlb0hTZmxmZ1REOXpiYWVpQmNfT2dvNHNUeTBCNldHdw?oc=5",
+   "d": "2023-03-13",
+   "src": "화성저널",
+   "s": "",
+   "role": "경기연구원 남지현",
+   "via": "구글뉴스"
   },
   {
    "t": "“경기도 농어촌 외국인 노동자 주거모델 개발을 위한 정책토론회 ”개최",
