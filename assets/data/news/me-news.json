@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-23 10:50",
+ "updated": "2026-11-24 14:22",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -934,6 +934,15 @@
    "src": "비전21뉴스",
    "s": "발제를 맡은 남지현 경기연구원 박사는 도시진화와 쇠퇴, 소멸도시, 축소도시 등 도시의 발전단계 과정과 도시쇠퇴를 적절하게 대응할 수 있도록…",
    "role": "경기연구원 박사"
+  },
+  {
+   "t": "LH, ‘주거복지 3대 실현과 사회인프라 연계방안’ 세미나 개최",
+   "u": "https://news.google.com/rss/articles/CBMibEFVX3lxTFBPdE5pUVNBcEh4WHVqVVd4ZHJTUXFpdUh2d3BIUDF6WnU1c2lFWmNzNnJERkk1UjdCbkw2end4anRjUzdTSDQ1UVRXZXQzQ2Y3bFd6anZLYkJoWG1pZHc5R2o1SEg3NWYyR0t3bA?oc=5",
+   "d": "2023-05-24",
+   "src": "뉴스브라이트",
+   "s": "",
+   "role": "남지현 연구위원",
+   "via": "구글뉴스"
   },
   {
    "t": "경기도, 3기 신도시 ‘지역 맞춤형 생활 사회기반시설 복합화’ 추진",
