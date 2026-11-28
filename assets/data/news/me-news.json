@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27 12:41",
+ "updated": "2026-11-28 12:22",
  "note": "경기연구원 남지현이 이름으로 나온 기사. 처음 목록은 기사마다 열어 확인했습니다. hide 에 주소를 넣으면 다시 들어오지 않습니다.",
  "hide": [],
  "items": [
@@ -1050,6 +1050,15 @@
    "u": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9ITmlEN1ZWYm9HdXY0NGZmTlNUdW94dVBCZUdLMzhQd1g1NXU3WHNqXzZiNWwtLWpTVmZDaUJpTHFBTDB6WXJhRThhbTBPMWV2UWNZNVVtOGhWRWtqY0lhOWE5MzZ3SzZnUzRoN1NOQmY?oc=5",
    "d": "2019-11-04",
    "src": "인천투데이",
+   "s": "",
+   "role": "남지현 연구위원",
+   "via": "구글뉴스"
+  },
+  {
+   "t": "\"생활 SOC, 지역 특성에 맞는 확충계획 수립해야\"",
+   "u": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE14SGdOV1V3VndWeGVQVURqNE5RUmNqcGVRQTBrQTd0M2dweGxPYk5zOUVWaUpPX19xZTRidE1Lb0MzbkFHcU1DT2duVjFpeDl5dGdIWkEtOE1JWlXSAWBBVV95cUxQMXMwS0w1SnpEMFZtaUtWMVBDQjVzU1VGdU5vSGJGZ0xHWGI5SWltLVZsbVo2SG9MeXJtUFo1YmFvNW15UUxTV1l5aHliS0ZfVl9CUHVTN2xFanVramhzeWE?oc=5",
+   "d": "2019-03-15",
+   "src": "연합뉴스",
    "s": "",
    "role": "남지현 연구위원",
    "via": "구글뉴스"
